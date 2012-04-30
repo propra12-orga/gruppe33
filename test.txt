@@ -1,1 +1,5 @@
+<<<<<<< HEAD
 Ich bin ein Textdokument
+=======
+hallo123
+>>>>>>> 4256e0448bdfbb7ca9b5ecea91cedd9d35abc03d
