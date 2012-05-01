@@ -11,16 +11,13 @@ public class Animation {
 	private String name;
 	private Point[] points;
 	private int animationLength,animationStep;
-	private long timeStamp,time,animationTimeLength;
+	private long timeStamp,timeDiff,animationTime,timePerImage;
 	
-	public Animation(String name,long time, Point... points){
-		this.name = name;
-		this.points = points;
+	public Animation(String name, List<BufferedImage> images,long timePerImage,Point... points){
 		animationLength = points.length;
-		this.time = time;
-		animationTimeLength = time * this.points.length;
+		animationTime = animationLength * timePerImage;
+		this.timePerImage = timePerImage;
 		animationStep = 0;
-		
 		
 		
 		
@@ -28,20 +25,18 @@ public class Animation {
 	}
 	
 	public BufferedImage getAnimationImage(){
-		long timeDiff = System.currentTimeMillis() - timeStamp;
-		if(animationStep != animationLength){
-			animationStep+= timeDiff/time;
-		}else{
+		timeDiff = System.currentTimeMillis() - timeStamp;
+		if(animationStep + timeDiff/timePerImage > animationLength){
 			animationStep = 0;
 		}
-		
-		
+		animationStep+= timeDiff/timePerImage;
+		System.out.println(animationStep);
 		
 		
 		
 		
 		timeStamp = System.currentTimeMillis();
-		return images.get(animationStep);
+		return null;
 		
 	}
 	
