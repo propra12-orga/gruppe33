@@ -10,6 +10,8 @@ import java.util.TimerTask;
 import javax.imageio.ImageIO;
 import javax.swing.JFrame;
 
+
+//Just my little Playground... You dont need to understand what happens here....
 public class Playground extends JFrame {
 	
 	private BufferedImage im;
@@ -20,11 +22,11 @@ public class Playground extends JFrame {
 
 	public Playground() throws Exception {
 
-		setVisible(true);
+		
 		spriteTest = new SpriteImpl();
 		spriteTest.setImage(ImageIO.read(new File("C:/male.png")), 4, 4);
 		
-		spriteTest.addAnimation("test", 33, new Point(0,0),new Point(1,0),new Point(2,0),new Point(3,0));
+		spriteTest.addAnimation("test", 1000, new Point(0,0),new Point(1,0),new Point(2,0),new Point(3,0));
 		
 		timer.schedule(new TimerTask() {
 			
@@ -34,6 +36,10 @@ public class Playground extends JFrame {
 			}
 		}, 0, 33);
 
+		
+		
+		
+		setVisible(true);
 	}
 
 	public void paint(Graphics g) {
