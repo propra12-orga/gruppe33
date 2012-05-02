@@ -3,6 +3,7 @@ package propra2012.gruppe33.graphics.scenegraph;
 import java.awt.Graphics2D;
 import java.awt.GraphicsConfiguration;
 import java.awt.GraphicsEnvironment;
+import java.awt.RenderingHints;
 import java.awt.Transparency;
 import java.awt.image.VolatileImage;
 import java.util.ArrayList;
@@ -19,7 +20,7 @@ import java.util.Set;
  * @author Christopher Probst
  * 
  */
-public final class Layer extends SceneGraphObject {
+public final class Layer {
 
 	/**
 	 * Create a volatile image using width and height.
@@ -39,17 +40,30 @@ public final class Layer extends SceneGraphObject {
 			.getLocalGraphicsEnvironment().getDefaultScreenDevice()
 			.getDefaultConfiguration();
 
+	// Linked hash set storing the entities
 	private final Set<Entity> entities = new LinkedHashSet<Entity>();
+
+	// The entity cache
 	private List<Entity> cache = null;
-	private final Map<String, List<Entity>> names2Entities = new HashMap<String, List<Entity>>();
+
+	// Maps ids to entities
+	private final Map<String, List<Entity>> ids2Entities = new HashMap<String, List<Entity>>();
+
+	// The volatile image which is used to render this layer
 	private VolatileImage image;
 
-	private List<Entity> getEntityList(String name) {
+	// The scene graph of this layer
+	private final SceneGraph sceneGraph;
+
+	// The name of the layer
+	private final String name;
+
+	private List<Entity> getEntityList(String id) {
 		// Try to get list
-		List<Entity> entities = names2Entities.get(name);
+		List<Entity> entities = ids2Entities.get(id);
 
 		if (entities == null) {
-			names2Entities.put(name, entities = new LinkedList<Entity>());
+			ids2Entities.put(id, entities = new LinkedList<Entity>());
 		}
 
 		return entities;
@@ -63,34 +77,48 @@ public final class Layer extends SceneGraphObject {
 	}
 
 	Layer(SceneGraph sceneGraph, String name) {
-		super(sceneGraph, name);
+		if (sceneGraph == null) {
+			throw new NullPointerException("sceneGraph");
+		}
+		if (name == null) {
+			throw new NullPointerException("name");
+		}
+		this.sceneGraph = sceneGraph;
+		this.name = name;
 	}
 
 	protected void repaint(Graphics2D g) {
+
+		// Create a copy
+		Graphics2D copy = (Graphics2D) g.create();
+
 		// Clear the image
-		g.clearRect(0, 0, image.getWidth(), image.getHeight());
+		copy.clearRect(0, 0, image.getWidth(), image.getHeight());
 
 		// Repaint all items
 		for (Entity entity : getCache()) {
 
 			// Create a local copy
-			Graphics2D copy = (Graphics2D) g.create();
+			Graphics2D entityCopy = (Graphics2D) copy.create();
 
 			// Translate the coords
-			copy.translate(entity.getPosition().x / image.getWidth(),
-					entity.getPosition().y / image.getHeight());
+			entityCopy
+					.translate(entity.getPosition().x, entity.getPosition().y);
 
 			// Render the entity
-			entity.render(copy);
+			entity.render(entityCopy);
 
 			// Dispose everything
-			copy.dispose();
+			entityCopy.dispose();
 		}
+
+		// Dispose the entity
+		copy.dispose();
 	}
 
-	public List<Entity> find(String name) {
-		// Lookup the name list
-		List<Entity> list = names2Entities.get(name);
+	public List<Entity> find(String id) {
+		// Lookup the id list
+		List<Entity> list = ids2Entities.get(id);
 
 		return list != null ? Collections.unmodifiableList(list) : null;
 	}
@@ -104,6 +132,14 @@ public final class Layer extends SceneGraphObject {
 		for (Entity entity : getCache()) {
 			removeEntity(entity);
 		}
+	}
+
+	public String getName() {
+		return name;
+	}
+
+	public SceneGraph getSceneGraph() {
+		return sceneGraph;
 	}
 
 	public boolean addEntity(Entity entity) {
@@ -120,7 +156,7 @@ public final class Layer extends SceneGraphObject {
 			entity.layer = this;
 
 			// Get entity name list
-			List<Entity> list = getEntityList(entity.getName());
+			List<Entity> list = getEntityList(entity.getId());
 
 			// Just add the entity
 			list.add(entity);
@@ -148,7 +184,7 @@ public final class Layer extends SceneGraphObject {
 			entity.layer = null;
 
 			// Get entity name list
-			List<Entity> list = getEntityList(entity.getName());
+			List<Entity> list = getEntityList(entity.getId());
 
 			// Remove the entity
 			list.remove(entity);
@@ -156,7 +192,7 @@ public final class Layer extends SceneGraphObject {
 			// Was this the last entity with the given name ?
 			if (list.isEmpty()) {
 				// Remove from map
-				names2Entities.remove(entity.getName());
+				ids2Entities.remove(entity.getId());
 			}
 
 			// Cache has been changed
@@ -173,14 +209,12 @@ public final class Layer extends SceneGraphObject {
 				&& image.getHeight() == getSceneGraph().getHeight();
 	}
 
-	public VolatileImage ensureImage() {
-		// Just call this method with false
-		needRepaint(false);
-
-		return image;
-	}
-
 	public boolean needRepaint(boolean isLayerDirty) {
+
+		// We should not repaint...
+		if (sceneGraph.getWidth() <= 0 || sceneGraph.getHeight() <= 0) {
+			return false;
+		}
 
 		// Not even initialized!
 		if (image == null) {
@@ -246,6 +280,10 @@ public final class Layer extends SceneGraphObject {
 
 				// Open graphics context
 				Graphics2D g2d = image.createGraphics();
+
+				// Use anti-aliasing
+				g2d.setRenderingHint(RenderingHints.KEY_ANTIALIASING,
+						RenderingHints.VALUE_ANTIALIAS_ON);
 
 				// Repaint the layer
 				repaint(g2d);

@@ -1,6 +1,9 @@
 package propra2012.gruppe33.graphics.scenegraph;
 
+import java.awt.BasicStroke;
 import java.awt.Graphics;
+import java.awt.Graphics2D;
+import java.awt.RenderingHints;
 import java.util.Collection;
 import java.util.HashSet;
 import java.util.Iterator;
@@ -15,10 +18,6 @@ import java.util.TreeMap;
  * multiply layers to improve render performance. Only layers marked as dirty
  * are redrawn. In addition: We use the VolatileImage class which is technically
  * a direct reference to a high performance opengl texture.
- * 
- * The scene graph uses a relative coord system. Which means that we actually
- * only use values between 0 and 1 to adjust the scale of the game while
- * resizing.
  * 
  * @author Christopher Probst
  * 
@@ -44,10 +43,20 @@ public final class SceneGraph {
 	 */
 	private int width, height;
 
-	public List<Entity> find(String name) {
+	/*
+	 * The last timestamp.
+	 */
+	private long timestamp = -1;
+
+	public SceneGraph(int width, int height) {
+		setWidth(width);
+		setHeight(height);
+	}
+
+	public List<Entity> find(String id) {
 		List<Entity> query = null;
 		for (Layer layer : getLayers()) {
-			List<Entity> tmp = layer.find(name);
+			List<Entity> tmp = layer.find(id);
 			if (tmp != null) {
 				(query != null ? query : (query = new LinkedList<Entity>()))
 						.addAll(tmp);
@@ -100,6 +109,10 @@ public final class SceneGraph {
 	}
 
 	public void setHeight(int height) {
+		if (height <= 0) {
+			throw new IllegalArgumentException("height out of range");
+		}
+
 		this.height = height;
 	}
 
@@ -108,10 +121,33 @@ public final class SceneGraph {
 	}
 
 	public void setWidth(int width) {
+		if (width <= 0) {
+			throw new IllegalArgumentException("width out of range");
+		}
+
 		this.width = width;
 	}
 
-	public void updateLayers(float tpf) {
+	public void clearTimestamp() {
+		timestamp = -1;
+	}
+
+	public void updateLayers() {
+
+		// Get active time
+		long time = System.currentTimeMillis();
+
+		// Check for -1
+		if (timestamp == -1) {
+			timestamp = time;
+		}
+
+		// Convert to seconds
+		float tpf = (time - timestamp) * 0.001f;
+
+		// Save the last timestamp
+		timestamp = time;
+
 		// Get the iterator
 		Iterator<Layer> layers = getLayers().iterator();
 
@@ -132,7 +168,7 @@ public final class SceneGraph {
 		}
 	}
 
-	public void repaintLayers(Graphics g) {
+	public void repaintLayers(Graphics g, int dWidth, int dHeight) {
 		// Get the iterator
 		Iterator<Layer> layers = getLayers().iterator();
 
@@ -147,8 +183,28 @@ public final class SceneGraph {
 				// Remove from layers
 				layers.remove();
 			} else {
+
+				// Calc image ratio
+				float imRatio = getWidth() / (float) getHeight();
+
+				// Calc new dimension
+				float newWidth = dWidth, newHeight = dWidth / imRatio;
+
+				// Check height
+				if (newHeight > dHeight) {
+
+					// Recalc
+					newHeight = dHeight;
+					newWidth = imRatio * newHeight;
+				}
+
+				// Calc offset
+				int x = (int) (dWidth * 0.5f - newWidth * 0.5f);
+				int y = (int) (dHeight * 0.5f - newHeight * 0.5f);
+
 				// Manage, get and paint the volatile image
-				g.drawImage(layer.repaint(), 0, 0, null);
+				g.drawImage(layer.repaint(), x, y, (int) newWidth,
+						(int) newHeight, null);
 			}
 		}
 	}
