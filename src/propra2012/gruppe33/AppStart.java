@@ -1,20 +1,13 @@
 package propra2012.gruppe33;
 
-import java.awt.BasicStroke;
-import java.awt.Graphics;
-import java.awt.Graphics2D;
-import java.util.LinkedList;
-import java.util.List;
-import java.util.concurrent.Executors;
-import java.util.concurrent.ScheduledExecutorService;
-import java.util.concurrent.TimeUnit;
+import java.io.File;
+import java.io.IOException;
 
+import javax.imageio.ImageIO;
 import javax.swing.JFrame;
-import javax.swing.JPanel;
-import javax.swing.SwingUtilities;
 
-import propra2012.gruppe33.graphics.scenegraph.AnimatedEntity;
-import propra2012.gruppe33.graphics.scenegraph.Entity;
+import propra2012.gruppe33.graphics.rendering.JRenderer;
+import propra2012.gruppe33.graphics.rendering.scenegraph.entities.SolidBlocks;
 
 /**
  * 
@@ -22,117 +15,58 @@ import propra2012.gruppe33.graphics.scenegraph.Entity;
  */
 public class AppStart {
 
-	static final ScheduledExecutorService eee = Executors.newSingleThreadScheduledExecutor();
-	
 	/**
 	 * @param args
+	 * @throws IOException
 	 */
-	public static void main(String[] args) {
+	public static void main(String[] args) throws IOException {
 
-		final List<Entity> k = new LinkedList<Entity>();
-
-		for (int i = 0; i < 20; i++) {
-			for (int j = 0; j < 20; j++) {
-
-				AnimatedEntity e = new AnimatedEntity("first obj" + i + " " + j) {
-
-					@Override
-					public void render(Graphics2D g) {
-						// g.setStroke(new BasicStroke(4));
-						g.drawArc(-5, -5, 10, 10, 0, 360);
-						g.drawLine(0, 0, 0, 5);
-
-					}
-				};
-				e.getPosition().set(5 + 10 * i, 5 + 10 * j);
-
-				e.setRotationVelocity((float) (Math.PI * 2));
-
-				k.add(e);
-			}
-		}
-
-		final JPanel p = new JPanel() {
-			@Override
-			protected void paintComponent(Graphics g) {
-				super.paintComponent(g);
-
-				for (Entity et : k) {
-
-					et.update(0.1f);
-					Graphics2D c = (Graphics2D) g.create();
-
-					
-					c.translate(et.getPosition().x, et.getPosition().y);
-
-					c.rotate(et.getRotation());
-					et.render(c);
-					c.dispose();
-				}
-			}
-		};
-
-		final JFrame frame = new JFrame("JSceneGraph test");
-		
-		frame.getContentPane().add(p);
-		
-		// Update every 33 ms
-	
-		eee.scheduleAtFixedRate(
-				new Runnable() {
-
-					@Override
-					public void run() {
-
-						// Add repaint request
-						p.repaint();
-						
-					}
-				}, 0, 33, TimeUnit.MILLISECONDS);
-
-		frame.setSize(700, 700);
-		frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
-
-		frame.setVisible(true);
-
-		// JFrame frame = new JFrame("JSceneGraph test");
-		// frame.setSize(700, 700);
-		// frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+		final JRenderer renderer = new JRenderer(1000, 1000);
 		//
-		// final JSceneGraph graph = new JSceneGraph(1024, 1024);
+		// for (int i = 0; i < 15; i++) {
+		// for (int j = 0; j < 15; j++) {
 		//
-		// frame.getContentPane().add(graph);
-		//
-		// SwingUtilities.invokeLater(new Runnable() {
+		// AnimatedEntity e = new AnimatedEntity("first obj" + i + " " + j) {
 		//
 		// @Override
-		// public void run() {
-		// for (int i = 0; i < 10; i++) {
-		// for (int j = 0; j < 10; j++) {
-		//
-		// AnimatedEntity e = new AnimatedEntity("first obj" + i
-		// + " " + j) {
-		//
-		// @Override
-		// public void render(Graphics2D g) {
-		// g.setStroke(new BasicStroke(4));
-		// g.drawArc(-50, -50, 100, 100, 0, 360);
-		// g.drawLine(0, 0, 0, 50);
+		// public void doRender(Graphics2D g) {
+		// // g.setStroke(new BasicStroke(4));
+		// g.setColor(Color.black);
+		// g.drawArc(-10, -10, 20, 20, 0, 360);
+		// g.drawLine(0, 0, 0, 10);
 		//
 		// }
 		// };
-		// e.getPosition().set(50 + 100 * i, 50 + 100 * j);
+		// e.getPosition().set(10 + 20 * i, 10 + 20 * j);
 		//
-		// e.setRotationVelocity((float) (Math.PI * 2));
+		// e.setAngularVelocity((float) (Math.PI * 2));
 		//
-		// graph.getSceneGraph().getLayer("first").addEntity(e);
+		// renderer.getScene().attach(e);
 		// }
 		// }
-		//
-		// }
-		// });
-		//
-		// frame.setVisible(true);
+
+		char[][] map = new char[][] {
+
+				{ '1', '1', '1', '1', '1', '1', '1' },
+				{ '1', '0', '0', '0', '0', '0', '1' },
+				{ '1', '0', '1', '0', '1', '0', '1' },
+				{ '1', '0', '0', '0', '0', '0', '1' },
+				{ '1', '0', '1', '0', '1', '0', '1' },
+				{ '1', '0', '0', '0', '0', '0', '1' },
+				{ '1', '1', '1', '1', '1', '1', '1' }};
+
+		SolidBlocks sb = new SolidBlocks("test", ImageIO.read(new File(
+				"C:/box.png")), map, 1000/7, 1000/7);
+
+		renderer.getScene().attach(sb);
+
+		renderer.start();
+
+		JFrame frame = new JFrame();
+		frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+		frame.getContentPane().add(renderer);
+		frame.setSize(500, 500);
+		frame.setVisible(true);
 	}
 
 }

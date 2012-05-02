@@ -1,4 +1,4 @@
-package propra2012.gruppe33.graphics.scenegraph;
+package propra2012.gruppe33.graphics.rendering.scenegraph;
 
 public class AnimatedEntity extends Entity {
 
@@ -8,8 +8,8 @@ public class AnimatedEntity extends Entity {
 	// The velocity of this entity
 	private Vector2f velocity = Vector2f.zero();
 
-	// The rotation velocity of this entity
-	private float rotationVelocity = 0;
+	// The angular velocity of this entity
+	private float angularVelocity = 0;
 
 	public AnimatedEntity(String id) {
 		super(id);
@@ -25,12 +25,12 @@ public class AnimatedEntity extends Entity {
 		}
 	}
 
-	public float getRotationVelocity() {
-		return rotationVelocity;
+	public float getAngularVelocity() {
+		return angularVelocity;
 	}
 
-	public void setRotationVelocity(float rotationVelocity) {
-		this.rotationVelocity = rotationVelocity;
+	public void setAngularVelocity(float angularVelocity) {
+		this.angularVelocity = angularVelocity;
 	}
 
 	public Vector2f getVelocity() {
@@ -44,16 +44,13 @@ public class AnimatedEntity extends Entity {
 	}
 
 	@Override
-	public void update(float tpf) {
-		super.update(tpf);
+	protected void doUpdate(float tpf) {
+		super.doUpdate(tpf);
 
 		// Acc, Vel and Pos!
 		getPosition().addLocal(velocity.addLocal(acceleration.scale(tpf)));
 
 		// Rotation...
-		setRotation(getRotation() + getRotationVelocity() * tpf);
-		
-		// Request a repaint
-		requestRepaint();
+		setRotation(getRotation() + getAngularVelocity() * tpf);		
 	}
 }
