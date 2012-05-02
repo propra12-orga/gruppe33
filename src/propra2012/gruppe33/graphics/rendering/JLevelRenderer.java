@@ -9,6 +9,7 @@ import java.awt.event.FocusEvent;
 import javax.swing.JPanel;
 import javax.swing.Timer;
 
+import propra2012.gruppe33.graphics.rendering.level.Level;
 import propra2012.gruppe33.graphics.rendering.scenegraph.Scene;
 
 /**
@@ -16,7 +17,7 @@ import propra2012.gruppe33.graphics.rendering.scenegraph.Scene;
  * @author Christopher Probst
  * 
  */
-public class JRenderer extends JPanel implements ActionListener {
+public class JLevelRenderer extends JPanel implements ActionListener {
 
 	/**
 	 * 
@@ -26,15 +27,25 @@ public class JRenderer extends JPanel implements ActionListener {
 	// The root node of this renderer
 	private final Scene scene;
 
+	// The level of this renderer
+	private final Level level;
+
 	// The "repaint" timer - every 25 ms
 	private final Timer timer = new Timer(33, this);
 
 	// Time vars
 	private long timestamp = -1, minDelay = 20;
 
-	public JRenderer(int w, int h) {
+	public JLevelRenderer(Level level) {
+		if (level == null) {
+			throw new NullPointerException("level");
+		}
+
 		// Create a new scene
-		scene = new Scene("main_scene", w, h);
+		scene = new Scene("main_scene", level.getWidth(), level.getHeight());
+
+		// Save the level
+		this.level = level;
 
 		// Use scene as key listener
 		addKeyListener(scene);
@@ -54,6 +65,10 @@ public class JRenderer extends JPanel implements ActionListener {
 
 		// Focusable!
 		setFocusable(true);
+	}
+
+	public Level getLevel() {
+		return level;
 	}
 
 	public boolean start() {

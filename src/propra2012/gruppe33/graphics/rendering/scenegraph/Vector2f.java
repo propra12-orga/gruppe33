@@ -14,6 +14,8 @@ public class Vector2f implements Serializable {
 	 */
 	private static final long serialVersionUID = 1L;
 
+	public static final float kEpsilon = 1E-6f;
+
 	public Vector2f lerp(Vector2f start, Vector2f end, float t) {
 
 		// Clamp...
@@ -138,12 +140,15 @@ public class Vector2f implements Serializable {
 			return false;
 		}
 		Vector2f other = (Vector2f) obj;
-		if (Float.floatToIntBits(x) != Float.floatToIntBits(other.x)) {
+
+		if (Math.abs(x - other.x) > kEpsilon) {
 			return false;
 		}
-		if (Float.floatToIntBits(y) != Float.floatToIntBits(other.y)) {
+
+		if (Math.abs(y - other.y) > kEpsilon) {
 			return false;
 		}
+
 		return true;
 	}
 

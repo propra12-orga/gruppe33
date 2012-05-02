@@ -1,13 +1,16 @@
 package propra2012.gruppe33;
 
+import java.awt.image.BufferedImage;
 import java.io.File;
 import java.io.IOException;
 
 import javax.imageio.ImageIO;
 import javax.swing.JFrame;
 
-import propra2012.gruppe33.graphics.rendering.JRenderer;
-import propra2012.gruppe33.graphics.rendering.scenegraph.entities.SolidBlocks;
+import propra2012.gruppe33.graphics.rendering.JLevelRenderer;
+import propra2012.gruppe33.graphics.rendering.level.Level;
+import propra2012.gruppe33.graphics.rendering.scenegraph.entities.ImageEntity;
+import propra2012.gruppe33.graphics.rendering.scenegraph.entities.Player;
 
 /**
  * 
@@ -21,7 +24,6 @@ public class AppStart {
 	 */
 	public static void main(String[] args) throws IOException {
 
-		final JRenderer renderer = new JRenderer(1000, 1000);
 		//
 		// for (int i = 0; i < 15; i++) {
 		// for (int j = 0; j < 15; j++) {
@@ -47,18 +49,29 @@ public class AppStart {
 
 		char[][] map = new char[][] {
 
-				{ '1', '1', '1', '1', '1', '1', '1' },
+		{ '1', '1', '1', '1', '1', '1', '1' },
 				{ '1', '0', '0', '0', '0', '0', '1' },
 				{ '1', '0', '1', '0', '1', '0', '1' },
 				{ '1', '0', '0', '0', '0', '0', '1' },
 				{ '1', '0', '1', '0', '1', '0', '1' },
 				{ '1', '0', '0', '0', '0', '0', '1' },
-				{ '1', '1', '1', '1', '1', '1', '1' }};
+				{ '1', '1', '1', '1', '1', '1', '1' } };
 
-		SolidBlocks sb = new SolidBlocks("test", ImageIO.read(new File(
-				"C:/box.png")), map, 1000/7, 1000/7);
+		// Create level
+		Level level = new Level("standard", 1000, 1000, map);
 
-		renderer.getScene().attach(sb);
+		// Render solid blocks to image
+		BufferedImage solidBlocks = level.renderSolidBlocks(
+				ImageIO.read(new File("C:/box.png")), '1');
+
+		Player p = new Player("test2");
+
+		// Create new level renderer
+		final JLevelRenderer renderer = new JLevelRenderer(level);
+
+		// Attach solid blocks
+		renderer.getScene().attach(new ImageEntity("solid", solidBlocks));
+		renderer.getScene().attach(p);
 
 		renderer.start();
 
