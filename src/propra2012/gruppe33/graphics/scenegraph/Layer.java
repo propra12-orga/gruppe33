@@ -113,7 +113,7 @@ public final class Layer {
 			entityCopy.rotate(entity.getRotation());
 
 			// Render the entity
-//			entity.render(entityCopy);
+			entity.render(entityCopy);
 
 			// Dispose everything
 			entityCopy.dispose();

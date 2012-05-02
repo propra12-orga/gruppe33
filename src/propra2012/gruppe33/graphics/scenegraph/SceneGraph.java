@@ -208,16 +208,9 @@ public final class SceneGraph {
 				int x = (int) (dWidth * 0.5f - newWidth * 0.5f);
 				int y = (int) (dHeight * 0.5f - newHeight * 0.5f);
 
-				long d = System.currentTimeMillis();
-
 				// Manage, get and paint the volatile image
 				g2d.drawImage(layer.repaint(), x, y, (int) newWidth,
 						(int) newHeight, null);
-
-				d = System.currentTimeMillis() - d;
-
-				System.out.println(d);
-
 			}
 		}
 	}
