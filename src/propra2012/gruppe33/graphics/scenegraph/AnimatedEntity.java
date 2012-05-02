@@ -8,6 +8,9 @@ public class AnimatedEntity extends Entity {
 	// The velocity of this entity
 	private Vector2f velocity = Vector2f.zero();
 
+	// The rotation velocity of this entity
+	private float rotationVelocity = 0;
+
 	public AnimatedEntity(String id) {
 		super(id);
 	}
@@ -20,6 +23,14 @@ public class AnimatedEntity extends Entity {
 		if (acceleration != null) {
 			this.acceleration = acceleration;
 		}
+	}
+
+	public float getRotationVelocity() {
+		return rotationVelocity;
+	}
+
+	public void setRotationVelocity(float rotationVelocity) {
+		this.rotationVelocity = rotationVelocity;
 	}
 
 	public Vector2f getVelocity() {
@@ -38,7 +49,11 @@ public class AnimatedEntity extends Entity {
 
 		// Acc, Vel and Pos!
 		getPosition().addLocal(velocity.addLocal(acceleration.scale(tpf)));
+
+		// Rotation...
+		setRotation(getRotation() + getRotationVelocity() * tpf);
 		
-		getSceneGraph().getDirtyLayers().add(getLayer().getName());
+		// Request a repaint
+		requestRepaint();
 	}
 }

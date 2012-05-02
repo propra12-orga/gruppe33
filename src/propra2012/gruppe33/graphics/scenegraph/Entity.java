@@ -15,6 +15,11 @@ public class Entity {
 	private Vector2f position = Vector2f.zero();
 
 	/*
+	 * The rotation of this entity.
+	 */
+	private float rotation = 0;
+	
+	/*
 	 * The id of this entity.
 	 */
 	private final String id;
@@ -50,6 +55,14 @@ public class Entity {
 		} else {
 			return false;
 		}
+	}
+	
+	public float getRotation() {
+		return rotation;
+	}
+	
+	public void setRotation(float rotation) {
+		this.rotation = rotation;
 	}
 
 	public Vector2f getPosition() {

@@ -109,6 +109,9 @@ public final class Layer {
 			entityCopy
 					.translate(entity.getPosition().x, entity.getPosition().y);
 
+			// Rotate the entity
+			entityCopy.rotate(entity.getRotation());
+
 			// Render the entity
 			entity.render(entityCopy);
 

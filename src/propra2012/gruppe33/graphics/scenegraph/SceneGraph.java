@@ -171,6 +171,13 @@ public final class SceneGraph {
 		// Get the iterator
 		Iterator<Layer> layers = getLayers().iterator();
 
+		// Used 2D
+		Graphics2D g2d = (Graphics2D) g;
+
+		// Improve scaling
+		g2d.setRenderingHint(RenderingHints.KEY_INTERPOLATION,
+				RenderingHints.VALUE_INTERPOLATION_BILINEAR);
+
 		// For all layers...
 		while (layers.hasNext()) {
 
@@ -201,11 +208,6 @@ public final class SceneGraph {
 				int x = (int) (dWidth * 0.5f - newWidth * 0.5f);
 				int y = (int) (dHeight * 0.5f - newHeight * 0.5f);
 
-				// Used 2D
-				Graphics2D g2d = (Graphics2D) g;
-				
-				g2d.setRenderingHint(RenderingHints.KEY_INTERPOLATION, RenderingHints.VALUE_INTERPOLATION_BILINEAR);
-				
 				// Manage, get and paint the volatile image
 				g2d.drawImage(layer.repaint(), x, y, (int) newWidth,
 						(int) newHeight, null);

@@ -53,7 +53,7 @@ public class JSceneGraph extends JPanel {
 				// Add repaint request
 				repaint();
 			}
-		}, 0, 33, TimeUnit.MILLISECONDS);
+		}, 0, 20, TimeUnit.MILLISECONDS);
 	}
 
 	public SceneGraph getSceneGraph() {

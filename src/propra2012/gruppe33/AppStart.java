@@ -7,7 +7,6 @@ import javax.swing.JFrame;
 
 import propra2012.gruppe33.graphics.gui.JSceneGraph;
 import propra2012.gruppe33.graphics.scenegraph.AnimatedEntity;
-import propra2012.gruppe33.graphics.scenegraph.Entity;
 
 /**
  * 
@@ -33,11 +32,14 @@ public class AppStart {
 			@Override
 			public void render(Graphics2D g) {
 				g.setStroke(new BasicStroke(4));
-				g.drawArc(0, 0, 100, 100, 0, 360);
+				g.drawArc(-50, -50, 100, 100, 0, 360);
+				g.drawLine(0, 0, 0, 50);
+
 			}
 		};
 		e.getPosition().set(300, 300);
 		e.getAcceleration().x = 0.01f;
+		e.setRotationVelocity((float) (Math.PI * 2));
 
 		graph.getSceneGraph().getLayer("first").addEntity(e);
 
