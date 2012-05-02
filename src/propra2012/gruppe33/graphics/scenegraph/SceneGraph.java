@@ -1,9 +1,6 @@
 package propra2012.gruppe33.graphics.scenegraph;
 
-import java.awt.BasicStroke;
 import java.awt.Graphics;
-import java.awt.Graphics2D;
-import java.awt.RenderingHints;
 import java.util.Collection;
 import java.util.HashSet;
 import java.util.Iterator;

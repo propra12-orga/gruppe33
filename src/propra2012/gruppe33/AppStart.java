@@ -33,8 +33,6 @@ public class AppStart {
 			public void render(Graphics2D g) {
 				g.setStroke(new BasicStroke(4));
 				g.drawArc(0, 0, 100, 100, 0, 360);
-				
-				System.out.println("render");
 			}
 		};
 		e.getPosition().set(300, 300);
