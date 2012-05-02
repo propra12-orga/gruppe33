@@ -11,6 +11,7 @@ import propra2012.gruppe33.graphics.rendering.JLevelRenderer;
 import propra2012.gruppe33.graphics.rendering.level.Level;
 import propra2012.gruppe33.graphics.rendering.scenegraph.entities.ImageEntity;
 import propra2012.gruppe33.graphics.rendering.scenegraph.entities.Player;
+import propra2012.gruppe33.graphics.sprite.Sprite;
 
 /**
  * 
@@ -58,13 +59,22 @@ public class AppStart {
 				{ '1', '1', '1', '1', '1', '1', '1' } };
 
 		// Create level
-		Level level = new Level("standard", 1000, 1000, map);
+		Level level = new Level("standard", 1000, 1000,
+				Level.loadMap("C:/map.txt"));
 
 		// Render solid blocks to image
 		BufferedImage solidBlocks = level.renderSolidBlocks(
 				ImageIO.read(new File("C:/box.png")), '1');
 
-		Player p = new Player("test2");
+		Player p = new Player("test2", level);
+
+		Sprite spriteTest = new Sprite(ImageIO.read(new File("C:/sprite.png")),
+				6, 5);
+
+		p.getAnimations().addAnimation(
+				spriteTest.newAnimationFromRange("running", 10, 0, 0, 6 * 5));
+		p.getScale().scaleLocal(0.7f);
+		p.setActiveAnimation("running");
 
 		// Create new level renderer
 		final JLevelRenderer renderer = new JLevelRenderer(level);

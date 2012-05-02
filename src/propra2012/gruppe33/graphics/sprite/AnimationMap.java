@@ -41,6 +41,15 @@ public final class AnimationMap extends HashMap<String, Animation> {
 	}
 
 	public BufferedImage getImage(String name) {
-		return get(name).getAnimationImage();
+		Animation animation = get(name);
+		return animation != null ? animation.getAnimationImage() : null;
+	}
+
+	public Animation resetAnimation(String name) {
+		Animation animation = get(name);
+		if (animation != null) {
+			animation.resetAnimation();
+		}
+		return animation;
 	}
 }

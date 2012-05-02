@@ -6,6 +6,12 @@ import java.awt.GraphicsEnvironment;
 import java.awt.Point;
 import java.awt.Transparency;
 import java.awt.image.BufferedImage;
+import java.io.BufferedReader;
+import java.io.File;
+import java.io.FileReader;
+import java.io.IOException;
+import java.util.LinkedList;
+import java.util.List;
 
 /**
  * 
@@ -13,6 +19,29 @@ import java.awt.image.BufferedImage;
  * 
  */
 public class Level {
+
+	public static char[][] loadMap(String file) throws IOException {
+		BufferedReader reader = new BufferedReader(new FileReader(
+				new File(file)));
+		try {
+			List<String> lines = new LinkedList<String>();
+
+			String line;
+			while ((line = reader.readLine()) != null) {
+				lines.add(line);
+			}
+
+			char[][] arr = new char[lines.size()][lines.get(0).length()];
+			int i = 0;
+			for (String s : lines) {
+				arr[i++] = s.toCharArray();
+			}
+
+			return arr;
+		} finally {
+			reader.close();
+		}
+	}
 
 	/**
 	 * Creates a compatible image for rendering the solid blocks.
