@@ -51,8 +51,10 @@ public class Animation {
 		//If the animation is at the end the animation is resetted
 		if (animationStep >= images.size()) {
 			animationStep = 0;
+			
 		}
 
+		
 		//Return the image of the actual Animation Step
 		return images.get(animationStep);
 
