@@ -65,6 +65,16 @@ public class Vector2f {
 		return this;
 	}
 
+	public Vector2f scaleLocal(float scalar) {
+		x *= scalar;
+		y *= scalar;
+		return this;
+	}
+
+	public Vector2f scale(float scalar) {
+		return new Vector2f(this).scaleLocal(scalar);
+	}
+
 	public Vector2f add(Vector2f other) {
 		return new Vector2f(other).addLocal(this);
 	}

@@ -6,6 +6,7 @@ import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
 
 import javax.swing.JPanel;
+import javax.swing.SwingUtilities;
 
 import propra2012.gruppe33.graphics.scenegraph.SceneGraph;
 
@@ -40,6 +41,16 @@ public class JSceneGraph extends JPanel {
 
 			@Override
 			public void run() {
+				SwingUtilities.invokeLater(new Runnable() {
+
+					@Override
+					public void run() {
+						// Compute actions
+						sceneGraph.updateLayers();
+					}
+				});
+
+				// Add repaint request
 				repaint();
 			}
 		}, 0, 33, TimeUnit.MILLISECONDS);

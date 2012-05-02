@@ -92,6 +92,10 @@ public final class Layer {
 		// Create a copy
 		Graphics2D copy = (Graphics2D) g.create();
 
+		// Use anti-aliasing
+		copy.setRenderingHint(RenderingHints.KEY_ANTIALIASING,
+				RenderingHints.VALUE_ANTIALIAS_ON);
+
 		// Clear the image
 		copy.clearRect(0, 0, image.getWidth(), image.getHeight());
 
@@ -280,10 +284,6 @@ public final class Layer {
 
 				// Open graphics context
 				Graphics2D g2d = image.createGraphics();
-
-				// Use anti-aliasing
-				g2d.setRenderingHint(RenderingHints.KEY_ANTIALIASING,
-						RenderingHints.VALUE_ANTIALIAS_ON);
 
 				// Repaint the layer
 				repaint(g2d);

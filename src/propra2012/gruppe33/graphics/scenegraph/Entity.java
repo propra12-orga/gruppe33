@@ -42,6 +42,16 @@ public class Entity {
 		return layer;
 	}
 
+	public boolean requestRepaint() {
+		SceneGraph sg = getSceneGraph();
+		if (sg != null) {
+			sg.getDirtyLayers().add(getLayer().getName());
+			return true;
+		} else {
+			return false;
+		}
+	}
+
 	public Vector2f getPosition() {
 		return position;
 	}

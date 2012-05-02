@@ -1,6 +1,8 @@
 package propra2012.gruppe33.graphics.scenegraph;
 
 import java.awt.Graphics;
+import java.awt.Graphics2D;
+import java.awt.RenderingHints;
 import java.util.Collection;
 import java.util.HashSet;
 import java.util.Iterator;
@@ -199,8 +201,13 @@ public final class SceneGraph {
 				int x = (int) (dWidth * 0.5f - newWidth * 0.5f);
 				int y = (int) (dHeight * 0.5f - newHeight * 0.5f);
 
+				// Used 2D
+				Graphics2D g2d = (Graphics2D) g;
+				
+				g2d.setRenderingHint(RenderingHints.KEY_INTERPOLATION, RenderingHints.VALUE_INTERPOLATION_BILINEAR);
+				
 				// Manage, get and paint the volatile image
-				g.drawImage(layer.repaint(), x, y, (int) newWidth,
+				g2d.drawImage(layer.repaint(), x, y, (int) newWidth,
 						(int) newHeight, null);
 			}
 		}
