@@ -33,6 +33,7 @@ public class JSceneGraph extends JPanel {
 	 */
 	public JSceneGraph(int width, int height) {
 
+		
 		// Create scene graph
 		sceneGraph = new SceneGraph(width, height);
 

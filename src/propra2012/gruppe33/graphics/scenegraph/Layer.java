@@ -87,7 +87,7 @@ public final class Layer {
 		this.name = name;
 	}
 
-	protected void repaint(Graphics2D g) {
+	public void repaint(Graphics2D g) {
 
 		// Create a copy
 		Graphics2D copy = (Graphics2D) g.create();
@@ -113,7 +113,7 @@ public final class Layer {
 			entityCopy.rotate(entity.getRotation());
 
 			// Render the entity
-			entity.render(entityCopy);
+//			entity.render(entityCopy);
 
 			// Dispose everything
 			entityCopy.dispose();
