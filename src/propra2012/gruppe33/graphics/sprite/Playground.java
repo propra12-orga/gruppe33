@@ -10,63 +10,47 @@ import java.util.TimerTask;
 import javax.imageio.ImageIO;
 import javax.swing.JFrame;
 
-
-//Just my little Playground... You dont need to understand what happens here....
+/**
+ * Just my little Playground... You dont need to understand what happens
+ * here....
+ * 
+ * @author Matthias Hesse
+ * 
+ */
 public class Playground extends JFrame {
-	
-	private BufferedImage im;
-	private SpriteImpl spriteTest;
-	
-	private int i = 1;
-	
+
+	private AnimationMap am = new AnimationMap();
+	private Sprite spriteTest;
+
 	private Timer timer = new Timer();
-	
 
 	public Playground() throws Exception {
 
-		
-		spriteTest = new SpriteImpl();
-		spriteTest.setImage(ImageIO.read(new File("C:/char.png")), 8, 4);
-		
-		spriteTest.addAnimation("test", 100, new Point(0,0),new Point(1,0),new Point(2,0),new Point(3,0),new Point(4,0),new Point(5,0),new Point(6,0),new Point(7,0));
+		spriteTest = new Sprite(ImageIO.read(new File("C:/sprite.png")), 6, 5);
 
-		
+		am.addAnimation(spriteTest.newAnimationFromRange("running", 33, 0, 0,
+				6 * 5));
+
 		timer.schedule(new TimerTask() {
-			
+
 			@Override
 			public void run() {
 				repaint();
 			}
 		}, 0, 33);
 
-		
-		
-		
 		setVisible(true);
 	}
 
 	public void paint(Graphics g) {
 
 		super.paint(g);
-		
-		
-			g.drawImage(spriteTest.getImage("test"), 25, 25, null);
-		
-	
-		
-			
-		
-		
-		
+
+		g.drawImage(am.getImage("running"), 25, 25, null);
+
 	}
 
-
-	
-	public static void main(String[] args) throws Exception{
+	public static void main(String[] args) throws Exception {
 		Playground pg = new Playground();
-		
-		
-		
-		
 	}
 }
