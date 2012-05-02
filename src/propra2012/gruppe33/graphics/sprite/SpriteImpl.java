@@ -48,7 +48,8 @@ public class SpriteImpl implements Sprite {
 		int sizeYPlate = image.getHeight() / rasterY;
 		
 		//Creates the actual SubImage
-		BufferedImage subImage = image.getSubimage(rasterX*sizeXPlate, rasterY*sizeYPlate, sizeXPlate, sizeYPlate);
+		BufferedImage subImage = image.getSubimage(x*sizeXPlate, y*sizeYPlate, sizeXPlate, sizeYPlate);
+		
 		
 		//Retun the SubImage
 		return subImage;

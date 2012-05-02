@@ -17,6 +17,8 @@ public class Playground extends JFrame {
 	private BufferedImage im;
 	private SpriteImpl spriteTest;
 	
+	private int i = 1;
+	
 	private Timer timer = new Timer();
 	
 
@@ -26,7 +28,10 @@ public class Playground extends JFrame {
 		spriteTest = new SpriteImpl();
 		spriteTest.setImage(ImageIO.read(new File("C:/male.png")), 4, 4);
 		
-		spriteTest.addAnimation("test", 1000, new Point(0,0),new Point(1,0),new Point(2,0),new Point(3,0));
+		spriteTest.addAnimation("test", 500, new Point(0,0),new Point(1,0),new Point(2,0),new Point(3,0));
+		spriteTest.addAnimation("test2", 500, new Point(0,1),new Point(1,1),new Point(2,1),new Point(3,1));
+		spriteTest.addAnimation("test3", 500, new Point(0,2),new Point(1,2),new Point(2,2),new Point(3,2));
+		spriteTest.addAnimation("test4", 500, new Point(0,3),new Point(1,3),new Point(2,3),new Point(3,3));
 		
 		timer.schedule(new TimerTask() {
 			
@@ -45,8 +50,20 @@ public class Playground extends JFrame {
 	public void paint(Graphics g) {
 
 		super.paint(g);
-
-		g.drawImage(spriteTest.getImage("test"), 25, 25, null);
+		
+		
+			g.drawImage(spriteTest.getImage("test"), 25, 25, null);
+		
+	
+			g.drawImage(spriteTest.getImage("test2"), 55, 25, null);
+			
+			g.drawImage(spriteTest.getImage("test3"), 85, 25, null);
+			
+			g.drawImage(spriteTest.getImage("test4"), 115, 25, null);
+			
+		
+		
+		
 	}
 
 
