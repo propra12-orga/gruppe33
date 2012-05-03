@@ -150,7 +150,7 @@ public class Level {
 	public Vector2f gridToWorld(Point location) {
 		return gridToWorld(location.x, location.y);
 	}
-
+	
 	/**
 	 * Translates grid coords to world coords.
 	 * 
@@ -182,6 +182,11 @@ public class Level {
 
 		// Round and return new point
 		return new Point(Math.round(x), Math.round(y));
+	}
+	
+	public boolean canGoUpstream() {
+	
+		return false;
 	}
 
 	/**

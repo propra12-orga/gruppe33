@@ -51,9 +51,10 @@ public class AnimatedEntity extends Entity {
 		super.doUpdate(tpf);
 
 		// Acc, Vel and Pos!
-		getPosition().addLocal(velocity.addLocal(acceleration.scale(tpf)));
+		getPosition().addLocal(
+				velocity.addLocal(acceleration.scale(tpf)).scale(tpf));
 
 		// Rotation...
-		setRotation(getRotation() + getAngularVelocity() * tpf);		
+		setRotation(getRotation() + getAngularVelocity() * tpf);
 	}
 }
