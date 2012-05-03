@@ -37,14 +37,13 @@ public class AnimationMapEntity extends Entity {
 	}
 
 	@Override
-	protected void doRender(Graphics2D g) {
-		super.doRender(g);
-
+	protected void doRender(Graphics2D original, Graphics2D transformed) {
+		super.doRender(original, transformed);
 		// Try to get active image
 		BufferedImage image = animations.getImage(activeAnimation);
 
 		if (image != null) {
-			g.drawImage(image, 0, 0, null);
+			transformed.drawImage(image, 0, 0, null);
 		}
 	}
 }

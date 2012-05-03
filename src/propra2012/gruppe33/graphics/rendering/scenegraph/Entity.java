@@ -142,12 +142,16 @@ public class Entity {
 	 * This method gets called every frame to render this entity if the visible
 	 * flag is set to true.
 	 * 
-	 * @param graphics
-	 *            The graphics 2d context you can render to. The entity has
-	 *            already applied transformation, so the context origin is your
+	 * @param original
+	 *            A graphics context you can render to. There is no
+	 *            transformation applied yet.
+	 * @param transformed
+	 *            A graphics context you can render to. The entity has already
+	 *            applied transformation, so the context origin is your
 	 *            position.
+	 * 
 	 */
-	protected void doRender(Graphics2D graphics) {
+	protected void doRender(Graphics2D original, Graphics2D transformed) {
 
 	}
 
@@ -490,29 +494,45 @@ public class Entity {
 	 * Transforms and renders this entity and all children. This method uses the
 	 * visible/childrenVisible flags to determine what to render.
 	 * 
-	 * @param graphics
-	 *            The graphics context you want to render to.
+	 * @param original
+	 *            The graphics context which is NOT affected by entity
+	 *            transformation.
+	 * @param transformed
+	 *            The graphics context which is affected by entity
+	 *            transformation.
+	 * 
 	 */
-	public final void render(Graphics2D graphics) {
-		// Create a copy of the graphics and transform
-		Graphics2D copy = transform((Graphics2D) graphics.create());
+	public final void render(Graphics2D original, Graphics2D transformed) {
+
+		// Create a copy the original graphics
+		Graphics2D originalCopy = (Graphics2D) original.create();
+
 		try {
 
-			if (visible) {
-				// Render this entity
-				doRender(copy);
-			}
+			// Create a copy of the transformed graphics and transform again
+			Graphics2D transformedCopy = transform((Graphics2D) transformed
+					.create());
+			try {
 
-			if (childrenVisible) {
-				// Render all children
-				for (Entity child : getCache()) {
-					// Just render
-					child.render(copy);
+				if (visible) {
+					// Render this entity
+					doRender(originalCopy, transformedCopy);
 				}
+
+				if (childrenVisible) {
+					// Render all children
+					for (Entity child : getCache()) {
+						// Just render
+						child.render(originalCopy, transformedCopy);
+					}
+				}
+			} finally {
+				// Dispose the transformed copy
+				transformedCopy.dispose();
 			}
 		} finally {
-			// Dispose the graphics
-			copy.dispose();
+			// Dispose the original copy
+			originalCopy.dispose();
 		}
 	}
 }

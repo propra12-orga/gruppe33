@@ -119,16 +119,29 @@ public class Level {
 			g.setBackground(new Color(0, 0, 0, 0));
 			g.clearRect(0, 0, width, height);
 
+			// Calc float values
+			float rw = getRasterWidth(), rh = getRasterHeight();
+
 			for (int x = 0; x < rasterX; x++) {
 				for (int y = 0; y < rasterY; y++) {
 
 					// Select and check for solid char
 					if (mapData[y][x] == solidChar) {
 
-						// Render the sub image
-						g.drawImage(solidTile, x * getRasterWidth(), y
-								* getRasterHeight(), getRasterWidth(),
-								getRasterHeight(), null);
+						// Create a simple copy
+						Graphics2D copy = (Graphics2D) g.create();
+						try {
+							// At first translate
+							copy.translate(x * rw, y * rh);
+
+							// Scale
+							copy.scale(rw, rh);
+
+							// Render the sub image
+							copy.drawImage(solidTile, 0, 0, 1, 1, null);
+						} finally {
+							copy.dispose();
+						}
 					}
 				}
 			}
@@ -150,7 +163,7 @@ public class Level {
 	public Vector2f gridToWorld(Point location) {
 		return gridToWorld(location.x, location.y);
 	}
-	
+
 	/**
 	 * Translates grid coords to world coords.
 	 * 
@@ -166,7 +179,7 @@ public class Level {
 	}
 
 	/**
-	 * Translates world cords to the nearest grid coords.
+	 * Translates world coords to the nearest grid coords.
 	 * 
 	 * @param position
 	 *            The world position you want to translate.
@@ -174,7 +187,7 @@ public class Level {
 	 */
 	public Point worldToNearestGrid(Vector2f position) {
 		// Calc rw and rh
-		int rw = getRasterWidth(), rh = getRasterHeight();
+		float rw = getRasterWidth(), rh = getRasterHeight();
 
 		// Calc new x and y
 		float x = (position.x - rw * 0.5f) / rw, y = (position.y - rh * 0.5f)
@@ -183,10 +196,29 @@ public class Level {
 		// Round and return new point
 		return new Point(Math.round(x), Math.round(y));
 	}
-	
-	public boolean canGoUpstream() {
-	
-		return false;
+
+	/**
+	 * Validates a points against the valid range.
+	 * 
+	 * @param point
+	 *            The point you want to validate.
+	 * @return the same point if point is valid, otherwise null.
+	 */
+	public Point validate(Point point) {
+		return validate(point.x, point.y) ? point : null;
+	}
+
+	/**
+	 * Validates a points against the valid range.
+	 * 
+	 * @param x
+	 *            The x component you want to validate.
+	 * @param y
+	 *            The y component you want to validate.
+	 * @return true if point is valid, otherwise false.
+	 */
+	public boolean validate(int x, int y) {
+		return x < rasterX && x >= 0 && y < rasterY && y >= 0 ? true : false;
 	}
 
 	/**
@@ -355,8 +387,8 @@ public class Level {
 	 * 
 	 * @return the raster width.
 	 */
-	public int getRasterWidth() {
-		return width / rasterX;
+	public float getRasterWidth() {
+		return width / (float) rasterX;
 	}
 
 	/**
@@ -370,8 +402,8 @@ public class Level {
 	 * 
 	 * @return the raster height.
 	 */
-	public int getRasterHeight() {
-		return height / rasterY;
+	public float getRasterHeight() {
+		return height / (float) rasterY;
 	}
 
 	/**

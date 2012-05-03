@@ -60,14 +60,14 @@ public class AppStart {
 				ImageIO.read(new File("C:/box.png")), '1');
 
 		Player p = new Player("test2", level);
-
+		p.setPosition(level.gridToWorld(1, 1));
 		Sprite spriteTest = new Sprite(ImageIO.read(new File("C:/sprite.png")),
 				6, 5);
 
-		p.getAnimations().addAnimation(
-				spriteTest.newAnimationFromRange("running", 10, 0, 0, 6 * 5));
-		p.getScale().scaleLocal(0.7f);
-		p.setActiveAnimation("running");
+//		p.getAnimations().addAnimation(
+//				spriteTest.newAnimationFromRange("running", 10, 0, 0, 6 * 5));
+		//p.getScale().scaleLocal(0.7f);
+//		p.setActiveAnimation("running");
 
 		// Create new level renderer
 		final JLevelRenderer renderer = new JLevelRenderer(level);

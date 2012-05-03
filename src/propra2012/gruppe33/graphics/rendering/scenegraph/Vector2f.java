@@ -239,6 +239,39 @@ public class Vector2f implements Serializable {
 		return result;
 	}
 
+	/**
+	 * @param v
+	 *            The value you want to compare with the x component.
+	 * @param threshold
+	 * @return true if |x-v| is smaller than the given threshold, otherwise
+	 *         false.
+	 */
+	public boolean xThreshold(float v, float threshold) {
+		return Math.abs(x - v) < Math.abs(threshold);
+	}
+
+	/**
+	 * @param v
+	 *            The value you want to compare with the y component.
+	 * @param threshold
+	 * @return true if |y-v| is smaller than the given threshold, otherwise
+	 *         false.
+	 */
+	public boolean yThreshold(float v, float threshold) {
+		return Math.abs(y - v) < Math.abs(threshold);
+	}
+
+	/**
+	 * @param other
+	 *            The vector you want to compare with this vector.
+	 * @param threshold
+	 * @return true if xThreshold and yThreshold succeeds, otherwise false.
+	 */
+	public boolean threshold(Vector2f other, Vector2f threshold) {
+		return xThreshold(other.x, threshold.x)
+				&& yThreshold(other.y, threshold.y);
+	}
+
 	/*
 	 * (non-Javadoc)
 	 * 
@@ -257,11 +290,11 @@ public class Vector2f implements Serializable {
 		}
 		Vector2f other = (Vector2f) obj;
 
-		if (Math.abs(x - other.x) > kEpsilon) {
+		if (!xThreshold(other.x, kEpsilon)) {
 			return false;
 		}
 
-		if (Math.abs(y - other.y) > kEpsilon) {
+		if (!yThreshold(other.y, kEpsilon)) {
 			return false;
 		}
 

@@ -224,6 +224,6 @@ public class Scene extends Entity implements KeyListener {
 		g2d.clearRect(0, 0, this.width, this.height);
 
 		// Finally render
-		render(g2d);
+		render(g2d, g2d);
 	}
 }

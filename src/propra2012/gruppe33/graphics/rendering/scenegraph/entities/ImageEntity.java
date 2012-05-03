@@ -33,11 +33,11 @@ public class ImageEntity extends Entity {
 	}
 
 	@Override
-	protected void doRender(Graphics2D g) {
-		super.doRender(g);
+	protected void doRender(Graphics2D original, Graphics2D transformed) {
+		super.doRender(original, transformed);
 
 		if (image != null) {
-			g.drawImage(image, 0, 0, null);
+			transformed.drawImage(image, 0, 0, null);
 		}
 	}
 }
