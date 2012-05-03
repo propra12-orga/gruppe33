@@ -13,6 +13,11 @@ import propra2012.gruppe33.graphics.rendering.level.Level;
 import propra2012.gruppe33.graphics.rendering.scenegraph.Scene;
 
 /**
+ * A naiv approach to render a game. A JPanel is not very performant but it
+ * should fit the needs since the game represents a simple task.
+ * 
+ * Basically this class renders every 33ms the game but never more often than
+ * once in 20ms. This reduces overhead while resizing.
  * 
  * @author Christopher Probst
  * 
@@ -36,6 +41,12 @@ public class JLevelRenderer extends JPanel implements ActionListener {
 	// Time vars
 	private long timestamp = -1, minDelay = 20;
 
+	/**
+	 * Creates a new level renderer using the given level.
+	 * 
+	 * @param level
+	 *            The level which you want to render.
+	 */
 	public JLevelRenderer(Level level) {
 		if (level == null) {
 			throw new NullPointerException("level");
@@ -67,10 +78,18 @@ public class JLevelRenderer extends JPanel implements ActionListener {
 		setFocusable(true);
 	}
 
+	/**
+	 * @return the level.
+	 */
 	public Level getLevel() {
 		return level;
 	}
 
+	/**
+	 * Starts the level renderer (the animated rendereing).
+	 * 
+	 * @return true if the start was successful, otherwise false.
+	 */
 	public boolean start() {
 		if (timer.isRunning()) {
 			return false;
@@ -84,6 +103,11 @@ public class JLevelRenderer extends JPanel implements ActionListener {
 		}
 	}
 
+	/**
+	 * Stops the level renderer (the animated rendereing).
+	 * 
+	 * @return true if the stop was successful, otherwise false.
+	 */
 	public boolean stop() {
 		if (!timer.isRunning()) {
 			return false;
@@ -99,10 +123,19 @@ public class JLevelRenderer extends JPanel implements ActionListener {
 		}
 	}
 
+	/**
+	 * @return the scene.
+	 */
 	public Scene getScene() {
 		return scene;
 	}
 
+	/*
+	 * (non-Javadoc)
+	 * 
+	 * @see
+	 * java.awt.event.ActionListener#actionPerformed(java.awt.event.ActionEvent)
+	 */
 	@Override
 	public void actionPerformed(ActionEvent e) {
 
@@ -110,6 +143,11 @@ public class JLevelRenderer extends JPanel implements ActionListener {
 		repaint();
 	}
 
+	/*
+	 * (non-Javadoc)
+	 * 
+	 * @see javax.swing.JComponent#paintComponent(java.awt.Graphics)
+	 */
 	@Override
 	protected void paintComponent(Graphics g) {
 		super.paintComponent(g);
