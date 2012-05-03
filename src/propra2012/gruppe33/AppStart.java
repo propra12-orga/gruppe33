@@ -9,6 +9,7 @@ import javax.swing.JFrame;
 
 import propra2012.gruppe33.graphics.rendering.JLevelRenderer;
 import propra2012.gruppe33.graphics.rendering.level.Level;
+import propra2012.gruppe33.graphics.rendering.scenegraph.Vector2f;
 import propra2012.gruppe33.graphics.rendering.scenegraph.entities.ImageEntity;
 import propra2012.gruppe33.graphics.rendering.scenegraph.entities.Player;
 import propra2012.gruppe33.graphics.sprite.Sprite;
@@ -48,19 +49,11 @@ public class AppStart {
 		// }
 		// }
 
-		char[][] map = new char[][] {
-
-		{ '1', '1', '1', '1', '1', '1', '1' },
-				{ '1', '0', '0', '0', '0', '0', '1' },
-				{ '1', '0', '1', '0', '1', '0', '1' },
-				{ '1', '0', '0', '0', '0', '0', '1' },
-				{ '1', '0', '1', '0', '1', '0', '1' },
-				{ '1', '0', '0', '0', '0', '0', '1' },
-				{ '1', '1', '1', '1', '1', '1', '1' } };
-
 		// Create level
 		Level level = new Level("standard", 1000, 1000,
 				Level.loadMap("C:/map.txt"));
+
+	
 
 		// Render solid blocks to image
 		BufferedImage solidBlocks = level.renderSolidBlocks(

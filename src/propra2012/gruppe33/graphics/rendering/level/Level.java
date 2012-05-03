@@ -13,6 +13,8 @@ import java.io.IOException;
 import java.util.LinkedList;
 import java.util.List;
 
+import propra2012.gruppe33.graphics.rendering.scenegraph.Vector2f;
+
 /**
  * This class represents a level. It contains a name, char[][] array and some
  * other features.
@@ -136,6 +138,50 @@ public class Level {
 			// Dispose the rendering context
 			g.dispose();
 		}
+	}
+
+	/**
+	 * Translates grid coords to world coords.
+	 * 
+	 * @param location
+	 *            The location in the array.
+	 * @return a new vector containing the world coords.
+	 */
+	public Vector2f gridToWorld(Point location) {
+		return gridToWorld(location.x, location.y);
+	}
+
+	/**
+	 * Translates grid coords to world coords.
+	 * 
+	 * @param x
+	 *            The column in the array.
+	 * @param y
+	 *            The row in the array.
+	 * @return a new vector containing the world coords.
+	 */
+	public Vector2f gridToWorld(int x, int y) {
+		return new Vector2f(getRasterWidth() * (x + 0.5f), getRasterHeight()
+				* (y + 0.5f));
+	}
+
+	/**
+	 * Translates world cords to the nearest grid coords.
+	 * 
+	 * @param position
+	 *            The world position you want to translate.
+	 * @return a new point containing the nearest grid coords.
+	 */
+	public Point worldToNearestGrid(Vector2f position) {
+		// Calc rw and rh
+		int rw = getRasterWidth(), rh = getRasterHeight();
+
+		// Calc new x and y
+		float x = (position.x - rw * 0.5f) / rw, y = (position.y - rh * 0.5f)
+				/ rh;
+
+		// Round and return new point
+		return new Point(Math.round(x), Math.round(y));
 	}
 
 	/**
