@@ -3,9 +3,11 @@ package propra2012.gruppe33.graphics.rendering.scenegraph;
 import java.io.Serializable;
 
 /**
+ * This is a simple 2d vector implementation. It contains the most basic
+ * features.
  * 
  * @author Christopher Probst
- * 
+ * @see Entity
  */
 public class Vector2f implements Serializable {
 
@@ -14,8 +16,25 @@ public class Vector2f implements Serializable {
 	 */
 	private static final long serialVersionUID = 1L;
 
+	/**
+	 * Used to compare floats with a given threshold.
+	 */
 	public static final float kEpsilon = 1E-6f;
 
+	/**
+	 * Lerps two vectors (Linear interpolation). This means you provide two
+	 * vectors (start, end) and a float between 0 and 1. This method calculates
+	 * a new vector which is between start and end using the given float value.
+	 * 0 = start und 1 = end.
+	 * 
+	 * @param start
+	 *            The start vector.
+	 * @param end
+	 *            The end vector
+	 * @param t
+	 *            A float value between 0 and 1.
+	 * @return a vector which is lerped between start and end.
+	 */
 	public Vector2f lerp(Vector2f start, Vector2f end, float t) {
 
 		// Clamp...
@@ -29,82 +48,179 @@ public class Vector2f implements Serializable {
 		return start.add(end.sub(start).scale(t));
 	}
 
+	/**
+	 * @return a new vector initialized with 0,0
+	 */
 	public static Vector2f zero() {
 		return new Vector2f();
 	}
 
+	/**
+	 * @return a new vector initialized with 0,1
+	 */
 	public static Vector2f forward() {
 		return new Vector2f(0, 1);
 	}
 
+	/**
+	 * @return a new vector initialized with 1,0
+	 */
 	public static Vector2f right() {
 		return new Vector2f(1, 0);
 	}
 
+	/**
+	 * @return a new vector initialized with -1,0
+	 */
 	public static Vector2f left() {
 		return new Vector2f(-1, 0);
 	}
 
+	/**
+	 * @return a new vector initialized with 0,-1
+	 */
 	public static Vector2f back() {
 		return new Vector2f(0, -1);
 	}
 
+	/*
+	 * The x and y components of this vector.
+	 */
 	public float x, y;
 
+	/**
+	 * Creates a copy of a given vector.
+	 * 
+	 * @param other
+	 *            The vector you want to clone.
+	 */
 	public Vector2f(Vector2f other) {
 		this(other.x, other.y);
 	}
 
+	/**
+	 * Creates a new vector with 0,0.
+	 */
 	public Vector2f() {
 		this(0, 0);
 	}
 
+	/**
+	 * Creates a new vector using the given values.
+	 * 
+	 * @param x
+	 *            The x component of the new vector.
+	 * @param y
+	 *            The y component of the new vector.
+	 */
 	public Vector2f(float x, float y) {
 		this.x = x;
 		this.y = y;
 	}
 
+	/**
+	 * Sets the components of this vector.
+	 * 
+	 * @param x
+	 *            The x component of this vector.
+	 * @param y
+	 *            The y component of this vector.
+	 * @return this.
+	 */
 	public Vector2f set(float x, float y) {
 		this.x = x;
 		this.y = y;
 		return this;
 	}
 
+	/**
+	 * @return the length of this vector.
+	 */
 	public float length() {
 		return (float) Math.sqrt(x * x + y * y);
 	}
 
+	/**
+	 * Sets this vector to 0,0.
+	 * 
+	 * @return this.
+	 */
 	public Vector2f setZero() {
 		x = y = 0;
 		return this;
 	}
 
+	/**
+	 * Adds an other vector to this vector.
+	 * 
+	 * @param other
+	 *            The vector you want to add to this.
+	 * @return this.
+	 */
 	public Vector2f addLocal(Vector2f other) {
 		x += other.x;
 		y += other.y;
 		return this;
 	}
 
+	/**
+	 * Subtracts an other from this vector.
+	 * 
+	 * @param other
+	 *            The vector you want to subtract.
+	 * @return this.
+	 */
 	public Vector2f subLocal(Vector2f other) {
 		x -= other.x;
 		y -= other.y;
 		return this;
 	}
 
+	/**
+	 * Scales this vector by multiplying it with a scalar.
+	 * 
+	 * @param scalar
+	 *            The scale factor.
+	 * @return this.
+	 */
 	public Vector2f scaleLocal(float scalar) {
 		x *= scalar;
 		y *= scalar;
 		return this;
 	}
 
+	/**
+	 * Multiplies this vector with a scalar and returns a new vector which
+	 * contains the result.
+	 * 
+	 * @param scalar
+	 *            The scale factor.
+	 * @return a new result vector.
+	 */
 	public Vector2f scale(float scalar) {
 		return new Vector2f(this).scaleLocal(scalar);
 	}
 
+	/**
+	 * Adds this vector with an other vector and returns a new vector which
+	 * contains the result.
+	 * 
+	 * @param other
+	 *            The vector you want to add.
+	 * @return a new result vector.
+	 */
 	public Vector2f add(Vector2f other) {
 		return new Vector2f(other).addLocal(this);
 	}
 
+	/**
+	 * Substracts an other vector from this vector and returns a new vector
+	 * which contains the result.
+	 * 
+	 * @param other
+	 *            The vector you want to subtract.
+	 * @return a new result vector.
+	 */
 	public Vector2f sub(Vector2f other) {
 		return new Vector2f(other).subLocal(this);
 	}
@@ -152,6 +268,11 @@ public class Vector2f implements Serializable {
 		return true;
 	}
 
+	/*
+	 * (non-Javadoc)
+	 * 
+	 * @see java.lang.Object#toString()
+	 */
 	@Override
 	public String toString() {
 		return "Vector2f[x = " + x + ", y = " + y + "]";

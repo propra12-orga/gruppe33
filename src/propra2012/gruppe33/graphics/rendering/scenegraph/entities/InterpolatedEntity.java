@@ -1,4 +1,6 @@
-package propra2012.gruppe33.graphics.rendering.scenegraph;
+package propra2012.gruppe33.graphics.rendering.scenegraph.entities;
+
+import propra2012.gruppe33.graphics.rendering.scenegraph.Entity;
 
 /**
  * 
