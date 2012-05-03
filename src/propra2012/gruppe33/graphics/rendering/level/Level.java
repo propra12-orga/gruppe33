@@ -14,12 +14,18 @@ import java.util.LinkedList;
 import java.util.List;
 
 /**
+ * This class represents a level. It contains a name, char[][] array and some
+ * other features.
  * 
  * @author Christopher Probst
- * 
  */
 public class Level {
 
+	/**
+	 * Loads a level.
+	 * 
+	 * @deprecated ONLY USEED FOR TEST PURPOSES.
+	 */
 	public static char[][] loadMap(String file) throws IOException {
 		BufferedReader reader = new BufferedReader(new FileReader(
 				new File(file)));
@@ -46,14 +52,16 @@ public class Level {
 	/**
 	 * Creates a compatible image for rendering the solid blocks.
 	 * 
-	 * @param w
-	 * @param h
-	 * @return
+	 * @param width
+	 *            The height of the image.
+	 * @param height
+	 *            The width of the image.
+	 * @return a screen compatible image.
 	 */
-	public static BufferedImage createSolidBlockImage(int w, int h) {
+	public static BufferedImage createSolidBlockImage(int width, int height) {
 		return GraphicsEnvironment.getLocalGraphicsEnvironment()
 				.getDefaultScreenDevice().getDefaultConfiguration()
-				.createCompatibleImage(w, h, Transparency.BITMASK);
+				.createCompatibleImage(width, height, Transparency.BITMASK);
 	}
 
 	// The name of the map
@@ -65,6 +73,18 @@ public class Level {
 	// The map raster data
 	private int width, height, rasterX, rasterY;
 
+	/**
+	 * Creates a new level using the given parameters.
+	 * 
+	 * @param name
+	 *            The name of the level.
+	 * @param width
+	 *            The width of the level viewport.
+	 * @param height
+	 *            The height of the level viewport.
+	 * @param mapData
+	 *            The char[][] array which contains the map data.
+	 */
 	public Level(String name, int width, int height, char[][] mapData) {
 		setName(name);
 		setWidth(width);
@@ -72,6 +92,17 @@ public class Level {
 		setMapData(mapData);
 	}
 
+	/**
+	 * Creates an image for fast rendering which contains all solid blocks using
+	 * the char[][] map data.
+	 * 
+	 * @param solidTile
+	 *            The image which is used to render a solid block.
+	 * @param solidChar
+	 *            The char which represents a solid block.
+	 * @return a compatible, transparent and rendered image with all solid
+	 *         blocks.
+	 */
 	public BufferedImage renderSolidBlocks(BufferedImage solidTile,
 			char solidChar) {
 		// Create new image
@@ -107,18 +138,58 @@ public class Level {
 		}
 	}
 
+	/**
+	 * 
+	 * @param location
+	 *            The location in the array.
+	 * @return the char at the specified location.
+	 */
+	public char at(Point location) {
+		return at(location.x, location.y);
+	}
+
+	/**
+	 * @param x
+	 *            The column in the array.
+	 * @param y
+	 *            The row in the array.
+	 * @return the char at the specified location.
+	 */
 	public char at(int x, int y) {
 		return mapData[y][x];
 	}
 
+	/**
+	 * @param find
+	 *            The char you want to find.
+	 * @return a point containing the first location of the char.
+	 */
 	public Point find(char find) {
 		return find(find, 0, 0);
 	}
 
+	/**
+	 * 
+	 * @param find
+	 *            The char you want to find.
+	 * @param after
+	 *            The point after which the search should start.
+	 * @return a point containg the first location of the char.
+	 */
 	public Point find(char find, Point after) {
 		return find(find, after.x, after.y);
 	}
 
+	/**
+	 * 
+	 * @param find
+	 *            The char you want to find.
+	 * @param afterX
+	 *            The column after which the search should start.
+	 * @param afterY
+	 *            The row after which the search should start.
+	 * @return a point containg the first location of the char.
+	 */
 	public Point find(char find, int afterX, int afterY) {
 		for (int x = afterX; x < rasterX; x++) {
 			for (int y = afterY; y < rasterY; y++) {
@@ -133,13 +204,18 @@ public class Level {
 	}
 
 	/**
-	 * 
-	 * @return the name
+	 * @return the name.
 	 */
 	public String getName() {
 		return name;
 	}
 
+	/**
+	 * Sets the name. Must be non null.
+	 * 
+	 * @param name
+	 *            The new name of the level.
+	 */
 	public void setName(String name) {
 		if (name == null) {
 			throw new NullPointerException("name cannot be null");
@@ -147,6 +223,12 @@ public class Level {
 		this.name = name;
 	}
 
+	/**
+	 * Sets the viewport width of the level.
+	 * 
+	 * @param width
+	 *            The new viewport width.
+	 */
 	public void setWidth(int width) {
 		if (width <= 0) {
 			throw new IllegalArgumentException("width must be > 0");
@@ -154,6 +236,12 @@ public class Level {
 		this.width = width;
 	}
 
+	/**
+	 * Sets the viewport height of the level.
+	 * 
+	 * @param height
+	 *            The new viewport height-
+	 */
 	public void setHeight(int height) {
 		if (height <= 0) {
 			throw new IllegalArgumentException("height must be > 0");
@@ -163,8 +251,7 @@ public class Level {
 	}
 
 	/**
-	 * 
-	 * @return the map data
+	 * @return the map data.
 	 */
 	public char[][] getMapData() {
 		return mapData;
@@ -174,6 +261,7 @@ public class Level {
 	 * Sets the map data and verifies the format.
 	 * 
 	 * @param mapData
+	 *            The new char[][] map data you want to use.
 	 */
 	public void setMapData(char[][] mapData) {
 		if (mapData == null) {
@@ -206,7 +294,7 @@ public class Level {
 	}
 
 	/**
-	 * @return the width
+	 * @return the width.
 	 */
 	public int getWidth() {
 		return width;
@@ -214,14 +302,14 @@ public class Level {
 
 	/**
 	 * 
-	 * @return the raster width
+	 * @return the raster width.
 	 */
 	public int getRasterWidth() {
 		return width / rasterX;
 	}
 
 	/**
-	 * @return the height
+	 * @return the height.
 	 */
 	public int getHeight() {
 		return height;
@@ -229,21 +317,21 @@ public class Level {
 
 	/**
 	 * 
-	 * @return the raster height
+	 * @return the raster height.
 	 */
 	public int getRasterHeight() {
 		return height / rasterY;
 	}
 
 	/**
-	 * @return the rasterX
+	 * @return the rasterX.
 	 */
 	public int getRasterX() {
 		return rasterX;
 	}
 
 	/**
-	 * @return the rasterY
+	 * @return the rasterY.
 	 */
 	public int getRasterY() {
 		return rasterY;
