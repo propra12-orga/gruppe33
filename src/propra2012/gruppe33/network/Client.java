@@ -6,6 +6,12 @@ import java.io.IOException;
 import java.net.Socket;
 import java.util.LinkedList;
 
+/**
+ * 
+ * @author Matthias Hesse
+ *
+ */
+
 public class Client implements Runnable {
 
 	private final Socket s;
@@ -14,6 +20,8 @@ public class Client implements Runnable {
 	private final boolean isServerSide;
 	private final LinkedList<Client> clients;
 	private String name;
+	
+	
 
 	public Client(Socket s, String name, boolean ser, LinkedList<Client> clients)
 			throws IOException {

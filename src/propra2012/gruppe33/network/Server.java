@@ -10,6 +10,12 @@ import java.util.LinkedList;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
+/**
+ * 
+ * @author Matthias Hesse
+ *
+ */
+
 public class Server implements Runnable {
 
 	private final ServerSocket s;

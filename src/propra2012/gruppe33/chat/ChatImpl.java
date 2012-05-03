@@ -8,7 +8,11 @@ import java.net.UnknownHostException;
 
 import propra2012.gruppe33.network.Client;
 
-
+/**
+ * 
+ * @author Matthias Hesse
+ *
+ */
 public class ChatImpl   {
 	
 	private Client test;
