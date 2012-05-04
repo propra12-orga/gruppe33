@@ -86,14 +86,19 @@ public class Entity implements EntityController {
 	private final Map<Class<? extends EntityController>, EntityController> controllers = new LinkedHashMap<Class<? extends EntityController>, EntityController>();
 
 	/*
+	 * Used to cache controller iterations.
+	 */
+	private List<EntityController> controllerCache = null;
+
+	/*
 	 * Maps names to entities.
 	 */
 	private final Map<String, List<Entity>> names2Entities = new HashMap<String, List<Entity>>();
 
 	/*
-	 * Used to cache iterations.
+	 * Used to cache entity iterations.
 	 */
-	private List<Entity> cache = null;
+	private List<Entity> entityCache = null;
 
 	/*
 	 * Tells whether or not this entity and/or its children are visible.
@@ -124,6 +129,23 @@ public class Entity implements EntityController {
 	}
 
 	/**
+	 * Returns a cached list which contains all controllers. If it does not
+	 * exist yet it will be created.
+	 * 
+	 * IMPORTANT:
+	 * 
+	 * You can iterate over the controllers and remove them from this entity
+	 * while iterating since this method returns a different list.
+	 * 
+	 * @return a list which contains all controllers.
+	 */
+	private List<EntityController> getControllerCache() {
+		return controllerCache != null ? controllerCache
+				: (controllerCache = new ArrayList<EntityController>(
+						controllers.values()));
+	}
+
+	/**
 	 * Returns a cached list which contains all children. If it does not exist
 	 * yet it will be created.
 	 * 
@@ -134,9 +156,9 @@ public class Entity implements EntityController {
 	 * 
 	 * @return a list which contains all children.
 	 */
-	private List<Entity> getCache() {
-		return cache != null ? cache
-				: (cache = new ArrayList<Entity>(children));
+	private List<Entity> getEntityCache() {
+		return entityCache != null ? entityCache
+				: (entityCache = new ArrayList<Entity>(children));
 	}
 
 	/**
@@ -166,6 +188,10 @@ public class Entity implements EntityController {
 		if (controller == null) {
 			throw new NullPointerException("controller");
 		}
+
+		// Adding works always...
+		controllerCache = null;
+
 		return (T) controllers.put(controller.getClass(), controller);
 	}
 
@@ -182,7 +208,16 @@ public class Entity implements EntityController {
 		if (controllerClass == null) {
 			throw new NullPointerException("controllerClass");
 		}
-		return (T) controllers.remove(controllerClass);
+
+		// Try to remove
+		T result = (T) controllers.remove(controllerClass);
+
+		// Check for null
+		if (result != null) {
+			controllerCache = null;
+		}
+
+		return result;
 	}
 
 	/**
@@ -205,6 +240,7 @@ public class Entity implements EntityController {
 	 */
 	public void clearControllers() {
 		controllers.clear();
+		controllerCache = null;
 	}
 
 	/**
@@ -279,7 +315,7 @@ public class Entity implements EntityController {
 	 * Detaches all children from this entity.
 	 */
 	public void detachAll() {
-		for (Entity child : getCache()) {
+		for (Entity child : getEntityCache()) {
 			detach(child);
 		}
 	}
@@ -371,7 +407,7 @@ public class Entity implements EntityController {
 			list.add(child);
 
 			// Cache is invalid now
-			cache = null;
+			entityCache = null;
 			return true;
 		} else {
 			return false;
@@ -420,7 +456,7 @@ public class Entity implements EntityController {
 			}
 
 			// Cache is invalid now
-			cache = null;
+			entityCache = null;
 			return true;
 		} else {
 			return false;
@@ -577,15 +613,14 @@ public class Entity implements EntityController {
 
 		// Check controllers
 		if (!controllers.isEmpty()) {
-			for (EntityController controller : new ArrayList<EntityController>(
-					controllers.values())) {
+			for (EntityController controller : getControllerCache()) {
 				// Update the controller
 				controller.doUpdate(this, tpf);
 			}
 		}
 
 		// Update all children
-		for (Entity child : getCache()) {
+		for (Entity child : getEntityCache()) {
 			// Just update
 			child.update(tpf);
 		}
@@ -657,8 +692,7 @@ public class Entity implements EntityController {
 
 					// Check controllers
 					if (!controllers.isEmpty()) {
-						for (EntityController controller : new ArrayList<EntityController>(
-								controllers.values())) {
+						for (EntityController controller : getControllerCache()) {
 							// Render the controller
 							controller.doRender(this, originalCopy,
 									transformedCopy);
@@ -668,7 +702,7 @@ public class Entity implements EntityController {
 
 				if (childrenVisible) {
 					// Render all children
-					for (Entity child : getCache()) {
+					for (Entity child : getEntityCache()) {
 						// Just render
 						child.render(originalCopy, transformedCopy);
 					}
