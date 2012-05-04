@@ -1,4 +1,4 @@
-package propra2012.gruppe33.graphics.rendering.level;
+package propra2012.gruppe33.graphics.rendering.scenegraph.scenes;
 
 import java.awt.Color;
 import java.awt.Graphics2D;
@@ -15,22 +15,60 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.Set;
 
+import propra2012.gruppe33.graphics.rendering.scenegraph.Scene;
 import propra2012.gruppe33.graphics.rendering.scenegraph.Vector2f;
 
 /**
- * This class represents a level. It contains a name, char[][] array and some
+ * This class represents a grid scene. It contains a char[][] array and some
  * other features.
  * 
  * @author Christopher Probst
  */
-public class Level {
+public class Grid extends Scene {
 
 	/**
-	 * Loads a level.
+	 * Validates a map.
+	 * 
+	 * @param mapData
+	 *            The char[][] map data you want to validate.
+	 * @return the same array which was passed.
+	 */
+	public static char[][] validateMapData(char[][] mapData) {
+		if (mapData == null) {
+			throw new NullPointerException("mapData cannot be null");
+		} else if (mapData.length == 0) {
+			throw new IllegalArgumentException(
+					"mapData does not contain any rows");
+		} else if (mapData[0].length == 0) {
+			throw new IllegalArgumentException(
+					"mapData does not contain any columns");
+		}
+
+		/*
+		 * Since all rows must have the same length we can use the first length
+		 * to compare the remaining rows. A row which has a different length
+		 * will cause an error.
+		 */
+		int rowLength = mapData[0].length;
+
+		// Check map data
+		for (int i = 1; i < mapData.length; i++) {
+			if (mapData[i].length != rowLength) {
+				throw new IllegalArgumentException("Invalid map data. "
+						+ "Every row must have the same length.");
+			}
+		}
+
+		// Return the array...
+		return mapData;
+	}
+
+	/**
+	 * Loads a grid.
 	 * 
 	 * @deprecated ONLY USED FOR TEST PURPOSES.
 	 */
-	public static char[][] loadMap(String file) throws IOException {
+	public static char[][] loadGrid(String file) throws IOException {
 		BufferedReader reader = new BufferedReader(new FileReader(
 				new File(file)));
 		try {
@@ -68,17 +106,17 @@ public class Level {
 				.createCompatibleImage(width, height, Transparency.BITMASK);
 	}
 
-	// The name of the map
-	private String name;
-
 	// The map data
-	private char[][] mapData;
+	private final char[][] mapData;
 
-	// The map raster data
-	private int width, height, rasterX, rasterY;
+	// The map raster
+	private final int rasterX, rasterY;
+
+	// The raster width & height
+	private float rasterWidth, rasterHeight;
 
 	/**
-	 * Creates a new level using the given parameters.
+	 * Creates a new grid using the given parameters.
 	 * 
 	 * @param name
 	 *            The name of the level.
@@ -89,11 +127,19 @@ public class Level {
 	 * @param mapData
 	 *            The char[][] array which contains the map data.
 	 */
-	public Level(String name, int width, int height, char[][] mapData) {
-		setName(name);
-		setWidth(width);
-		setHeight(height);
-		setMapData(mapData);
+	public Grid(String name, int width, int height, char[][] mapData) {
+		super(name, width, height);
+
+		// Validate the map data
+		this.mapData = validateMapData(mapData);
+
+		// Set raster x and y
+		rasterY = mapData.length;
+		rasterX = mapData[0].length;
+
+		// Update the raster dimensions
+		rasterWidth = width / (float) rasterX;
+		rasterHeight = height / (float) rasterY;
 	}
 
 	/**
@@ -130,7 +176,8 @@ public class Level {
 	public BufferedImage renderSolidBlocks(BufferedImage solidTile,
 			Set<Character> solidChars) {
 		// Create new image
-		BufferedImage renderedImage = createSolidBlockImage(width, height);
+		BufferedImage renderedImage = createSolidBlockImage(getWidth(),
+				getHeight());
 
 		// Open rendering context
 		Graphics2D g = renderedImage.createGraphics();
@@ -139,10 +186,7 @@ public class Level {
 
 			// Clear with trans
 			g.setBackground(new Color(0, 0, 0, 0));
-			g.clearRect(0, 0, width, height);
-
-			// Calc float values
-			float rw = getRasterWidth(), rh = getRasterHeight();
+			g.clearRect(0, 0, getWidth(), getHeight());
 
 			for (int x = 0; x < rasterX; x++) {
 				for (int y = 0; y < rasterY; y++) {
@@ -154,10 +198,10 @@ public class Level {
 						Graphics2D copy = (Graphics2D) g.create();
 						try {
 							// At first translate
-							copy.translate(x * rw, y * rh);
+							copy.translate(x * rasterWidth, y * rasterHeight);
 
 							// Scale
-							copy.scale(rw, rh);
+							copy.scale(rasterWidth, rasterHeight);
 
 							// Render the sub image
 							copy.drawImage(solidTile, 0, 0, 1, 1, null);
@@ -196,8 +240,7 @@ public class Level {
 	 * @return a new vector containing the world coords.
 	 */
 	public Vector2f gridToWorld(int x, int y) {
-		return new Vector2f(getRasterWidth() * (x + 0.5f), getRasterHeight()
-				* (y + 0.5f));
+		return new Vector2f(rasterWidth * (x + 0.5f), rasterHeight * (y + 0.5f));
 	}
 
 	/**
@@ -208,12 +251,9 @@ public class Level {
 	 * @return a new point containing the nearest grid coords.
 	 */
 	public Point worldToNearestGrid(Vector2f position) {
-		// Calc rw and rh
-		float rw = getRasterWidth(), rh = getRasterHeight();
-
 		// Calc new x and y
-		float x = (position.x - rw * 0.5f) / rw, y = (position.y - rh * 0.5f)
-				/ rh;
+		float x = (position.x - rasterWidth * 0.5f) / rasterWidth, y = (position.y - rasterHeight * 0.5f)
+				/ rasterHeight;
 
 		// Round and return new point
 		return new Point(Math.round(x), Math.round(y));
@@ -308,51 +348,32 @@ public class Level {
 		return null;
 	}
 
-	/**
-	 * @return the name.
-	 */
-	public String getName() {
-		return name;
-	}
-
-	/**
-	 * Sets the name. Must be non null.
+	/*
+	 * (non-Javadoc)
 	 * 
-	 * @param name
-	 *            The new name of the level.
+	 * @see
+	 * propra2012.gruppe33.graphics.rendering.scenegraph.Scene#setWidth(int)
 	 */
-	public void setName(String name) {
-		if (name == null) {
-			throw new NullPointerException("name cannot be null");
-		}
-		this.name = name;
-	}
-
-	/**
-	 * Sets the viewport width of the level.
-	 * 
-	 * @param width
-	 *            The new viewport width.
-	 */
+	@Override
 	public void setWidth(int width) {
-		if (width <= 0) {
-			throw new IllegalArgumentException("width must be > 0");
-		}
-		this.width = width;
+		super.setWidth(width);
+
+		// Calc the raster width
+		rasterWidth = width / (float) rasterX;
 	}
 
-	/**
-	 * Sets the viewport height of the level.
+	/*
+	 * (non-Javadoc)
 	 * 
-	 * @param height
-	 *            The new viewport height-
+	 * @see
+	 * propra2012.gruppe33.graphics.rendering.scenegraph.Scene#setHeight(int)
 	 */
+	@Override
 	public void setHeight(int height) {
-		if (height <= 0) {
-			throw new IllegalArgumentException("height must be > 0");
-		}
+		super.setHeight(height);
 
-		this.height = height;
+		// Calc the raster height
+		rasterHeight = height / (float) rasterY;
 	}
 
 	/**
@@ -363,61 +384,11 @@ public class Level {
 	}
 
 	/**
-	 * Sets the map data and verifies the format.
-	 * 
-	 * @param mapData
-	 *            The new char[][] map data you want to use.
-	 */
-	public void setMapData(char[][] mapData) {
-		if (mapData == null) {
-			throw new NullPointerException("mapData cannot be null");
-		} else if (mapData.length == 0) {
-			throw new NullPointerException("mapData does not contain any rows");
-		}
-
-		/*
-		 * Since all rows must have the same length we can use the first length
-		 * to compare the remaining rows. A row which has a different length
-		 * will cause an error.
-		 */
-		int rowLength = mapData[0].length;
-
-		// Check map data
-		for (int i = 1; i < mapData.length; i++) {
-			if (mapData[i].length != rowLength) {
-				throw new IllegalArgumentException("Invalid map data. "
-						+ "Every row must have the same length.");
-			}
-		}
-
-		// Set raster x and y
-		rasterY = mapData.length;
-		rasterX = rowLength;
-
-		// Finally safe
-		this.mapData = mapData;
-	}
-
-	/**
-	 * @return the width.
-	 */
-	public int getWidth() {
-		return width;
-	}
-
-	/**
 	 * 
 	 * @return the raster width.
 	 */
 	public float getRasterWidth() {
-		return width / (float) rasterX;
-	}
-
-	/**
-	 * @return the height.
-	 */
-	public int getHeight() {
-		return height;
+		return rasterWidth;
 	}
 
 	/**
@@ -425,7 +396,7 @@ public class Level {
 	 * @return the raster height.
 	 */
 	public float getRasterHeight() {
-		return height / (float) rasterY;
+		return rasterHeight;
 	}
 
 	/**

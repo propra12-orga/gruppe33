@@ -9,7 +9,6 @@ import java.awt.event.FocusEvent;
 import javax.swing.JPanel;
 import javax.swing.Timer;
 
-import propra2012.gruppe33.graphics.rendering.level.Level;
 import propra2012.gruppe33.graphics.rendering.scenegraph.Scene;
 
 /**
@@ -22,7 +21,8 @@ import propra2012.gruppe33.graphics.rendering.scenegraph.Scene;
  * @author Christopher Probst
  * 
  */
-public class JLevelRenderer extends JPanel implements ActionListener {
+public class JSceneRenderer<S extends Scene> extends JPanel implements
+		ActionListener {
 
 	/**
 	 * 
@@ -30,47 +30,41 @@ public class JLevelRenderer extends JPanel implements ActionListener {
 	private static final long serialVersionUID = 1L;
 
 	// The root node of this renderer
-	private final Scene scene;
+	private final S root;
 
-	// The level of this renderer
-	private final Level level;
-
-	// The "repaint" timer - every 25 ms
+	// The "repaint" timer
 	private final Timer timer = new Timer(33, this);
 
 	// Time vars
 	private long timestamp = -1, minDelay = 20;
 
 	/**
-	 * Creates a new level renderer using the given level.
+	 * Creates a new scene renderer using the given scene.
 	 * 
-	 * @param level
-	 *            The level which you want to render.
+	 * @param root
+	 *            The root scene which you want to render.
 	 */
-	public JLevelRenderer(Level level) {
-		if (level == null) {
-			throw new NullPointerException("level");
+	public JSceneRenderer(S root) {
+		if (root == null) {
+			throw new NullPointerException("root");
 		}
 
-		// Create a new scene
-		scene = new Scene("main_scene", level.getWidth(), level.getHeight());
+		// Save the root
+		this.root = root;
 
-		// Save the level
-		this.level = level;
-
-		// Use scene as key listener
-		addKeyListener(scene);
+		// Use root as key listener
+		addKeyListener(root);
 
 		/*
 		 * IMPORTANT:
 		 * 
-		 * Clear the keyboard status if we lost tehe focus
+		 * Clear the keyboard status if we lost the focus.
 		 */
 		addFocusListener(new FocusAdapter() {
 
 			@Override
 			public void focusLost(FocusEvent e) {
-				scene.clearKeyboardState();
+				JSceneRenderer.this.root.clearKeyboardState();
 			}
 		});
 
@@ -79,14 +73,14 @@ public class JLevelRenderer extends JPanel implements ActionListener {
 	}
 
 	/**
-	 * @return the level.
+	 * @return the root scene.
 	 */
-	public Level getLevel() {
-		return level;
+	public S getRoot() {
+		return root;
 	}
 
 	/**
-	 * Starts the level renderer (the animated rendereing).
+	 * Starts the renderer (the animated rendereing).
 	 * 
 	 * @return true if the start was successful, otherwise false.
 	 */
@@ -104,7 +98,7 @@ public class JLevelRenderer extends JPanel implements ActionListener {
 	}
 
 	/**
-	 * Stops the level renderer (the animated rendereing).
+	 * Stops the renderer (the animated rendereing).
 	 * 
 	 * @return true if the stop was successful, otherwise false.
 	 */
@@ -121,13 +115,6 @@ public class JLevelRenderer extends JPanel implements ActionListener {
 			// Everything ok
 			return true;
 		}
-	}
-
-	/**
-	 * @return the scene.
-	 */
-	public Scene getScene() {
-		return scene;
 	}
 
 	/*
@@ -161,7 +148,7 @@ public class JLevelRenderer extends JPanel implements ActionListener {
 		}
 
 		// Render the root node
-		scene.simulate(g, getWidth(), getHeight(), delay);
+		root.simulate(g, getWidth(), getHeight(), delay);
 
 		// Reset
 		timestamp = time;

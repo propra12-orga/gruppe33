@@ -25,11 +25,28 @@ import java.util.Map;
  */
 public class Scene extends Entity implements KeyListener {
 
+	// Default values
+	public static final int DEFAULT_WIDTH = 1024, DEFAULT_HEIGHT = 1024;
+
 	// The keyboard state which is used to process the input
 	private Map<Integer, Boolean> keyboardState = new HashMap<Integer, Boolean>();
 
 	// The width and height of the scene
 	private int width, height;
+
+	// The ratio of this entity
+	private float ratio;
+
+	/**
+	 * Create a new scene.
+	 * 
+	 * @param name
+	 *            The name of the scene.
+	 */
+	public Scene(String name) {
+		// Default init
+		this(name, DEFAULT_WIDTH, DEFAULT_HEIGHT);
+	}
 
 	/**
 	 * Creates a new scene.
@@ -100,7 +117,7 @@ public class Scene extends Entity implements KeyListener {
 	 * @return the x-y ratio as float.
 	 */
 	public float getRatio() {
-		return width / (float) height;
+		return ratio;
 	}
 
 	/**
@@ -122,6 +139,9 @@ public class Scene extends Entity implements KeyListener {
 		}
 
 		this.width = width;
+
+		// Calc new ratio
+		ratio = width / (float) height;
 	}
 
 	/**
@@ -143,6 +163,9 @@ public class Scene extends Entity implements KeyListener {
 		}
 
 		this.height = height;
+
+		// Calc new ratio
+		ratio = width / (float) height;
 	}
 
 	/**

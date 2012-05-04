@@ -1,6 +1,5 @@
 package propra2012.gruppe33;
 
-import java.awt.Point;
 import java.awt.image.BufferedImage;
 import java.io.File;
 import java.io.IOException;
@@ -8,12 +7,9 @@ import java.io.IOException;
 import javax.imageio.ImageIO;
 import javax.swing.JFrame;
 
-import propra2012.gruppe33.graphics.rendering.JLevelRenderer;
-import propra2012.gruppe33.graphics.rendering.level.Level;
-import propra2012.gruppe33.graphics.rendering.scenegraph.Vector2f;
+import propra2012.gruppe33.graphics.rendering.JGridRenderer;
 import propra2012.gruppe33.graphics.rendering.scenegraph.entities.ImageEntity;
-import propra2012.gruppe33.graphics.rendering.scenegraph.entities.Player;
-import propra2012.gruppe33.graphics.sprite.Sprite;
+import propra2012.gruppe33.graphics.rendering.scenegraph.scenes.Grid;
 
 /**
  * 
@@ -50,31 +46,31 @@ public class AppStart {
 		// }
 		// }
 
-		// Create level
-		Level level = new Level("standard", 1000, 600,
-				Level.loadMap("C:/map.txt"));
-
+		// Create grid
+		Grid grid = new Grid("standard", 1000, 600, Grid.loadGrid("C:/map.txt"));
 
 		// Render solid blocks to image
-		BufferedImage solidBlocks = level.renderSolidBlocks(
+		BufferedImage solidBlocks = grid.renderSolidBlocks(
 				ImageIO.read(new File("C:/box.png")), '1');
 
-		Player p = new Player("test2", level);
 		
-//		Sprite spriteTest = new Sprite(ImageIO.read(new File("C:/sprite.png")),
-//				6, 5);
+		// Player p = new Player("test2");
 
-//		p.getAnimations().addAnimation(
-//				spriteTest.newAnimationFromRange("running", 10, 0, 0, 6 * 5));
-		//p.getScale().scaleLocal(0.7f);
-//		p.setActiveAnimation("running");
+		// Sprite spriteTest = new Sprite(ImageIO.read(new
+		// File("C:/sprite.png")),
+		// 6, 5);
+
+		// p.getAnimations().addAnimation(
+		// spriteTest.newAnimationFromRange("running", 10, 0, 0, 6 * 5));
+		// p.getScale().scaleLocal(0.7f);
+		// p.setActiveAnimation("running");
 
 		// Create new level renderer
-		final JLevelRenderer renderer = new JLevelRenderer(level);
+		final JGridRenderer renderer = new JGridRenderer(grid);
 
 		// Attach solid blocks
-		renderer.getScene().attach(new ImageEntity("solid", solidBlocks));
-		renderer.getScene().attach(p);
+		renderer.getRoot().attach(new ImageEntity("solid", solidBlocks));
+		// renderer.getRoot().attach(p);
 
 		renderer.start();
 
