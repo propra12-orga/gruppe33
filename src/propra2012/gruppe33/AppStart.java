@@ -13,7 +13,7 @@ import javax.swing.JFrame;
 import propra2012.gruppe33.graphics.rendering.JGridRenderer;
 import propra2012.gruppe33.graphics.rendering.scenegraph.Entity;
 import propra2012.gruppe33.graphics.rendering.scenegraph.Picture;
-import propra2012.gruppe33.graphics.rendering.scenegraph.scenes.Grid;
+import propra2012.gruppe33.graphics.rendering.scenegraph.extscenes.Grid;
 
 /**
  * 
@@ -51,7 +51,8 @@ public class AppStart {
 		// }
 
 		// Create grid
-		Grid grid = new Grid("standard", 1000, 600, Grid.loadGrid("C:/map.txt"));
+		Grid grid = new Grid("standard", 2000, 1200,
+				Grid.loadGrid("C:/map.txt"));
 
 		// Render solid blocks to image
 		// BufferedImage solidBlocks = grid.renderSolidBlocks(
@@ -60,15 +61,8 @@ public class AppStart {
 		Map<Character, BufferedImage> map = new HashMap<Character, BufferedImage>();
 		map.put('1', ImageIO.read(new File("C:/box.png")));
 
-		Entity solid = grid.bundle("solid", map);
-
-		Picture ie = new Picture("solid_prerendered", grid.getWidth(),
-				grid.getHeight(), Transparency.BITMASK);
-
-		ie.getScale().set(grid.getWidth(), grid.getHeight());
-		ie.getPosition().set(grid.getWidth() / 2, grid.getHeight() / 2);
-
-		solid.render(ie.getImage());
+		// Bundle render to picture
+		Picture solid = grid.bundleAndRender("solid", map);
 
 		// Player p = new Player("test2");
 
@@ -86,7 +80,6 @@ public class AppStart {
 
 		// Attach solid blocks
 		renderer.getRoot().attach(solid);
-		// renderer.getRoot().attach(p);
 
 		renderer.start();
 

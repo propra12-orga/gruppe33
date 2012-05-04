@@ -1,4 +1,4 @@
-package propra2012.gruppe33.graphics.rendering.scenegraph.scenes;
+package propra2012.gruppe33.graphics.rendering.scenegraph.extscenes;
 
 import java.awt.GraphicsEnvironment;
 import java.awt.Point;
@@ -180,6 +180,37 @@ public class Grid extends Scene {
 		}
 
 		return root;
+	}
+
+	/**
+	 * Basically iterates over the map data and bundles proper chars which you
+	 * can specify to images and renders them into a picture for fast rendering.
+	 * 
+	 * @param name
+	 *            The name of the new root entity.
+	 * @param chars2Images
+	 *            The map where you can define which image belongs to which
+	 *            char.
+	 * @return a picture which contains a rendered image with all bundled
+	 *         images.
+	 */
+	public Picture bundleAndRender(String name,
+			Map<Character, BufferedImage> chars2Images) {
+
+		// Create a new picture
+		Picture pic = new Picture(name, getWidth(), getHeight(),
+				Transparency.BITMASK);
+
+		// Set position
+		pic.getPosition().set(getWidth() * 0.5f, getHeight() * 0.5f);
+
+		// Adjust scale
+		pic.getScale().set(getWidth(), getHeight());
+
+		// Render the entity to an image
+		bundle(name, chars2Images).render(pic.getImage());
+
+		return pic;
 	}
 
 	/**

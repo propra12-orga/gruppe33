@@ -2,7 +2,6 @@ package propra2012.gruppe33.graphics.rendering;
 
 import java.awt.Graphics;
 import java.awt.Graphics2D;
-import java.awt.RenderingHints;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.FocusAdapter;
@@ -49,10 +48,6 @@ public class JSceneRenderer<S extends Scene> extends JPanel implements
 	 *            The graphics context you want to set up.
 	 */
 	protected void setupGraphics(Graphics2D graphics) {
-		// Apply graphics settings here!
-		graphics.setRenderingHint(RenderingHints.KEY_INTERPOLATION,
-				RenderingHints.VALUE_INTERPOLATION_BILINEAR);
-
 	}
 
 	/**

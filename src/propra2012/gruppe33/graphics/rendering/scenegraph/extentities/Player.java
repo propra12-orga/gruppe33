@@ -1,4 +1,4 @@
-package propra2012.gruppe33.graphics.rendering.scenegraph.entities;
+package propra2012.gruppe33.graphics.rendering.scenegraph.extentities;
 
 import java.awt.Point;
 

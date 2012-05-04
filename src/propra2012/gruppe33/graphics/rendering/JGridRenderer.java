@@ -1,6 +1,6 @@
 package propra2012.gruppe33.graphics.rendering;
 
-import propra2012.gruppe33.graphics.rendering.scenegraph.scenes.Grid;
+import propra2012.gruppe33.graphics.rendering.scenegraph.extscenes.Grid;
 
 public class JGridRenderer extends JSceneRenderer<Grid> {
 
