@@ -10,8 +10,10 @@ import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileReader;
 import java.io.IOException;
+import java.util.HashSet;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.Set;
 
 import propra2012.gruppe33.graphics.rendering.scenegraph.Vector2f;
 
@@ -100,13 +102,33 @@ public class Level {
 	 * 
 	 * @param solidTile
 	 *            The image which is used to render a solid block.
-	 * @param solidChar
-	 *            The char which represents a solid block.
+	 * @param solidChars
+	 *            The chars which represent a solid block.
 	 * @return a compatible, transparent and rendered image with all solid
 	 *         blocks.
 	 */
 	public BufferedImage renderSolidBlocks(BufferedImage solidTile,
-			char solidChar) {
+			char... solidChars) {
+		Set<Character> set = new HashSet<Character>();
+		for (char solidChar : solidChars) {
+			set.add(solidChar);
+		}
+		return renderSolidBlocks(solidTile, set);
+	}
+
+	/**
+	 * Creates an image for fast rendering which contains all solid blocks using
+	 * the char[][] map data.
+	 * 
+	 * @param solidTile
+	 *            The image which is used to render a solid block.
+	 * @param solidChars
+	 *            The chars which represent a solid block.
+	 * @return a compatible, transparent and rendered image with all solid
+	 *         blocks.
+	 */
+	public BufferedImage renderSolidBlocks(BufferedImage solidTile,
+			Set<Character> solidChars) {
 		// Create new image
 		BufferedImage renderedImage = createSolidBlockImage(width, height);
 
@@ -126,7 +148,7 @@ public class Level {
 				for (int y = 0; y < rasterY; y++) {
 
 					// Select and check for solid char
-					if (mapData[y][x] == solidChar) {
+					if (solidChars.contains(mapData[y][x])) {
 
 						// Create a simple copy
 						Graphics2D copy = (Graphics2D) g.create();
