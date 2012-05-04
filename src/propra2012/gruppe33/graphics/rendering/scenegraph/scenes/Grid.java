@@ -13,9 +13,9 @@ import java.util.List;
 import java.util.Map;
 
 import propra2012.gruppe33.graphics.rendering.scenegraph.Entity;
+import propra2012.gruppe33.graphics.rendering.scenegraph.Picture;
 import propra2012.gruppe33.graphics.rendering.scenegraph.Scene;
 import propra2012.gruppe33.graphics.rendering.scenegraph.Vector2f;
-import propra2012.gruppe33.graphics.rendering.scenegraph.entities.ImageEntity;
 
 /**
  * This class represents a grid scene. It contains a char[][] array and some
@@ -165,16 +165,16 @@ public class Grid extends Scene {
 				if (tile != null) {
 
 					// Create image entity
-					ImageEntity ie = new ImageEntity(x + ", " + y, tile);
+					Picture pic = new Picture(x + ", " + y, tile);
 
 					// At first translate
-					ie.setPosition(gridToWorld(x, y));
+					pic.setPosition(gridToWorld(x, y));
 
 					// Scale
-					ie.getScale().set(rasterWidth, rasterHeight);
+					pic.getScale().set(rasterWidth, rasterHeight);
 
 					// Attach to root
-					root.attach(ie);
+					root.attach(pic);
 				}
 			}
 		}

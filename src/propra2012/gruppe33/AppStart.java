@@ -12,7 +12,7 @@ import javax.swing.JFrame;
 
 import propra2012.gruppe33.graphics.rendering.JGridRenderer;
 import propra2012.gruppe33.graphics.rendering.scenegraph.Entity;
-import propra2012.gruppe33.graphics.rendering.scenegraph.entities.ImageEntity;
+import propra2012.gruppe33.graphics.rendering.scenegraph.Picture;
 import propra2012.gruppe33.graphics.rendering.scenegraph.scenes.Grid;
 
 /**
@@ -62,7 +62,7 @@ public class AppStart {
 
 		Entity solid = grid.bundle("solid", map);
 
-		ImageEntity ie = new ImageEntity("solid_prerendered", grid.getWidth(),
+		Picture ie = new Picture("solid_prerendered", grid.getWidth(),
 				grid.getHeight(), Transparency.BITMASK);
 
 		ie.getScale().set(grid.getWidth(), grid.getHeight());
