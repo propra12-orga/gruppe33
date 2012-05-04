@@ -1,7 +1,5 @@
 package propra2012.gruppe33.graphics.rendering.scenegraph.scenes;
 
-import java.awt.Color;
-import java.awt.Graphics2D;
 import java.awt.GraphicsEnvironment;
 import java.awt.Point;
 import java.awt.Transparency;
@@ -10,13 +8,14 @@ import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileReader;
 import java.io.IOException;
-import java.util.HashSet;
 import java.util.LinkedList;
 import java.util.List;
-import java.util.Set;
+import java.util.Map;
 
+import propra2012.gruppe33.graphics.rendering.scenegraph.Entity;
 import propra2012.gruppe33.graphics.rendering.scenegraph.Scene;
 import propra2012.gruppe33.graphics.rendering.scenegraph.Vector2f;
+import propra2012.gruppe33.graphics.rendering.scenegraph.entities.ImageEntity;
 
 /**
  * This class represents a grid scene. It contains a char[][] array and some
@@ -143,80 +142,44 @@ public class Grid extends Scene {
 	}
 
 	/**
-	 * Creates an image for fast rendering which contains all solid blocks using
-	 * the char[][] map data.
+	 * Basically iterates over the map data and bundles proper chars which you
+	 * can specify to images.
 	 * 
-	 * @param solidTile
-	 *            The image which is used to render a solid block.
-	 * @param solidChars
-	 *            The chars which represent a solid block.
-	 * @return a compatible, transparent and rendered image with all solid
-	 *         blocks.
+	 * @param name
+	 *            The name of the new root entity.
+	 * @param chars2Images
+	 *            The map where you can define which image belongs to which
+	 *            char.
+	 * @return an entity which contains all bundled images.
 	 */
-	public BufferedImage renderSolidBlocks(BufferedImage solidTile,
-			char... solidChars) {
-		Set<Character> set = new HashSet<Character>();
-		for (char solidChar : solidChars) {
-			set.add(solidChar);
-		}
-		return renderSolidBlocks(solidTile, set);
-	}
+	public Entity bundle(String name, Map<Character, BufferedImage> chars2Images) {
+		Entity root = new Entity(name);
 
-	/**
-	 * Creates an image for fast rendering which contains all solid blocks using
-	 * the char[][] map data.
-	 * 
-	 * @param solidTile
-	 *            The image which is used to render a solid block.
-	 * @param solidChars
-	 *            The chars which represent a solid block.
-	 * @return a compatible, transparent and rendered image with all solid
-	 *         blocks.
-	 */
-	public BufferedImage renderSolidBlocks(BufferedImage solidTile,
-			Set<Character> solidChars) {
-		// Create new image
-		BufferedImage renderedImage = createSolidBlockImage(getWidth(),
-				getHeight());
+		for (int x = 0; x < rasterX; x++) {
+			for (int y = 0; y < rasterY; y++) {
 
-		// Open rendering context
-		Graphics2D g = renderedImage.createGraphics();
+				// Lookup tile image
+				BufferedImage tile = chars2Images.get(mapData[y][x]);
 
-		try {
+				// If the char is valid...
+				if (tile != null) {
 
-			// Clear with trans
-			g.setBackground(new Color(0, 0, 0, 0));
-			g.clearRect(0, 0, getWidth(), getHeight());
+					// Create image entity
+					ImageEntity ie = new ImageEntity(x + ", " + y, tile);
 
-			for (int x = 0; x < rasterX; x++) {
-				for (int y = 0; y < rasterY; y++) {
+					// At first translate
+					ie.setPosition(gridToWorld(x, y));
 
-					// Select and check for solid char
-					if (solidChars.contains(mapData[y][x])) {
+					// Scale
+					ie.getScale().set(rasterWidth, rasterHeight);
 
-						// Create a simple copy
-						Graphics2D copy = (Graphics2D) g.create();
-						try {
-							// At first translate
-							copy.translate(x * rasterWidth, y * rasterHeight);
-
-							// Scale
-							copy.scale(rasterWidth, rasterHeight);
-
-							// Render the sub image
-							copy.drawImage(solidTile, 0, 0, 1, 1, null);
-						} finally {
-							copy.dispose();
-						}
-					}
+					// Attach to root
+					root.attach(ie);
 				}
 			}
-
-			return renderedImage;
-		} finally {
-			// Dispose the rendering context
-			g.dispose();
 		}
+
+		return root;
 	}
 
 	/**

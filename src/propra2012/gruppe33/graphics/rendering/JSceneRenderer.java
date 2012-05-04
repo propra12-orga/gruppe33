@@ -1,6 +1,8 @@
 package propra2012.gruppe33.graphics.rendering;
 
 import java.awt.Graphics;
+import java.awt.Graphics2D;
+import java.awt.RenderingHints;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.FocusAdapter;
@@ -37,6 +39,21 @@ public class JSceneRenderer<S extends Scene> extends JPanel implements
 
 	// Time vars
 	private long timestamp = -1, minDelay = 20;
+
+	/**
+	 * OVERRIDE FOR CUSTOM BEHAVIOUR!
+	 * 
+	 * Here you can setup graphics settings.
+	 * 
+	 * @param graphics
+	 *            The graphics context you want to set up.
+	 */
+	protected void setupGraphics(Graphics2D graphics) {
+		// Apply graphics settings here!
+		graphics.setRenderingHint(RenderingHints.KEY_INTERPOLATION,
+				RenderingHints.VALUE_INTERPOLATION_BILINEAR);
+
+	}
 
 	/**
 	 * Creates a new scene renderer using the given scene.
@@ -147,8 +164,14 @@ public class JSceneRenderer<S extends Scene> extends JPanel implements
 			return;
 		}
 
+		// Convert
+		Graphics2D g2d = (Graphics2D) g;
+
+		// Apply graphics settings
+		setupGraphics(g2d);
+
 		// Render the root node
-		root.simulate(g, getWidth(), getHeight(), delay);
+		root.simulate(g2d, getWidth(), getHeight(), delay);
 
 		// Reset
 		timestamp = time;

@@ -1,6 +1,8 @@
 package propra2012.gruppe33.graphics.rendering.scenegraph;
 
+import java.awt.Graphics;
 import java.awt.Graphics2D;
+import java.awt.Image;
 import java.awt.geom.AffineTransform;
 import java.util.ArrayList;
 import java.util.Collections;
@@ -395,17 +397,6 @@ public class Entity {
 	}
 
 	/**
-	 * @return a affine transform containing the state of this entity.
-	 */
-	public AffineTransform getTransform() {
-		AffineTransform transform = new AffineTransform();
-		transform.translate(position.x, position.y);
-		transform.rotate(rotation);
-		transform.scale(scale.x, scale.y);
-		return transform;
-	}
-
-	/**
 	 * @return the relative scale of this entity as vector.
 	 */
 	public Vector2f getScale() {
@@ -464,24 +455,51 @@ public class Entity {
 	}
 
 	/**
-	 * Transforms the given graphics context origin in a way that 0/0 is exactly
-	 * the origin of THIS entity.
+	 * Applies local transform to a given graphics context.
 	 * 
-	 * @param g
+	 * @param graphics
 	 *            The graphics context you want to transform.
-	 * @return the given transformed graphics object for chaining.
+	 * @return the given transformed graphics context for chaining.
 	 */
-	public final Graphics2D transform(Graphics2D g) {
+	public final Graphics2D transform(Graphics2D graphics) {
+		if (graphics == null) {
+			throw new NullPointerException("graphics");
+		}
+
 		// Translate
-		g.translate(position.x, position.y);
+		graphics.translate(position.x, position.y);
 
 		// Rotate the graphics
-		g.rotate(rotation);
+		graphics.rotate(rotation);
 
 		// Scale the graphics
-		g.scale(scale.x, scale.y);
+		graphics.scale(scale.x, scale.y);
 
-		return g;
+		return graphics;
+	}
+
+	/**
+	 * Applies local transform to a given affine transform.
+	 * 
+	 * @param transform
+	 *            The affine transform you want to transform.
+	 * @return the given transformed affine transform for chaining.
+	 */
+	public final AffineTransform transform(AffineTransform transform) {
+		if (transform == null) {
+			throw new NullPointerException("transform");
+		}
+		transform.translate(position.x, position.y);
+		transform.rotate(rotation);
+		transform.scale(scale.x, scale.y);
+		return transform;
+	}
+
+	/**
+	 * @return a affine transform containing the state of this entity.
+	 */
+	public AffineTransform getTransform() {
+		return transform(new AffineTransform());
 	}
 
 	/**
@@ -503,8 +521,38 @@ public class Entity {
 	}
 
 	/**
-	 * Transforms and renders this entity and all children. This method uses the
+	 * Renders this entity and all children to an image. This method uses the
 	 * visible/childrenVisible flags to determine what to render.
+	 * 
+	 * @param destination
+	 *            The image you want to render to.
+	 */
+	public final void render(Image destination) {
+		if (destination == null) {
+			throw new NullPointerException("destination");
+		}
+
+		// Get the graphics context
+		Graphics graphics = destination.getGraphics();
+
+		try {
+			if (graphics instanceof Graphics2D) {
+
+				// Just render to image
+				render((Graphics2D) graphics, (Graphics2D) graphics);
+			} else {
+				throw new IllegalArgumentException("The image must return a "
+						+ "Graphics2D object when calling getGraphics().");
+			}
+		} finally {
+			// Dispose
+			graphics.dispose();
+		}
+	}
+
+	/**
+	 * Renders this entity and all children to a graphics context. This method
+	 * uses the visible/childrenVisible flags to determine what to render.
 	 * 
 	 * @param original
 	 *            The graphics context which is NOT affected by entity

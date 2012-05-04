@@ -3,6 +3,7 @@ package propra2012.gruppe33.graphics.rendering.scenegraph;
 import java.awt.Color;
 import java.awt.Graphics;
 import java.awt.Graphics2D;
+import java.awt.Image;
 import java.awt.event.KeyEvent;
 import java.awt.event.KeyListener;
 import java.util.HashMap;
@@ -171,8 +172,57 @@ public class Scene extends Entity implements KeyListener {
 	/**
 	 * Simulates the scene with a time-per-frame of 0. This method will
 	 * transforms the rendering in a way, that the viewport of the scene is
-	 * translated to the destination frame (on what you are drawing). Basically
-	 * needed for simple rendering without modifying the states of the children.
+	 * translated to the destination image. Basically needed for simple
+	 * rendering without modifying the states of the children.
+	 * 
+	 * 
+	 * @param destination
+	 *            The image you want to render to.
+	 */
+	public final void simulate(Image destination) {
+		simulate(destination, 0);
+	}
+
+	/**
+	 * Simulates the scene with a given time-per-frame. This method will
+	 * transforms the rendering in a way, that the viewport of the scene is
+	 * translated to the destination image.
+	 * 
+	 * @param destination
+	 *            The image you want to render to.
+	 * @param tpf
+	 *            The time-per-frame to update the children states.
+	 */
+	public final void simulate(Image destination, long tpf) {
+		if (destination == null) {
+			throw new NullPointerException("destination");
+		}
+
+		// Get the graphics context
+		Graphics graphics = destination.getGraphics();
+
+		try {
+			if (graphics instanceof Graphics2D) {
+
+				// Simulate the scene to image
+				simulate((Graphics2D) graphics, destination.getWidth(null),
+						destination.getHeight(null), tpf);
+
+			} else {
+				throw new IllegalArgumentException("The image must return a "
+						+ "Graphics2D object when calling getGraphics().");
+			}
+		} finally {
+			// Dispose
+			graphics.dispose();
+		}
+	}
+
+	/**
+	 * Simulates the scene with a time-per-frame of 0. This method will
+	 * transforms the rendering in a way, that the viewport of the scene is
+	 * translated to the graphics context. Basically needed for simple rendering
+	 * without modifying the states of the children.
 	 * 
 	 * @param graphics
 	 *            The graphics context you want to render to.
@@ -181,14 +231,14 @@ public class Scene extends Entity implements KeyListener {
 	 * @param height
 	 *            The height of the destination frame.
 	 */
-	public void simulate(Graphics graphics, int width, int height) {
+	public final void simulate(Graphics2D graphics, int width, int height) {
 		simulate(graphics, width, height, 0);
 	}
 
 	/**
 	 * Simulates the scene with a given time-per-frame. This method will
 	 * transforms the rendering in a way, that the viewport of the scene is
-	 * translated to the destination frame (on what you are drawing).
+	 * translated to the graphics context.
 	 * 
 	 * @param graphics
 	 *            The graphics context you want to render to.
@@ -199,7 +249,8 @@ public class Scene extends Entity implements KeyListener {
 	 * @param tpf
 	 *            The time-per-frame to update the children states.
 	 */
-	public void simulate(Graphics graphics, int width, int height, long tpf) {
+	public final void simulate(Graphics2D graphics, int width, int height,
+			long tpf) {
 
 		// Only update if tpf is > 0
 		if (tpf > 0) {
@@ -213,11 +264,8 @@ public class Scene extends Entity implements KeyListener {
 			return;
 		}
 
-		// Convert
-		Graphics2D g2d = (Graphics2D) graphics;
-
 		// Calc the ratio which we have to fit
-		float dstRatio = getRatio();
+		float dstRatio = ratio;
 
 		// Calc new dimension
 		float newWidth = width, newHeight = width / dstRatio;
@@ -231,22 +279,22 @@ public class Scene extends Entity implements KeyListener {
 		}
 
 		// At first translate the context
-		g2d.translate(width * 0.5f - newWidth * 0.5f, height * 0.5f - newHeight
-				* 0.5f);
+		graphics.translate(width * 0.5f - newWidth * 0.5f, height * 0.5f
+				- newHeight * 0.5f);
 
 		// Scale using the vector
-		g2d.scale(newWidth / this.width, newHeight / this.height);
+		graphics.scale(newWidth / this.width, newHeight / this.height);
 
 		// Limit the clip
-		g2d.setClip(0, 0, this.width, this.height);
+		graphics.setClip(0, 0, this.width, this.height);
 
 		// Set background color
-		g2d.setBackground(Color.white);
+		graphics.setBackground(Color.white);
 
 		// Clear the rect
-		g2d.clearRect(0, 0, this.width, this.height);
+		graphics.clearRect(0, 0, this.width, this.height);
 
 		// Finally render
-		render(g2d, g2d);
+		render(graphics, graphics);
 	}
 }
