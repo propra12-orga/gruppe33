@@ -1,5 +1,6 @@
 package propra2012.gruppe33;
 
+import java.awt.Point;
 import java.awt.image.BufferedImage;
 import java.io.File;
 import java.io.IOException;
@@ -53,14 +54,13 @@ public class AppStart {
 		Level level = new Level("standard", 1000, 600,
 				Level.loadMap("C:/map.txt"));
 
-	
 
 		// Render solid blocks to image
 		BufferedImage solidBlocks = level.renderSolidBlocks(
 				ImageIO.read(new File("C:/box.png")), '1');
 
 		Player p = new Player("test2", level);
-		p.getTarget().setLocation(5, 5);
+		
 //		Sprite spriteTest = new Sprite(ImageIO.read(new File("C:/sprite.png")),
 //				6, 5);
 
