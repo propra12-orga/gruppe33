@@ -3,6 +3,10 @@ package propra2012.gruppe33.network.udp.broadcast;
 public class BroadcastTestApp {
 
 	/**
+	 * 
+	 * YES YES I KNOW, i could have used JUnit.... But I really do not need this
+	 * stuff... JDK only =).
+	 * 
 	 * @param args
 	 */
 	public static void main(String[] args) throws Exception {
