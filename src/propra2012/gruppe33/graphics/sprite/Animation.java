@@ -1,9 +1,13 @@
 package propra2012.gruppe33.graphics.sprite;
 
 import java.awt.image.BufferedImage;
+import java.io.File;
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.RandomAccess;
+
+import propra2012.gruppe33.graphics.rendering.ImageUtil;
 
 /**
  * This class represents a single Animation
@@ -11,7 +15,7 @@ import java.util.RandomAccess;
  * @author Matthias Hesse
  * 
  */
-public final class Animation {
+public class Animation {
 
 	public static Animation merge(String name, long timePerImage,
 			Animation... animations) {
@@ -32,13 +36,22 @@ public final class Animation {
 	// The animation step counter
 	private int animationStep = 0;
 
+	// Should this animation loop ?
+	private boolean loop = false;
+
 	// The duration of the animation
 	private final long animationDuration;
 
 	// Time vars
 	private long timeStamp, timePerImage;
 
-	Animation(String name, List<BufferedImage> images, long timePerImage) {
+	public Animation(String name, long timePerImage, File dir, String prefix,
+			String postfix, int count) throws IOException {
+		this(name, ImageUtil.loadWithSchema(dir, prefix, postfix, count),
+				timePerImage);
+	}
+
+	public Animation(String name, List<BufferedImage> images, long timePerImage) {
 
 		if (name == null) {
 			throw new NullPointerException("name");
@@ -66,6 +79,14 @@ public final class Animation {
 
 		// Start...
 		resetAnimation();
+	}
+
+	public boolean isLoop() {
+		return loop;
+	}
+
+	public void setLoop(boolean loop) {
+		this.loop = loop;
 	}
 
 	public String getName() {
@@ -113,8 +134,11 @@ public final class Animation {
 
 		// If the animation is at the end the animation is resetted
 		if (animationStep >= images.size()) {
-			animationStep = 0;
-
+			if (loop) {
+				animationStep = 0;
+			} else {
+				animationStep = images.size() - 1;
+			}
 		}
 
 		// Return the image of the actual Animation Step

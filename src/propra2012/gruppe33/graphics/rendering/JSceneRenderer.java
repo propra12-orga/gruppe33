@@ -16,7 +16,7 @@ import propra2012.gruppe33.graphics.rendering.scenegraph.Scene;
  * A naiv approach to render a game. A JPanel is not very performant but it
  * should fit the needs since the game represents a simple task.
  * 
- * Basically this class renders every 33ms the game but never more often than
+ * Basically this class renders every 25ms the game but never more often than
  * once in 20ms. This reduces overhead while resizing.
  * 
  * @author Christopher Probst
@@ -34,7 +34,7 @@ public class JSceneRenderer<S extends Scene> extends JPanel implements
 	private final S root;
 
 	// The "repaint" timer
-	private final Timer timer = new Timer(33, this);
+	private final Timer timer = new Timer(25, this);
 
 	// Time vars
 	private long timestamp = -1, minDelay = 20;

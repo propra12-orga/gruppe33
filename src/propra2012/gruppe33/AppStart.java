@@ -10,6 +10,7 @@ import javax.imageio.ImageIO;
 import javax.swing.JFrame;
 
 import propra2012.gruppe33.graphics.rendering.JGridRenderer;
+import propra2012.gruppe33.graphics.rendering.scenegraph.AnimationController;
 import propra2012.gruppe33.graphics.rendering.scenegraph.Entity;
 import propra2012.gruppe33.graphics.rendering.scenegraph.grid.Grid;
 
@@ -62,6 +63,39 @@ public class AppStart {
 		// Bundle render to picture
 		Entity solid = grid.bundleAndRender("solid", map);
 
+		AnimationController north = new AnimationController("up", 25, new File(
+				"C:/dwarf/"), "running n000", ".bmp", 8);
+
+		AnimationController south = new AnimationController("up", 25, new File(
+				"C:/dwarf/"), "running s000", ".bmp", 8);
+
+		AnimationController west = new AnimationController("up", 25, new File(
+				"C:/dwarf/"), "running w000", ".bmp", 8);
+
+		AnimationController east = new AnimationController("up", 25, new File(
+				"C:/dwarf/"), "running e000", ".bmp", 8);
+
+		west.setLoop(true);
+		
+		Entity eN = new Entity("north");
+		eN.putController(north);
+		eN.getScale().scaleLocal(512);
+
+		Entity eS = new Entity("south");
+		eS.putController(south);
+		eS.getScale().scaleLocal(512);
+		eS.getPosition().x = 512;
+
+		Entity eW = new Entity("west");
+		eW.putController(west);
+		eW.getScale().scaleLocal(512);
+		eW.getPosition().x = 1024;
+
+		Entity eE = new Entity("east");
+		eE.putController(east);
+		eE.getScale().scaleLocal(512);
+		eE.getPosition().x = 1024 + 512;
+
 		// Create new player
 		// Player p = new Player("test2");
 
@@ -79,7 +113,10 @@ public class AppStart {
 
 		// Attach solid blocks
 		renderer.getRoot().attach(solid);
-		// renderer.getRoot().attach(p);
+		renderer.getRoot().attach(eN);
+		renderer.getRoot().attach(eS);
+		renderer.getRoot().attach(eW);
+		renderer.getRoot().attach(eE);
 
 		renderer.start();
 

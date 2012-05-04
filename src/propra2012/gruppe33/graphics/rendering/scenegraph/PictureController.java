@@ -1,9 +1,9 @@
 package propra2012.gruppe33.graphics.rendering.scenegraph;
 
 import java.awt.Graphics2D;
-import java.awt.GraphicsEnvironment;
 import java.awt.Image;
-import java.awt.image.BufferedImage;
+
+import propra2012.gruppe33.graphics.rendering.ImageUtil;
 
 /**
  * This class simply renders a centered image. You MUST specify the correct
@@ -15,24 +15,6 @@ import java.awt.image.BufferedImage;
  * @see Entity
  */
 public class PictureController implements EntityController {
-
-	/**
-	 * Creates a compatible image.
-	 * 
-	 * @param width
-	 *            The width of the new image.
-	 * @param height
-	 *            The height of the new image.
-	 * @param transparency
-	 *            The transparency of the new image.
-	 * @return the new compatible image.
-	 */
-	public static BufferedImage createImage(int width, int height,
-			int transparency) {
-		return GraphicsEnvironment.getLocalGraphicsEnvironment()
-				.getDefaultScreenDevice().getDefaultConfiguration()
-				.createCompatibleImage(width, height, transparency);
-	}
 
 	// Used for rendering
 	private Image image;
@@ -48,7 +30,7 @@ public class PictureController implements EntityController {
 	 *            The transparency of the new image.
 	 */
 	public PictureController(int width, int height, int transparency) {
-		this(createImage(width, height, transparency));
+		this(ImageUtil.createImage(width, height, transparency));
 	}
 
 	/**
