@@ -1,6 +1,7 @@
 package propra2012.gruppe33.graphics.rendering.scenegraph;
 
 import java.awt.Graphics2D;
+import java.awt.geom.AffineTransform;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
@@ -391,6 +392,17 @@ public class Entity {
 	 */
 	public String getName() {
 		return name;
+	}
+
+	/**
+	 * @return a affine transform containing the state of this entity.
+	 */
+	public AffineTransform getTransform() {
+		AffineTransform transform = new AffineTransform();
+		transform.translate(position.x, position.y);
+		transform.rotate(rotation);
+		transform.scale(scale.x, scale.y);
+		return transform;
 	}
 
 	/**

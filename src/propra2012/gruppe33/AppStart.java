@@ -50,7 +50,7 @@ public class AppStart {
 		// }
 
 		// Create level
-		Level level = new Level("standard", 1000, 1000,
+		Level level = new Level("standard", 1000, 600,
 				Level.loadMap("C:/map.txt"));
 
 	
@@ -60,9 +60,9 @@ public class AppStart {
 				ImageIO.read(new File("C:/box.png")), '1');
 
 		Player p = new Player("test2", level);
-		p.setPosition(level.gridToWorld(1, 1));
-		Sprite spriteTest = new Sprite(ImageIO.read(new File("C:/sprite.png")),
-				6, 5);
+		p.getTarget().setLocation(5, 5);
+//		Sprite spriteTest = new Sprite(ImageIO.read(new File("C:/sprite.png")),
+//				6, 5);
 
 //		p.getAnimations().addAnimation(
 //				spriteTest.newAnimationFromRange("running", 10, 0, 0, 6 * 5));

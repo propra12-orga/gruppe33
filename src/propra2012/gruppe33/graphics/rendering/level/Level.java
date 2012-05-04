@@ -26,7 +26,7 @@ public class Level {
 	/**
 	 * Loads a level.
 	 * 
-	 * @deprecated ONLY USEED FOR TEST PURPOSES.
+	 * @deprecated ONLY USED FOR TEST PURPOSES.
 	 */
 	public static char[][] loadMap(String file) throws IOException {
 		BufferedReader reader = new BufferedReader(new FileReader(

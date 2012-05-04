@@ -22,6 +22,31 @@ public class Vector2f implements Serializable {
 	public static final float kEpsilon = 1E-6f;
 
 	/**
+	 * Clamps a float value.
+	 * 
+	 * @param v
+	 *            The value you want to clamp.
+	 * @param min
+	 *            The min value.
+	 * @param max
+	 *            The max value.
+	 * @return the clamped value.
+	 */
+	public static float clamp(float v, float min, float max) {
+		if (max < min) {
+			throw new IllegalArgumentException("max is smaller than min");
+		}
+
+		// Clamp...
+		if (v < min) {
+			v = min;
+		} else if (v > max) {
+			v = max;
+		}
+		return v;
+	}
+
+	/**
 	 * Lerps two vectors (Linear interpolation). This means you provide two
 	 * vectors (start, end) and a float between 0 and 1. This method calculates
 	 * a new vector which is between start and end using the given float value.
@@ -31,21 +56,39 @@ public class Vector2f implements Serializable {
 	 *            The start vector.
 	 * @param end
 	 *            The end vector
-	 * @param t
+	 * @param time
 	 *            A float value between 0 and 1.
 	 * @return a vector which is lerped between start and end.
 	 */
-	public Vector2f lerp(Vector2f start, Vector2f end, float t) {
-
-		// Clamp...
-		if (t < 0) {
-			t = 0;
-		} else if (t > 1) {
-			t = 1;
-		}
-
+	public Vector2f lerp(Vector2f start, Vector2f end, float time) {
 		// Return the lerp vector
-		return start.add(end.sub(start).scale(t));
+		return start.add(end.sub(start).scale(clamp(time, 0f, 1f)));
+	}
+
+	/**
+	 * Moves the start vector to the end vector but never exceeds the max delta
+	 * value.
+	 * 
+	 * @param start
+	 *            The start vector.
+	 * @param end
+	 *            The end vector
+	 * @param maxDelta
+	 *            The start vector never gets closer to the end vector as max
+	 *            delta.
+	 * @return the transformed start vector.
+	 */
+	public static Vector2f moveTowards(Vector2f start, Vector2f end,
+			float maxDelta) {
+
+		// Calc distance between the vectors
+		Vector2f dist = end.sub(start);
+
+		// Calc the time to move
+		float time = maxDelta / dist.length();
+
+		// Return a lerped value
+		return start.add(dist.scale(clamp(time, 0f, 1f)));
 	}
 
 	/**
@@ -210,7 +253,7 @@ public class Vector2f implements Serializable {
 	 * @return a new result vector.
 	 */
 	public Vector2f add(Vector2f other) {
-		return new Vector2f(other).addLocal(this);
+		return new Vector2f(this).addLocal(other);
 	}
 
 	/**
@@ -222,7 +265,7 @@ public class Vector2f implements Serializable {
 	 * @return a new result vector.
 	 */
 	public Vector2f sub(Vector2f other) {
-		return new Vector2f(other).subLocal(this);
+		return new Vector2f(this).subLocal(other);
 	}
 
 	/*
