@@ -26,28 +26,14 @@ import java.util.Map;
  */
 public class Scene extends Entity implements KeyListener {
 
-	// Default values
-	public static final int DEFAULT_WIDTH = 1024, DEFAULT_HEIGHT = 1024;
-
 	// The keyboard state which is used to process the input
-	private Map<Integer, Boolean> keyboardState = new HashMap<Integer, Boolean>();
+	private final Map<Integer, Boolean> keyboardState = new HashMap<Integer, Boolean>();
 
 	// The width and height of the scene
-	private int width, height;
+	private final int width, height;
 
 	// The ratio of this entity
-	private float ratio;
-
-	/**
-	 * Create a new scene.
-	 * 
-	 * @param name
-	 *            The name of the scene.
-	 */
-	public Scene(String name) {
-		// Default init
-		this(name, DEFAULT_WIDTH, DEFAULT_HEIGHT);
-	}
+	private final float ratio;
 
 	/**
 	 * Creates a new scene.
@@ -61,8 +47,19 @@ public class Scene extends Entity implements KeyListener {
 	 */
 	public Scene(String name, int width, int height) {
 		super(name);
-		setWidth(width);
-		setHeight(height);
+
+		if (width <= 0) {
+			throw new IllegalArgumentException("width must be > 0");
+		} else if (height <= 0) {
+			throw new IllegalArgumentException("height must be > 0");
+		}
+
+		// Init
+		this.width = width;
+		this.height = height;
+
+		// Calc new ratio
+		ratio = width / (float) height;
 	}
 
 	/**
@@ -129,44 +126,10 @@ public class Scene extends Entity implements KeyListener {
 	}
 
 	/**
-	 * Sets the viewport width.
-	 * 
-	 * @param width
-	 *            The new width of the viewport.
-	 */
-	public void setWidth(int width) {
-		if (width <= 0) {
-			throw new IllegalArgumentException("width must be > 0");
-		}
-
-		this.width = width;
-
-		// Calc new ratio
-		ratio = width / (float) height;
-	}
-
-	/**
 	 * @return the viewport height.
 	 */
 	public int getHeight() {
 		return height;
-	}
-
-	/**
-	 * Sets the viewport height.
-	 * 
-	 * @param height
-	 *            The new height of the viewport.
-	 */
-	public void setHeight(int height) {
-		if (height <= 0) {
-			throw new IllegalArgumentException("height must be > 0");
-		}
-
-		this.height = height;
-
-		// Calc new ratio
-		ratio = width / (float) height;
 	}
 
 	/**
@@ -251,6 +214,10 @@ public class Scene extends Entity implements KeyListener {
 	 */
 	public final void simulate(Graphics2D graphics, int width, int height,
 			long tpf) {
+
+		if (graphics == null) {
+			throw new NullPointerException("graphics");
+		}
 
 		// Only update if tpf is > 0
 		if (tpf > 0) {

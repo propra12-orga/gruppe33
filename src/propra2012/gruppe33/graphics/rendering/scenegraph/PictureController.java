@@ -11,9 +11,10 @@ import java.awt.image.BufferedImage;
  * and height of ONE.
  * 
  * @author Christopher Probst
+ * @see EntityController
  * @see Entity
  */
-public class Picture extends Entity {
+public class PictureController implements EntityController {
 
 	/**
 	 * Creates a compatible image.
@@ -37,20 +38,8 @@ public class Picture extends Entity {
 	private Image image;
 
 	/**
-	 * Creates a new empty picture.
-	 * 
-	 * @param name
-	 *            The name of the picture.
-	 */
-	public Picture(String name) {
-		this(name, null);
-	}
-
-	/**
 	 * Creates a new picture.
 	 * 
-	 * @param name
-	 *            The name of the picture.
 	 * @param width
 	 *            The width of the new image.
 	 * @param height
@@ -58,20 +47,17 @@ public class Picture extends Entity {
 	 * @param transparency
 	 *            The transparency of the new image.
 	 */
-	public Picture(String name, int width, int height, int transparency) {
-		this(name, createImage(width, height, transparency));
+	public PictureController(int width, int height, int transparency) {
+		this(createImage(width, height, transparency));
 	}
 
 	/**
 	 * Creates a new picture.
 	 * 
-	 * @param name
-	 *            The name of the picture.
 	 * @param image
 	 *            The image of the picture.
 	 */
-	public Picture(String name, Image image) {
-		super(name);
+	public PictureController(Image image) {
 		setImage(image);
 	}
 
@@ -96,12 +82,13 @@ public class Picture extends Entity {
 	 * (non-Javadoc)
 	 * 
 	 * @see
-	 * propra2012.gruppe33.graphics.rendering.scenegraph.Entity#doRender(java
-	 * .awt.Graphics2D, java.awt.Graphics2D)
+	 * propra2012.gruppe33.graphics.rendering.scenegraph.EntityController#doRender
+	 * (propra2012.gruppe33.graphics.rendering.scenegraph.Entity,
+	 * java.awt.Graphics2D, java.awt.Graphics2D)
 	 */
 	@Override
-	protected void doRender(Graphics2D original, Graphics2D transformed) {
-		super.doRender(original, transformed);
+	public void doRender(Entity entity, Graphics2D original,
+			Graphics2D transformed) {
 
 		// Does the image exist ?
 		if (image != null) {
@@ -119,5 +106,16 @@ public class Picture extends Entity {
 				copy.dispose();
 			}
 		}
+	}
+
+	/*
+	 * (non-Javadoc)
+	 * 
+	 * @see
+	 * propra2012.gruppe33.graphics.rendering.scenegraph.EntityController#doUpdate
+	 * (propra2012.gruppe33.graphics.rendering.scenegraph.Entity, float)
+	 */
+	@Override
+	public void doUpdate(Entity entity, float tpf) {
 	}
 }

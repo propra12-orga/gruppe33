@@ -1,6 +1,5 @@
 package propra2012.gruppe33;
 
-import java.awt.Transparency;
 import java.awt.image.BufferedImage;
 import java.io.File;
 import java.io.IOException;
@@ -12,8 +11,7 @@ import javax.swing.JFrame;
 
 import propra2012.gruppe33.graphics.rendering.JGridRenderer;
 import propra2012.gruppe33.graphics.rendering.scenegraph.Entity;
-import propra2012.gruppe33.graphics.rendering.scenegraph.Picture;
-import propra2012.gruppe33.graphics.rendering.scenegraph.extscenes.Grid;
+import propra2012.gruppe33.graphics.rendering.scenegraph.grid.Grid;
 
 /**
  * 
@@ -51,7 +49,7 @@ public class AppStart {
 		// }
 
 		// Create grid
-		Grid grid = new Grid("standard", 2000, 1200,
+		Grid grid = new Grid("standard", 2048, 2048,
 				Grid.loadGrid("C:/map.txt"));
 
 		// Render solid blocks to image
@@ -62,8 +60,9 @@ public class AppStart {
 		map.put('1', ImageIO.read(new File("C:/box.png")));
 
 		// Bundle render to picture
-		Picture solid = grid.bundleAndRender("solid", map);
+		Entity solid = grid.bundleAndRender("solid", map);
 
+		// Create new player
 		// Player p = new Player("test2");
 
 		// Sprite spriteTest = new Sprite(ImageIO.read(new
@@ -80,6 +79,7 @@ public class AppStart {
 
 		// Attach solid blocks
 		renderer.getRoot().attach(solid);
+		// renderer.getRoot().attach(p);
 
 		renderer.start();
 

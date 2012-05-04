@@ -61,6 +61,12 @@ public class Vector2f implements Serializable {
 	 * @return a vector which is lerped between start and end.
 	 */
 	public Vector2f lerp(Vector2f start, Vector2f end, float time) {
+		if (start == null) {
+			throw new NullPointerException("start");
+		} else if (end == null) {
+			throw new NullPointerException("end");
+		}
+
 		// Return the lerp vector
 		return start.add(end.sub(start).scale(clamp(time, 0f, 1f)));
 	}
@@ -80,6 +86,11 @@ public class Vector2f implements Serializable {
 	 */
 	public static Vector2f moveTowards(Vector2f start, Vector2f end,
 			float maxDelta) {
+		if (start == null) {
+			throw new NullPointerException("start");
+		} else if (end == null) {
+			throw new NullPointerException("end");
+		}
 
 		// Calc distance between the vectors
 		Vector2f dist = end.sub(start);
@@ -201,6 +212,10 @@ public class Vector2f implements Serializable {
 	 * @return this.
 	 */
 	public Vector2f addLocal(Vector2f other) {
+		if (other == null) {
+			throw new NullPointerException("other");
+		}
+
 		x += other.x;
 		y += other.y;
 		return this;
@@ -214,6 +229,10 @@ public class Vector2f implements Serializable {
 	 * @return this.
 	 */
 	public Vector2f subLocal(Vector2f other) {
+		if (other == null) {
+			throw new NullPointerException("other");
+		}
+
 		x -= other.x;
 		y -= other.y;
 		return this;
@@ -253,6 +272,10 @@ public class Vector2f implements Serializable {
 	 * @return a new result vector.
 	 */
 	public Vector2f add(Vector2f other) {
+		if (other == null) {
+			throw new NullPointerException("other");
+		}
+
 		return new Vector2f(this).addLocal(other);
 	}
 
@@ -265,6 +288,10 @@ public class Vector2f implements Serializable {
 	 * @return a new result vector.
 	 */
 	public Vector2f sub(Vector2f other) {
+		if (other == null) {
+			throw new NullPointerException("other");
+		}
+
 		return new Vector2f(this).subLocal(other);
 	}
 
@@ -311,6 +338,12 @@ public class Vector2f implements Serializable {
 	 * @return true if xThreshold and yThreshold succeeds, otherwise false.
 	 */
 	public boolean threshold(Vector2f other, Vector2f threshold) {
+		if (other == null) {
+			throw new NullPointerException("other");
+		} else if (threshold == null) {
+			throw new NullPointerException("threshold");
+		}
+
 		return xThreshold(other.x, threshold.x)
 				&& yThreshold(other.y, threshold.y);
 	}

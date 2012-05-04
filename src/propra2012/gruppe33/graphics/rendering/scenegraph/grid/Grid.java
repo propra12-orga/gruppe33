@@ -1,4 +1,4 @@
-package propra2012.gruppe33.graphics.rendering.scenegraph.extscenes;
+package propra2012.gruppe33.graphics.rendering.scenegraph.grid;
 
 import java.awt.GraphicsEnvironment;
 import java.awt.Point;
@@ -13,7 +13,7 @@ import java.util.List;
 import java.util.Map;
 
 import propra2012.gruppe33.graphics.rendering.scenegraph.Entity;
-import propra2012.gruppe33.graphics.rendering.scenegraph.Picture;
+import propra2012.gruppe33.graphics.rendering.scenegraph.PictureController;
 import propra2012.gruppe33.graphics.rendering.scenegraph.Scene;
 import propra2012.gruppe33.graphics.rendering.scenegraph.Vector2f;
 
@@ -112,7 +112,10 @@ public class Grid extends Scene {
 	private final int rasterX, rasterY;
 
 	// The raster width & height
-	private float rasterWidth, rasterHeight;
+	private final float rasterWidth, rasterHeight;
+
+	// Here we store all vectors of the world
+	private final Vector2f[][] worldMap;
 
 	/**
 	 * Creates a new grid using the given parameters.
@@ -136,9 +139,19 @@ public class Grid extends Scene {
 		rasterY = mapData.length;
 		rasterX = mapData[0].length;
 
+		// Init the world vector map
+		worldMap = new Vector2f[rasterY][rasterX];
+
 		// Update the raster dimensions
 		rasterWidth = width / (float) rasterX;
 		rasterHeight = height / (float) rasterY;
+
+		// Calc the world map
+		for (int x = 0; x < rasterX; x++) {
+			for (int y = 0; y < rasterY; y++) {
+				worldMap[y][x] = gridToWorld(x, y);
+			}
+		}
 	}
 
 	/**
@@ -150,9 +163,17 @@ public class Grid extends Scene {
 	 * @param chars2Images
 	 *            The map where you can define which image belongs to which
 	 *            char.
-	 * @return an entity which contains all bundled images.
+	 * @return an entity which contains all bundled images stored as child
+	 *         picture entities.
 	 */
 	public Entity bundle(String name, Map<Character, BufferedImage> chars2Images) {
+		if (name == null) {
+			throw new NullPointerException("name");
+		} else if (chars2Images == null) {
+			throw new NullPointerException("chars2Images");
+		}
+
+		// Create new root entity
 		Entity root = new Entity(name);
 
 		for (int x = 0; x < rasterX; x++) {
@@ -164,17 +185,20 @@ public class Grid extends Scene {
 				// If the char is valid...
 				if (tile != null) {
 
-					// Create image entity
-					Picture pic = new Picture(x + ", " + y, tile);
+					// Create child entity
+					Entity child = new Entity(x + ", " + y);
+
+					// Add to controllers
+					child.putController(new PictureController(tile));
 
 					// At first translate
-					pic.setPosition(gridToWorld(x, y));
+					child.setPosition(vectorAt(x, y));
 
 					// Scale
-					pic.getScale().set(rasterWidth, rasterHeight);
+					child.getScale().set(rasterWidth, rasterHeight);
 
 					// Attach to root
-					root.attach(pic);
+					root.attach(child);
 				}
 			}
 		}
@@ -191,26 +215,32 @@ public class Grid extends Scene {
 	 * @param chars2Images
 	 *            The map where you can define which image belongs to which
 	 *            char.
-	 * @return a picture which contains a rendered image with all bundled
+	 * @return a picture entity which contains a rendered image with all bundled
 	 *         images.
 	 */
-	public Picture bundleAndRender(String name,
+	public Entity bundleAndRender(String name,
 			Map<Character, BufferedImage> chars2Images) {
 
+		// Create a new entity
+		Entity entity = new Entity(name);
+
 		// Create a new picture
-		Picture pic = new Picture(name, getWidth(), getHeight(),
+		PictureController pic = new PictureController(getWidth(), getHeight(),
 				Transparency.BITMASK);
 
+		// Add to controllers
+		entity.putController(pic);
+
 		// Set position
-		pic.getPosition().set(getWidth() * 0.5f, getHeight() * 0.5f);
+		entity.getPosition().set(getWidth() * 0.5f, getHeight() * 0.5f);
 
 		// Adjust scale
-		pic.getScale().set(getWidth(), getHeight());
+		entity.getScale().set(getWidth(), getHeight());
 
 		// Render the entity to an image
 		bundle(name, chars2Images).render(pic.getImage());
 
-		return pic;
+		return entity;
 	}
 
 	/**
@@ -221,6 +251,10 @@ public class Grid extends Scene {
 	 * @return a new vector containing the world coords.
 	 */
 	public Vector2f gridToWorld(Point location) {
+		if (location == null) {
+			throw new NullPointerException("location");
+		}
+
 		return gridToWorld(location.x, location.y);
 	}
 
@@ -245,6 +279,10 @@ public class Grid extends Scene {
 	 * @return a new point containing the nearest grid coords.
 	 */
 	public Point worldToNearestGrid(Vector2f position) {
+		if (position == null) {
+			throw new NullPointerException("position");
+		}
+
 		// Calc new x and y
 		float x = (position.x - rasterWidth * 0.5f) / rasterWidth, y = (position.y - rasterHeight * 0.5f)
 				/ rasterHeight;
@@ -254,14 +292,18 @@ public class Grid extends Scene {
 	}
 
 	/**
-	 * Validates a points against the valid range.
+	 * Validates a location against the valid range.
 	 * 
-	 * @param point
-	 *            The point you want to validate.
-	 * @return the same point if point is valid, otherwise null.
+	 * @param location
+	 *            The location you want to validate.
+	 * @return the same location if location is valid, otherwise null.
 	 */
-	public Point validate(Point point) {
-		return validate(point.x, point.y) ? point : null;
+	public Point validate(Point location) {
+		if (location == null) {
+			throw new NullPointerException("location");
+		}
+
+		return validate(location.x, location.y) ? location : null;
 	}
 
 	/**
@@ -283,8 +325,12 @@ public class Grid extends Scene {
 	 *            The location in the array.
 	 * @return the char at the specified location.
 	 */
-	public char at(Point location) {
-		return at(location.x, location.y);
+	public char charAt(Point location) {
+		if (location == null) {
+			throw new NullPointerException("location");
+		}
+
+		return charAt(location.x, location.y);
 	}
 
 	/**
@@ -294,8 +340,31 @@ public class Grid extends Scene {
 	 *            The row in the array.
 	 * @return the char at the specified location.
 	 */
-	public char at(int x, int y) {
+	public char charAt(int x, int y) {
 		return mapData[y][x];
+	}
+
+	/**
+	 * @param location
+	 *            The location in the array.
+	 * @return the vector at the specified location.
+	 */
+	public Vector2f vectorAt(Point location) {
+		if (location == null) {
+			throw new NullPointerException("location");
+		}
+		return vectorAt(location.x, location.y);
+	}
+
+	/**
+	 * @param x
+	 *            The column in the array.
+	 * @param y
+	 *            The row in the array.
+	 * @return the vector at the specified location.
+	 */
+	public Vector2f vectorAt(int x, int y) {
+		return worldMap[y][x];
 	}
 
 	/**
@@ -316,6 +385,9 @@ public class Grid extends Scene {
 	 * @return a point containg the first location of the char.
 	 */
 	public Point find(char find, Point after) {
+		if (after == null) {
+			throw new NullPointerException("after");
+		}
 		return find(find, after.x, after.y);
 	}
 
@@ -334,7 +406,7 @@ public class Grid extends Scene {
 			for (int y = afterY; y < rasterY; y++) {
 
 				// Select and check for solid char
-				if (at(x, y) == find) {
+				if (charAt(x, y) == find) {
 					return new Point(x, y);
 				}
 			}
@@ -342,39 +414,18 @@ public class Grid extends Scene {
 		return null;
 	}
 
-	/*
-	 * (non-Javadoc)
-	 * 
-	 * @see
-	 * propra2012.gruppe33.graphics.rendering.scenegraph.Scene#setWidth(int)
-	 */
-	@Override
-	public void setWidth(int width) {
-		super.setWidth(width);
-
-		// Calc the raster width
-		rasterWidth = width / (float) rasterX;
-	}
-
-	/*
-	 * (non-Javadoc)
-	 * 
-	 * @see
-	 * propra2012.gruppe33.graphics.rendering.scenegraph.Scene#setHeight(int)
-	 */
-	@Override
-	public void setHeight(int height) {
-		super.setHeight(height);
-
-		// Calc the raster height
-		rasterHeight = height / (float) rasterY;
-	}
-
 	/**
 	 * @return the map data.
 	 */
 	public char[][] getMapData() {
 		return mapData;
+	}
+
+	/**
+	 * @return the world map.
+	 */
+	public Vector2f[][] getWorldMap() {
+		return worldMap;
 	}
 
 	/**

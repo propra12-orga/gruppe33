@@ -7,6 +7,7 @@ import java.awt.geom.AffineTransform;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
+import java.util.LinkedHashMap;
 import java.util.LinkedHashSet;
 import java.util.LinkedList;
 import java.util.List;
@@ -35,6 +36,9 @@ import java.util.Set;
  * - An entity has a name. Entities can have the same name but this could lead
  * to bad find-operations since entities with equal names are stored in a list.
  * 
+ * - An entity can have controllers which basically provides dynamic behaviour,
+ * because you can add or remove controllers whenever you like.
+ * 
  * 
  * 
  * 
@@ -43,7 +47,7 @@ import java.util.Set;
  * @see Scene
  * 
  */
-public class Entity {
+public class Entity implements EntityController {
 
 	/*
 	 * The position of this entity stored as Vector2f. Initialize with zero!
@@ -77,6 +81,11 @@ public class Entity {
 			readOnlyChildren = Collections.unmodifiableSet(children);
 
 	/*
+	 * Maps names to entity controllers.
+	 */
+	private final Map<Class<? extends EntityController>, EntityController> controllers = new LinkedHashMap<Class<? extends EntityController>, EntityController>();
+
+	/*
 	 * Maps names to entities.
 	 */
 	private final Map<String, List<Entity>> names2Entities = new HashMap<String, List<Entity>>();
@@ -100,6 +109,10 @@ public class Entity {
 	 * @return a valid list impl.
 	 */
 	private List<Entity> getEntityList(String name) {
+		if (name == null) {
+			throw new NullPointerException("name");
+		}
+
 		// Try to get list
 		List<Entity> entities = names2Entities.get(name);
 
@@ -127,38 +140,6 @@ public class Entity {
 	}
 
 	/**
-	 * OVERRIDE FOR CUSTOM UPDATE BEHAVIOUR:
-	 * 
-	 * This method gets called every frame to update the state of this entity.
-	 * 
-	 * @param tpf
-	 *            The time per frame in seconds. Used to interpolate
-	 *            time-sensitive data.
-	 */
-	protected void doUpdate(float tpf) {
-
-	}
-
-	/**
-	 * OVERRIDE FOR CUSTOM RENDER BEHAVIOUR:
-	 * 
-	 * This method gets called every frame to render this entity if the visible
-	 * flag is set to true.
-	 * 
-	 * @param original
-	 *            A graphics context you can render to. There is no
-	 *            transformation applied yet.
-	 * @param transformed
-	 *            A graphics context you can render to. The entity has already
-	 *            applied transformation, so the context origin is your
-	 *            position.
-	 * 
-	 */
-	protected void doRender(Graphics2D original, Graphics2D transformed) {
-
-	}
-
-	/**
 	 * Creates an entity using the given name. You really have to provide a non
 	 * null name since null-keys are not allowed in hashing.
 	 * 
@@ -171,6 +152,59 @@ public class Entity {
 		}
 
 		this.name = name;
+	}
+
+	/**
+	 * Puts a controller and returns the old one.
+	 * 
+	 * @param controller
+	 *            The controller you want to add.
+	 * @return an instance of the class you specified or null.
+	 */
+	@SuppressWarnings("unchecked")
+	public <T extends EntityController> T putController(T controller) {
+		if (controller == null) {
+			throw new NullPointerException("controller");
+		}
+		return (T) controllers.put(controller.getClass(), controller);
+	}
+
+	/**
+	 * Removes and returns a controller.
+	 * 
+	 * @param controllerClass
+	 *            The controller class you want to remove.
+	 * @return an instance of the class you specified or null.
+	 */
+	@SuppressWarnings("unchecked")
+	public <T extends EntityController> T remoteController(
+			Class<T> controllerClass) {
+		if (controllerClass == null) {
+			throw new NullPointerException("controllerClass");
+		}
+		return (T) controllers.remove(controllerClass);
+	}
+
+	/**
+	 * Lookup a controller.
+	 * 
+	 * @param controllerClass
+	 *            The controller class you want to lookup.
+	 * @return an instance of the class you specified or null.
+	 */
+	@SuppressWarnings("unchecked")
+	public <T extends EntityController> T getController(Class<T> controllerClass) {
+		if (controllerClass == null) {
+			throw new NullPointerException("controllerClass");
+		}
+		return (T) controllers.get(controllerClass);
+	}
+
+	/**
+	 * Clears the controllers.
+	 */
+	public void clearControllers() {
+		controllers.clear();
 	}
 
 	/**
@@ -231,6 +265,10 @@ public class Entity {
 	 *         no such children.
 	 */
 	public List<Entity> findChildrenByName(String name) {
+		if (name == null) {
+			throw new NullPointerException("name");
+		}
+
 		// Lookup the name list
 		List<Entity> list = names2Entities.get(name);
 
@@ -502,6 +540,30 @@ public class Entity {
 		return transform(new AffineTransform());
 	}
 
+	/*
+	 * (non-Javadoc)
+	 * 
+	 * @see
+	 * propra2012.gruppe33.graphics.rendering.scenegraph.EntityController#doRender
+	 * (propra2012.gruppe33.graphics.rendering.scenegraph.Entity,
+	 * java.awt.Graphics2D, java.awt.Graphics2D)
+	 */
+	@Override
+	public void doRender(Entity entity, Graphics2D original,
+			Graphics2D transformed) {
+	}
+
+	/*
+	 * (non-Javadoc)
+	 * 
+	 * @see
+	 * propra2012.gruppe33.graphics.rendering.scenegraph.EntityController#doUpdate
+	 * (propra2012.gruppe33.graphics.rendering.scenegraph.Entity, float)
+	 */
+	@Override
+	public void doUpdate(Entity entity, float tpf) {
+	}
+
 	/**
 	 * Updates this entity and all children.
 	 * 
@@ -511,7 +573,16 @@ public class Entity {
 	public final void update(float tpf) {
 
 		// Do the update
-		doUpdate(tpf);
+		doUpdate(this, tpf);
+
+		// Check controllers
+		if (!controllers.isEmpty()) {
+			for (EntityController controller : new ArrayList<EntityController>(
+					controllers.values())) {
+				// Update the controller
+				controller.doUpdate(this, tpf);
+			}
+		}
 
 		// Update all children
 		for (Entity child : getCache()) {
@@ -564,6 +635,12 @@ public class Entity {
 	 */
 	public final void render(Graphics2D original, Graphics2D transformed) {
 
+		if (original == null) {
+			throw new NullPointerException("original");
+		} else if (transformed == null) {
+			throw new NullPointerException("transformed");
+		}
+
 		// Create a copy the original graphics
 		Graphics2D originalCopy = (Graphics2D) original.create();
 
@@ -576,7 +653,17 @@ public class Entity {
 
 				if (visible) {
 					// Render this entity
-					doRender(originalCopy, transformedCopy);
+					doRender(this, originalCopy, transformedCopy);
+
+					// Check controllers
+					if (!controllers.isEmpty()) {
+						for (EntityController controller : new ArrayList<EntityController>(
+								controllers.values())) {
+							// Render the controller
+							controller.doRender(this, originalCopy,
+									transformedCopy);
+						}
+					}
 				}
 
 				if (childrenVisible) {
