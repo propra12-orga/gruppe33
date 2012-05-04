@@ -1,6 +1,8 @@
 package propra2012.gruppe33.graphics.rendering.scenegraph;
 
+import java.awt.Graphics;
 import java.awt.Graphics2D;
+import java.awt.Image;
 import java.awt.geom.AffineTransform;
 import java.util.ArrayList;
 import java.util.Collections;
@@ -503,8 +505,38 @@ public class Entity {
 	}
 
 	/**
-	 * Transforms and renders this entity and all children. This method uses the
+	 * Renders this entity and all children to an image. This method uses the
 	 * visible/childrenVisible flags to determine what to render.
+	 * 
+	 * @param destination
+	 *            The image you want to render to.
+	 */
+	public final void render(Image destination) {
+		if (destination == null) {
+			throw new NullPointerException("destination");
+		}
+
+		// Get the graphics context
+		Graphics graphics = destination.getGraphics();
+
+		try {
+			if (graphics instanceof Graphics2D) {
+
+				// Just render to image
+				render((Graphics2D) graphics, (Graphics2D) graphics);
+			} else {
+				throw new IllegalArgumentException("The image must return a "
+						+ "Graphics2D object when calling getGraphics().");
+			}
+		} finally {
+			// Dispose
+			graphics.dispose();
+		}
+	}
+
+	/**
+	 * Renders this entity and all children to a graphics context. This method
+	 * uses the visible/childrenVisible flags to determine what to render.
 	 * 
 	 * @param original
 	 *            The graphics context which is NOT affected by entity
