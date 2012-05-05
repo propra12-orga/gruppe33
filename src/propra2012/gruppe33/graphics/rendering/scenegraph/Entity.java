@@ -344,15 +344,27 @@ public class Entity implements EntityController {
 	}
 
 	/**
-	 * @return the next scene which ownes this entity or this entity if this
-	 *         entity is already a scene or null if there is no scene in the
-	 *         hierarchy at all.
+	 * {@link Entity#findParentEntity(Class)}
 	 * 
 	 * @see Scene
 	 */
-	public Scene getScene() {
-		return this instanceof Scene ? (Scene) this : parent != null ? parent
-				.getScene() : null;
+	public Scene findScene() {
+		return findParentEntity(Scene.class);
+	}
+
+	/**
+	 * Find an entity of the given class in the parent hierarchy.
+	 * 
+	 * @param entityClass
+	 *            The entity class you want to find.
+	 * @return the next entity of the given class which ownes this entity or
+	 *         this entity if this entity has already the correct class or null
+	 *         if there is no valid parent entity in the hierarchy at all.
+	 */
+	@SuppressWarnings("unchecked")
+	public <T extends Entity> T findParentEntity(Class<T> entityClass) {
+		return getClass().equals(entityClass) ? (T) this
+				: parent != null ? parent.findParentEntity(entityClass) : null;
 	}
 
 	/**
@@ -627,13 +639,94 @@ public class Entity implements EntityController {
 	}
 
 	/**
+	 * Renders this entity into a picture component of the given entity. If
+	 * there is no picture component yet, a new one will be created using the
+	 * given transparency and the next scene in hierarchy and use its dimension
+	 * to create a new image. If there is no scene an exception will be thrown.
+	 * 
+	 * @param entity
+	 *            The entity in which you want to render.
+	 * @param optTransparency
+	 *            The optional transparency of the image if there is no picture
+	 *            component yet.
+	 */
+	public final void renderTo(Entity entity, int optTransparency) {
+		renderTo(entity, -1, -1, optTransparency);
+	}
+
+	/**
+	 * Renders this entity into a picture component of the given entity. If
+	 * there is no picture component yet, a new one will be created using the
+	 * given parameters. If there parameters are invalid the method will get the
+	 * next scene in hierarchy and use its dimension to create a new image. If
+	 * there is no scene an exception will be thrown.
+	 * 
+	 * @param entity
+	 *            The entity in which you want to render.
+	 * @param optWidth
+	 *            The optional width of the image if there is no picture
+	 *            component yet.
+	 * @param optHeight
+	 *            The optional height of the image if there is no picture
+	 *            component yet.
+	 * @param optTransparency
+	 *            The optional transparency of the image if there is no picture
+	 *            component yet.
+	 */
+	public final void renderTo(Entity entity, int optWidth, int optHeight,
+			int optTransparency) {
+		if (entity == null) {
+			throw new NullPointerException("entity");
+		}
+
+		// Lookup picture controller
+		PictureController pic = entity.getController(PictureController.class);
+
+		// Oops... thats bad
+		if (pic == null) {
+
+			/*
+			 * If width and height are not valid try to read these data from the
+			 * next scene in hierarchy.
+			 */
+			if (optWidth <= 0 || optHeight <= 0) {
+
+				// Try to get a scene
+				Scene scene = findScene();
+
+				/*
+				 * Bad... We can not decide which size the user want to use.
+				 */
+				if (scene == null) {
+					throw new IllegalStateException(
+							"The entity has no picture component and the "
+									+ "width/height you specified is not valid. But "
+									+ "there is no scene in your hierarchy, too, so "
+									+ "this method can not create a new image.");
+				} else {
+					// Reset width and height
+					optWidth = scene.getWidth();
+					optHeight = scene.getHeight();
+				}
+			}
+
+			// Create a new picture and add to entity
+			entity.putController(pic = new PictureController(optWidth,
+					optHeight, optTransparency));
+		}
+
+		// Render to the image
+		renderTo(pic.getImage());
+	}
+
+	/**
 	 * Renders this entity and all children to an image. This method uses the
 	 * visible/childrenVisible flags to determine what to render.
 	 * 
 	 * @param destination
 	 *            The image you want to render to.
 	 */
-	public final void render(Image destination) {
+	public final void renderTo(Image destination) {
 		if (destination == null) {
 			throw new NullPointerException("destination");
 		}

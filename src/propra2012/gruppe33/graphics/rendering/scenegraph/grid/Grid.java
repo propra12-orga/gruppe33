@@ -224,21 +224,15 @@ public class Grid extends Scene {
 		// Create a new entity
 		Entity entity = new Entity(name);
 
-		// Create a new picture
-		PictureController pic = new PictureController(getWidth(), getHeight(),
+		// Render the entity to a picture component
+		bundle(name, chars2Images).renderTo(entity, getWidth(), getHeight(),
 				Transparency.BITMASK);
-
-		// Add to controllers
-		entity.putController(pic);
 
 		// Set position
 		entity.getPosition().set(getWidth() * 0.5f, getHeight() * 0.5f);
 
 		// Adjust scale
 		entity.getScale().set(getWidth(), getHeight());
-
-		// Render the entity to an image
-		bundle(name, chars2Images).render(pic.getImage());
 
 		return entity;
 	}
