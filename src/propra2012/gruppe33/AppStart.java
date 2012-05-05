@@ -1,5 +1,7 @@
 package propra2012.gruppe33;
 
+import java.awt.Color;
+import java.awt.Graphics2D;
 import java.awt.image.BufferedImage;
 import java.io.File;
 import java.io.IOException;
@@ -12,6 +14,7 @@ import javax.swing.JFrame;
 import propra2012.gruppe33.graphics.rendering.JGridRenderer;
 import propra2012.gruppe33.graphics.rendering.scenegraph.Entity;
 import propra2012.gruppe33.graphics.rendering.scenegraph.grid.Grid;
+import propra2012.gruppe33.graphics.rendering.scenegraph.grid.GridController;
 
 /**
  * 
@@ -49,7 +52,7 @@ public class AppStart {
 		// }
 
 		// Create grid
-		Grid grid = new Grid("standard", 2048, 2048,
+		final Grid grid = new Grid("standard", 2048, 2048,
 				Grid.loadGrid("C:/map.txt"));
 
 		// Render solid blocks to image
@@ -62,17 +65,23 @@ public class AppStart {
 		// Bundle render to picture
 		Entity solid = grid.bundleAndRender("solid", map);
 
-		// Create new player
-		// Player p = new Player("test2");
+		Entity player = new Entity("test player") {
 
-		// Sprite spriteTest = new Sprite(ImageIO.read(new
-		// File("C:/sprite.png")),
-		// 6, 5);
+			@Override
+			public void doRender(Entity entity, Graphics2D original,
+					Graphics2D transformed) {
 
-		// p.getAnimations().addAnimation(
-		// spriteTest.newAnimationFromRange("running", 10, 0, 0, 6 * 5));
-		// p.getScale().scaleLocal(0.7f);
-		// p.setActiveAnimation("running");
+				transformed.setColor(Color.BLUE);
+				transformed.translate(-0.5, -0.5);
+				transformed.fillRect(0, 0, 1, 1);
+			}
+		};
+
+		player.putController(new GridController(1, 1));
+		player.getScale().set(grid.getRasterWidth(), grid.getRasterHeight());
+		player.getPosition().set(
+				grid.vectorAt(player.getController(GridController.class)
+						.getLocation()));
 
 		// Create new level renderer
 		final JGridRenderer renderer = new JGridRenderer(grid);
@@ -80,6 +89,10 @@ public class AppStart {
 		// Attach solid blocks
 		renderer.getRoot().attach(solid);
 
+		// Attach child
+		renderer.getRoot().attach(player);
+
+		// Start rendering
 		renderer.start();
 
 		JFrame frame = new JFrame();

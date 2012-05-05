@@ -188,6 +188,22 @@ public class Vector2f implements Serializable {
 	}
 
 	/**
+	 * Sets the components of this vector.
+	 * 
+	 * @param other
+	 *            The vector which you want to copy.
+	 * @return this.
+	 */
+	public Vector2f set(Vector2f other) {
+		if (other == null) {
+			throw new NullPointerException("other");
+		}
+		this.x = other.x;
+		this.y = other.y;
+		return this;
+	}
+
+	/**
 	 * @return the length of this vector.
 	 */
 	public float length() {

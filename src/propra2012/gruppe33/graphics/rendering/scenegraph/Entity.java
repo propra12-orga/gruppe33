@@ -162,6 +162,48 @@ public class Entity implements EntityController {
 	}
 
 	/**
+	 * Renders the given controller and manages copies of the graphics contexts.
+	 * 
+	 * @param controller
+	 *            The controller you want to render.
+	 * @param original
+	 *            The original graphics context.
+	 * @param transformed
+	 *            The transformed graphics context.
+	 */
+	private void renderController(EntityController controller,
+			Graphics2D original, Graphics2D transformed) {
+
+		if (original == null) {
+			throw new NullPointerException("original");
+		} else if (transformed == null) {
+			throw new NullPointerException("transformed");
+		}
+
+		// Create a copy the original graphics
+		Graphics2D originalCopy = (Graphics2D) original.create();
+
+		try {
+
+			// Create a copy of the transformed graphics
+			Graphics2D transformedCopy = (Graphics2D) transformed.create();
+
+			try {
+
+				// Render the entity to this entity
+				controller.doRender(this, originalCopy, transformedCopy);
+
+			} finally {
+				// Dispose the transformed copy
+				transformedCopy.dispose();
+			}
+		} finally {
+			// Dispose the original copy
+			originalCopy.dispose();
+		}
+	}
+
+	/**
 	 * Creates an entity using the given name. You really have to provide a non
 	 * null name since null-keys are not allowed in hashing.
 	 * 
@@ -363,6 +405,10 @@ public class Entity implements EntityController {
 	 */
 	@SuppressWarnings("unchecked")
 	public <T extends Entity> T findParentEntity(Class<T> entityClass) {
+		if (entityClass == null) {
+			throw new NullPointerException("entityClass");
+		}
+
 		return getClass().equals(entityClass) ? (T) this
 				: parent != null ? parent.findParentEntity(entityClass) : null;
 	}
@@ -493,13 +539,13 @@ public class Entity implements EntityController {
 	 * Sets the relative scale of this entity.
 	 * 
 	 * @param scale
-	 *            The vector you want to use as scale now. If the vector is null
-	 *            nothing happens.
+	 *            The vector you want to use as scale now.
 	 */
 	public void setScale(Vector2f scale) {
 		if (scale != null) {
-			this.scale = scale;
+			throw new NullPointerException("scale");
 		}
+		this.scale = scale;
 	}
 
 	/**
@@ -530,14 +576,14 @@ public class Entity implements EntityController {
 	 * Sets the relative position of this entity.
 	 * 
 	 * @param position
-	 *            The vector you want to use as position now. If the vector is
-	 *            null nothing happens.
+	 *            The vector you want to use as position now.
 	 */
 	public void setPosition(Vector2f position) {
-		// Do not allow null positions!
-		if (position != null) {
-			this.position = position;
+		if (position == null) {
+			throw new NullPointerException("position");
 		}
+
+		this.position = position;
 	}
 
 	/**
@@ -599,6 +645,8 @@ public class Entity implements EntityController {
 	@Override
 	public void doRender(Entity entity, Graphics2D original,
 			Graphics2D transformed) {
+
+		// Is not rendered in default impl. for performance reasons.
 	}
 
 	/*
@@ -769,44 +817,44 @@ public class Entity implements EntityController {
 			throw new NullPointerException("transformed");
 		}
 
-		// Create a copy the original graphics
-		Graphics2D originalCopy = (Graphics2D) original.create();
-
+		// Create a copy of the transformed graphics and transform again
+		Graphics2D transformedCopy = transform((Graphics2D) transformed
+				.create());
 		try {
 
-			// Create a copy of the transformed graphics and transform again
-			Graphics2D transformedCopy = transform((Graphics2D) transformed
-					.create());
-			try {
+			if (visible) {
 
-				if (visible) {
+				/*
+				 * Performance optimization:
+				 * 
+				 * We only want to render an entity if this entity is extended
+				 * because the doRender method is always empty in default impl.
+				 * so we would create "useless" copies of the context.
+				 */
+				if (!getClass().equals(Entity.class)) {
 					// Render this entity
-					doRender(this, originalCopy, transformedCopy);
-
-					// Check controllers
-					if (!controllers.isEmpty()) {
-						for (EntityController controller : getControllerCache()) {
-							// Render the controller
-							controller.doRender(this, originalCopy,
-									transformedCopy);
-						}
-					}
+					renderController(this, original, transformedCopy);
 				}
 
-				if (childrenVisible) {
-					// Render all children
-					for (Entity child : getEntityCache()) {
-						// Just render
-						child.render(originalCopy, transformedCopy);
+				// Check controllers
+				if (!controllers.isEmpty()) {
+					for (EntityController controller : getControllerCache()) {
+						// Render the controller
+						renderController(controller, original, transformedCopy);
 					}
 				}
-			} finally {
-				// Dispose the transformed copy
-				transformedCopy.dispose();
+			}
+
+			if (childrenVisible) {
+				// Render all children
+				for (Entity child : getEntityCache()) {
+					// Just render
+					child.render(original, transformedCopy);
+				}
 			}
 		} finally {
-			// Dispose the original copy
-			originalCopy.dispose();
+			// Dispose the transformed copy
+			transformedCopy.dispose();
 		}
 	}
 }
