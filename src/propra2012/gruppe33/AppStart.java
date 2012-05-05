@@ -15,6 +15,7 @@ import propra2012.gruppe33.graphics.rendering.JGridRenderer;
 import propra2012.gruppe33.graphics.rendering.scenegraph.Entity;
 import propra2012.gruppe33.graphics.rendering.scenegraph.Vector2f;
 import propra2012.gruppe33.graphics.rendering.scenegraph.grid.Grid;
+import propra2012.gruppe33.graphics.rendering.scenegraph.grid.Grid.Direction;
 import propra2012.gruppe33.graphics.rendering.scenegraph.grid.GridController;
 
 /**
@@ -29,36 +30,9 @@ public class AppStart {
 	 */
 	public static void main(String[] args) throws IOException {
 
-		//
-		// for (int i = 0; i < 15; i++) {
-		// for (int j = 0; j < 15; j++) {
-		//
-		// AnimatedEntity e = new AnimatedEntity("first obj" + i + " " + j) {
-		//
-		// @Override
-		// public void doRender(Graphics2D g) {
-		// // g.setStroke(new BasicStroke(4));
-		// g.setColor(Color.black);
-		// g.drawArc(-10, -10, 20, 20, 0, 360);
-		// g.drawLine(0, 0, 0, 10);
-		//
-		// }
-		// };
-		// e.getPosition().set(10 + 20 * i, 10 + 20 * j);
-		//
-		// e.setAngularVelocity((float) (Math.PI * 2));
-		//
-		// renderer.getScene().attach(e);
-		// }
-		// }
-
 		// Create grid
 		final Grid grid = new Grid("standard", 2048, 2048,
 				Grid.loadGrid("C:/map.txt"));
-
-		// Render solid blocks to image
-		// BufferedImage solidBlocks = grid.renderSolidBlocks(
-		// ImageIO.read(new File("C:/box.png")), '1');
 
 		Map<Character, BufferedImage> map = new HashMap<Character, BufferedImage>();
 		map.put('1', ImageIO.read(new File("C:/box.png")));
@@ -75,6 +49,30 @@ public class AppStart {
 				transformed.setColor(Color.BLUE);
 				transformed.translate(-0.5, -0.5);
 				transformed.fillRect(0, 0, 1, 1);
+				transformed.translate(0.5, 0.5);
+				transformed.setColor(Color.black);
+
+				Direction d = entity.getController(GridController.class)
+						.getDirection();
+
+				switch (d) {
+				case North:
+					transformed.scale(0.01f, 1);
+					transformed.drawLine(0, 0, 0, -1);
+					break;
+				case South:
+					transformed.scale(0.01f, 1);
+					transformed.drawLine(0, 0, 0, 1);
+					break;
+				case West:
+					transformed.scale(1, 0.01f);
+					transformed.drawLine(0, 0, -1, 0);
+					break;
+				case East:
+					transformed.scale(1, 0.01f);
+					transformed.drawLine(0, 0, 1, 0);
+					break;
+				}
 			}
 		};
 

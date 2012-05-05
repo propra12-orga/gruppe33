@@ -81,7 +81,7 @@ public class Entity implements EntityController {
 			readOnlyChildren = Collections.unmodifiableSet(children);
 
 	/*
-	 * Maps names to entity controllers.
+	 * Maps classes to entity controllers.
 	 */
 	private final Map<Class<? extends EntityController>, EntityController> controllers = new LinkedHashMap<Class<? extends EntityController>, EntityController>();
 
