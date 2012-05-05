@@ -13,6 +13,7 @@ import javax.swing.JFrame;
 
 import propra2012.gruppe33.graphics.rendering.JGridRenderer;
 import propra2012.gruppe33.graphics.rendering.scenegraph.Entity;
+import propra2012.gruppe33.graphics.rendering.scenegraph.Vector2f;
 import propra2012.gruppe33.graphics.rendering.scenegraph.grid.Grid;
 import propra2012.gruppe33.graphics.rendering.scenegraph.grid.GridController;
 
@@ -77,11 +78,10 @@ public class AppStart {
 			}
 		};
 
-		player.putController(new GridController(1, 1));
+		player.putController(new GridController(new Vector2f(500, 500)));
 		player.getScale().set(grid.getRasterWidth(), grid.getRasterHeight());
-		player.getPosition().set(
-				grid.vectorAt(player.getController(GridController.class)
-						.getLocation()));
+		player.getPosition().set(grid.vectorAt(1, 3));
+		player.getPosition().x += 150;
 
 		// Create new level renderer
 		final JGridRenderer renderer = new JGridRenderer(grid);

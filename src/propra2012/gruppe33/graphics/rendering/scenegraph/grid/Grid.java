@@ -8,9 +8,11 @@ import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileReader;
 import java.io.IOException;
+import java.util.HashSet;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 import propra2012.gruppe33.graphics.rendering.scenegraph.Entity;
 import propra2012.gruppe33.graphics.rendering.scenegraph.PictureController;
@@ -266,13 +268,13 @@ public class Grid extends Scene {
 	}
 
 	/**
-	 * Translates world coords to the nearest grid coords.
+	 * Translates world coords to the nearest point.
 	 * 
 	 * @param position
 	 *            The world position you want to translate.
 	 * @return a new point containing the nearest grid coords.
 	 */
-	public Point worldToNearestGrid(Vector2f position) {
+	public Point worldToNearestPoint(Vector2f position) {
 		if (position == null) {
 			throw new NullPointerException("position");
 		}
@@ -311,6 +313,130 @@ public class Grid extends Scene {
 	 */
 	public boolean validate(int x, int y) {
 		return x < rasterX && x >= 0 && y < rasterY && y >= 0 ? true : false;
+	}
+
+	/**
+	 * An enum which contains all four directions.
+	 * 
+	 * @author Christopher Probst
+	 * 
+	 */
+	public enum Direction {
+		North, South, East, West
+	}
+
+	/**
+	 * This is one of the most important methods when dealing with movement. It
+	 * calculates the line-of-sight using the given direction.
+	 * 
+	 * @param position
+	 *            The world position.
+	 * @param max
+	 *            The max distance. Please note that the method runs faster if
+	 *            you use a short distance since this value affects a loop.
+	 * @param direction
+	 *            The {@link Direction} of the test.
+	 * @param validChars
+	 *            An array of chars which will not affect the line-of-sight.
+	 * @return the line-of-sight in world space.
+	 */
+	public float lineOfSight(Vector2f position, float max, Direction direction,
+			char... validChars) {
+		Set<Character> set = new HashSet<Character>();
+		for (char validChar : validChars) {
+			set.add(validChar);
+		}
+		return lineOfSight(position, max, direction, set);
+	}
+
+	/**
+	 * This is one of the most important methods when dealing with movement. It
+	 * calculates the line-of-sight using the given direction.
+	 * 
+	 * @param position
+	 *            The world position.
+	 * @param max
+	 *            The max distance. Please note that the method runs faster if
+	 *            you use a short distance since this value affects a loop.
+	 * @param direction
+	 *            The {@link Direction} of the test.
+	 * @param validChars
+	 *            The set of chars which will not affect the line-of-sight.
+	 * @return the line-of-sight in world space.
+	 */
+	public float lineOfSight(Vector2f position, float max, Direction direction,
+			Set<Character> validChars) {
+
+		// Get the coords of the nearest point
+		Point point = validate(worldToNearestPoint(position));
+
+		// Position is outside the grid
+		if (point == null) {
+			throw new IllegalArgumentException("Position out of grid");
+		}
+
+		// Convert to world
+		Vector2f nearest = vectorAt(point);
+
+		// The return value and the increase value
+		float distance, increase;
+
+		// Used for check
+		int offx, offy;
+
+		switch (direction) {
+
+		case North:
+		case South:
+
+			// Calc distance
+			distance = direction == Direction.North ? position.y - nearest.y
+					: nearest.y - position.y;
+
+			// Setup the increase
+			increase = rasterHeight;
+
+			// Init
+			offy = direction == Direction.North ? -1 : 1;
+			offx = 0;
+
+			break;
+
+		case West:
+		case East:
+
+			// Calc distance
+			distance = direction == Direction.West ? position.x - nearest.x
+					: nearest.x - position.x;
+
+			// Setup the increase
+			increase = rasterWidth;
+
+			// Init
+			offy = 0;
+			offx = direction == Direction.West ? -1 : 1;
+
+			break;
+
+		default:
+			throw new IllegalArgumentException("Unknown enum type: "
+					+ direction);
+		}
+
+		// Validate the new position and check for valid chars
+		while (validate(point.x += offx, point.y += offy)
+				&& validChars.contains(charAt(point)) && distance < max) {
+
+			// Increase distance
+			distance += increase;
+		}
+
+		// Limit the result
+		if (distance > max) {
+			distance = max;
+		}
+
+		return distance;
 	}
 
 	/**
