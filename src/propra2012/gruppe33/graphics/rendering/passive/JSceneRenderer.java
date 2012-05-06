@@ -1,18 +1,22 @@
-package propra2012.gruppe33.graphics.rendering;
+package propra2012.gruppe33.graphics.rendering.passive;
 
 import java.awt.Graphics;
 import java.awt.Graphics2D;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
-import java.awt.event.FocusAdapter;
-import java.awt.event.FocusEvent;
 
 import javax.swing.JPanel;
 import javax.swing.Timer;
 
+import propra2012.gruppe33.graphics.rendering.active.SceneProcessor;
 import propra2012.gruppe33.graphics.rendering.scenegraph.Scene;
 
 /**
+ * WARNING:
+ * 
+ * This class uses passive rendering => Bad for games!!! There is another impl.
+ * which uses active rendering.
+ * 
  * A naiv approach to render a game. A JPanel is not very performant but it
  * should fit the needs since the game represents a simple task.
  * 
@@ -20,7 +24,7 @@ import propra2012.gruppe33.graphics.rendering.scenegraph.Scene;
  * once in 20ms. This reduces overhead while resizing.
  * 
  * @author Christopher Probst
- * 
+ * @see SceneProcessor
  */
 public class JSceneRenderer<S extends Scene> extends JPanel implements
 		ActionListener {
@@ -64,24 +68,8 @@ public class JSceneRenderer<S extends Scene> extends JPanel implements
 		// Save the root
 		this.root = root;
 
-		// Use root as key listener
-		addKeyListener(root);
-
-		/*
-		 * IMPORTANT:
-		 * 
-		 * Clear the keyboard status if we lost the focus.
-		 */
-		addFocusListener(new FocusAdapter() {
-
-			@Override
-			public void focusLost(FocusEvent e) {
-				JSceneRenderer.this.root.clearKeyboardState();
-			}
-		});
-
-		// Focusable!
-		setFocusable(true);
+		// Connect
+		root.connectTo(this);
 	}
 
 	/**

@@ -1,18 +1,12 @@
 package propra2012.gruppe33;
 
 import java.awt.image.BufferedImage;
-import java.io.IOException;
 import java.util.HashMap;
 import java.util.Map;
 
-import javax.swing.JFrame;
-
 import propra2012.gruppe33.assets.AssetManager;
-import propra2012.gruppe33.graphics.rendering.JGridRenderer;
 import propra2012.gruppe33.graphics.rendering.scenegraph.Entity;
-import propra2012.gruppe33.graphics.rendering.scenegraph.animation.AnimationController;
 import propra2012.gruppe33.graphics.rendering.scenegraph.grid.Grid;
-import propra2012.gruppe33.graphics.rendering.scenegraph.grid.GridController;
 import propra2012.gruppe33.routines.AnimationRoutines;
 import propra2012.gruppe33.routines.PlayerRoutines;
 
@@ -22,11 +16,7 @@ import propra2012.gruppe33.routines.PlayerRoutines;
  */
 public class PreMilestoneApp {
 
-	/**
-	 * @param args
-	 * @throws IOException
-	 */
-	public static void main(String[] args) throws IOException {
+	public static Grid createDemoGame() throws Exception {
 
 		// Load grid from file
 		final Grid grid = AssetManager.loadGrid("standard", "maps/map.txt",
@@ -50,23 +40,13 @@ public class PreMilestoneApp {
 				AnimationRoutines.createKnight(33), grid, 1, 1);
 
 		player.getScale().scaleLocal(2);
-		
-		// Create new level renderer
-		final JGridRenderer renderer = new JGridRenderer(grid);
 
 		// Attach solid blocks
-		renderer.getRoot().attach(solid);
+		grid.attach(solid);
 
 		// Attach child
-		renderer.getRoot().attach(player);
+		grid.attach(player);
 
-		// Start rendering
-		renderer.start();
-
-		JFrame frame = new JFrame();
-		frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
-		frame.getContentPane().add(renderer);
-		frame.setSize(500, 500);
-		frame.setVisible(true);
+		return grid;
 	}
 }

@@ -1,9 +1,12 @@
 package propra2012.gruppe33.graphics.rendering.scenegraph;
 
 import java.awt.Color;
+import java.awt.Component;
 import java.awt.Graphics;
 import java.awt.Graphics2D;
 import java.awt.Image;
+import java.awt.event.FocusEvent;
+import java.awt.event.FocusListener;
 import java.awt.event.KeyEvent;
 import java.awt.event.KeyListener;
 import java.util.HashMap;
@@ -24,7 +27,7 @@ import java.util.Map;
  * @see Entity
  * @see Vector2f
  */
-public class Scene extends Entity implements KeyListener {
+public class Scene extends Entity implements KeyListener, FocusListener {
 
 	// The keyboard state which is used to process the input
 	private final Map<Integer, Boolean> keyboardState = new HashMap<Integer, Boolean>();
@@ -60,6 +63,51 @@ public class Scene extends Entity implements KeyListener {
 
 		// Calc new ratio
 		ratio = width / (float) height;
+	}
+
+	/**
+	 * Connect to an awt component.
+	 * 
+	 * @param component
+	 *            The component which should manages this scene with events.
+	 */
+	public void connectTo(Component component) {
+		// Add listener
+		component.addKeyListener(this);
+		component.addFocusListener(this);
+	}
+
+	/**
+	 * Disconnect from an awt component.
+	 * 
+	 * @param component
+	 *            The component which manages this scene with events.
+	 */
+	public void disconnectFrom(Component component) {
+		component.removeKeyListener(this);
+		component.removeFocusListener(this);
+	}
+
+	/*
+	 * (non-Javadoc)
+	 * 
+	 * @see java.awt.event.FocusListener#focusGained(java.awt.event.FocusEvent)
+	 */
+	@Override
+	public void focusGained(FocusEvent e) {
+		// TODO Auto-generated method stub
+
+	}
+
+	/*
+	 * (non-Javadoc)
+	 * 
+	 * @see java.awt.event.FocusListener#focusLost(java.awt.event.FocusEvent)
+	 */
+	@Override
+	public void focusLost(FocusEvent e) {
+		// Clear keyboard
+		clearKeyboardState();
 	}
 
 	/**
@@ -188,11 +236,14 @@ public class Scene extends Entity implements KeyListener {
 	 * without modifying the states of the children.
 	 * 
 	 * @param graphics
-	 *            The graphics context you want to render to.
+	 *            The graphics context you want to render to. If null the scene
+	 *            is only updated.
 	 * @param width
-	 *            The width of the destination frame.
+	 *            The width of the destination frame. If < 1 the scene is only
+	 *            update.
 	 * @param height
-	 *            The height of the destination frame.
+	 *            The height of the destination frame. If < 1 the scene is only
+	 *            update.
 	 */
 	public final void simulate(Graphics2D graphics, int width, int height) {
 		simulate(graphics, width, height, 0);
@@ -204,20 +255,19 @@ public class Scene extends Entity implements KeyListener {
 	 * translated to the graphics context.
 	 * 
 	 * @param graphics
-	 *            The graphics context you want to render to.
+	 *            The graphics context you want to render to. If null the scene
+	 *            is only updated.
 	 * @param width
-	 *            The width of the destination frame.
+	 *            The width of the destination frame. If < 1 the scene is only
+	 *            update.
 	 * @param height
-	 *            The height of the destination frame.
+	 *            The height of the destination frame. If < 1 the scene is only
+	 *            update.
 	 * @param tpf
 	 *            The time-per-frame to update the children states.
 	 */
 	public final void simulate(Graphics2D graphics, int width, int height,
 			long tpf) {
-
-		if (graphics == null) {
-			throw new NullPointerException("graphics");
-		}
 
 		// Only update if tpf is > 0
 		if (tpf > 0) {
@@ -226,42 +276,48 @@ public class Scene extends Entity implements KeyListener {
 			update(tpf * 0.001f);
 		}
 
-		// Not visible...
-		if (width <= 0 || height <= 0) {
-			return;
+		// Render if graphics exists and dimension is correct
+		if (graphics != null && width > 0 && height > 0) {
+
+			// Calc the ratio which we have to fit
+			float dstRatio = ratio;
+
+			// Calc new dimension
+			float newWidth = width, newHeight = width / dstRatio;
+
+			// Check height
+			if (newHeight > height) {
+
+				// Recalc
+				newHeight = height;
+				newWidth = dstRatio * newHeight;
+			}
+
+			// Copy the graphics
+			Graphics2D copy = (Graphics2D) graphics.create();
+
+			try {
+				// At first translate the context
+				copy.translate(width * 0.5f - newWidth * 0.5f, height * 0.5f
+						- newHeight * 0.5f);
+
+				// Scale using the vector
+				copy.scale(newWidth / this.width, newHeight / this.height);
+
+				// Limit the clip
+				copy.setClip(0, 0, this.width, this.height);
+
+				// Set background color
+				copy.setBackground(Color.white);
+
+				// Clear the rect
+				copy.clearRect(0, 0, this.width, this.height);
+
+				// Finally render
+				render(copy, copy);
+			} finally {
+				copy.dispose();
+			}
 		}
-
-		// Calc the ratio which we have to fit
-		float dstRatio = ratio;
-
-		// Calc new dimension
-		float newWidth = width, newHeight = width / dstRatio;
-
-		// Check height
-		if (newHeight > height) {
-
-			// Recalc
-			newHeight = height;
-			newWidth = dstRatio * newHeight;
-		}
-
-		// At first translate the context
-		graphics.translate(width * 0.5f - newWidth * 0.5f, height * 0.5f
-				- newHeight * 0.5f);
-
-		// Scale using the vector
-		graphics.scale(newWidth / this.width, newHeight / this.height);
-
-		// Limit the clip
-		graphics.setClip(0, 0, this.width, this.height);
-
-		// Set background color
-		graphics.setBackground(Color.white);
-
-		// Clear the rect
-		graphics.clearRect(0, 0, this.width, this.height);
-
-		// Finally render
-		render(graphics, graphics);
 	}
 }

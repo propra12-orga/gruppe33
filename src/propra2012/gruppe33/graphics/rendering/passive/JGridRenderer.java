@@ -1,4 +1,4 @@
-package propra2012.gruppe33.graphics.rendering;
+package propra2012.gruppe33.graphics.rendering.passive;
 
 import propra2012.gruppe33.graphics.rendering.scenegraph.grid.Grid;
 
