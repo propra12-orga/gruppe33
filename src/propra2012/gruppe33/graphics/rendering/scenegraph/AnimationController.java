@@ -1,23 +1,35 @@
 package propra2012.gruppe33.graphics.rendering.scenegraph;
 
 import java.awt.Graphics2D;
-import java.awt.image.BufferedImage;
-import java.io.File;
-import java.io.IOException;
-import java.util.List;
 
 import propra2012.gruppe33.graphics.sprite.Animation;
+import propra2012.gruppe33.graphics.sprite.AnimationMap;
 
-public class AnimationController extends Animation implements EntityController {
+public class AnimationController implements EntityController {
 
-	public AnimationController(String name, long timePerImage, File dir,
-			String prefix, String postfix, int count) throws IOException {
-		super(name, timePerImage, dir, prefix, postfix, count);
+	// The map which stores all animations
+	public final AnimationMap animationMap;
+	private String animation;
+
+	public AnimationController(AnimationMap animationMap) {
+		this.animationMap = animationMap;
 	}
 
-	public AnimationController(String name, List<BufferedImage> images,
-			long timePerImage) {
-		super(name, images, timePerImage);
+	public AnimationMap getAnimationMap() {
+		return animationMap;
+	}
+
+	public String getAnimation() {
+		return animation;
+	}
+
+	public void setAnimation(String animation) {
+		this.animation = animation;
+
+		Animation tmp = animationMap.get(animation);
+		if (tmp != null) {
+			tmp.resetAnimation();
+		}
 	}
 
 	/*
@@ -31,7 +43,14 @@ public class AnimationController extends Animation implements EntityController {
 	@Override
 	public void doRender(Entity entity, Graphics2D original,
 			Graphics2D transformed) {
-		transformed.drawImage(getAnimationImage(), 0, 0, 1, 1, null);
+
+		// Lookup up active animation
+		Animation tmp = animationMap.get(animation);
+
+		if (tmp != null) {
+			transformed.translate(-0.5, -0.5);
+			transformed.drawImage(tmp.getAnimationImage(), 0, 0, 1, 1, null);
+		}
 	}
 
 	/*

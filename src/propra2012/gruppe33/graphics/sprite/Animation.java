@@ -1,13 +1,9 @@
 package propra2012.gruppe33.graphics.sprite;
 
 import java.awt.image.BufferedImage;
-import java.io.File;
-import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.RandomAccess;
-
-import propra2012.gruppe33.graphics.rendering.ImageUtil;
 
 /**
  * This class represents a single Animation
@@ -37,19 +33,16 @@ public class Animation {
 	private int animationStep = 0;
 
 	// Should this animation loop ?
-	private boolean loop = false;
+	private boolean loop = true;
+
+	// Is this animation paused ?
+	private boolean paused = false;
 
 	// The duration of the animation
 	private final long animationDuration;
 
 	// Time vars
 	private long timeStamp, timePerImage;
-
-	public Animation(String name, long timePerImage, File dir, String prefix,
-			String postfix, int count) throws IOException {
-		this(name, ImageUtil.loadWithSchema(dir, prefix, postfix, count),
-				timePerImage);
-	}
 
 	public Animation(String name, List<BufferedImage> images, long timePerImage) {
 
@@ -79,6 +72,14 @@ public class Animation {
 
 		// Start...
 		resetAnimation();
+	}
+
+	public boolean isPaused() {
+		return paused;
+	}
+
+	public void setPaused(boolean paused) {
+		this.paused = paused;
 	}
 
 	public boolean isLoop() {
@@ -120,6 +121,10 @@ public class Animation {
 	 * @return
 	 */
 	public BufferedImage getAnimationImage() {
+
+		if (paused) {
+			return images.get(animationStep);
+		}
 
 		// Read the actual time
 		long time = System.currentTimeMillis();

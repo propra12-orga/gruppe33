@@ -7,6 +7,7 @@ import propra2012.gruppe33.graphics.rendering.scenegraph.EntityController;
 import propra2012.gruppe33.graphics.rendering.scenegraph.Vector2f;
 
 /**
+ * TODO: Doc.
  * 
  * @author Christopher Probst
  * 
@@ -28,8 +29,9 @@ public class PhysicsController implements EntityController {
 
 	public void setAcceleration(Vector2f acceleration) {
 		if (acceleration != null) {
-			this.acceleration = acceleration;
+			throw new NullPointerException("acceleration");
 		}
+		this.acceleration = acceleration;
 	}
 
 	public float getAngularVelocity() {
@@ -46,8 +48,9 @@ public class PhysicsController implements EntityController {
 
 	public void setVelocity(Vector2f velocity) {
 		if (velocity != null) {
-			this.velocity = velocity;
+			throw new NullPointerException("velocity");
 		}
+		this.velocity = velocity;
 	}
 
 	/*

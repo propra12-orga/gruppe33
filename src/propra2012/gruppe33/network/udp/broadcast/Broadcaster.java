@@ -18,8 +18,9 @@ import java.nio.ByteBuffer;
  * address and then all requests on this address are answered with your message.
  * 
  * 
- * @author Christopher Probst
+ * TODO: Doc.
  * 
+ * @author Christopher Probst
  */
 public final class Broadcaster extends Thread {
 

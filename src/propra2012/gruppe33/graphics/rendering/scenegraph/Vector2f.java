@@ -17,36 +17,6 @@ public class Vector2f implements Serializable {
 	private static final long serialVersionUID = 1L;
 
 	/**
-	 * Used to compare floats with a given threshold.
-	 */
-	public static final float kEpsilon = 1E-6f;
-
-	/**
-	 * Clamps a float value.
-	 * 
-	 * @param v
-	 *            The value you want to clamp.
-	 * @param min
-	 *            The min value.
-	 * @param max
-	 *            The max value.
-	 * @return the clamped value.
-	 */
-	public static float clamp(float v, float min, float max) {
-		if (max < min) {
-			throw new IllegalArgumentException("max is smaller than min");
-		}
-
-		// Clamp...
-		if (v < min) {
-			v = min;
-		} else if (v > max) {
-			v = max;
-		}
-		return v;
-	}
-
-	/**
 	 * Lerps two vectors (Linear interpolation). This means you provide two
 	 * vectors (start, end) and a float between 0 and 1. This method calculates
 	 * a new vector which is between start and end using the given float value.
@@ -68,7 +38,7 @@ public class Vector2f implements Serializable {
 		}
 
 		// Return the lerp vector
-		return start.add(end.sub(start).scale(clamp(time, 0f, 1f)));
+		return start.add(end.sub(start).scale(Mathf.clamp(time, 0f, 1f)));
 	}
 
 	/**
@@ -99,7 +69,7 @@ public class Vector2f implements Serializable {
 		float time = maxDelta / dist.length();
 
 		// Return a lerped value
-		return start.add(dist.scale(clamp(time, 0f, 1f)));
+		return start.add(dist.scale(Mathf.clamp(time, 0f, 1f)));
 	}
 
 	/**
@@ -184,6 +154,22 @@ public class Vector2f implements Serializable {
 	public Vector2f set(float x, float y) {
 		this.x = x;
 		this.y = y;
+		return this;
+	}
+
+	/**
+	 * Sets the components of this vector.
+	 * 
+	 * @param other
+	 *            The vector which you want to copy.
+	 * @return this.
+	 */
+	public Vector2f set(Vector2f other) {
+		if (other == null) {
+			throw new NullPointerException("other");
+		}
+		this.x = other.x;
+		this.y = other.y;
 		return this;
 	}
 
@@ -366,11 +352,11 @@ public class Vector2f implements Serializable {
 		}
 		Vector2f other = (Vector2f) obj;
 
-		if (!xThreshold(other.x, kEpsilon)) {
+		if (!xThreshold(other.x, Mathf.kEpsilon)) {
 			return false;
 		}
 
-		if (!yThreshold(other.y, kEpsilon)) {
+		if (!yThreshold(other.y, Mathf.kEpsilon)) {
 			return false;
 		}
 

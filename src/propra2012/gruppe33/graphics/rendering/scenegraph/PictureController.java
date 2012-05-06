@@ -3,7 +3,7 @@ package propra2012.gruppe33.graphics.rendering.scenegraph;
 import java.awt.Graphics2D;
 import java.awt.Image;
 
-import propra2012.gruppe33.graphics.rendering.ImageUtil;
+import propra2012.gruppe33.graphics.rendering.util.ImageUtil;
 
 /**
  * This class simply renders a centered image. You MUST specify the correct
