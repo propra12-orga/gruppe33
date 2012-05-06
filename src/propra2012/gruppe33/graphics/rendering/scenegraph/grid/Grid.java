@@ -4,16 +4,11 @@ import java.awt.GraphicsEnvironment;
 import java.awt.Point;
 import java.awt.Transparency;
 import java.awt.image.BufferedImage;
-import java.io.BufferedReader;
-import java.io.IOException;
-import java.io.InputStreamReader;
+import java.util.HashMap;
 import java.util.HashSet;
-import java.util.LinkedList;
-import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
-import propra2012.gruppe33.AppStart;
 import propra2012.gruppe33.graphics.rendering.scenegraph.Entity;
 import propra2012.gruppe33.graphics.rendering.scenegraph.PictureController;
 import propra2012.gruppe33.graphics.rendering.scenegraph.Scene;
@@ -65,34 +60,6 @@ public class Grid extends Scene {
 	}
 
 	/**
-	 * Loads a grid.
-	 * 
-	 * @deprecated ONLY USED FOR TEST PURPOSES.
-	 */
-	public static char[][] loadGrid(String file) throws IOException {
-		BufferedReader reader = new BufferedReader(new InputStreamReader(
-				AppStart.class.getResourceAsStream("assets/maps/" + file)));
-		try {
-			List<String> lines = new LinkedList<String>();
-
-			String line;
-			while ((line = reader.readLine()) != null) {
-				lines.add(line);
-			}
-
-			char[][] arr = new char[lines.size()][lines.get(0).length()];
-			int i = 0;
-			for (String s : lines) {
-				arr[i++] = s.toCharArray();
-			}
-
-			return arr;
-		} finally {
-			reader.close();
-		}
-	}
-
-	/**
 	 * Creates a compatible image for rendering the solid blocks.
 	 * 
 	 * @param width
@@ -118,6 +85,10 @@ public class Grid extends Scene {
 
 	// Here we store all vectors of the world
 	private final Vector2f[][] worldMap;
+
+	// Here we store the max field velocities (Useful for areas where you can
+	// only go slowly...)
+	private final Map<Character, Float> maxFieldVelocities = new HashMap<Character, Float>();
 
 	/**
 	 * Creates a new grid using the given parameters.
@@ -206,6 +177,14 @@ public class Grid extends Scene {
 		}
 
 		return root;
+	}
+
+	/**
+	 * @return the map which contains the max field velocities. Only chars
+	 *         listed here represent valid fields on which you can move.
+	 */
+	public Map<Character, Float> getMaxFieldVelocities() {
+		return maxFieldVelocities;
 	}
 
 	/**

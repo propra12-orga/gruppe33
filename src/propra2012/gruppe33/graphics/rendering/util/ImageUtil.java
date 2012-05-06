@@ -60,8 +60,8 @@ public class ImageUtil {
 		}
 
 		// Clamp the coords
-		x = Mathf.clamp(x, 0, rasterX);
-		y = Mathf.clamp(y, 0, rasterY);
+		x = Mathf.clamp(x, 0, rasterX - 1);
+		y = Mathf.clamp(y, 0, rasterY - 1);
 
 		// Calculating the size of one sub image
 		int sizeXPlate = image.getWidth() / rasterX;

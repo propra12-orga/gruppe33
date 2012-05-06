@@ -5,6 +5,7 @@ import java.awt.image.BufferedImage;
 import java.util.ArrayList;
 import java.util.List;
 
+import propra2012.gruppe33.graphics.rendering.scenegraph.Mathf;
 import propra2012.gruppe33.graphics.rendering.util.ImageUtil;
 
 /**
@@ -17,7 +18,7 @@ import propra2012.gruppe33.graphics.rendering.util.ImageUtil;
  * @see Animation
  * @see AnimationMap
  */
-public class Sprite {
+public final class Sprite {
 
 	// Here we store all sub images
 	private final BufferedImage[][] subImages;
@@ -82,8 +83,31 @@ public class Sprite {
 		return rasterY;
 	}
 
+	/**
+	 * Creates a new animation using a given range of sub images.
+	 * 
+	 * @param name
+	 *            The name of the new animation.
+	 * @param timePerImage
+	 *            The time-per-frame of the animation.
+	 * @param fromX
+	 *            The x start component.
+	 * @param fromY
+	 *            The y start component.
+	 * @param count
+	 *            The number of sub images read step by step.
+	 * @return a new animation containig the given sub images.
+	 */
 	public Animation newAnimationFromRange(String name, long timePerImage,
 			int fromX, int fromY, int count) {
+
+		if (count <= 0) {
+			throw new IllegalArgumentException("count must be > 0");
+		}
+
+		// Clamp the coords
+		fromX = Mathf.clamp(fromX, 0, rasterX - 1);
+		fromY = Mathf.clamp(fromY, 0, rasterY - 1);
 
 		// Create a new List for every sub-image
 		List<BufferedImage> animationImages = new ArrayList<BufferedImage>();
@@ -112,13 +136,15 @@ public class Sprite {
 	}
 
 	/**
-	 * This method creates a new animation instance using the already created
-	 * sub-images. This is the key-feature for fast rendering.
+	 * Creates a new animation using the given points.
 	 * 
 	 * @param name
+	 *            The name of the new animation.
 	 * @param timePerImage
+	 *            The time-per-frame of the animation.
 	 * @param points
-	 * @return
+	 *            The points of the sub images.
+	 * @return a new animation containig the given sub images.
 	 */
 	public Animation newAnimation(String name, long timePerImage,
 			Point... points) {

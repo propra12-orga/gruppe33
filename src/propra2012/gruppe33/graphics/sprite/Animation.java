@@ -11,7 +11,7 @@ import java.util.RandomAccess;
  * @author Matthias Hesse
  * 
  */
-public class Animation {
+public final class Animation {
 
 	public static Animation merge(String name, long timePerImage,
 			Animation... animations) {

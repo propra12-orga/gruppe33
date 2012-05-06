@@ -6,6 +6,8 @@ import java.io.InputStream;
 
 import javax.imageio.ImageIO;
 
+import propra2012.gruppe33.graphics.rendering.scenegraph.grid.Grid;
+import propra2012.gruppe33.graphics.rendering.scenegraph.grid.GridLoader;
 import propra2012.gruppe33.graphics.sprite.Sprite;
 
 /**
@@ -15,6 +17,27 @@ import propra2012.gruppe33.graphics.sprite.Sprite;
  * @author Christopher Probst
  */
 public final class AssetManager {
+
+	/**
+	 * Loads a grid from the asset path.
+	 * 
+	 * @param name
+	 *            The name of the grid.
+	 * @param jarPath
+	 *            The grid path inside the jar file.
+	 * @param pixelWidth
+	 *            The pixel width of the grid scene.
+	 * @param pixelHeight
+	 *            The pixel height of the grid scene.
+	 * @return the loaded grid.
+	 * @throws IOException
+	 *             If an I/O error occures.
+	 */
+	public static Grid loadGrid(String name, String jarPath, int pixelWidth,
+			int pixelHeight) throws IOException {
+		return new Grid(name, pixelWidth, pixelHeight,
+				GridLoader.load(open(jarPath)));
+	}
 
 	/**
 	 * Loads a sprite from the asset path.

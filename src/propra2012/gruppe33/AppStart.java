@@ -4,8 +4,10 @@ import java.io.IOException;
 
 import javax.swing.JFrame;
 
+import propra2012.gruppe33.assets.AssetManager;
 import propra2012.gruppe33.graphics.rendering.JGridRenderer;
 import propra2012.gruppe33.graphics.rendering.scenegraph.grid.Grid;
+import propra2012.gruppe33.graphics.rendering.scenegraph.grid.GridLoader;
 
 /**
  * 
@@ -21,7 +23,7 @@ public class AppStart {
 
 		// Create grid
 		final Grid grid = new Grid("standard", 2048, 2048,
-				Grid.loadGrid("smallmap.txt"));
+				GridLoader.load(AssetManager.open("maps/map.txt")));
 
 		// Create new level renderer
 		final JGridRenderer renderer = new JGridRenderer(grid);
