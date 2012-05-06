@@ -4,8 +4,10 @@ import java.awt.GraphicsEnvironment;
 import java.awt.Point;
 import java.awt.Transparency;
 import java.awt.image.BufferedImage;
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
@@ -89,6 +91,12 @@ public class Grid extends Scene {
 	// Here we store the max field velocities (Useful for areas where you can
 	// only go slowly...)
 	private final Map<Character, Float> maxFieldVelocities = new HashMap<Character, Float>();
+
+	// Here we store default chars which do not affect line-of-sight
+	private final Set<Character> defaultLineOfSightChars = new HashSet<Character>();
+
+	// Here we store default chars which do not affect collection
+	private final Set<Character> defaultCollectChars = new HashSet<Character>();
 
 	/**
 	 * Creates a new grid using the given parameters.
@@ -185,6 +193,20 @@ public class Grid extends Scene {
 	 */
 	public Map<Character, Float> getMaxFieldVelocities() {
 		return maxFieldVelocities;
+	}
+
+	/**
+	 * @return the default set of chars which do not affect line-of-sight.
+	 */
+	public Set<Character> getDefaultLineOfSightChars() {
+		return defaultLineOfSightChars;
+	}
+
+	/**
+	 * @return the default set of chars which do not affect collection.
+	 */
+	public Set<Character> getDefaultCollectChars() {
+		return defaultCollectChars;
 	}
 
 	/**
@@ -316,35 +338,18 @@ public class Grid extends Scene {
 	 * @param direction
 	 *            The {@link Direction} of the test.
 	 * @param validChars
-	 *            An array of chars which will not affect the line-of-sight.
-	 * @return the line-of-sight in world space.
-	 */
-	public float lineOfSight(Vector2f position, float max, Direction direction,
-			char... validChars) {
-		Set<Character> set = new HashSet<Character>();
-		for (char validChar : validChars) {
-			set.add(validChar);
-		}
-		return lineOfSight(position, max, direction, set);
-	}
-
-	/**
-	 * This is one of the most important methods when dealing with movement. It
-	 * calculates the line-of-sight using the given direction.
-	 * 
-	 * @param position
-	 *            The world position.
-	 * @param max
-	 *            The max distance. Please note that the method runs faster if
-	 *            you use a short distance since this value affects a loop.
-	 * @param direction
-	 *            The {@link Direction} of the test.
-	 * @param validChars
-	 *            The set of chars which will not affect the line-of-sight.
+	 *            A set of chars which will not affect the line-of-sight. If
+	 *            null the default chars
+	 *            {@link Grid#getDefaultLineOfSightChars()} are used.
 	 * @return the line-of-sight in world space.
 	 */
 	public float lineOfSight(Vector2f position, float max, Direction direction,
 			Set<Character> validChars) {
+
+		if (validChars == null) {
+			// Use default chars...
+			validChars = defaultLineOfSightChars;
+		}
 
 		// Get the coords of the nearest point
 		Point point = validate(worldToNearestPoint(position));
@@ -555,5 +560,104 @@ public class Grid extends Scene {
 	 */
 	public int getRasterY() {
 		return rasterY;
+	}
+
+	/**
+	 * Returns all points which are affected by the given distance. The method
+	 * will cast rays in all four direction and stops when hitting a char which
+	 * is not in the given set.
+	 * 
+	 * @param location
+	 *            The location of the center.
+	 * @param distance
+	 *            The max distance of collection.
+	 * @param validChars
+	 *            A set of chars which will not affect the collection. If null
+	 *            the default chars {@link Grid#getDefaultCollectChars()} are
+	 *            used.
+	 * @return a list which contains all points.
+	 */
+	public List<Point> collectPoints(Point location, int distance,
+			Set<Character> validChars) {
+		return collectPoints(location.x, location.y, distance, validChars);
+	}
+
+	/**
+	 * Returns all points which are affected by the given distance. The method
+	 * will cast rays in all four direction and stops when hitting a char which
+	 * is not in the given set.
+	 * 
+	 * @param x
+	 *            The x center.
+	 * @param y
+	 *            The y center
+	 * @param distance
+	 *            The max distance of collection.
+	 * @param validChars
+	 *            A set of chars which will not affect the collection. If null
+	 *            the default chars {@link Grid#getDefaultCollectChars()} are
+	 *            used.
+	 * @return a list which contains all points.
+	 */
+	public List<Point> collectPoints(int x, int y, int distance,
+			Set<Character> validChars) {
+		if (!validate(x, y)) {
+			throw new IllegalArgumentException("Coords out of grid");
+		}
+
+		// Use default chars
+		if (validChars == null) {
+			validChars = defaultCollectChars;
+		}
+
+		// Create a new array list
+		List<Point> points = new ArrayList<Point>();
+
+		// Add local point
+		points.add(new Point(x, y));
+
+		// Tells whether or not the given dirs are valid
+		boolean nv = true, sv = true, wv = true, ev = true;
+
+		// Tmp var
+		Point p;
+
+		// Iterate
+		for (int i = 1; i < distance; i++) {
+
+			// North
+			if ((p = validate(new Point(x, y - i))) != null
+					&& validChars.contains(charAt(p)) && nv) {
+				points.add(p);
+			} else {
+				nv = false;
+			}
+
+			// South
+			if ((p = validate(new Point(x, y + i))) != null
+					&& validChars.contains(charAt(p)) && sv) {
+				points.add(p);
+			} else {
+				sv = false;
+			}
+
+			// West
+			if ((p = validate(new Point(x - i, y))) != null
+					&& validChars.contains(charAt(p)) && wv) {
+				points.add(p);
+			} else {
+				wv = false;
+			}
+
+			// East
+			if ((p = validate(new Point(x + i, y))) != null
+					&& validChars.contains(charAt(p)) && ev) {
+				points.add(p);
+			} else {
+				ev = false;
+			}
+		}
+
+		return points;
 	}
 }

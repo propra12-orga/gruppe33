@@ -11,8 +11,6 @@ import java.awt.image.BufferStrategy;
 import java.awt.image.BufferedImage;
 import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.LinkedBlockingDeque;
-import java.util.concurrent.TimeUnit;
-import java.util.concurrent.locks.LockSupport;
 
 import propra2012.gruppe33.graphics.rendering.scenegraph.Scene;
 import propra2012.gruppe33.graphics.rendering.scenegraph.SceneProcessor;
@@ -44,9 +42,11 @@ public final class CanvasSceneProcessor<S extends Scene> extends Canvas
 	private BlockingQueue<Runnable> tasks = new LinkedBlockingDeque<Runnable>();
 
 	/*
-	 * This is the buffer strategy for rendering.
+	 * This is the thread-safe buffer strategy for rendering.
+	 * 
+	 * VOLATILE: The var is set in the EDT.
 	 */
-	private BufferStrategy bufferStrategy = null;
+	private volatile BufferStrategy bufferStrategy;
 
 	/*
 	 * The fast offscreen image. Ultimate hardware performance. There is no
@@ -55,9 +55,14 @@ public final class CanvasSceneProcessor<S extends Scene> extends Canvas
 	private BufferedImage offscreen;
 
 	/*
+	 * The shutdown requested flag.
+	 */
+	private boolean shutdownRequested = false;
+
+	/*
 	 * The scene which we want to render.
 	 */
-	private final S root;
+	private S root;
 
 	/*
 	 * Used for timed rendering.
@@ -66,31 +71,21 @@ public final class CanvasSceneProcessor<S extends Scene> extends Canvas
 
 	/*
 	 * Thread safe vars for rendering.
+	 * 
+	 * VOLATILE: These vars are set in the EDT.
 	 */
 	private volatile int peerWidth, peerHeight;
 
 	/**
 	 * Creates a new canvas scene processor.
-	 * 
-	 * @param root
-	 *            The root scene you want to render.
 	 */
-	public CanvasSceneProcessor(S root) {
-		if (root == null) {
-			throw new NullPointerException("root");
-		}
-
-		// Save the root
-		this.root = root;
+	public CanvasSceneProcessor() {
 
 		// The canvas is rendered by us!
 		setIgnoreRepaint(true);
 
 		// This canvas can receive input
 		setFocusable(true);
-
-		// Connect the input
-		root.connectTo(this);
 
 		// Add resize listener
 		addComponentListener(new ComponentAdapter() {
@@ -102,6 +97,30 @@ public final class CanvasSceneProcessor<S extends Scene> extends Canvas
 				peerHeight = getHeight();
 			}
 		});
+	}
+
+	/*
+	 * (non-Javadoc)
+	 * 
+	 * @see
+	 * propra2012.gruppe33.graphics.rendering.scenegraph.SceneProcessor#setRoot
+	 * (propra2012.gruppe33.graphics.rendering.scenegraph.Scene)
+	 */
+	public void setRoot(S root) {
+
+		// Remove old link
+		if (this.root != null) {
+			this.root.disconnectFrom(this);
+		}
+
+		// Save the root
+		this.root = root;
+
+		// Connect the input
+		root.connectTo(this);
+
+		// The time must be resetted.
+		resetTime();
 	}
 
 	/*
@@ -143,12 +162,61 @@ public final class CanvasSceneProcessor<S extends Scene> extends Canvas
 	/*
 	 * (non-Javadoc)
 	 * 
+	 * @see java.awt.Canvas#addNotify()
+	 */
+	@Override
+	public void addNotify() {
+		super.addNotify();
+
+		// Double buffered should be fine
+		createBufferStrategy(2);
+
+		// Create the strategy
+		bufferStrategy = getBufferStrategy();
+	}
+
+	/*
+	 * (non-Javadoc)
+	 * 
+	 * @see propra2012.gruppe33.graphics.rendering.scenegraph.SceneProcessor#
+	 * isShutdownRequested()
+	 */
+	@Override
+	public boolean isShutdownRequested() {
+		return shutdownRequested;
+	}
+
+	/*
+	 * (non-Javadoc)
+	 * 
+	 * @see propra2012.gruppe33.graphics.rendering.scenegraph.SceneProcessor#
+	 * setShutdownRequest(boolean)
+	 */
+	@Override
+	public void setShutdownRequest(boolean shutdownRequested) {
+		this.shutdownRequested = shutdownRequested;
+	}
+
+	/*
+	 * (non-Javadoc)
+	 * 
 	 * @see
 	 * propra2012.gruppe33.graphics.rendering.scenegraph.SceneProcessor#process
 	 * (int)
 	 */
 	@Override
-	public void process(int maxFPS) {
+	public void process(int maxFPS) throws Exception {
+
+		// If root is null we cannot process...
+		if (root == null) {
+
+			// Sleep the given amount of time
+			if (maxFPS > 0) {
+				Thread.sleep(1000 / maxFPS);
+			}
+
+			return;
+		}
 
 		// Do the time stuff...
 		if (curTime == -1) {
@@ -163,17 +231,19 @@ public final class CanvasSceneProcessor<S extends Scene> extends Canvas
 		// Read into local cache
 		int w = peerWidth, h = peerHeight;
 
-		// Check for null
-		if (bufferStrategy == null) {
-			// Double buffered should be fine
-			createBufferStrategy(2);
+		// Load from cache
+		BufferStrategy ptr = bufferStrategy;
 
-			// Create the strategy
-			bufferStrategy = getBufferStrategy();
+		// Tmp var
+		Runnable task;
+
+		// Process all tasks
+		while ((task = tasks.poll()) != null) {
+			task.run();
 		}
 
 		// Check size!
-		if (w > 0 && h > 0) {
+		if (w > 0 && h > 0 && ptr != null) {
 			/*
 			 * Advanced volatile image rendering.
 			 */
@@ -193,14 +263,6 @@ public final class CanvasSceneProcessor<S extends Scene> extends Canvas
 				g2d.setBackground(Color.BLACK);
 				g2d.clearRect(0, 0, w, h);
 
-				// Tmp var
-				Runnable task;
-
-				// Process all tasks
-				while ((task = tasks.poll()) != null) {
-					task.run();
-				}
-
 				// Simulate the scene
 				root.simulate(g2d, w, h, curTime - lastTime);
 			} finally {
@@ -209,7 +271,7 @@ public final class CanvasSceneProcessor<S extends Scene> extends Canvas
 			}
 
 			// Get the graphics context
-			Graphics frameBuffer = bufferStrategy.getDrawGraphics();
+			Graphics frameBuffer = ptr.getDrawGraphics();
 
 			try {
 
@@ -225,14 +287,14 @@ public final class CanvasSceneProcessor<S extends Scene> extends Canvas
 			}
 
 			// Render to frame if not lost
-			if (!bufferStrategy.contentsLost()) {
-				bufferStrategy.show();
+			if (!ptr.contentsLost()) {
+				ptr.show();
 			}
 
 			// Synchronize with toolkit
 			Toolkit.getDefaultToolkit().sync();
 		} else {
-			// Simulate the scene
+			// Simulate the scene without drawing
 			root.simulate(null, -1, -1, curTime - lastTime);
 		}
 
@@ -246,8 +308,8 @@ public final class CanvasSceneProcessor<S extends Scene> extends Canvas
 
 			// Wait a bit
 			if (frameDuration < minDuration) {
-				LockSupport.parkNanos(TimeUnit.MILLISECONDS.toNanos(minDuration
-						- frameDuration));
+				// Sleep
+				Thread.sleep(minDuration - frameDuration);
 			}
 		}
 	}
