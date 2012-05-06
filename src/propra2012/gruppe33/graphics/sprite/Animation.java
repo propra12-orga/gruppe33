@@ -33,7 +33,10 @@ public class Animation {
 	private int animationStep = 0;
 
 	// Should this animation loop ?
-	private boolean loop = false;
+	private boolean loop = true;
+
+	// Is this animation paused ?
+	private boolean paused = false;
 
 	// The duration of the animation
 	private final long animationDuration;
@@ -69,6 +72,14 @@ public class Animation {
 
 		// Start...
 		resetAnimation();
+	}
+
+	public boolean isPaused() {
+		return paused;
+	}
+
+	public void setPaused(boolean paused) {
+		this.paused = paused;
 	}
 
 	public boolean isLoop() {
@@ -110,6 +121,10 @@ public class Animation {
 	 * @return
 	 */
 	public BufferedImage getAnimationImage() {
+
+		if (paused) {
+			return images.get(animationStep);
+		}
 
 		// Read the actual time
 		long time = System.currentTimeMillis();

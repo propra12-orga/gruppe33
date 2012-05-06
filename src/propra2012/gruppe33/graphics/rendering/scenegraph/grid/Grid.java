@@ -8,12 +8,14 @@ import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileReader;
 import java.io.IOException;
+import java.io.InputStreamReader;
 import java.util.HashSet;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
+import propra2012.gruppe33.AppStart;
 import propra2012.gruppe33.graphics.rendering.scenegraph.Entity;
 import propra2012.gruppe33.graphics.rendering.scenegraph.PictureController;
 import propra2012.gruppe33.graphics.rendering.scenegraph.Scene;
@@ -70,8 +72,8 @@ public class Grid extends Scene {
 	 * @deprecated ONLY USED FOR TEST PURPOSES.
 	 */
 	public static char[][] loadGrid(String file) throws IOException {
-		BufferedReader reader = new BufferedReader(new FileReader(
-				new File(file)));
+		BufferedReader reader = new BufferedReader(new InputStreamReader(
+				AppStart.class.getResourceAsStream("resources/maps/" + file)));
 		try {
 			List<String> lines = new LinkedList<String>();
 

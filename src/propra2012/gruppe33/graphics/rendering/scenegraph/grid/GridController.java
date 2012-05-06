@@ -22,7 +22,7 @@ public class GridController implements EntityController {
 
 	private Vector2f velocity;
 	private final Vector2f movement = Vector2f.zero();
-
+	private boolean moving = false;
 	private Direction direction = Direction.North;
 
 	public GridController(Vector2f velocity) {
@@ -35,6 +35,10 @@ public class GridController implements EntityController {
 
 	public Direction getDirection() {
 		return direction;
+	}
+
+	public boolean isMoving() {
+		return moving;
 	}
 
 	public void setVelocity(Vector2f velocity) {
@@ -194,6 +198,9 @@ public class GridController implements EntityController {
 		// Look if at least one component is 0
 		if (xT || yT) {
 
+			// Set to true
+			moving = true;
+
 			if (!xT) {
 				if (movement.x >= 0) {
 					direction = Direction.East;
@@ -206,6 +213,9 @@ public class GridController implements EntityController {
 				} else {
 					direction = Direction.North;
 				}
+			} else {
+				// This entity is not moving anymore
+				moving = false;
 			}
 
 			// Finally add the new movement component
