@@ -6,8 +6,6 @@ import java.awt.Frame;
 import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
 
-import propra2012.gruppe33.graphics.rendering.active.CanvasSceneProcessor;
-import propra2012.gruppe33.graphics.rendering.scenegraph.Scene;
 import propra2012.gruppe33.graphics.rendering.scenegraph.SceneProcessor;
 
 /**
@@ -17,27 +15,6 @@ import propra2012.gruppe33.graphics.rendering.scenegraph.SceneProcessor;
  * 
  */
 public final class GraphicsRoutines {
-
-	/**
-	 * Creates a valid scene processor.
-	 * 
-	 * @return a valid implementation of scene processor.
-	 */
-	public static SceneProcessor<Scene> createProcessor() {
-		return new CanvasSceneProcessor<Scene>();
-	}
-
-	/**
-	 * Creates a valid scene processor.
-	 * 
-	 * @param sceneClass
-	 *            The scene type of the processor.
-	 * @return a valid implementation of scene processor.
-	 */
-	public static <S extends Scene> SceneProcessor<S> createProcessor(
-			Class<S> sceneClass) {
-		return new CanvasSceneProcessor<S>();
-	}
 
 	/**
 	 * Creates a new visible frame which contains the processor.

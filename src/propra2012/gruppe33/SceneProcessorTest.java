@@ -1,8 +1,7 @@
-package propra2012.gruppe33.graphics.rendering.active;
+package propra2012.gruppe33;
 
 import java.awt.Frame;
 
-import propra2012.gruppe33.PreMilestoneApp;
 import propra2012.gruppe33.graphics.rendering.scenegraph.SceneProcessor;
 import propra2012.gruppe33.graphics.rendering.scenegraph.grid.Grid;
 import propra2012.gruppe33.routines.GraphicsRoutines;
@@ -17,8 +16,7 @@ public class SceneProcessorTest {
 	public static void main(String[] args) throws Exception {
 
 		// Create a new world processor
-		SceneProcessor<Grid> gridWorld = GraphicsRoutines
-				.createProcessor(Grid.class);
+		SceneProcessor<Grid> gridWorld = new SceneProcessor<Grid>();
 
 		// Create peer
 		Frame frame = GraphicsRoutines.createFrame(gridWorld, "Bomberman", 800,

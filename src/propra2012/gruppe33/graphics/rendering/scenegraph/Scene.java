@@ -38,6 +38,11 @@ public class Scene extends Entity implements KeyListener, FocusListener {
 	// The ratio of this entity
 	private final float ratio;
 
+	/*
+	 * The processor which processes this scene.
+	 */
+	SceneProcessor<?> processor = null;
+
 	/**
 	 * Creates a new scene.
 	 * 
@@ -63,6 +68,13 @@ public class Scene extends Entity implements KeyListener, FocusListener {
 
 		// Calc new ratio
 		ratio = width / (float) height;
+	}
+
+	/**
+	 * @return the scene processor.
+	 */
+	public SceneProcessor<?> getProcessor() {
+		return processor;
 	}
 
 	/**
