@@ -14,8 +14,8 @@ import java.util.concurrent.LinkedBlockingDeque;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.locks.LockSupport;
 
-import propra2012.gruppe33.graphics.rendering.passive.JSceneRenderer;
 import propra2012.gruppe33.graphics.rendering.scenegraph.Scene;
+import propra2012.gruppe33.graphics.rendering.scenegraph.SceneProcessor;
 import propra2012.gruppe33.graphics.rendering.util.ImageUtil;
 
 /**
@@ -28,9 +28,10 @@ import propra2012.gruppe33.graphics.rendering.util.ImageUtil;
  * (Mixing Swing and AWT is never a good idea!)
  * 
  * @author Christopher Probst
- * @see JSceneRenderer
+ * @see SceneProcessor
  */
-public class SceneProcessor<S extends Scene> extends Canvas {
+public final class CanvasSceneProcessor<S extends Scene> extends Canvas
+		implements SceneProcessor<S> {
 
 	/**
 	 * 
@@ -69,10 +70,12 @@ public class SceneProcessor<S extends Scene> extends Canvas {
 	private volatile int peerWidth, peerHeight;
 
 	/**
+	 * Creates a new canvas scene processor.
 	 * 
 	 * @param root
+	 *            The root scene you want to render.
 	 */
-	public SceneProcessor(S root) {
+	public CanvasSceneProcessor(S root) {
 		if (root == null) {
 			throw new NullPointerException("root");
 		}
@@ -101,34 +104,50 @@ public class SceneProcessor<S extends Scene> extends Canvas {
 		});
 	}
 
-	/**
-	 * @return the task queue.
+	/*
+	 * (non-Javadoc)
+	 * 
+	 * @see
+	 * propra2012.gruppe33.graphics.rendering.scenegraph.SceneProcessor#getTasks
+	 * ()
 	 */
+	@Override
 	public BlockingQueue<Runnable> getTasks() {
 		return tasks;
 	}
 
-	/**
-	 * Resets the time.
+	/*
+	 * (non-Javadoc)
+	 * 
+	 * @see
+	 * propra2012.gruppe33.graphics.rendering.scenegraph.SceneProcessor#resetTime
+	 * ()
 	 */
+	@Override
 	public void resetTime() {
 		lastTime = -1;
 	}
 
-	/**
+	/*
+	 * (non-Javadoc)
 	 * 
-	 * @return the root scene.
+	 * @see
+	 * propra2012.gruppe33.graphics.rendering.scenegraph.SceneProcessor#getRoot
+	 * ()
 	 */
+	@Override
 	public S getRoot() {
 		return root;
 	}
 
-	/**
-	 * Process the whole scene.
+	/*
+	 * (non-Javadoc)
 	 * 
-	 * @param maxFPS
-	 *            The maximum frames per second. A value < 1 means no max.
+	 * @see
+	 * propra2012.gruppe33.graphics.rendering.scenegraph.SceneProcessor#process
+	 * (int)
 	 */
+	@Override
 	public void process(int maxFPS) {
 
 		// Do the time stuff...
