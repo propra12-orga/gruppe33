@@ -2,18 +2,11 @@ package propra2012.gruppe33.graphics.rendering.scenegraph;
 
 import java.awt.Graphics2D;
 import java.awt.image.BufferedImage;
-import java.io.File;
-import java.io.IOException;
 import java.util.List;
 
 import propra2012.gruppe33.graphics.sprite.Animation;
 
 public class AnimationController extends Animation implements EntityController {
-
-	public AnimationController(String name, long timePerImage, File dir,
-			String prefix, String postfix, int count) throws IOException {
-		super(name, timePerImage, dir, prefix, postfix, count);
-	}
 
 	public AnimationController(String name, List<BufferedImage> images,
 			long timePerImage) {

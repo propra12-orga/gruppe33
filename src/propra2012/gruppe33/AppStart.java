@@ -32,7 +32,7 @@ public class AppStart {
 
 		// Create grid
 		final Grid grid = new Grid("standard", 2048, 2048,
-				Grid.loadGrid("C:/map.txt"));
+				Grid.loadGrid("map.txt"));
 
 		Map<Character, BufferedImage> map = new HashMap<Character, BufferedImage>();
 		map.put('1', ImageIO.read(new File("C:/box.png")));

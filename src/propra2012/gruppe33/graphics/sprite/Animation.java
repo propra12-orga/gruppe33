@@ -1,13 +1,9 @@
 package propra2012.gruppe33.graphics.sprite;
 
 import java.awt.image.BufferedImage;
-import java.io.File;
-import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.RandomAccess;
-
-import propra2012.gruppe33.graphics.rendering.ImageUtil;
 
 /**
  * This class represents a single Animation
@@ -44,12 +40,6 @@ public class Animation {
 
 	// Time vars
 	private long timeStamp, timePerImage;
-
-	public Animation(String name, long timePerImage, File dir, String prefix,
-			String postfix, int count) throws IOException {
-		this(name, ImageUtil.loadWithSchema(dir, prefix, postfix, count),
-				timePerImage);
-	}
 
 	public Animation(String name, List<BufferedImage> images, long timePerImage) {
 
