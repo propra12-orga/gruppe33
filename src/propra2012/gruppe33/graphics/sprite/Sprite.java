@@ -5,29 +5,19 @@ import java.awt.image.BufferedImage;
 import java.util.ArrayList;
 import java.util.List;
 
+import propra2012.gruppe33.graphics.rendering.util.ImageUtil;
+
 /**
  * 
- * This class
+ * This class represents a sprite. A sprite is basically an image which contains
+ * sub-images. This is typically used for animations but you can use this as a
+ * bundle of images, too.
  * 
  * @author Matthias Hesse
- * 
+ * @see Animation
+ * @see AnimationMap
  */
 public class Sprite {
-
-	private static BufferedImage getSubImage(BufferedImage image, int rasterX,
-			int rasterY, int x, int y) {
-
-		// Calculating the size of one Sub Image
-		int sizeXPlate = image.getWidth() / rasterX;
-		int sizeYPlate = image.getHeight() / rasterY;
-
-		// Creates the actual SubImage
-		return image.getSubimage(x * sizeXPlate, y * sizeYPlate, sizeXPlate,
-				sizeYPlate);
-	}
-
-	// This is the main image
-	private final BufferedImage image;
 
 	// Here we store all sub images
 	private final BufferedImage[][] subImages;
@@ -35,6 +25,16 @@ public class Sprite {
 	// Here we store the raster information
 	private final int rasterX, rasterY;
 
+	/**
+	 * Creates a sprite.
+	 * 
+	 * @param image
+	 *            The sprite image.
+	 * @param rasterX
+	 *            The columns of the sprite.
+	 * @param rasterY
+	 *            The rows of the sprite.
+	 */
 	public Sprite(BufferedImage image, int rasterX, int rasterY) {
 		if (image == null) {
 			throw new NullPointerException("image");
@@ -45,7 +45,6 @@ public class Sprite {
 		}
 
 		// Save vars
-		this.image = image;
 		this.rasterX = rasterX;
 		this.rasterY = rasterY;
 
@@ -56,25 +55,31 @@ public class Sprite {
 		for (int x = 0; x < rasterX; x++) {
 			for (int y = 0; y < rasterY; y++) {
 				// Create sub-image
-				subImages[y][x] = getSubImage(image, rasterX, rasterY, x, y);
+				subImages[y][x] = ImageUtil.getSpriteSubImage(image, rasterX,
+						rasterY, x, y);
 			}
 		}
 	}
 
+	/**
+	 * @return the sub images.
+	 */
 	public BufferedImage[][] getSubImages() {
 		return subImages;
 	}
 
+	/**
+	 * @return the columns of the sprite.
+	 */
 	public int getRasterX() {
 		return rasterX;
 	}
 
+	/**
+	 * @return the rows of the sprite.
+	 */
 	public int getRasterY() {
 		return rasterY;
-	}
-
-	public BufferedImage getImage() {
-		return image;
 	}
 
 	public Animation newAnimationFromRange(String name, long timePerImage,

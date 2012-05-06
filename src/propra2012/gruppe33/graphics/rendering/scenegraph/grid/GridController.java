@@ -6,6 +6,7 @@ import java.awt.event.KeyEvent;
 
 import propra2012.gruppe33.graphics.rendering.scenegraph.Entity;
 import propra2012.gruppe33.graphics.rendering.scenegraph.EntityController;
+import propra2012.gruppe33.graphics.rendering.scenegraph.Mathf;
 import propra2012.gruppe33.graphics.rendering.scenegraph.Vector2f;
 import propra2012.gruppe33.graphics.rendering.scenegraph.grid.Grid.Direction;
 
@@ -186,10 +187,10 @@ public class GridController implements EntityController {
 		}
 
 		// Limit the x velocity
-		movement.x = Vector2f.absClamp(movement.x, 0f, velocity.x * tpf);
+		movement.x = Mathf.absClamp(movement.x, 0f, velocity.x * tpf);
 
 		// Limit the y veloctiy
-		movement.y = Vector2f.absClamp(movement.y, 0f, velocity.y * tpf);
+		movement.y = Mathf.absClamp(movement.y, 0f, velocity.y * tpf);
 
 		// Calc thresholds
 		boolean xT = movement.xThreshold(0, THRESHOLD), yT = movement

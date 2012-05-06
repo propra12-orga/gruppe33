@@ -17,66 +17,6 @@ public class Vector2f implements Serializable {
 	private static final long serialVersionUID = 1L;
 
 	/**
-	 * Used to compare floats with a given threshold.
-	 */
-	public static final float kEpsilon = 1E-6f;
-
-	/**
-	 * Clamps the absolute value of a value.
-	 * 
-	 * @param v
-	 *            The value you want to clamp.
-	 * @param min
-	 *            The positive min value.
-	 * @param max
-	 *            The positive max value.
-	 * @return the absolute clamped value.
-	 */
-	public static float absClamp(float v, float min, float max) {
-		if (max < min) {
-			throw new IllegalArgumentException("max is smaller than min");
-		} else if (min < 0f) {
-			throw new IllegalArgumentException("min and max must be positive");
-		}
-
-		// Get the accidental and calc abs value
-		float accidental = v < 0 ? -1f : 1f, absV = Math.abs(v);
-
-		// Do absolute clamping
-		if (absV < min) {
-			v = min * accidental;
-		} else if (absV > max) {
-			v = max * accidental;
-		}
-		return v;
-	}
-
-	/**
-	 * Clamps a float value.
-	 * 
-	 * @param v
-	 *            The value you want to clamp.
-	 * @param min
-	 *            The min value.
-	 * @param max
-	 *            The max value.
-	 * @return the clamped value.
-	 */
-	public static float clamp(float v, float min, float max) {
-		if (max < min) {
-			throw new IllegalArgumentException("max is smaller than min");
-		}
-
-		// Clamp...
-		if (v < min) {
-			v = min;
-		} else if (v > max) {
-			v = max;
-		}
-		return v;
-	}
-
-	/**
 	 * Lerps two vectors (Linear interpolation). This means you provide two
 	 * vectors (start, end) and a float between 0 and 1. This method calculates
 	 * a new vector which is between start and end using the given float value.
@@ -98,7 +38,7 @@ public class Vector2f implements Serializable {
 		}
 
 		// Return the lerp vector
-		return start.add(end.sub(start).scale(clamp(time, 0f, 1f)));
+		return start.add(end.sub(start).scale(Mathf.clamp(time, 0f, 1f)));
 	}
 
 	/**
@@ -129,7 +69,7 @@ public class Vector2f implements Serializable {
 		float time = maxDelta / dist.length();
 
 		// Return a lerped value
-		return start.add(dist.scale(clamp(time, 0f, 1f)));
+		return start.add(dist.scale(Mathf.clamp(time, 0f, 1f)));
 	}
 
 	/**
@@ -412,11 +352,11 @@ public class Vector2f implements Serializable {
 		}
 		Vector2f other = (Vector2f) obj;
 
-		if (!xThreshold(other.x, kEpsilon)) {
+		if (!xThreshold(other.x, Mathf.kEpsilon)) {
 			return false;
 		}
 
-		if (!yThreshold(other.y, kEpsilon)) {
+		if (!yThreshold(other.y, Mathf.kEpsilon)) {
 			return false;
 		}
 

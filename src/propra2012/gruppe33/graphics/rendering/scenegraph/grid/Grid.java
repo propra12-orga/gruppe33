@@ -5,8 +5,6 @@ import java.awt.Point;
 import java.awt.Transparency;
 import java.awt.image.BufferedImage;
 import java.io.BufferedReader;
-import java.io.File;
-import java.io.FileReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.util.HashSet;
@@ -73,7 +71,7 @@ public class Grid extends Scene {
 	 */
 	public static char[][] loadGrid(String file) throws IOException {
 		BufferedReader reader = new BufferedReader(new InputStreamReader(
-				AppStart.class.getResourceAsStream("resources/maps/" + file)));
+				AppStart.class.getResourceAsStream("assets/maps/" + file)));
 		try {
 			List<String> lines = new LinkedList<String>();
 
