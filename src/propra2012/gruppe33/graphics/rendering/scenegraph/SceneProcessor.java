@@ -201,11 +201,7 @@ public final class SceneProcessor<S extends Scene> extends Canvas {
 		}
 
 		// Do the time stuff...
-		if (curTime == -1) {
-			lastTime = System.currentTimeMillis();
-		} else {
-			lastTime = curTime;
-		}
+		lastTime = lastTime == -1 ? System.currentTimeMillis() : curTime;
 
 		// Get active time
 		curTime = System.currentTimeMillis();

@@ -33,6 +33,11 @@ public final class GridController implements EntityController {
 	 */
 	private float lv = 0, lh = 0;
 
+	/*
+	 * Used to change the velocity per entity.
+	 */
+	private float velocityMultiplier = 1.0f;
+
 	// A local movement var
 	private final Vector2f movement = Vector2f.zero();
 
@@ -68,6 +73,24 @@ public final class GridController implements EntityController {
 	public void doRender(Entity entity, Graphics2D original,
 			Graphics2D transformed) {
 
+		// Nothing to do here
+	}
+
+	/**
+	 * @return the velocity multiplier.
+	 */
+	public float getVelocityMultiplier() {
+		return velocityMultiplier;
+	}
+
+	/**
+	 * Sets the velocity multiplier.
+	 * 
+	 * @param velocityMultiplier
+	 *            The new multiplier you want to set.
+	 */
+	public void setVelocityMultiplier(float velocityMultiplier) {
+		this.velocityMultiplier = velocityMultiplier;
 	}
 
 	/**
@@ -107,8 +130,11 @@ public final class GridController implements EntityController {
 		// Calc direction
 		int dir = negative ? -1 : 1;
 
-		// Calc desired velocity
-		float maxMovement = tpf * maxSpeed, movement = dir
+		// Calc the max velocity using tpf, maxSpeed and the local multiplier
+		float maxMovement = tpf * maxSpeed * velocityMultiplier,
+
+		// Calc the movement based on the grid
+		movement = dir
 				* grid.lineOfSight(entity.getPosition(), maxMovement,
 						vertical ? (negative ? Direction.North
 								: Direction.South) : (negative ? Direction.West
@@ -135,17 +161,17 @@ public final class GridController implements EntityController {
 			/*
 			 * Test the upper, left-upper, right-upper field to be free.
 			 */
-			if (!grid.getMaxFieldVelocities().containsKey(
-					grid.charAt(nearest.x + (vertical ? offset : dir),
-							nearest.y + (vertical ? dir : offset)))) {
+			if (!validChars.contains(grid.charAt(nearest.x
+					+ (vertical ? offset : dir), nearest.y
+					+ (vertical ? dir : offset)))) {
 
 				// Recalc the offset
 				offset += negativeDominant ? -1 : 1;
 
 				// Still no luck =(
-				if (!grid.getMaxFieldVelocities().containsKey(
-						grid.charAt(nearest.x + (vertical ? offset : dir),
-								nearest.y + (vertical ? dir : offset)))) {
+				if (!validChars.contains(grid.charAt(nearest.x
+						+ (vertical ? offset : dir), nearest.y
+						+ (vertical ? dir : offset)))) {
 					return;
 				}
 			}
@@ -161,8 +187,8 @@ public final class GridController implements EntityController {
 					- entity.getPosition().y;
 
 			// Calc the orthogonal movement
-			float orthogonalMovement = (centerDistance >= 0 ? 1f : -1f) * tpf
-					* maxSpeed;
+			float orthogonalMovement = (centerDistance >= 0 ? 1f : -1f)
+					* maxMovement;
 
 			// Limit the speed...
 			if (Math.abs(centerDistance) < tpf * maxSpeed) {

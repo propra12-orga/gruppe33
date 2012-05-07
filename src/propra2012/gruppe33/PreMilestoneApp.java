@@ -13,6 +13,7 @@ import propra2012.gruppe33.graphics.rendering.scenegraph.Entity;
 import propra2012.gruppe33.graphics.rendering.scenegraph.EntityController;
 import propra2012.gruppe33.graphics.rendering.scenegraph.Vector2f;
 import propra2012.gruppe33.graphics.rendering.scenegraph.grid.Grid;
+import propra2012.gruppe33.graphics.rendering.scenegraph.transform.TransformController;
 import propra2012.gruppe33.routines.AnimationRoutines;
 import propra2012.gruppe33.routines.PlayerRoutines;
 
@@ -28,6 +29,7 @@ public class PreMilestoneApp {
 		final Grid grid = AssetManager.loadGrid("standard",
 				"maps/smallmap.txt", 2048, 2048);
 
+		
 		// Define the chars on which the character can move
 		grid.getMaxFieldVelocities().put('0', 600f);
 		grid.getMaxFieldVelocities().put('2', 300f);
