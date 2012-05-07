@@ -48,8 +48,11 @@ public class TimeoutController implements EntityController {
 
 	/**
 	 * Invoked when the timeout occured.
+	 * 
+	 * @param entity
+	 *            The entity which has this controller.
 	 */
-	protected void onTimeout() {
+	protected void onTimeout(Entity entity) {
 	}
 
 	/*
@@ -81,7 +84,7 @@ public class TimeoutController implements EntityController {
 
 		// Timeout happend
 		if (timeout <= 0) {
-			onTimeout();
+			onTimeout(entity);
 		}
 	}
 }

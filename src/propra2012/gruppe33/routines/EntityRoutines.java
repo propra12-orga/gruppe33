@@ -4,15 +4,38 @@ import propra2012.gruppe33.graphics.rendering.scenegraph.Entity;
 import propra2012.gruppe33.graphics.rendering.scenegraph.animation.AnimationController;
 import propra2012.gruppe33.graphics.rendering.scenegraph.grid.Grid;
 import propra2012.gruppe33.graphics.rendering.scenegraph.grid.GridController;
+import propra2012.gruppe33.graphics.rendering.scenegraph.timeout.TimeoutController;
 import propra2012.gruppe33.graphics.sprite.AnimationMap;
+import propra2012.gruppe33.graphics.sprite.Sprite;
 
 /**
- * Utility class to bundle some default player routines.
+ * Utility class to bundle some default entity routines.
  * 
  * @author Christopher Probst
  * 
  */
-public final class PlayerRoutines {
+public final class EntityRoutines {
+
+	public static Entity createBoom(Grid grid, Sprite sprite, int x, int y,
+			float dur) throws Exception {
+
+		Entity explosion = new Entity("boom");
+		AnimationController ac = new AnimationController();
+		ac.getAnimationMap().addAnimation(
+				sprite.newAnimationFromRange("main", 20, 0, 0, 25));
+		ac.setAnimation("main", true);
+		explosion.putController(ac);
+		explosion.getPosition().set(grid.gridToWorld(x, y));
+		explosion.getScale().set(grid.getRasterWidth(), grid.getRasterHeight());
+		explosion.putController(new TimeoutController(dur) {
+
+			@Override
+			protected void onTimeout(Entity entity) {
+				entity.detach();
+			}
+		});
+		return explosion;
+	}
 
 	/**
 	 * Creates a new local player using the given animation map and the coords.
@@ -60,6 +83,6 @@ public final class PlayerRoutines {
 	}
 
 	// Should not be instantiated
-	private PlayerRoutines() {
+	private EntityRoutines() {
 	}
 }

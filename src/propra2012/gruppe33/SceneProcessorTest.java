@@ -30,6 +30,8 @@ public class SceneProcessorTest {
 
 		while (!gridWorld.isShutdownRequested()) {
 
+			
+			
 			// Process the world (the main game-loop)
 			gridWorld.process(150);
 		}

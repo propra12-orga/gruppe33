@@ -3,6 +3,7 @@ package propra2012.gruppe33.assets;
 import java.awt.image.BufferedImage;
 import java.io.IOException;
 import java.io.InputStream;
+import java.net.URL;
 
 import javax.imageio.ImageIO;
 
@@ -31,7 +32,7 @@ public final class AssetManager {
 	 *            The pixel height of the grid scene.
 	 * @return the loaded grid.
 	 * @throws IOException
-	 *             If an I/O error occures.
+	 *             If an I/O error occurs.
 	 */
 	public static Grid loadGrid(String name, String jarPath, int pixelWidth,
 			int pixelHeight) throws IOException {
@@ -50,7 +51,7 @@ public final class AssetManager {
 	 *            The rows of the sprite.
 	 * @return the loaded sprite.
 	 * @throws IOException
-	 *             If an I/O error occures.
+	 *             If an I/O error occurs.
 	 */
 	public static Sprite loadSprite(String jarPath, int rasterX, int rasterY)
 			throws IOException {
@@ -65,20 +66,33 @@ public final class AssetManager {
 	 *            The image path inside the jar file.
 	 * @return the loaded image.
 	 * @throws IOException
-	 *             If an I/O error occures.
+	 *             If an I/O error occurs.
 	 */
 	public static BufferedImage loadImage(String jarPath) throws IOException {
 		return ImageIO.read(open(jarPath));
 	}
 
 	/**
+	 * Creates an url for the resource.
+	 * 
+	 * @param jarPath
+	 *            The path inside the jar file.
+	 * @return the url.
+	 * @throws IOException
+	 *             If an I/O error occurs.
+	 */
+	public static URL getURL(String jarPath) throws IOException {
+		return AssetManager.class.getResource(jarPath);
+	}
+
+	/**
 	 * Opens an input stream to an asset.
 	 * 
 	 * @param jarPath
-	 *            The
+	 *            The path inside the jar file.
 	 * @return the opened input stream.
 	 * @throws IOException
-	 *             If an I/O error occures.
+	 *             If an I/O error occurs.
 	 */
 	public static InputStream open(String jarPath) throws IOException {
 		// Open the resource
