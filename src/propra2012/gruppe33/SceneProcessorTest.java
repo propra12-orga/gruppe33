@@ -35,7 +35,6 @@ public class SceneProcessorTest {
 		}
 
 		// Destroy
-		frame.setVisible(false);
 		frame.dispose();
 	}
 }
