@@ -1,4 +1,4 @@
-package propra2012.gruppe33.routines;
+package propra2012.gruppe33.graphics.rendering;
 
 import propra2012.gruppe33.graphics.rendering.scenegraph.Entity;
 import propra2012.gruppe33.graphics.rendering.scenegraph.animation.AnimationController;

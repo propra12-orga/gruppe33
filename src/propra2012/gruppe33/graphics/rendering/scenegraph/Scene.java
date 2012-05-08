@@ -9,7 +9,6 @@ import java.awt.event.FocusEvent;
 import java.awt.event.FocusListener;
 import java.awt.event.KeyEvent;
 import java.awt.event.KeyListener;
-import java.io.File;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -62,18 +61,33 @@ public class Scene extends Entity implements KeyListener, FocusListener {
 	transient SceneProcessor<?> processor = null;
 
 	/**
-	 * Creates a new scene.
+	 * Creates a new scene without an asset manager.
 	 * 
 	 * @param name
 	 *            The name of the scene.
-	 * @param assetBundle
-	 *            The file of the asset bundle.
 	 * @param width
 	 *            The provided viewport width.
 	 * @param height
 	 *            The provided viewport height.
 	 */
-	public Scene(String name, File assetBundle, int width, int height)
+	public Scene(String name, int width, int height) throws Exception {
+		this(name, null, width, height);
+	}
+
+	/**
+	 * Creates a new scene.
+	 * 
+	 * @param name
+	 *            The name of the scene.
+	 * @param assetManager
+	 *            The asset manager of this scene. Can be null if you do not
+	 *            need assets.
+	 * @param width
+	 *            The provided viewport width.
+	 * @param height
+	 *            The provided viewport height.
+	 */
+	public Scene(String name, AssetManager assetManager, int width, int height)
 			throws Exception {
 		super(name);
 
@@ -83,8 +97,8 @@ public class Scene extends Entity implements KeyListener, FocusListener {
 			throw new IllegalArgumentException("height must be > 0");
 		}
 
-		// Initialize the asset manager
-		assetManager = new AssetManager(assetBundle);
+		// Save the asset manager
+		this.assetManager = assetManager;
 
 		// Init
 		this.width = width;

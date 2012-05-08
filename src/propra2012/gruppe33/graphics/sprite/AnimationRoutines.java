@@ -1,10 +1,8 @@
-package propra2012.gruppe33.routines;
+package propra2012.gruppe33.graphics.sprite;
 
 import java.io.IOException;
 
 import propra2012.gruppe33.graphics.assets.AssetManager;
-import propra2012.gruppe33.graphics.sprite.AnimationMap;
-import propra2012.gruppe33.graphics.sprite.Sprite;
 
 /**
  * Utility class to bundle some default animation routines.

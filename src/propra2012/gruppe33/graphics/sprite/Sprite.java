@@ -5,8 +5,8 @@ import java.awt.image.BufferedImage;
 import java.util.ArrayList;
 import java.util.List;
 
+import propra2012.gruppe33.graphics.GraphicsRoutines;
 import propra2012.gruppe33.graphics.rendering.scenegraph.math.Mathf;
-import propra2012.gruppe33.graphics.rendering.util.ImageUtil;
 
 /**
  * 
@@ -56,8 +56,8 @@ public final class Sprite {
 		for (int x = 0; x < rasterX; x++) {
 			for (int y = 0; y < rasterY; y++) {
 				// Create sub-image
-				subImages[y][x] = ImageUtil.getSpriteSubImage(image, rasterX,
-						rasterY, x, y);
+				subImages[y][x] = GraphicsRoutines.getSpriteSubImage(image,
+						rasterX, rasterY, x, y);
 			}
 		}
 	}

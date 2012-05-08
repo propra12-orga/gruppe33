@@ -12,7 +12,7 @@ import java.awt.image.BufferedImage;
 import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.LinkedBlockingDeque;
 
-import propra2012.gruppe33.graphics.rendering.util.ImageUtil;
+import propra2012.gruppe33.graphics.GraphicsRoutines;
 
 /**
  * This class supports active rendering which is the most performant way to
@@ -230,7 +230,7 @@ public final class SceneProcessor<S extends Scene> extends Canvas {
 					|| offscreen.getHeight() != h) {
 
 				// Create new compatible image for fast rendering
-				offscreen = ImageUtil.createImage(w, h);
+				offscreen = GraphicsRoutines.createImage(w, h);
 			}
 
 			// Create new graphics

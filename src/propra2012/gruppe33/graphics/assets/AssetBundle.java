@@ -41,7 +41,7 @@ public final class AssetBundle implements Serializable {
 		} else if (archive.isAbsolute()) {
 			throw new IllegalArgumentException("Please use a relative path");
 		} else if (!archive.exists()) {
-			throw new FileNotFoundException("Dependency \""
+			throw new FileNotFoundException("Included archive \""
 					+ archive.getAbsolutePath() + "\" cannot be found.");
 		} else if (destination == null) {
 			throw new NullPointerException("destination");

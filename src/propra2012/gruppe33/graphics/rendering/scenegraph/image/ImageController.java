@@ -3,10 +3,10 @@ package propra2012.gruppe33.graphics.rendering.scenegraph.image;
 import java.awt.Graphics2D;
 import java.awt.Image;
 
+import propra2012.gruppe33.graphics.GraphicsRoutines;
 import propra2012.gruppe33.graphics.rendering.scenegraph.Entity;
 import propra2012.gruppe33.graphics.rendering.scenegraph.EntityController;
 import propra2012.gruppe33.graphics.rendering.scenegraph.EntityControllerAdapter;
-import propra2012.gruppe33.graphics.rendering.util.ImageUtil;
 
 /**
  * This class simply renders a centered image. You MUST specify the correct
@@ -49,7 +49,7 @@ public class ImageController extends EntityControllerAdapter {
 	 *            The transparency of the new image.
 	 */
 	public ImageController(int width, int height, int transparency) {
-		this(ImageUtil.createImage(width, height, transparency));
+		this(GraphicsRoutines.createImage(width, height, transparency));
 	}
 
 	/**

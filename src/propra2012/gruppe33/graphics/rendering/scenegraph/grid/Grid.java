@@ -4,7 +4,6 @@ import java.awt.GraphicsEnvironment;
 import java.awt.Point;
 import java.awt.Transparency;
 import java.awt.image.BufferedImage;
-import java.io.File;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -12,6 +11,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
+import propra2012.gruppe33.graphics.assets.AssetManager;
 import propra2012.gruppe33.graphics.rendering.scenegraph.Entity;
 import propra2012.gruppe33.graphics.rendering.scenegraph.Scene;
 import propra2012.gruppe33.graphics.rendering.scenegraph.image.ImageController;
@@ -108,20 +108,32 @@ public class Grid extends Scene {
 	 * Creates a new grid using the given parameters.
 	 * 
 	 * @param name
-	 *            The name of the level.
+	 *            The name of the grid.
+	 * @param assetManager
+	 *            The asset manager of this grid. Cannot be null since the map
+	 *            data is loaded directly from the manager.
+	 * @param mapAssetPath
+	 *            The map asset path used with the given asset manager.
 	 * @param width
-	 *            The width of the level viewport.
+	 *            The width of the grid.
 	 * @param height
-	 *            The height of the level viewport.
+	 *            The height of the grid.
 	 * @throws Exception
 	 *             If an exception occurs.
 	 */
-	public Grid(String name, File assetBundle, String mapAsset, int width,
-			int height) throws Exception {
-		super(name, assetBundle, width, height);
+	public Grid(String name, AssetManager assetManager, String mapAssetPath,
+			int width, int height) throws Exception {
+		super(name, assetManager, width, height);
+
+		if (assetManager == null) {
+			throw new NullPointerException("assetManager");
+		} else if (mapAssetPath == null) {
+			throw new NullPointerException("mapAssetPath");
+		}
 
 		// Validate the map data after loading the map from the asset bundle
-		this.mapData = validateMapData(getAssetManager().loadGridData(mapAsset));
+		this.mapData = validateMapData(getAssetManager().loadGridData(
+				mapAssetPath));
 
 		// Set raster x and y
 		rasterY = mapData.length;
