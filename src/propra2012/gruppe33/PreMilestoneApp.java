@@ -1,6 +1,7 @@
 package propra2012.gruppe33;
 
 import java.awt.image.BufferedImage;
+import java.io.File;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -19,7 +20,8 @@ public class PreMilestoneApp {
 	public static Grid createDemoGame() throws Exception {
 
 		// Load grid from file
-		final Grid grid = new Grid("default.zip", 2048, 2048);
+		final Grid grid = new Grid("root", new File("scenes/default.zip"),
+				"assets/maps/map.txt", 2048, 2048);
 
 		// Define the chars on which the character can move
 		grid.getMaxFieldVelocities().put('0', 600f);

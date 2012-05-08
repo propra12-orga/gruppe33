@@ -13,8 +13,8 @@ import java.io.File;
 import java.util.HashMap;
 import java.util.Map;
 
+import propra2012.gruppe33.graphics.assets.AssetManager;
 import propra2012.gruppe33.graphics.rendering.scenegraph.math.Vector2f;
-import propra2012.gruppe33.graphics.rendering.util.AssetManager;
 
 /**
  * A scene is a special entity which has some more features:
@@ -46,7 +46,7 @@ public class Scene extends Entity implements KeyListener, FocusListener {
 	private transient final Map<Integer, Boolean> keyboardState = new HashMap<Integer, Boolean>();
 
 	// The asset manager of this scene
-	private AssetManager assetManager;
+	private final AssetManager assetManager;
 
 	// The width and height of the scene
 	private final int width, height;
@@ -66,12 +66,15 @@ public class Scene extends Entity implements KeyListener, FocusListener {
 	 * 
 	 * @param name
 	 *            The name of the scene.
+	 * @param assetBundle
+	 *            The file of the asset bundle.
 	 * @param width
 	 *            The provided viewport width.
 	 * @param height
 	 *            The provided viewport height.
 	 */
-	public Scene(String name, int width, int height) {
+	public Scene(String name, File assetBundle, int width, int height)
+			throws Exception {
 		super(name);
 
 		if (width <= 0) {
@@ -79,6 +82,9 @@ public class Scene extends Entity implements KeyListener, FocusListener {
 		} else if (height <= 0) {
 			throw new IllegalArgumentException("height must be > 0");
 		}
+
+		// Initialize the asset manager
+		assetManager = new AssetManager(assetBundle);
 
 		// Init
 		this.width = width;
@@ -89,30 +95,9 @@ public class Scene extends Entity implements KeyListener, FocusListener {
 	}
 
 	/**
-	 * Sets the asset manager of this scene.
-	 * 
-	 * @param assetManager
-	 *            An asset manager instance or null to load the scene assets.
+	 * @return the asset manager of this scene.
 	 */
-	public void setAssetManager(AssetManager assetManager) {
-		this.assetManager = assetManager;
-	}
-
-	/**
-	 * @return the asset manager of this scene or null if this scene has no
-	 *         assets.
-	 * @throws Exception
-	 *             If the asset manager could not be loaded.
-	 */
-	public AssetManager getAssetManager() throws Exception {
-		File file;
-		if (assetManager == null
-				&& (file = new File("scenes" + File.separator + getName()))
-						.exists()) {
-			// Create new asset manager on-the-fly
-			assetManager = new AssetManager(file);
-		}
-
+	public AssetManager getAssetManager() {
 		return assetManager;
 	}
 

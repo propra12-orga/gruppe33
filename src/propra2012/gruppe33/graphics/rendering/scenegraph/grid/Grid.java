@@ -4,6 +4,7 @@ import java.awt.GraphicsEnvironment;
 import java.awt.Point;
 import java.awt.Transparency;
 import java.awt.image.BufferedImage;
+import java.io.File;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -113,14 +114,14 @@ public class Grid extends Scene {
 	 * @param height
 	 *            The height of the level viewport.
 	 * @throws Exception
-	 *             If an I/O error occurs.
+	 *             If an exception occurs.
 	 */
-	public Grid(String name, int width, int height) throws Exception {
-		super(name, width, height);
+	public Grid(String name, File assetBundle, String mapAsset, int width,
+			int height) throws Exception {
+		super(name, assetBundle, width, height);
 
-		// Validate the map data
-		this.mapData = validateMapData(getAssetManager().loadGridData(
-				"assets/maps/map.txt"));
+		// Validate the map data after loading the map from the asset bundle
+		this.mapData = validateMapData(getAssetManager().loadGridData(mapAsset));
 
 		// Set raster x and y
 		rasterY = mapData.length;

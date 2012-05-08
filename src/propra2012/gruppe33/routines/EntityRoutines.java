@@ -29,6 +29,11 @@ public final class EntityRoutines {
 		explosion.getScale().set(grid.getRasterWidth(), grid.getRasterHeight());
 		explosion.putController(new TimeoutController(dur) {
 
+			/**
+			 * 
+			 */
+			private static final long serialVersionUID = 1L;
+
 			@Override
 			protected void onTimeout(Entity entity) {
 				entity.detach();
