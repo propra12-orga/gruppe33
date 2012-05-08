@@ -1,9 +1,8 @@
 package propra2012.gruppe33.graphics.rendering.scenegraph.timeout;
 
-import java.awt.Graphics2D;
-
 import propra2012.gruppe33.graphics.rendering.scenegraph.Entity;
 import propra2012.gruppe33.graphics.rendering.scenegraph.EntityController;
+import propra2012.gruppe33.graphics.rendering.scenegraph.EntityControllerAdapter;
 
 /**
  * This simple controller handles timeouts.
@@ -11,7 +10,7 @@ import propra2012.gruppe33.graphics.rendering.scenegraph.EntityController;
  * @author Christopher Probst
  * @see EntityController
  */
-public class TimeoutController implements EntityController {
+public class TimeoutController extends EntityControllerAdapter {
 
 	// The timeout in seconds.
 	private float timeout;
@@ -53,20 +52,6 @@ public class TimeoutController implements EntityController {
 	 *            The entity which has this controller.
 	 */
 	protected void onTimeout(Entity entity) {
-	}
-
-	/*
-	 * (non-Javadoc)
-	 * 
-	 * @see
-	 * propra2012.gruppe33.graphics.rendering.scenegraph.EntityController#doRender
-	 * (propra2012.gruppe33.graphics.rendering.scenegraph.Entity,
-	 * java.awt.Graphics2D, java.awt.Graphics2D)
-	 */
-	@Override
-	public void doRender(Entity entity, Graphics2D original,
-			Graphics2D transformed) {
-
 	}
 
 	/*

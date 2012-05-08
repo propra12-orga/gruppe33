@@ -44,11 +44,11 @@ import java.util.Set;
  * 
  * 
  * @author Christopher Probst
- * @see Vector2f
+ * @see EntityController
  * @see Scene
- * 
+ * @see Vector2f
  */
-public class Entity implements EntityController {
+public class Entity extends EntityControllerAdapter {
 
 	/*
 	 * The position of this entity stored as Vector2f. Initialize with zero!
@@ -567,6 +567,23 @@ public class Entity implements EntityController {
 	}
 
 	/**
+	 * Sends a message with the given parameters to this entity and all
+	 * controllers.
+	 * 
+	 * @param message
+	 *            The message object.
+	 * @param args
+	 *            The arguments.
+	 */
+	public void sendMessage(Object message, Object... args) {
+		// Invoke methods on this entity
+		onMessage(message, args);
+		for (EntityController controller : getControllerCache()) {
+			controller.onMessage(message, args);
+		}
+	}
+
+	/**
 	 * Attaches a child to this entity. If this entity has already a parent it
 	 * is detached automatically and will be attached afterwards.
 	 * 
@@ -598,6 +615,19 @@ public class Entity implements EntityController {
 
 			// Cache is invalid now
 			childrenCache = null;
+
+			// Invoke methods on child
+			child.onAttached(child);
+			for (EntityController controller : child.getControllerCache()) {
+				controller.onAttached(child);
+			}
+
+			// Invoke methods on this entity
+			onChildAttached(this, child);
+			for (EntityController controller : getControllerCache()) {
+				controller.onChildAttached(this, child);
+			}
+
 			return true;
 		} else {
 			return false;
@@ -647,6 +677,19 @@ public class Entity implements EntityController {
 
 			// Cache is invalid now
 			childrenCache = null;
+
+			// Invoke methods on child
+			child.onDetached(child);
+			for (EntityController controller : child.getControllerCache()) {
+				controller.onDetached(child);
+			}
+
+			// Invoke method on this entity
+			onChildDetached(this, child);
+			for (EntityController controller : getControllerCache()) {
+				controller.onChildDetached(this, child);
+			}
+
 			return true;
 		} else {
 			return false;
@@ -764,32 +807,6 @@ public class Entity implements EntityController {
 	 */
 	public AffineTransform getTransform() {
 		return transform(new AffineTransform());
-	}
-
-	/*
-	 * (non-Javadoc)
-	 * 
-	 * @see
-	 * propra2012.gruppe33.graphics.rendering.scenegraph.EntityController#doRender
-	 * (propra2012.gruppe33.graphics.rendering.scenegraph.Entity,
-	 * java.awt.Graphics2D, java.awt.Graphics2D)
-	 */
-	@Override
-	public void doRender(Entity entity, Graphics2D original,
-			Graphics2D transformed) {
-
-		// Is not rendered in default impl. for performance reasons.
-	}
-
-	/*
-	 * (non-Javadoc)
-	 * 
-	 * @see
-	 * propra2012.gruppe33.graphics.rendering.scenegraph.EntityController#doUpdate
-	 * (propra2012.gruppe33.graphics.rendering.scenegraph.Entity, float)
-	 */
-	@Override
-	public void doUpdate(Entity entity, float tpf) {
 	}
 
 	/**

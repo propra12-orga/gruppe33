@@ -14,7 +14,7 @@ import propra2012.gruppe33.graphics.rendering.util.ImageUtil;
  * @see EntityController
  * @see Entity
  */
-public class PictureController implements EntityController {
+public class PictureController extends EntityControllerAdapter {
 
 	// Used for rendering
 	private Image image;
@@ -88,16 +88,5 @@ public class PictureController implements EntityController {
 				copy.dispose();
 			}
 		}
-	}
-
-	/*
-	 * (non-Javadoc)
-	 * 
-	 * @see
-	 * propra2012.gruppe33.graphics.rendering.scenegraph.EntityController#doUpdate
-	 * (propra2012.gruppe33.graphics.rendering.scenegraph.Entity, float)
-	 */
-	@Override
-	public void doUpdate(Entity entity, float tpf) {
 	}
 }

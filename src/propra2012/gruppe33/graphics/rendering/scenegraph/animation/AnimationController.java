@@ -3,7 +3,7 @@ package propra2012.gruppe33.graphics.rendering.scenegraph.animation;
 import java.awt.Graphics2D;
 
 import propra2012.gruppe33.graphics.rendering.scenegraph.Entity;
-import propra2012.gruppe33.graphics.rendering.scenegraph.EntityController;
+import propra2012.gruppe33.graphics.rendering.scenegraph.EntityControllerAdapter;
 import propra2012.gruppe33.graphics.sprite.Animation;
 import propra2012.gruppe33.graphics.sprite.AnimationMap;
 import propra2012.gruppe33.graphics.sprite.Sprite;
@@ -17,7 +17,7 @@ import propra2012.gruppe33.graphics.sprite.Sprite;
  * @see AnimationMap
  * @see Sprite
  */
-public class AnimationController implements EntityController {
+public class AnimationController extends EntityControllerAdapter {
 
 	// The map which stores all animations
 	public final AnimationMap animationMap;
@@ -106,16 +106,5 @@ public class AnimationController implements EntityController {
 			transformed.translate(-0.5, -0.5);
 			transformed.drawImage(tmp.getAnimationImage(), 0, 0, 1, 1, null);
 		}
-	}
-
-	/*
-	 * (non-Javadoc)
-	 * 
-	 * @see
-	 * propra2012.gruppe33.graphics.rendering.scenegraph.EntityController#doUpdate
-	 * (propra2012.gruppe33.graphics.rendering.scenegraph.Entity, float)
-	 */
-	@Override
-	public void doUpdate(Entity entity, float tpf) {
 	}
 }

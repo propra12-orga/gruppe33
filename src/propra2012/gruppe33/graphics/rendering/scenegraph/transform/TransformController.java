@@ -1,9 +1,7 @@
 package propra2012.gruppe33.graphics.rendering.scenegraph.transform;
 
-import java.awt.Graphics2D;
-
 import propra2012.gruppe33.graphics.rendering.scenegraph.Entity;
-import propra2012.gruppe33.graphics.rendering.scenegraph.EntityController;
+import propra2012.gruppe33.graphics.rendering.scenegraph.EntityControllerAdapter;
 import propra2012.gruppe33.graphics.rendering.scenegraph.Vector2f;
 
 /**
@@ -12,7 +10,7 @@ import propra2012.gruppe33.graphics.rendering.scenegraph.Vector2f;
  * @author Christopher Probst
  * 
  */
-public class TransformController implements EntityController {
+public class TransformController extends EntityControllerAdapter {
 
 	/*
 	 * The linear, angular and scale velocities/accelerations.
@@ -122,19 +120,6 @@ public class TransformController implements EntityController {
 	 */
 	public void setAngularAcceleration(float angularAcceleration) {
 		this.angularAcceleration = angularAcceleration;
-	}
-
-	/*
-	 * (non-Javadoc)
-	 * 
-	 * @see
-	 * propra2012.gruppe33.graphics.rendering.scenegraph.EntityController#doRender
-	 * (propra2012.gruppe33.graphics.rendering.scenegraph.Entity,
-	 * java.awt.Graphics2D, java.awt.Graphics2D)
-	 */
-	@Override
-	public void doRender(Entity entity, Graphics2D original,
-			Graphics2D transformed) {
 	}
 
 	/*

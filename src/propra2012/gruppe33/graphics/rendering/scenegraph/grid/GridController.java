@@ -1,12 +1,11 @@
 package propra2012.gruppe33.graphics.rendering.scenegraph.grid;
 
-import java.awt.Graphics2D;
 import java.awt.Point;
 import java.awt.event.KeyEvent;
 import java.util.Set;
 
 import propra2012.gruppe33.graphics.rendering.scenegraph.Entity;
-import propra2012.gruppe33.graphics.rendering.scenegraph.EntityController;
+import propra2012.gruppe33.graphics.rendering.scenegraph.EntityControllerAdapter;
 import propra2012.gruppe33.graphics.rendering.scenegraph.Mathf;
 import propra2012.gruppe33.graphics.rendering.scenegraph.Vector2f;
 import propra2012.gruppe33.graphics.rendering.scenegraph.animation.AnimationController;
@@ -21,7 +20,7 @@ import propra2012.gruppe33.graphics.sprite.Animation;
  * @author Christopher Probst
  * 
  */
-public final class GridController implements EntityController {
+public final class GridController extends EntityControllerAdapter {
 
 	public static final float THRESHOLD = 0.01f;
 
@@ -59,21 +58,6 @@ public final class GridController implements EntityController {
 	 */
 	public boolean isMoving() {
 		return moving;
-	}
-
-	/*
-	 * (non-Javadoc)
-	 * 
-	 * @see
-	 * propra2012.gruppe33.graphics.rendering.scenegraph.EntityController#doRender
-	 * (propra2012.gruppe33.graphics.rendering.scenegraph.Entity,
-	 * java.awt.Graphics2D, java.awt.Graphics2D)
-	 */
-	@Override
-	public void doRender(Entity entity, Graphics2D original,
-			Graphics2D transformed) {
-
-		// Nothing to do here
 	}
 
 	/**

@@ -12,6 +12,68 @@ import java.awt.Graphics2D;
 public interface EntityController {
 
 	/**
+	 * OVERRIDE FOR CUSTOM BEHAVIOUR.
+	 * 
+	 * This method is called when the entity which ownes this controller is
+	 * attached to an entity.
+	 * 
+	 * @param entity
+	 *            The entity which ownes this controller.
+	 */
+	void onAttached(Entity entity);
+
+	/**
+	 * OVERRIDE FOR CUSTOM BEHAVIOUR.
+	 * 
+	 * This method is called when the entity which ownes this controller is
+	 * detached from an entity.
+	 * 
+	 * @param entity
+	 *            The entity which ownes this controller.
+	 */
+	void onDetached(Entity entity);
+
+	/**
+	 * OVERRIDE FOR CUSTOM BEHAVIOUR.
+	 * 
+	 * This method is called when a child is attached to the entity which ownes
+	 * this controller.
+	 * 
+	 * @param entity
+	 *            The entity which ownes this controller.
+	 * @param child
+	 *            The child which has been attached.
+	 */
+	void onChildAttached(Entity entity, Entity child);
+
+	/**
+	 * OVERRIDE FOR CUSTOM BEHAVIOUR.
+	 * 
+	 * This method is called when a child is detached from the entity which
+	 * ownes this controller.
+	 * 
+	 * @param entity
+	 *            The entity which ownes this controller.
+	 * @param child
+	 *            The child which has been detached.
+	 */
+	void onChildDetached(Entity entity, Entity child);
+
+	/**
+	 * OVERRIDE FOR CUSTOM BEHAVIOUR.
+	 * 
+	 * This method is called whenever
+	 * {@link Entity#sendMessage(Object, Object...)} is invoked on the entity
+	 * which ownes this controller.
+	 * 
+	 * @param message
+	 *            The message object.
+	 * @param args
+	 *            The arguments.
+	 */
+	void onMessage(Object message, Object... args);
+
+	/**
 	 * OVERRIDE FOR CUSTOM UPDATE BEHAVIOUR:
 	 * 
 	 * This method gets called every frame to update the state of this entity.
