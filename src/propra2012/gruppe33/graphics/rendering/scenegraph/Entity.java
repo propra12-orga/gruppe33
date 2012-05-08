@@ -7,6 +7,7 @@ import java.awt.geom.AffineTransform;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
+import java.util.Iterator;
 import java.util.LinkedHashMap;
 import java.util.LinkedHashSet;
 import java.util.LinkedList;
@@ -96,9 +97,9 @@ public class Entity implements EntityController {
 	private final Map<String, List<Entity>> names2Entities = new HashMap<String, List<Entity>>();
 
 	/*
-	 * Used to cache entity iterations.
+	 * Used to cache children iterations.
 	 */
-	private List<Entity> entityCache = null;
+	private List<Entity> childrenCache = null;
 
 	/*
 	 * Tells whether or not this entity and/or its children are visible.
@@ -156,9 +157,9 @@ public class Entity implements EntityController {
 	 * 
 	 * @return a list which contains all children.
 	 */
-	private List<Entity> getEntityCache() {
-		return entityCache != null ? entityCache
-				: (entityCache = new ArrayList<Entity>(children));
+	private List<Entity> getChildrenCache() {
+		return childrenCache != null ? childrenCache
+				: (childrenCache = new ArrayList<Entity>(children));
 	}
 
 	/**
@@ -325,7 +326,7 @@ public class Entity implements EntityController {
 	 * @return the first child which has the same name or null if there is no
 	 *         such child.
 	 */
-	public Entity findChildByName(String name) {
+	public Entity getChildByName(String name) {
 		if (name == null) {
 			throw new NullPointerException("name");
 		}
@@ -342,7 +343,7 @@ public class Entity implements EntityController {
 	 * @return a list of children which have the same name or null if there are
 	 *         no such children.
 	 */
-	public List<Entity> findChildrenByName(String name) {
+	public List<Entity> getChildrenByName(String name) {
 		if (name == null) {
 			throw new NullPointerException("name");
 		}
@@ -357,7 +358,7 @@ public class Entity implements EntityController {
 	 * Detaches all children from this entity.
 	 */
 	public void detachAll() {
-		for (Entity child : getEntityCache()) {
+		for (Entity child : getChildrenCache()) {
 			detach(child);
 		}
 	}
@@ -391,7 +392,7 @@ public class Entity implements EntityController {
 	 * @see Scene
 	 */
 	public Scene findScene() {
-		return findParentEntity(Scene.class);
+		return findParentByClass(Scene.class);
 	}
 
 	/**
@@ -404,13 +405,144 @@ public class Entity implements EntityController {
 	 *         if there is no valid parent entity in the hierarchy at all.
 	 */
 	@SuppressWarnings("unchecked")
-	public <T extends Entity> T findParentEntity(Class<T> entityClass) {
+	public <T extends Entity> T findParentByClass(Class<T> entityClass) {
 		if (entityClass == null) {
 			throw new NullPointerException("entityClass");
 		}
 
 		return getClass().equals(entityClass) ? (T) this
-				: parent != null ? parent.findParentEntity(entityClass) : null;
+				: parent != null ? parent.findParentByClass(entityClass) : null;
+	}
+
+	/**
+	 * This method searches for children and sub-children (recursively) which
+	 * match the given entity filter.
+	 * 
+	 * @param entityFilter
+	 *            The entity filter. If null all children and sub-children are
+	 *            returned.
+	 * @param includeThis
+	 *            If true the method will also check THIS entity to match the
+	 *            filter.
+	 * @return a list of entities.
+	 * @see EntityFilter
+	 */
+	public List<Entity> findChildrenRecursively(EntityFilter entityFilter,
+			boolean includeThis) {
+
+		// Create a new linked list to hold the search results
+		List<Entity> results = findChildren(entityFilter, includeThis);
+
+		// Iterate over all children
+		for (Entity child : getChildrenCache()) {
+
+			// Repeat this method recursively and merge results
+			results.addAll(child.findChildrenRecursively(entityFilter, false));
+		}
+
+		// Return the merged results
+		return results;
+	}
+
+	/**
+	 * This method searches for children which match the given entity filter.
+	 * 
+	 * @param entityFilter
+	 *            The entity filter. If null all children are returned.
+	 * @param includeThis
+	 *            If true the method will also check THIS entity to match the
+	 *            filter.
+	 * @return a list of entities.
+	 * @see EntityFilter
+	 */
+	public List<Entity> findChildren(EntityFilter entityFilter,
+			boolean includeThis) {
+
+		// Create a new linked list to hold the search results
+		List<Entity> results = new LinkedList<Entity>();
+
+		// The children iterator
+		Iterator<Entity> childrenIterator = getChildrenCache().iterator();
+
+		// Decide where to start
+		Entity ptr = includeThis ? this
+				: (childrenIterator.hasNext() ? childrenIterator.next() : null);
+
+		// As long as there are entities
+		while (ptr != null) {
+
+			if (entityFilter != null) {
+
+				// Try to accept an entity
+				int flag = entityFilter.accept(ptr);
+
+				// Should this entity be added ?
+				if ((flag & EntityFilter.VALID) != 0) {
+					results.add(ptr);
+				}
+
+				// Should we continue searching ?
+				ptr = (flag & EntityFilter.CONTINUE) != 0
+						&& childrenIterator.hasNext() ? childrenIterator.next()
+						: null;
+			} else {
+
+				// Just add and continue
+				results.add(ptr);
+				ptr = childrenIterator.hasNext() ? childrenIterator.next()
+						: null;
+			}
+		}
+		return results;
+	}
+
+	/**
+	 * This method searches for parents which match the given entity filter.
+	 * 
+	 * @param entityFilter
+	 *            The entity filter. If null all parents are returned.
+	 * @param includeThis
+	 *            If true the method will also check THIS entity to match the
+	 *            filter.
+	 * @return a list of entities.
+	 * @see EntityFilter
+	 */
+	public List<Entity> findParents(EntityFilter entityFilter,
+			boolean includeThis) {
+
+		// Create a new linked list to hold the search results
+		List<Entity> results = new LinkedList<Entity>();
+
+		// Decide where to start
+		Entity ptr = includeThis ? this : getParent();
+
+		// As long there are entities...
+		while (ptr != null) {
+
+			if (entityFilter != null) {
+				// Try to accept an entity
+				int flag = entityFilter.accept(ptr);
+
+				// Should this entity be added ?
+				if ((flag & EntityFilter.VALID) != 0) {
+					results.add(ptr);
+				}
+
+				// Should we continue searching ?
+				if ((flag & EntityFilter.CONTINUE) != 0) {
+					ptr = ptr.getParent();
+				} else {
+					ptr = null;
+				}
+			} else {
+				// Just add and continue
+				results.add(ptr);
+				ptr = ptr.getParent();
+			}
+		}
+
+		// Return the results
+		return results;
 	}
 
 	/**
@@ -465,7 +597,7 @@ public class Entity implements EntityController {
 			list.add(child);
 
 			// Cache is invalid now
-			entityCache = null;
+			childrenCache = null;
 			return true;
 		} else {
 			return false;
@@ -514,7 +646,7 @@ public class Entity implements EntityController {
 			}
 
 			// Cache is invalid now
-			entityCache = null;
+			childrenCache = null;
 			return true;
 		} else {
 			return false;
@@ -680,7 +812,7 @@ public class Entity implements EntityController {
 		}
 
 		// Update all children
-		for (Entity child : getEntityCache()) {
+		for (Entity child : getChildrenCache()) {
 			// Just update
 			child.update(tpf);
 		}
@@ -847,7 +979,7 @@ public class Entity implements EntityController {
 
 			if (childrenVisible) {
 				// Render all children
-				for (Entity child : getEntityCache()) {
+				for (Entity child : getChildrenCache()) {
 					// Just render
 					child.render(original, transformedCopy);
 				}

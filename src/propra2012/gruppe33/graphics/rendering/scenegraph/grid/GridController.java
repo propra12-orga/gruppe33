@@ -215,7 +215,7 @@ public final class GridController implements EntityController {
 	public void doUpdate(Entity entity, float tpf) {
 
 		// Get upper grid
-		Grid grid = entity.findParentEntity(Grid.class);
+		Grid grid = entity.findParentByClass(Grid.class);
 
 		// Find nearest grid
 		Point nearest = grid.validate(grid.worldToNearestPoint(entity

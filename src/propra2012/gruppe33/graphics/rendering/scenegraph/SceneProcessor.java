@@ -223,7 +223,7 @@ public final class SceneProcessor<S extends Scene> extends Canvas {
 		// Check size!
 		if (w > 0 && h > 0 && ptr != null) {
 			/*
-			 * Advanced volatile image rendering.
+			 * Advanced image rendering.
 			 */
 			// Create new...
 			if (offscreen == null || offscreen.getWidth() != w
