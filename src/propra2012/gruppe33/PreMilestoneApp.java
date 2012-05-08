@@ -4,9 +4,7 @@ import java.awt.image.BufferedImage;
 import java.util.HashMap;
 import java.util.Map;
 
-import propra2012.gruppe33.assets.AssetManager;
 import propra2012.gruppe33.graphics.rendering.scenegraph.Entity;
-import propra2012.gruppe33.graphics.rendering.scenegraph.animation.AnimationController;
 import propra2012.gruppe33.graphics.rendering.scenegraph.grid.Grid;
 import propra2012.gruppe33.graphics.sprite.Sprite;
 import propra2012.gruppe33.routines.AnimationRoutines;
@@ -21,8 +19,7 @@ public class PreMilestoneApp {
 	public static Grid createDemoGame() throws Exception {
 
 		// Load grid from file
-		final Grid grid = AssetManager.loadGrid("standard",
-				"maps/smallmap.txt", 2048, 2048);
+		final Grid grid = new Grid("default.zip", 2048, 2048);
 
 		// Define the chars on which the character can move
 		grid.getMaxFieldVelocities().put('0', 600f);
@@ -33,7 +30,8 @@ public class PreMilestoneApp {
 				grid.getMaxFieldVelocities().keySet());
 
 		// Render solid block
-		BufferedImage s = AssetManager.loadImage("images/solid.png");
+		BufferedImage s = grid.getAssetManager().loadImage(
+				"assets/images/solid.png");
 
 		Map<Character, BufferedImage> map = new HashMap<Character, BufferedImage>();
 		map.put('1', s);
@@ -43,15 +41,14 @@ public class PreMilestoneApp {
 
 		// Create a new local player
 		Entity player = EntityRoutines.createLocalPlayer("Kr0e",
-				AnimationRoutines.createKnight(20), grid, 1, 1);
+				AnimationRoutines.createKnight(grid.getAssetManager(), 20),
+				grid, 1, 1);
 
 		// Load sprite
-		Sprite boom = AssetManager.loadSprite("images/animated/boom.png", 5, 5);
+		Sprite boom = grid.getAssetManager().loadSprite(
+				"assets/images/animated/boom.png", 5, 5);
 
 		Entity ex = EntityRoutines.createBoom(grid, boom, 1, 1, 5);
-		
-		
-		
 
 		player.getScale().scaleLocal(2);
 

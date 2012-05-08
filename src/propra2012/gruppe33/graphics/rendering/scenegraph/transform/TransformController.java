@@ -2,7 +2,7 @@ package propra2012.gruppe33.graphics.rendering.scenegraph.transform;
 
 import propra2012.gruppe33.graphics.rendering.scenegraph.Entity;
 import propra2012.gruppe33.graphics.rendering.scenegraph.EntityControllerAdapter;
-import propra2012.gruppe33.graphics.rendering.scenegraph.Vector2f;
+import propra2012.gruppe33.graphics.rendering.scenegraph.math.Vector2f;
 
 /**
  * This class animates the transform.
@@ -11,6 +11,11 @@ import propra2012.gruppe33.graphics.rendering.scenegraph.Vector2f;
  * 
  */
 public class TransformController extends EntityControllerAdapter {
+
+	/**
+	 * 
+	 */
+	private static final long serialVersionUID = 1L;
 
 	/*
 	 * The linear, angular and scale velocities/accelerations.

@@ -6,10 +6,10 @@ import java.util.Set;
 
 import propra2012.gruppe33.graphics.rendering.scenegraph.Entity;
 import propra2012.gruppe33.graphics.rendering.scenegraph.EntityControllerAdapter;
-import propra2012.gruppe33.graphics.rendering.scenegraph.Mathf;
-import propra2012.gruppe33.graphics.rendering.scenegraph.Vector2f;
 import propra2012.gruppe33.graphics.rendering.scenegraph.animation.AnimationController;
 import propra2012.gruppe33.graphics.rendering.scenegraph.grid.Grid.Direction;
+import propra2012.gruppe33.graphics.rendering.scenegraph.math.Mathf;
+import propra2012.gruppe33.graphics.rendering.scenegraph.math.Vector2f;
 import propra2012.gruppe33.graphics.sprite.Animation;
 
 /**
@@ -21,6 +21,11 @@ import propra2012.gruppe33.graphics.sprite.Animation;
  * 
  */
 public final class GridController extends EntityControllerAdapter {
+
+	/**
+	 * 
+	 */
+	private static final long serialVersionUID = 1L;
 
 	public static final float THRESHOLD = 0.01f;
 

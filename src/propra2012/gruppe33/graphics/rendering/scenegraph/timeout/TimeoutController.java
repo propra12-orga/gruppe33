@@ -12,6 +12,11 @@ import propra2012.gruppe33.graphics.rendering.scenegraph.EntityControllerAdapter
  */
 public class TimeoutController extends EntityControllerAdapter {
 
+	/**
+	 * 
+	 */
+	private static final long serialVersionUID = 1L;
+
 	// The timeout in seconds.
 	private float timeout;
 

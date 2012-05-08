@@ -1,6 +1,8 @@
-package propra2012.gruppe33.graphics.rendering.scenegraph;
+package propra2012.gruppe33.graphics.rendering.scenegraph.math;
 
 import java.io.Serializable;
+
+import propra2012.gruppe33.graphics.rendering.scenegraph.Entity;
 
 /**
  * This is a simple 2d vector implementation. It contains the most basic
@@ -9,7 +11,7 @@ import java.io.Serializable;
  * @author Christopher Probst
  * @see Entity
  */
-public class Vector2f implements Serializable {
+public final class Vector2f implements Serializable {
 
 	/**
 	 * 

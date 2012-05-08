@@ -1,8 +1,11 @@
-package propra2012.gruppe33.graphics.rendering.scenegraph;
+package propra2012.gruppe33.graphics.rendering.scenegraph.image;
 
 import java.awt.Graphics2D;
 import java.awt.Image;
 
+import propra2012.gruppe33.graphics.rendering.scenegraph.Entity;
+import propra2012.gruppe33.graphics.rendering.scenegraph.EntityController;
+import propra2012.gruppe33.graphics.rendering.scenegraph.EntityControllerAdapter;
 import propra2012.gruppe33.graphics.rendering.util.ImageUtil;
 
 /**
@@ -14,13 +17,29 @@ import propra2012.gruppe33.graphics.rendering.util.ImageUtil;
  * @see EntityController
  * @see Entity
  */
-public class PictureController extends EntityControllerAdapter {
-
-	// Used for rendering
-	private Image image;
+public class ImageController extends EntityControllerAdapter {
 
 	/**
-	 * Creates a new picture.
+	 * 
+	 */
+	private static final long serialVersionUID = 1L;
+
+	/*
+	 * Used for rendering.
+	 * 
+	 * IMPORTANT: The image is transient and must be restored after loading.
+	 */
+	private transient Image image;
+
+	/**
+	 * Creates an empty image controller with no image.
+	 */
+	public ImageController() {
+	}
+
+	/**
+	 * Creates a new image controller and a new image using the given
+	 * parameters.
 	 * 
 	 * @param width
 	 *            The width of the new image.
@@ -29,17 +48,17 @@ public class PictureController extends EntityControllerAdapter {
 	 * @param transparency
 	 *            The transparency of the new image.
 	 */
-	public PictureController(int width, int height, int transparency) {
+	public ImageController(int width, int height, int transparency) {
 		this(ImageUtil.createImage(width, height, transparency));
 	}
 
 	/**
-	 * Creates a new picture.
+	 * Creates a new image controller using the given image.
 	 * 
 	 * @param image
-	 *            The image of the picture.
+	 *            The image of the image controller.
 	 */
-	public PictureController(Image image) {
+	public ImageController(Image image) {
 		setImage(image);
 	}
 

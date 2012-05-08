@@ -15,6 +15,9 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
+import propra2012.gruppe33.graphics.rendering.scenegraph.image.ImageController;
+import propra2012.gruppe33.graphics.rendering.scenegraph.math.Vector2f;
+
 /**
  * This is the entity class. An entity is basically some kind of object in the
  * game, let it be an image, a controllable character or just a temporary
@@ -49,6 +52,11 @@ import java.util.Set;
  * @see Vector2f
  */
 public class Entity extends EntityControllerAdapter {
+
+	/**
+	 * 
+	 */
+	private static final long serialVersionUID = 1L;
 
 	/*
 	 * The position of this entity stored as Vector2f. Initialize with zero!
@@ -836,24 +844,24 @@ public class Entity extends EntityControllerAdapter {
 	}
 
 	/**
-	 * Renders this entity into a picture component of the given entity. If
-	 * there is no picture component yet, a new one will be created using the
+	 * Renders this entity into an image controller of the given entity. If
+	 * there is no image controller yet, a new one will be created using the
 	 * given transparency and the next scene in hierarchy and use its dimension
 	 * to create a new image. If there is no scene an exception will be thrown.
 	 * 
 	 * @param entity
 	 *            The entity in which you want to render.
 	 * @param optTransparency
-	 *            The optional transparency of the image if there is no picture
-	 *            component yet.
+	 *            The optional transparency of the image if there is no image
+	 *            controller yet.
 	 */
 	public final void renderTo(Entity entity, int optTransparency) {
 		renderTo(entity, -1, -1, optTransparency);
 	}
 
 	/**
-	 * Renders this entity into a picture component of the given entity. If
-	 * there is no picture component yet, a new one will be created using the
+	 * Renders this entity into an image controller of the given entity. If
+	 * there is no image controller yet, a new one will be created using the
 	 * given parameters. If there parameters are invalid the method will get the
 	 * next scene in hierarchy and use its dimension to create a new image. If
 	 * there is no scene an exception will be thrown.
@@ -861,14 +869,14 @@ public class Entity extends EntityControllerAdapter {
 	 * @param entity
 	 *            The entity in which you want to render.
 	 * @param optWidth
-	 *            The optional width of the image if there is no picture
-	 *            component yet.
+	 *            The optional width of the image if there is no image
+	 *            controller yet.
 	 * @param optHeight
-	 *            The optional height of the image if there is no picture
-	 *            component yet.
+	 *            The optional height of the image if there is no image
+	 *            controller yet.
 	 * @param optTransparency
-	 *            The optional transparency of the image if there is no picture
-	 *            component yet.
+	 *            The optional transparency of the image if there is no image
+	 *            controller yet.
 	 */
 	public final void renderTo(Entity entity, int optWidth, int optHeight,
 			int optTransparency) {
@@ -876,8 +884,8 @@ public class Entity extends EntityControllerAdapter {
 			throw new NullPointerException("entity");
 		}
 
-		// Lookup picture controller
-		PictureController pic = entity.getController(PictureController.class);
+		// Lookup image controller
+		ImageController pic = entity.getController(ImageController.class);
 
 		// Oops... thats bad
 		if (pic == null) {
@@ -896,10 +904,10 @@ public class Entity extends EntityControllerAdapter {
 				 */
 				if (scene == null) {
 					throw new IllegalStateException(
-							"The entity has no picture component and the "
+							"The entity has no image controller and the "
 									+ "width/height you specified is not valid. But "
 									+ "there is no scene in your hierarchy, too, so "
-									+ "this method can not create a new image.");
+									+ "this method can not create a new image controller.");
 				} else {
 					// Reset width and height
 					optWidth = scene.getWidth();
@@ -907,9 +915,9 @@ public class Entity extends EntityControllerAdapter {
 				}
 			}
 
-			// Create a new picture and add to entity
-			entity.putController(pic = new PictureController(optWidth,
-					optHeight, optTransparency));
+			// Create a new image controller and add to entity
+			entity.putController(pic = new ImageController(optWidth, optHeight,
+					optTransparency));
 		}
 
 		// Render to the image

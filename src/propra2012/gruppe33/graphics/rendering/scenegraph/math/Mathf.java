@@ -1,6 +1,7 @@
-package propra2012.gruppe33.graphics.rendering.scenegraph;
+package propra2012.gruppe33.graphics.rendering.scenegraph.math;
 
 /**
+ * A math class.
  * 
  * @author Christopher Probst
  * 

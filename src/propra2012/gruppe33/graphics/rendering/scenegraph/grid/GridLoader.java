@@ -52,7 +52,7 @@ public final class GridLoader {
 
 			// Nichts zu lesen
 			if (cache.isEmpty()) {
-				return null;
+				throw new IOException("Empty grid");
 			}
 		} finally {
 			// Schlieﬂe den Stream

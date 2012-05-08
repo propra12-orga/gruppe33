@@ -5,7 +5,7 @@ import java.awt.image.BufferedImage;
 import java.util.ArrayList;
 import java.util.List;
 
-import propra2012.gruppe33.graphics.rendering.scenegraph.Mathf;
+import propra2012.gruppe33.graphics.rendering.scenegraph.math.Mathf;
 import propra2012.gruppe33.graphics.rendering.util.ImageUtil;
 
 /**

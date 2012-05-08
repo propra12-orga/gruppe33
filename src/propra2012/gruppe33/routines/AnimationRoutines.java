@@ -2,7 +2,7 @@ package propra2012.gruppe33.routines;
 
 import java.io.IOException;
 
-import propra2012.gruppe33.assets.AssetManager;
+import propra2012.gruppe33.graphics.rendering.util.AssetManager;
 import propra2012.gruppe33.graphics.sprite.AnimationMap;
 import propra2012.gruppe33.graphics.sprite.Sprite;
 
@@ -17,16 +17,19 @@ public final class AnimationRoutines {
 	/**
 	 * Creates an animated knight char with the default keys.
 	 * 
+	 * @param assetManager
+	 *            The asset manager which contains the sprite.
 	 * @param speed
 	 *            The speed of the animation
 	 * @return a new animation map with all animations.
 	 * @throws IOException
 	 *             If an I/O error occurs.
 	 */
-	public static AnimationMap createKnight(long speed) throws IOException {
+	public static AnimationMap createKnight(AssetManager assetManager,
+			long speed) throws IOException {
 		// Load the knight sprite
-		Sprite knightSprite = AssetManager.loadSprite(
-				"images/animated/chars/knight.png", 9, 9);
+		Sprite knightSprite = assetManager.loadSprite(
+				"assets/images/animated/chars/knight.png", 9, 9);
 
 		// Create a new map
 		AnimationMap knight = new AnimationMap();

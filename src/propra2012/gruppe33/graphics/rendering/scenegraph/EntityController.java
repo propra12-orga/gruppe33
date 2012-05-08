@@ -1,6 +1,7 @@
 package propra2012.gruppe33.graphics.rendering.scenegraph;
 
 import java.awt.Graphics2D;
+import java.io.Serializable;
 
 /**
  * This is basically an interceptor interface so you can modify or set the
@@ -9,7 +10,7 @@ import java.awt.Graphics2D;
  * @author Christopher Probst
  * @see Entity
  */
-public interface EntityController {
+public interface EntityController extends Serializable {
 
 	/**
 	 * OVERRIDE FOR CUSTOM BEHAVIOUR.

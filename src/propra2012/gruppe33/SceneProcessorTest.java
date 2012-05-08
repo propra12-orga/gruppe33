@@ -1,6 +1,7 @@
 package propra2012.gruppe33;
 
 import java.awt.Frame;
+import java.awt.image.BufferedImage;
 
 import propra2012.gruppe33.graphics.rendering.scenegraph.Entity;
 import propra2012.gruppe33.graphics.rendering.scenegraph.EntityFilter;

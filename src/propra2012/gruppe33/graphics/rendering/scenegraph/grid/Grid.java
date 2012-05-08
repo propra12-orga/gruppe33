@@ -12,9 +12,9 @@ import java.util.Map;
 import java.util.Set;
 
 import propra2012.gruppe33.graphics.rendering.scenegraph.Entity;
-import propra2012.gruppe33.graphics.rendering.scenegraph.PictureController;
 import propra2012.gruppe33.graphics.rendering.scenegraph.Scene;
-import propra2012.gruppe33.graphics.rendering.scenegraph.Vector2f;
+import propra2012.gruppe33.graphics.rendering.scenegraph.image.ImageController;
+import propra2012.gruppe33.graphics.rendering.scenegraph.math.Vector2f;
 
 /**
  * This class represents a grid scene. It contains a char[][] array and some
@@ -23,6 +23,11 @@ import propra2012.gruppe33.graphics.rendering.scenegraph.Vector2f;
  * @author Christopher Probst
  */
 public class Grid extends Scene {
+
+	/**
+	 * 
+	 */
+	private static final long serialVersionUID = 1L;
 
 	/**
 	 * Validates a map.
@@ -107,14 +112,15 @@ public class Grid extends Scene {
 	 *            The width of the level viewport.
 	 * @param height
 	 *            The height of the level viewport.
-	 * @param mapData
-	 *            The char[][] array which contains the map data.
+	 * @throws Exception
+	 *             If an I/O error occurs.
 	 */
-	public Grid(String name, int width, int height, char[][] mapData) {
+	public Grid(String name, int width, int height) throws Exception {
 		super(name, width, height);
 
 		// Validate the map data
-		this.mapData = validateMapData(mapData);
+		this.mapData = validateMapData(getAssetManager().loadGridData(
+				"assets/maps/map.txt"));
 
 		// Set raster x and y
 		rasterY = mapData.length;
@@ -144,8 +150,8 @@ public class Grid extends Scene {
 	 * @param chars2Images
 	 *            The map where you can define which image belongs to which
 	 *            char.
-	 * @return an entity which contains all bundled images stored as child
-	 *         picture entities.
+	 * @return an entity which contains all bundled images stored as child image
+	 *         entities.
 	 */
 	public Entity bundle(String name, Map<Character, BufferedImage> chars2Images) {
 		if (name == null) {
@@ -170,7 +176,7 @@ public class Grid extends Scene {
 					Entity child = new Entity(x + ", " + y);
 
 					// Add to controllers
-					child.putController(new PictureController(tile));
+					child.putController(new ImageController(tile));
 
 					// At first translate
 					child.setPosition(vectorAt(x, y));

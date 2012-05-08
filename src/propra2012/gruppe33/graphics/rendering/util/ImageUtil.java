@@ -8,7 +8,7 @@ import java.awt.Transparency;
 import java.awt.image.BufferedImage;
 import java.awt.image.VolatileImage;
 
-import propra2012.gruppe33.graphics.rendering.scenegraph.Mathf;
+import propra2012.gruppe33.graphics.rendering.scenegraph.math.Mathf;
 import propra2012.gruppe33.graphics.sprite.Sprite;
 
 /**

@@ -9,6 +9,11 @@ import java.awt.Graphics2D;
  * @see EntityController
  */
 public abstract class EntityControllerAdapter implements EntityController {
+	/**
+	 * 
+	 */
+	private static final long serialVersionUID = 1L;
+
 	/*
 	 * (non-Javadoc)
 	 * 

@@ -9,8 +9,12 @@ import java.awt.event.FocusEvent;
 import java.awt.event.FocusListener;
 import java.awt.event.KeyEvent;
 import java.awt.event.KeyListener;
+import java.io.File;
 import java.util.HashMap;
 import java.util.Map;
+
+import propra2012.gruppe33.graphics.rendering.scenegraph.math.Vector2f;
+import propra2012.gruppe33.graphics.rendering.util.AssetManager;
 
 /**
  * A scene is a special entity which has some more features:
@@ -29,8 +33,20 @@ import java.util.Map;
  */
 public class Scene extends Entity implements KeyListener, FocusListener {
 
-	// The keyboard state which is used to process the input
-	private final Map<Integer, Boolean> keyboardState = new HashMap<Integer, Boolean>();
+	/**
+	 * 
+	 */
+	private static final long serialVersionUID = 1L;
+
+	/*
+	 * The keyboard state which is used to process the input.
+	 * 
+	 * IMPORTANT: This attribute is not serialized!
+	 */
+	private transient final Map<Integer, Boolean> keyboardState = new HashMap<Integer, Boolean>();
+
+	// The asset manager of this scene
+	private AssetManager assetManager;
 
 	// The width and height of the scene
 	private final int width, height;
@@ -40,8 +56,10 @@ public class Scene extends Entity implements KeyListener, FocusListener {
 
 	/*
 	 * The processor which processes this scene.
+	 * 
+	 * IMPORTANT: This attribute is transient.
 	 */
-	SceneProcessor<?> processor = null;
+	transient SceneProcessor<?> processor = null;
 
 	/**
 	 * Creates a new scene.
@@ -68,6 +86,34 @@ public class Scene extends Entity implements KeyListener, FocusListener {
 
 		// Calc new ratio
 		ratio = width / (float) height;
+	}
+
+	/**
+	 * Sets the asset manager of this scene.
+	 * 
+	 * @param assetManager
+	 *            An asset manager instance or null to load the scene assets.
+	 */
+	public void setAssetManager(AssetManager assetManager) {
+		this.assetManager = assetManager;
+	}
+
+	/**
+	 * @return the asset manager of this scene or null if this scene has no
+	 *         assets.
+	 * @throws Exception
+	 *             If the asset manager could not be loaded.
+	 */
+	public AssetManager getAssetManager() throws Exception {
+		File file;
+		if (assetManager == null
+				&& (file = new File("scenes" + File.separator + getName()))
+						.exists()) {
+			// Create new asset manager on-the-fly
+			assetManager = new AssetManager(file);
+		}
+
+		return assetManager;
 	}
 
 	/**
@@ -107,8 +153,6 @@ public class Scene extends Entity implements KeyListener, FocusListener {
 	 */
 	@Override
 	public void focusGained(FocusEvent e) {
-		// TODO Auto-generated method stub
-
 	}
 
 	/*
