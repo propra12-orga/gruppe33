@@ -86,8 +86,7 @@ public class Entity extends EntityControllerAdapter {
 	/*
 	 * The hash set which contains all children.
 	 */
-	private final Set<Entity> children = new LinkedHashSet<Entity>(),
-			readOnlyChildren = Collections.unmodifiableSet(children);
+	private final Set<Entity> children = new LinkedHashSet<Entity>();
 
 	/*
 	 * Maps classes to entity controllers.
@@ -107,7 +106,7 @@ public class Entity extends EntityControllerAdapter {
 	/*
 	 * Used to cache children iterations.
 	 */
-	private List<Entity> childrenCache = null;
+	private List<Entity> childrenCache = null, readOnlyChildrenCache = null;
 
 	/*
 	 * Tells whether or not this entity and/or its children are visible.
@@ -168,6 +167,16 @@ public class Entity extends EntityControllerAdapter {
 	private List<Entity> getChildrenCache() {
 		return childrenCache != null ? childrenCache
 				: (childrenCache = new ArrayList<Entity>(children));
+	}
+
+	/**
+	 * @see Entity#getChildrenCache()
+	 * @return a read-only children cache.
+	 */
+	private List<Entity> getReadOnlyChildrenCache() {
+		return readOnlyChildrenCache != null ? readOnlyChildrenCache
+				: (readOnlyChildrenCache = Collections
+						.unmodifiableList(getChildrenCache()));
 	}
 
 	/**
@@ -372,10 +381,10 @@ public class Entity extends EntityControllerAdapter {
 	}
 
 	/**
-	 * @return an unmodifiable set of all children.
+	 * @return an unmodifiable list of all children.
 	 */
-	public Set<Entity> getChildren() {
-		return readOnlyChildren;
+	public List<Entity> getChildren() {
+		return getReadOnlyChildrenCache();
 	}
 
 	/**
@@ -592,6 +601,90 @@ public class Entity extends EntityControllerAdapter {
 	}
 
 	/**
+	 * Detaches all children given by the iterable interface from this entity.
+	 * 
+	 * @param children
+	 *            The entities you want to detach from this entity.
+	 * @return true if all entities were children of this entity and are
+	 *         detached successfully, otherwise false.
+	 */
+	public boolean detach(Iterable<Entity> children) {
+		if (children == null) {
+			throw new NullPointerException("children");
+		}
+		return detach(children.iterator());
+	}
+
+	/**
+	 * Detaches all children given by the iterator from this entity.
+	 * 
+	 * @param children
+	 *            The entities you want to detach from this entity.
+	 * @return true if all entities were children of this entity and are
+	 *         detached successfully, otherwise false.
+	 */
+	public boolean detach(Iterator<Entity> children) {
+		if (children == null) {
+			throw new NullPointerException("children");
+		}
+		boolean success = true;
+
+		// Iterate over the given children
+		while (children.hasNext()) {
+
+			// Detach the next child
+			if (!detach(children.next())) {
+				success = false;
+			}
+		}
+
+		return success;
+	}
+
+	/**
+	 * Attaches all children given by the iterable interface to this entity. If
+	 * these entities have already parents they are detached automatically and
+	 * will be attached afterwards.
+	 * 
+	 * @param children
+	 *            The entities you want to attach as children.
+	 * @return true if all entities were attached successfully, otherwise false.
+	 */
+	public boolean attach(Iterable<Entity> children) {
+		if (children == null) {
+			throw new NullPointerException("children");
+		}
+		return attach(children.iterator());
+	}
+
+	/**
+	 * Attaches all children given by the iterator to this entity. If these
+	 * entities have already parents they are detached automatically and will be
+	 * attached afterwards.
+	 * 
+	 * @param children
+	 *            The entities you want to attach as children.
+	 * @return true if all entities were attached successfully, otherwise false.
+	 */
+	public boolean attach(Iterator<Entity> children) {
+		if (children == null) {
+			throw new NullPointerException("children");
+		}
+		boolean success = true;
+
+		// Iterate over the given children
+		while (children.hasNext()) {
+
+			// Attach the next child
+			if (!attach(children.next())) {
+				success = false;
+			}
+		}
+
+		return success;
+	}
+
+	/**
 	 * Attaches a child to this entity. If this entity has already a parent it
 	 * is detached automatically and will be attached afterwards.
 	 * 
@@ -622,7 +715,7 @@ public class Entity extends EntityControllerAdapter {
 			list.add(child);
 
 			// Cache is invalid now
-			childrenCache = null;
+			readOnlyChildrenCache = childrenCache = null;
 
 			// Invoke methods on child
 			child.onAttached(child);
@@ -684,7 +777,7 @@ public class Entity extends EntityControllerAdapter {
 			}
 
 			// Cache is invalid now
-			childrenCache = null;
+			readOnlyChildrenCache = childrenCache = null;
 
 			// Invoke methods on child
 			child.onDetached(child);
