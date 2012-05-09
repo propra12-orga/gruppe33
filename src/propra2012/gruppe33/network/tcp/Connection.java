@@ -71,6 +71,11 @@ public class Connection implements Runnable, Closeable {
 		// Save the connection group
 		this.connectionGroup = connectionGroup;
 
+		// Add if valid
+		if (connectionGroup != null) {
+			connectionGroup.put(id, this);
+		}
+
 		// Create the streams
 		output = new ObjectOutputStream(socket.getOutputStream());
 		input = new ObjectInputStream(socket.getInputStream());

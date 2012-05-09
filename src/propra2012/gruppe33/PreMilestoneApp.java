@@ -30,7 +30,7 @@ public class PreMilestoneApp {
 		AssetManager assets = new AssetManager(new File("scenes/default.zip"));
 
 		// Load grid from file
-		Grid grid = new Grid("root", assets, "assets/maps/map.txt", 2048, 2048);
+		Grid grid = new Grid("root", assets, "assets/maps/smallmap.txt", 2048, 2048);
 
 		// Define the chars on which the character can move
 		grid.getMaxFieldVelocities().put('0', 600f);
