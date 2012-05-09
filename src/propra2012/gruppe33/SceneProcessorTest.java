@@ -17,7 +17,7 @@ import propra2012.gruppe33.graphics.rendering.scenegraph.grid.Grid;
 public class SceneProcessorTest {
 
 	public static void main(String[] args) throws Exception {
-		
+
 		// Create a new world processor
 		SceneProcessor<Grid> gridWorld = new SceneProcessor<Grid>();
 
@@ -27,7 +27,6 @@ public class SceneProcessorTest {
 
 		// Create the grid
 		Grid grid = PreMilestoneApp.createDemoGame();
-
 
 		// Set root
 		gridWorld.setRoot(grid);

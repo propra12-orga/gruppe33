@@ -17,7 +17,6 @@ import javax.imageio.ImageIO;
 
 import propra2012.gruppe33.graphics.assets.AssetBundle.ValidationResult;
 import propra2012.gruppe33.graphics.rendering.scenegraph.grid.GridLoader;
-import propra2012.gruppe33.graphics.sprite.Sprite;
 
 /**
  * This class simplifies the handling of resources. Let it be images, maps,
@@ -26,6 +25,48 @@ import propra2012.gruppe33.graphics.sprite.Sprite;
  * @author Christopher Probst
  */
 public final class AssetManager implements Serializable {
+
+	private static final AssetLoader<char[][]> GRID_LOADER = new AssetLoader<char[][]>() {
+
+		/**
+		 * 
+		 */
+		private static final long serialVersionUID = 1L;
+
+		@Override
+		public char[][] loadAsset(AssetManager assetManager, String assetPath)
+				throws Exception {
+			return GridLoader.load(assetManager.open(assetPath));
+		}
+	};
+
+	private static final AssetLoader<InputStream> STREAM_LOADER = new AssetLoader<InputStream>() {
+
+		/**
+		 * 
+		 */
+		private static final long serialVersionUID = 1L;
+
+		@Override
+		public InputStream loadAsset(AssetManager assetManager, String assetPath)
+				throws Exception {
+			return assetManager.open(assetPath);
+		}
+	};
+
+	private static final AssetLoader<BufferedImage> IMAGE_LOADER = new AssetLoader<BufferedImage>() {
+
+		/**
+		 * 
+		 */
+		private static final long serialVersionUID = 1L;
+
+		@Override
+		public BufferedImage loadAsset(AssetManager assetManager,
+				String assetPath) throws Exception {
+			return ImageIO.read(assetManager.open(assetPath));
+		}
+	};
 
 	/**
 	 * 
@@ -60,6 +101,25 @@ public final class AssetManager implements Serializable {
 			}
 		}
 		return openZipFiles;
+	}
+
+	/**
+	 * Opens an input stream to an asset.
+	 * 
+	 * @param assetPath
+	 *            The asset path.
+	 * @return the opened input stream.
+	 * @throws Exception
+	 *             If an exception occurs.
+	 */
+	private InputStream open(String assetPath) throws Exception {
+		for (ZipFile source : getOpenZipFiles()) {
+			ZipEntry entry = source.getEntry(assetPath);
+			if (entry != null) {
+				return source.getInputStream(entry);
+			}
+		}
+		throw new IOException("Zip path does not exist");
 	}
 
 	/**
@@ -104,77 +164,15 @@ public final class AssetManager implements Serializable {
 		return assetBundles;
 	}
 
-	/**
-	 * Creates a new asset manager using the given zip file. This method will
-	 * check the file for dependencies and will open these files as well.
-	 * 
-	 * @param rootZip
-	 *            The root zip file you want to add.
-	 * @throws Exception
-	 *             If an exception occurs.
-	 */
-
-	/**
-	 * Loads grid data from the asset path.
-	 * 
-	 * @param zipPath
-	 *            The grid data path inside the zip file.
-	 * @return the loaded grid data.
-	 * @throws Exception
-	 *             If an exception occurs.
-	 */
-	public char[][] loadGridData(String zipPath) throws Exception {
-		return GridLoader.load(open(zipPath));
+	public Asset<char[][]> loadGridData(String assetPath) throws Exception {
+		return new Asset<char[][]>(this, assetPath, GRID_LOADER);
 	}
 
-	/**
-	 * Loads a sprite from the asset path.
-	 * 
-	 * @param zipPath
-	 *            The sprite path inside the zipPath file.
-	 * @param rasterX
-	 *            The columns of the sprite.
-	 * @param rasterY
-	 *            The rows of the sprite.
-	 * @return the loaded sprite.
-	 * @throws Exception
-	 *             If an exception occurs.
-	 */
-	public Sprite loadSprite(String zipPath, int rasterX, int rasterY)
-			throws Exception {
-		// Load an image an create a new sprite
-		return new Sprite(loadImage(zipPath), rasterX, rasterY);
+	public Asset<BufferedImage> loadImage(String assetPath) throws Exception {
+		return new Asset<BufferedImage>(this, assetPath, IMAGE_LOADER);
 	}
 
-	/**
-	 * Loads an image from the asset path.
-	 * 
-	 * @param zipPath
-	 *            The image path inside the zip file.
-	 * @return the loaded image.
-	 * @throws Exception
-	 *             If an exception occurs.
-	 */
-	public BufferedImage loadImage(String zipPath) throws Exception {
-		return ImageIO.read(open(zipPath));
-	}
-
-	/**
-	 * Opens an input stream to an asset.
-	 * 
-	 * @param zipPath
-	 *            The path inside the zip file.
-	 * @return the opened input stream.
-	 * @throws Exception
-	 *             If an exception occurs.
-	 */
-	public InputStream open(String zipPath) throws Exception {
-		for (ZipFile source : getOpenZipFiles()) {
-			ZipEntry entry = source.getEntry(zipPath);
-			if (entry != null) {
-				return source.getInputStream(entry);
-			}
-		}
-		throw new IOException("Zip path does not exist");
+	public Asset<InputStream> loadStream(String assetPath) {
+		return new Asset<InputStream>(this, assetPath, STREAM_LOADER);
 	}
 }

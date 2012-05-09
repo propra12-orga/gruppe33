@@ -2,43 +2,92 @@ package propra2012.gruppe33.graphics.sprite;
 
 import java.awt.Point;
 import java.awt.image.BufferedImage;
+import java.io.IOException;
+import java.io.ObjectInputStream;
+import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.List;
 
 import propra2012.gruppe33.graphics.GraphicsRoutines;
 import propra2012.gruppe33.graphics.rendering.scenegraph.math.Mathf;
+import propra2012.gruppe33.graphics.rendering.util.Resource;
 
 /**
  * 
- * This class represents a sprite. A sprite is basically an image which contains
- * sub-images. This is typically used for animations but you can use this as a
- * bundle of images, too.
+ * This class represents a sprite which uses . A sprite is basically an image
+ * which contains sub-images. This is typically used for animations but you can
+ * use this as a bundle of images, too.
  * 
  * @author Matthias Hesse
  * @see Animation
  * @see AnimationMap
  */
-public final class Sprite {
+public final class Sprite implements Serializable {
+
+	/**
+	 * 
+	 */
+	private static final long serialVersionUID = 1L;
 
 	// Here we store all sub images
-	private final BufferedImage[][] subImages;
+	private transient BufferedImage[][] subImages;
+
+	// The sprite image resource
+	private final Resource<BufferedImage> imageResource;
 
 	// Here we store the raster information
 	private final int rasterX, rasterY;
 
+	/*
+	 * When deserializing load the sub-images directly.
+	 */
+	private void readObject(ObjectInputStream in) throws IOException,
+			ClassNotFoundException {
+
+		// Read the default stuff
+		in.defaultReadObject();
+
+		// Try to load the images
+		try {
+			subImages = loadSubImages();
+		} catch (Exception e) {
+			throw new IOException("Failed to load sub images", e);
+		}
+	}
+
+	private BufferedImage[][] loadSubImages() throws Exception {
+		if (subImages == null) {
+			// Create new 2-dim array containing all sub-images
+			subImages = new BufferedImage[rasterY][rasterX];
+
+			// Iterate for x and y
+			for (int x = 0; x < rasterX; x++) {
+				for (int y = 0; y < rasterY; y++) {
+					// Create sub-image
+					subImages[y][x] = GraphicsRoutines.getSpriteSubImage(
+							imageResource.get(), rasterX, rasterY, x, y);
+				}
+			}
+		}
+		return subImages;
+	}
+
 	/**
 	 * Creates a sprite.
 	 * 
-	 * @param image
-	 *            The sprite image.
+	 * @param imageResource
+	 *            The sprite image resource.
 	 * @param rasterX
 	 *            The columns of the sprite.
 	 * @param rasterY
 	 *            The rows of the sprite.
+	 * @throws Exception
+	 *             If an exception occurs.
 	 */
-	public Sprite(BufferedImage image, int rasterX, int rasterY) {
-		if (image == null) {
-			throw new NullPointerException("image");
+	public Sprite(Resource<BufferedImage> imageResource, int rasterX,
+			int rasterY) throws Exception {
+		if (imageResource == null) {
+			throw new NullPointerException("imageResource");
 		} else if (rasterX <= 0) {
 			throw new IllegalArgumentException("rasterX must be > 0");
 		} else if (rasterY <= 0) {
@@ -46,20 +95,16 @@ public final class Sprite {
 		}
 
 		// Save vars
+		this.imageResource = imageResource;
 		this.rasterX = rasterX;
 		this.rasterY = rasterY;
 
-		// Create new 2-dim array containing all sub-images
-		subImages = new BufferedImage[rasterY][rasterX];
+		// Load the sub images
+		subImages = loadSubImages();
+	}
 
-		// Iterate for x and y
-		for (int x = 0; x < rasterX; x++) {
-			for (int y = 0; y < rasterY; y++) {
-				// Create sub-image
-				subImages[y][x] = GraphicsRoutines.getSpriteSubImage(image,
-						rasterX, rasterY, x, y);
-			}
-		}
+	public Resource<BufferedImage> getImageResource() {
+		return imageResource;
 	}
 
 	/**
@@ -109,8 +154,8 @@ public final class Sprite {
 		fromX = Mathf.clamp(fromX, 0, rasterX - 1);
 		fromY = Mathf.clamp(fromY, 0, rasterY - 1);
 
-		// Create a new List for every sub-image
-		List<BufferedImage> animationImages = new ArrayList<BufferedImage>();
+		// Create a list holding the image coords
+		List<Point> imageCoords = new ArrayList<Point>(count);
 
 		// Iteration vars
 		int x = fromX, y = fromY;
@@ -118,8 +163,8 @@ public final class Sprite {
 		// Iterate
 		for (int i = 0; i < count; i++) {
 
-			// Just take the the already created sub-images
-			animationImages.add(subImages[y][x]);
+			// Save the coord
+			imageCoords.add(new Point(y, x));
 
 			// Inc
 			x++;
@@ -132,7 +177,7 @@ public final class Sprite {
 		}
 
 		// Create a new instance of animation
-		return new Animation(name, animationImages, timePerImage);
+		return new Animation(this, name, imageCoords, timePerImage);
 	}
 
 	/**
@@ -142,24 +187,23 @@ public final class Sprite {
 	 *            The name of the new animation.
 	 * @param timePerImage
 	 *            The time-per-frame of the animation.
-	 * @param points
-	 *            The points of the sub images.
+	 * @param coords
+	 *            The coords of the sub images.
 	 * @return a new animation containig the given sub images.
 	 */
 	public Animation newAnimation(String name, long timePerImage,
-			Point... points) {
+			Point... coords) {
 
-		// Create a new List for every sub-image
-		List<BufferedImage> animationImages = new ArrayList<BufferedImage>(
-				points.length);
+		// Create a list holding the image coords
+		List<Point> imageCoords = new ArrayList<Point>(coords.length);
 
-		// Creating every single SubImage
-		for (int i = 0; i < points.length; i++) {
-			// Just take the the already created sub-images
-			animationImages.add(subImages[points[i].y][points[i].x]);
+		// Iterate over all coords
+		for (Point coord : coords) {
+			// Save coord
+			imageCoords.add(coord);
 		}
 
 		// Create a new instance of animation
-		return new Animation(name, animationImages, timePerImage);
+		return new Animation(this, name, imageCoords, timePerImage);
 	}
 }

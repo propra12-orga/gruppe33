@@ -1,7 +1,11 @@
 package propra2012.gruppe33.graphics.sprite;
 
+import java.awt.Point;
 import java.awt.image.BufferedImage;
-import java.util.ArrayList;
+import java.io.IOException;
+import java.io.ObjectInputStream;
+import java.io.Serializable;
+import java.util.Collections;
 import java.util.List;
 import java.util.RandomAccess;
 
@@ -11,26 +15,21 @@ import java.util.RandomAccess;
  * @author Matthias Hesse
  * 
  */
-public final class Animation {
+public final class Animation implements Serializable {
 
-	public static Animation merge(String name, long timePerImage,
-			Animation... animations) {
-		List<BufferedImage> subImages = new ArrayList<BufferedImage>();
-		for (Animation a : animations) {
-			subImages.addAll(a.getImages());
-		}
+	/**
+	 * 
+	 */
+	private static final long serialVersionUID = 1L;
 
-		return new Animation(name, subImages, timePerImage);
-	}
+	// The sprite which created this animation
+	private final Sprite sprite;
 
-	// This list saves all images used by this animation
-	private final List<BufferedImage> images;
+	// This list saves all image coords used by this animation
+	private final List<Point> imageCoords;
 
 	// The name of this animation
 	private final String name;
-
-	// The animation step counter
-	private int animationStep = 0;
 
 	// Should this animation loop ?
 	private boolean loop = true;
@@ -39,39 +38,65 @@ public final class Animation {
 	private boolean paused = false;
 
 	// The duration of the animation
-	private final long animationDuration;
+	private final long animationDuration, timePerImage;
+
+	// The animation step counter
+	private transient int animationStep = 0;
 
 	// Time vars
-	private long timeStamp, timePerImage;
+	private transient long timeStamp;
 
-	public Animation(String name, List<BufferedImage> images, long timePerImage) {
+	/*
+	 * When deserializing reset the animation.
+	 */
+	private void readObject(ObjectInputStream in) throws IOException,
+			ClassNotFoundException {
 
-		if (name == null) {
+		// Read the default stuff
+		in.defaultReadObject();
+
+		// Always reset an animation when loading
+		resetAnimation();
+	}
+
+	Animation(Sprite sprite, String name, List<Point> imageCoords,
+			long timePerImage) {
+
+		if (sprite == null) {
+			throw new NullPointerException("sprite");
+		} else if (name == null) {
 			throw new NullPointerException("name");
-		} else if (images == null) {
+		} else if (imageCoords == null) {
 			throw new NullPointerException("images");
-		} else if (images.size() == 0) {
+		} else if (imageCoords.size() == 0) {
 			throw new IllegalArgumentException(
-					"there should be at least one image");
-		} else if (!(images instanceof RandomAccess)) {
+					"there should be at least one image coord");
+		} else if (!(imageCoords instanceof RandomAccess)) {
 			throw new IllegalArgumentException("For performance reasons we "
 					+ "only accepts random-access list here!");
 		}
+
+		// Save the sprite
+		this.sprite = sprite;
 
 		// Save the name
 		this.name = name;
 
 		// Calculate the duration for the whole animation
-		animationDuration = images.size() * timePerImage;
+		animationDuration = imageCoords.size() * timePerImage;
 
 		// Save the time per image
 		this.timePerImage = timePerImage;
 
-		// Read the list of SubImages
-		this.images = images;
+		// Save the image coords
+		this.imageCoords = Collections.unmodifiableList(imageCoords);
 
 		// Start...
 		resetAnimation();
+	}
+
+	public Sprite getSprite() {
+		return sprite;
 	}
 
 	public boolean isPaused() {
@@ -102,16 +127,12 @@ public final class Animation {
 		return animationStep;
 	}
 
-	public List<BufferedImage> getImages() {
-		return images;
+	public List<Point> getImageCoords() {
+		return imageCoords;
 	}
 
 	public long getTimePerImage() {
 		return timePerImage;
-	}
-
-	public long getTimeStamp() {
-		return timeStamp;
 	}
 
 	/**
@@ -123,7 +144,8 @@ public final class Animation {
 	public BufferedImage getAnimationImage() {
 
 		if (paused) {
-			return images.get(animationStep);
+			Point coord = imageCoords.get(animationStep);
+			return sprite.getSubImages()[coord.x][coord.y];
 		}
 
 		// Read the actual time
@@ -138,16 +160,17 @@ public final class Animation {
 		}
 
 		// If the animation is at the end the animation is resetted
-		if (animationStep >= images.size()) {
+		if (animationStep >= imageCoords.size()) {
 			if (loop) {
 				animationStep = 0;
 			} else {
-				animationStep = images.size() - 1;
+				animationStep = imageCoords.size() - 1;
 			}
 		}
 
 		// Return the image of the actual Animation Step
-		return images.get(animationStep);
+		Point coord = imageCoords.get(animationStep);
+		return sprite.getSubImages()[coord.x][coord.y];
 	}
 
 	/**
@@ -160,4 +183,5 @@ public final class Animation {
 		// Set the TimeStep to the actual time
 		timeStamp = System.currentTimeMillis();
 	}
+
 }

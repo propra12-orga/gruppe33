@@ -1,6 +1,5 @@
 package propra2012.gruppe33.graphics.rendering.scenegraph.grid;
 
-import java.awt.GraphicsEnvironment;
 import java.awt.Point;
 import java.awt.Transparency;
 import java.awt.image.BufferedImage;
@@ -67,21 +66,6 @@ public class Grid extends Scene {
 		return mapData;
 	}
 
-	/**
-	 * Creates a compatible image for rendering the solid blocks.
-	 * 
-	 * @param width
-	 *            The height of the image.
-	 * @param height
-	 *            The width of the image.
-	 * @return a screen compatible image.
-	 */
-	public static BufferedImage createSolidBlockImage(int width, int height) {
-		return GraphicsEnvironment.getLocalGraphicsEnvironment()
-				.getDefaultScreenDevice().getDefaultConfiguration()
-				.createCompatibleImage(width, height, Transparency.BITMASK);
-	}
-
 	// The map data
 	private final char[][] mapData;
 
@@ -123,17 +107,36 @@ public class Grid extends Scene {
 	 */
 	public Grid(String name, AssetManager assetManager, String mapAssetPath,
 			int width, int height) throws Exception {
+		this(name, assetManager, assetManager.loadGridData(mapAssetPath).get(),
+				width, height);
+	}
+
+	/**
+	 * Creates a new grid using the given parameters.
+	 * 
+	 * @param name
+	 *            The name of the grid.
+	 * @param assetManager
+	 *            The asset manager of this grid.
+	 * @param mapData
+	 *            The map data of the grid.
+	 * @param width
+	 *            The width of the grid.
+	 * @param height
+	 *            The height of the grid.
+	 * @throws Exception
+	 *             If an exception occurs.
+	 */
+	public Grid(String name, AssetManager assetManager, char[][] mapData,
+			int width, int height) throws Exception {
 		super(name, assetManager, width, height);
 
-		if (assetManager == null) {
-			throw new NullPointerException("assetManager");
-		} else if (mapAssetPath == null) {
-			throw new NullPointerException("mapAssetPath");
+		if (mapData == null) {
+			throw new NullPointerException("mapData");
 		}
 
-		// Validate the map data after loading the map from the asset bundle
-		this.mapData = validateMapData(getAssetManager().loadGridData(
-				mapAssetPath));
+		// Validate the map data
+		this.mapData = validateMapData(mapData);
 
 		// Set raster x and y
 		rasterY = mapData.length;

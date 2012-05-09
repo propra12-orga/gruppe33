@@ -1,7 +1,5 @@
 package propra2012.gruppe33.graphics.sprite;
 
-import java.io.IOException;
-
 import propra2012.gruppe33.graphics.assets.AssetManager;
 
 /**
@@ -20,14 +18,16 @@ public final class AnimationRoutines {
 	 * @param speed
 	 *            The speed of the animation
 	 * @return a new animation map with all animations.
-	 * @throws IOException
+	 * @throws Exception
 	 *             If an exception occurs.
 	 */
 	public static AnimationMap createKnight(AssetManager assetManager,
 			long speed) throws Exception {
 		// Load the knight sprite
-		Sprite knightSprite = assetManager.loadSprite(
-				"assets/images/animated/chars/knight.png", 9, 9);
+		Sprite knightSprite = new Sprite(
+				assetManager
+						.loadImage("assets/images/animated/chars/knight.png"),
+				9, 9);
 
 		// Create a new map
 		AnimationMap knight = new AnimationMap();
