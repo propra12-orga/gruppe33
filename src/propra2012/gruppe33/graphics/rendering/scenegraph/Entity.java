@@ -1,5 +1,6 @@
 package propra2012.gruppe33.graphics.rendering.scenegraph;
 
+import java.awt.Color;
 import java.awt.Graphics;
 import java.awt.Graphics2D;
 import java.awt.Image;
@@ -18,7 +19,7 @@ import java.util.Set;
 import propra2012.gruppe33.graphics.GraphicsRoutines;
 import propra2012.gruppe33.graphics.rendering.scenegraph.image.ImageController;
 import propra2012.gruppe33.graphics.rendering.scenegraph.math.Vector2f;
-import propra2012.gruppe33.graphics.rendering.util.BufferedImageResource;
+import propra2012.gruppe33.resources.BufferedImageResource;
 
 /**
  * This is the entity class. An entity is basically some kind of object in the
@@ -949,9 +950,12 @@ public class Entity extends EntityControllerAdapter {
 	 * @param optTransparency
 	 *            The optional transparency of the image if there is no image
 	 *            controller yet.
+	 * @param optBG
+	 *            The optional background color of the image if there is no
+	 *            image controller yet.
 	 */
-	public final void renderTo(Entity entity, int optTransparency) {
-		renderTo(entity, -1, -1, optTransparency);
+	public final void renderTo(Entity entity, int optTransparency, Color optBG) {
+		renderTo(entity, -1, -1, optTransparency, optBG);
 	}
 
 	/**
@@ -972,9 +976,12 @@ public class Entity extends EntityControllerAdapter {
 	 * @param optTransparency
 	 *            The optional transparency of the image if there is no image
 	 *            controller yet.
+	 * @param optBG
+	 *            The optional background color of the image if there is no
+	 *            image controller yet.
 	 */
 	public final void renderTo(Entity entity, int optWidth, int optHeight,
-			int optTransparency) {
+			int optTransparency, Color optBG) {
 		if (entity == null) {
 			throw new NullPointerException("entity");
 		}
@@ -1012,8 +1019,9 @@ public class Entity extends EntityControllerAdapter {
 
 			// Create a new image controller and add to entity
 			entity.putController(image = new ImageController(
-					new BufferedImageResource(GraphicsRoutines.createImage(
-							optWidth, optHeight, optTransparency))));
+					new BufferedImageResource(GraphicsRoutines.clear(
+							GraphicsRoutines.createImage(optWidth, optHeight,
+									optTransparency), optBG))));
 		}
 
 		// Render to the image

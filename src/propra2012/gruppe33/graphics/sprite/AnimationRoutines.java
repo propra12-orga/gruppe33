@@ -1,6 +1,6 @@
 package propra2012.gruppe33.graphics.sprite;
 
-import propra2012.gruppe33.graphics.assets.AssetManager;
+import propra2012.gruppe33.resources.assets.AssetManager;
 
 /**
  * Utility class to bundle some default animation routines.
@@ -24,10 +24,8 @@ public final class AnimationRoutines {
 	public static AnimationMap createKnight(AssetManager assetManager,
 			long speed) throws Exception {
 		// Load the knight sprite
-		Sprite knightSprite = new Sprite(
-				assetManager
-						.loadImage("assets/images/animated/chars/knight.png"),
-				9, 9);
+		Sprite knightSprite = new Sprite(assetManager.loadImage(
+				"assets/images/animated/chars/knight.png", false), 9, 9);
 
 		// Create a new map
 		AnimationMap knight = new AnimationMap();

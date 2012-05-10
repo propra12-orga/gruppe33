@@ -1,8 +1,8 @@
 package propra2012.gruppe33.graphics.rendering.scenegraph.grid;
 
+import java.awt.Color;
 import java.awt.Image;
 import java.awt.Point;
-import java.awt.Transparency;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -10,12 +10,12 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
-import propra2012.gruppe33.graphics.assets.AssetManager;
 import propra2012.gruppe33.graphics.rendering.scenegraph.Entity;
 import propra2012.gruppe33.graphics.rendering.scenegraph.Scene;
 import propra2012.gruppe33.graphics.rendering.scenegraph.image.ImageController;
 import propra2012.gruppe33.graphics.rendering.scenegraph.math.Vector2f;
-import propra2012.gruppe33.graphics.rendering.util.Resource;
+import propra2012.gruppe33.resources.Resource;
+import propra2012.gruppe33.resources.assets.AssetManager;
 
 /**
  * This class represents a grid scene. It contains a char[][] array and some
@@ -243,18 +243,23 @@ public class Grid extends Scene {
 	 * @param chars2Images
 	 *            The map where you can define which image belongs to which
 	 *            char.
+	 * @param transparency
+	 *            The transparency level of the rendered image.
+	 * @param background
+	 *            The background color of the rendered image.
 	 * @return an entity which contains a rendered image with all bundled
 	 *         images.
 	 */
 	public Entity bundleAndRender(String name,
-			Map<Character, Resource<? extends Image>> chars2Images) {
+			Map<Character, Resource<? extends Image>> chars2Images,
+			int transparency, Color background) {
 
 		// Create a new entity
 		Entity entity = new Entity(name);
 
 		// Render the entity to a picture component
 		bundle(name, chars2Images).renderTo(entity, getWidth(), getHeight(),
-				Transparency.BITMASK);
+				transparency, background);
 
 		// Set position
 		entity.getPosition().set(getWidth() * 0.5f, getHeight() * 0.5f);

@@ -12,8 +12,8 @@ import java.awt.event.KeyListener;
 import java.util.HashMap;
 import java.util.Map;
 
-import propra2012.gruppe33.graphics.assets.AssetManager;
 import propra2012.gruppe33.graphics.rendering.scenegraph.math.Vector2f;
+import propra2012.gruppe33.resources.assets.AssetManager;
 
 /**
  * A scene is a special entity which has some more features:
@@ -42,7 +42,7 @@ public class Scene extends Entity implements KeyListener, FocusListener {
 	 * 
 	 * IMPORTANT: This attribute is not serialized!
 	 */
-	private transient final Map<Integer, Boolean> keyboardState = new HashMap<Integer, Boolean>();
+	private transient Map<Integer, Boolean> keyboardState;
 
 	// The asset manager of this scene
 	private final AssetManager assetManager;
@@ -52,6 +52,17 @@ public class Scene extends Entity implements KeyListener, FocusListener {
 
 	// The ratio of this entity
 	private final float ratio;
+
+	/**
+	 * @return the keyboard state. If this map does not exist yet it will be
+	 *         created.
+	 */
+	private Map<Integer, Boolean> getKeyboardState() {
+		if (keyboardState == null) {
+			keyboardState = new HashMap<Integer, Boolean>();
+		}
+		return keyboardState;
+	}
 
 	/*
 	 * The processor which processes this scene.
@@ -166,11 +177,13 @@ public class Scene extends Entity implements KeyListener, FocusListener {
 	}
 
 	/**
-	 * Clears all keyboard states.
+	 * Clears the keyboard state.
 	 */
 	public void clearKeyboardState() {
 		// Clear the complete keyboard state
-		keyboardState.clear();
+		if (keyboardState != null && !keyboardState.isEmpty()) {
+			keyboardState.clear();
+		}
 	}
 
 	/**
@@ -181,7 +194,7 @@ public class Scene extends Entity implements KeyListener, FocusListener {
 	 * @return true if the key is pressed otherwise false.
 	 */
 	public boolean isPressed(int vk) {
-		Boolean pressed = keyboardState.get(vk);
+		Boolean pressed = keyboardState != null ? keyboardState.get(vk) : null;
 		return pressed != null ? pressed : false;
 	}
 
@@ -192,7 +205,7 @@ public class Scene extends Entity implements KeyListener, FocusListener {
 	 */
 	@Override
 	public void keyPressed(KeyEvent e) {
-		keyboardState.put(e.getKeyCode(), Boolean.TRUE);
+		getKeyboardState().put(e.getKeyCode(), Boolean.TRUE);
 	}
 
 	/*
@@ -202,7 +215,7 @@ public class Scene extends Entity implements KeyListener, FocusListener {
 	 */
 	@Override
 	public void keyReleased(KeyEvent e) {
-		keyboardState.put(e.getKeyCode(), Boolean.FALSE);
+		getKeyboardState().put(e.getKeyCode(), Boolean.FALSE);
 	}
 
 	/*

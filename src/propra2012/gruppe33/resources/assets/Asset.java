@@ -1,9 +1,9 @@
-package propra2012.gruppe33.graphics.assets;
+package propra2012.gruppe33.resources.assets;
 
 import java.io.IOException;
 import java.io.ObjectInputStream;
 
-import propra2012.gruppe33.graphics.rendering.util.Resource;
+import propra2012.gruppe33.resources.Resource;
 
 /**
  * The class represents an asset resource. It must be created by an asset

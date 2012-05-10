@@ -1,4 +1,4 @@
-package propra2012.gruppe33.graphics.assets;
+package propra2012.gruppe33.resources.assets;
 
 import java.io.Serializable;
 

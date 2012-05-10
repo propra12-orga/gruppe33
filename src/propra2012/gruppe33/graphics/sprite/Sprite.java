@@ -1,6 +1,5 @@
 package propra2012.gruppe33.graphics.sprite;
 
-import java.awt.Image;
 import java.awt.Point;
 import java.awt.image.BufferedImage;
 import java.io.IOException;
@@ -11,7 +10,7 @@ import java.util.List;
 
 import propra2012.gruppe33.graphics.GraphicsRoutines;
 import propra2012.gruppe33.graphics.rendering.scenegraph.math.Mathf;
-import propra2012.gruppe33.graphics.rendering.util.Resource;
+import propra2012.gruppe33.resources.Resource;
 
 /**
  * 
@@ -33,7 +32,7 @@ public final class Sprite implements Serializable {
 	private transient BufferedImage[][] subImages;
 
 	// The sprite image resource
-	private final Resource<? extends Image> imageResource;
+	private final Resource<BufferedImage> imageResource;
 
 	// Here we store the raster information
 	private final int rasterX, rasterY;
@@ -47,29 +46,32 @@ public final class Sprite implements Serializable {
 		// Read the default stuff
 		in.defaultReadObject();
 
-		// Try to load the images
 		try {
-			subImages = loadSubImages();
+			// Try to load the images
+			loadSubImages();
 		} catch (Exception e) {
 			throw new IOException("Failed to load sub images", e);
 		}
 	}
 
-	private BufferedImage[][] loadSubImages() throws Exception {
-		if (subImages == null) {
-			// Create new 2-dim array containing all sub-images
-			subImages = new BufferedImage[rasterY][rasterX];
+	/**
+	 * Loads the sub-images.
+	 * 
+	 * @throws Exception
+	 *             If an exception occurs.
+	 */
+	private void loadSubImages() throws Exception {
+		// Create new 2-dim array containing all sub-images
+		subImages = new BufferedImage[rasterY][rasterX];
 
-			// Iterate for x and y
-			for (int x = 0; x < rasterX; x++) {
-				for (int y = 0; y < rasterY; y++) {
-					// Create sub-image
-					subImages[y][x] = GraphicsRoutines.getSpriteSubImage(
-							imageResource.get(), rasterX, rasterY, x, y);
-				}
+		// Iterate for x and y
+		for (int x = 0; x < rasterX; x++) {
+			for (int y = 0; y < rasterY; y++) {
+				// Create sub-image
+				subImages[y][x] = GraphicsRoutines.getSpriteSubImage(
+						imageResource.get(), rasterX, rasterY, x, y);
 			}
 		}
-		return subImages;
 	}
 
 	/**
@@ -84,7 +86,7 @@ public final class Sprite implements Serializable {
 	 * @throws Exception
 	 *             If an exception occurs.
 	 */
-	public Sprite(Resource<? extends Image> imageResource, int rasterX,
+	public Sprite(Resource<BufferedImage> imageResource, int rasterX,
 			int rasterY) throws Exception {
 		if (imageResource == null) {
 			throw new NullPointerException("imageResource");
@@ -100,10 +102,10 @@ public final class Sprite implements Serializable {
 		this.rasterY = rasterY;
 
 		// Load the sub images
-		subImages = loadSubImages();
+		loadSubImages();
 	}
 
-	public Resource<? extends Image> getImageResource() {
+	public Resource<BufferedImage> getImageResource() {
 		return imageResource;
 	}
 

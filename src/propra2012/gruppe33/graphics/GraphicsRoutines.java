@@ -8,8 +8,6 @@ import java.awt.Frame;
 import java.awt.Graphics2D;
 import java.awt.GraphicsConfiguration;
 import java.awt.GraphicsEnvironment;
-import java.awt.Image;
-import java.awt.Transparency;
 import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
 import java.awt.image.BufferedImage;
@@ -26,6 +24,59 @@ import propra2012.gruppe33.graphics.sprite.Sprite;
  * 
  */
 public final class GraphicsRoutines {
+
+	/**
+	 * Optimizes this image to be compatible with the screen.
+	 * 
+	 * @param image
+	 *            The image you want to optimize.
+	 * @return a optimized copy of the given image.
+	 */
+	public static BufferedImage optimizeImage(BufferedImage image) {
+
+		// Create a new optimized image
+		BufferedImage optimizedImage = GraphicsRoutines.createImage(
+				image.getWidth(), image.getHeight(), image.getTransparency());
+
+		// Get graphics context
+		Graphics2D g2d = optimizedImage.createGraphics();
+
+		try {
+			// Draw the loaded image into the optimized image
+			g2d.drawImage(image, 0, 0, null);
+		} finally {
+			g2d.dispose();
+		}
+
+		return optimizedImage;
+	}
+
+	/**
+	 * Clear the given image with the given background color.
+	 * 
+	 * @param image
+	 *            The image you want to clear.
+	 * @param background
+	 *            The background color. If null the image is not touched.
+	 * @return the image.
+	 */
+	public static BufferedImage clear(BufferedImage image, Color background) {
+		if (image == null) {
+			throw new NullPointerException("image");
+		}
+
+		// Clear background if not null
+		if (background != null) {
+			Graphics2D g2d = image.createGraphics();
+			try {
+				g2d.setBackground(background);
+				g2d.clearRect(0, 0, image.getWidth(), image.getHeight());
+			} finally {
+				g2d.dispose();
+			}
+		}
+		return image;
+	}
 
 	/**
 	 * Creates a compatible image.
@@ -110,8 +161,8 @@ public final class GraphicsRoutines {
 	 * @return the sub image.
 	 * @see Sprite
 	 */
-	public static BufferedImage getSpriteSubImage(Image image, int rasterX,
-			int rasterY, int x, int y) {
+	public static BufferedImage getSpriteSubImage(BufferedImage image,
+			int rasterX, int rasterY, int x, int y) {
 
 		if (image == null) {
 			throw new NullPointerException("image");
@@ -129,24 +180,9 @@ public final class GraphicsRoutines {
 		int sizeXPlate = image.getWidth(null) / rasterX;
 		int sizeYPlate = image.getHeight(null) / rasterY;
 
-		// Create compatible transparent image
-		BufferedImage subImage = createImage(sizeXPlate, sizeYPlate,
-				Transparency.TRANSLUCENT);
-
-		// Get graphics object
-		Graphics2D g2d = subImage.createGraphics();
-
-		try {
-
-			// Draw image to compatible image
-			g2d.drawImage(image, 0, 0, sizeXPlate, sizeYPlate, x * sizeXPlate,
-					y * sizeYPlate, (x + 1) * sizeXPlate, (y + 1) * sizeYPlate,
-					new Color(0, 0, 0, 0), null);
-
-			return subImage;
-		} finally {
-			g2d.dispose();
-		}
+		// Return the optimized copy of the sub-image
+		return optimizeImage(image.getSubimage(x * sizeXPlate, y * sizeYPlate,
+				sizeXPlate, sizeYPlate));
 	}
 
 	/**

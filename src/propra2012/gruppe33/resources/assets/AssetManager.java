@@ -1,4 +1,4 @@
-package propra2012.gruppe33.graphics.assets;
+package propra2012.gruppe33.resources.assets;
 
 import java.awt.image.BufferedImage;
 import java.io.File;
@@ -16,6 +16,7 @@ import java.util.zip.ZipFile;
 
 import javax.imageio.ImageIO;
 
+import propra2012.gruppe33.graphics.GraphicsRoutines;
 import propra2012.gruppe33.graphics.rendering.scenegraph.grid.GridLoader;
 
 /**
@@ -81,6 +82,24 @@ public final class AssetManager implements Serializable {
 		public BufferedImage loadAsset(AssetManager assetManager,
 				String assetPath) throws Exception {
 			return ImageIO.read(assetManager.open(assetPath));
+		}
+	};
+
+	/*
+	 * The optimized image loader.
+	 */
+	private static final AssetLoader<BufferedImage> OPTIMIZED_IMAGE_LOADER = new AssetLoader<BufferedImage>() {
+
+		/**
+		 * 
+		 */
+		private static final long serialVersionUID = 1L;
+
+		@Override
+		public BufferedImage loadAsset(AssetManager assetManager,
+				String assetPath) throws Exception {
+			return GraphicsRoutines.optimizeImage(IMAGE_LOADER.loadAsset(
+					assetManager, assetPath));
 		}
 	};
 
@@ -217,12 +236,16 @@ public final class AssetManager implements Serializable {
 	 * 
 	 * @param assetPath
 	 *            The asset path of the image.
+	 * @param optimized
+	 *            If true the loaded image will be optimized.
 	 * @return an asset containing the image.
 	 * @throws Exception
 	 *             If an exception occurs.
 	 */
-	public Asset<BufferedImage> loadImage(String assetPath) throws Exception {
-		return new Asset<BufferedImage>(this, assetPath, IMAGE_LOADER);
+	public Asset<BufferedImage> loadImage(String assetPath, boolean optimized)
+			throws Exception {
+		return new Asset<BufferedImage>(this, assetPath,
+				optimized ? OPTIMIZED_IMAGE_LOADER : IMAGE_LOADER);
 	}
 
 	/**

@@ -6,7 +6,7 @@ import java.awt.Image;
 import propra2012.gruppe33.graphics.rendering.scenegraph.Entity;
 import propra2012.gruppe33.graphics.rendering.scenegraph.EntityController;
 import propra2012.gruppe33.graphics.rendering.scenegraph.EntityControllerAdapter;
-import propra2012.gruppe33.graphics.rendering.util.Resource;
+import propra2012.gruppe33.resources.Resource;
 
 /**
  * This class simply renders a centered image. You MUST specify the correct
@@ -89,7 +89,8 @@ public class ImageController extends EntityControllerAdapter {
 				// Check for null image
 				if (image == null) {
 					throw new IllegalStateException("The image resource get() "
-							+ "method cannot return null");
+							+ "method cannot return null. "
+							+ "Please check your code.");
 				}
 
 				// Draw image

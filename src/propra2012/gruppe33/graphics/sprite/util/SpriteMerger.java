@@ -1,4 +1,4 @@
-package propra2012.gruppe33.graphics.rendering.util;
+package propra2012.gruppe33.graphics.sprite.util;
 
 import java.awt.Color;
 import java.awt.Graphics2D;

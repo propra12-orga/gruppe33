@@ -1,11 +1,13 @@
 package propra2012.gruppe33;
 
 import java.awt.Frame;
-import java.awt.image.BufferedImage;
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileOutputStream;
+import java.io.ObjectInputStream;
+import java.io.ObjectOutputStream;
 
 import propra2012.gruppe33.graphics.GraphicsRoutines;
-import propra2012.gruppe33.graphics.rendering.scenegraph.Entity;
-import propra2012.gruppe33.graphics.rendering.scenegraph.EntityFilter;
 import propra2012.gruppe33.graphics.rendering.scenegraph.SceneProcessor;
 import propra2012.gruppe33.graphics.rendering.scenegraph.grid.Grid;
 

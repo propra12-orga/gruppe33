@@ -4,22 +4,23 @@ import java.awt.Color;
 import java.awt.Graphics2D;
 import java.awt.Image;
 import java.awt.Point;
+import java.awt.Transparency;
 import java.awt.image.BufferedImage;
 import java.io.File;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import propra2012.gruppe33.graphics.assets.Asset;
-import propra2012.gruppe33.graphics.assets.AssetManager;
 import propra2012.gruppe33.graphics.rendering.EntityRoutines;
 import propra2012.gruppe33.graphics.rendering.scenegraph.Entity;
 import propra2012.gruppe33.graphics.rendering.scenegraph.EntityControllerAdapter;
 import propra2012.gruppe33.graphics.rendering.scenegraph.grid.Grid;
 import propra2012.gruppe33.graphics.rendering.scenegraph.math.Vector2f;
-import propra2012.gruppe33.graphics.rendering.util.Resource;
 import propra2012.gruppe33.graphics.sprite.AnimationRoutines;
 import propra2012.gruppe33.graphics.sprite.Sprite;
+import propra2012.gruppe33.resources.Resource;
+import propra2012.gruppe33.resources.assets.Asset;
+import propra2012.gruppe33.resources.assets.AssetManager;
 
 /**
  * 
@@ -45,13 +46,14 @@ public class PreMilestoneApp {
 
 		// Render solid block
 		Asset<BufferedImage> solidImage = grid.getAssetManager().loadImage(
-				"assets/images/solid.png");
+				"assets/images/solid.png", true);
 
 		Map<Character, Resource<? extends Image>> map = new HashMap<Character, Resource<? extends Image>>();
 		map.put('1', solidImage);
 
 		// Bundle render to picture
-		Entity solid = grid.bundleAndRender("solid", map);
+		Entity solid = grid.bundleAndRender("solid", map, Transparency.OPAQUE,
+				Color.white);
 
 		// Create a new local player
 		Entity player = EntityRoutines.createLocalPlayer("Kr0e",
@@ -60,7 +62,7 @@ public class PreMilestoneApp {
 
 		// Load sprite
 		Sprite boom = new Sprite(grid.getAssetManager().loadImage(
-				"assets/images/animated/boom.png"), 5, 5);
+				"assets/images/animated/boom.png", false), 5, 5);
 
 		Entity ex = EntityRoutines.createBoom(grid, boom, 1, 1, 5);
 
