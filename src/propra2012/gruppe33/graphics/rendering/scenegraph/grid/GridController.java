@@ -18,7 +18,8 @@ import propra2012.gruppe33.graphics.sprite.Animation;
  * pressed.
  * 
  * @author Christopher Probst
- * 
+ * @author Malte Schmidt
+ * @author Matthias Hesse
  */
 public final class GridController extends EntityControllerAdapter {
 

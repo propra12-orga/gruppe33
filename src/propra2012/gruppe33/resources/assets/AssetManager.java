@@ -114,6 +114,11 @@ public final class AssetManager implements Serializable {
 	private final Map<File, AssetBundle> assetBundles;
 
 	/*
+	 * Here we store all asset bundle hashes.
+	 */
+	private final Map<File, String> assetBundleHashes;
+
+	/*
 	 * Here we store all archives of this asset manager.
 	 */
 	private transient Set<ZipFile> archives;
@@ -194,28 +199,45 @@ public final class AssetManager implements Serializable {
 		// Collect all archives
 		AssetBundle.collectArchives(archive, destination);
 
-		// Tmp map
+		// Tmp asset bundles
 		Map<File, AssetBundle> tmpAssetBundles = new LinkedHashMap<File, AssetBundle>();
+
+		// Tmp file hashes
+		Map<File, String> tmpAssetBundleHashes = new LinkedHashMap<File, String>();
 
 		// Iterate over the destinations
 		for (File file : destination) {
 
+			// Create a new asset bundle
+			AssetBundle assetBundle = new AssetBundle(file);
+
 			// Add a new asset bundle for each file
-			tmpAssetBundles.put(file, new AssetBundle(file));
+			tmpAssetBundles.put(file, assetBundle);
+
+			// Store archive hash
+			tmpAssetBundleHashes.put(file, assetBundle.getArchiveHash());
 		}
 
 		// Save if everything is ok
 		assetBundles = Collections.unmodifiableMap(tmpAssetBundles);
+		assetBundleHashes = Collections.unmodifiableMap(tmpAssetBundleHashes);
 
 		// Open the archives
 		archives = openArchives();
 	}
 
 	/**
-	 * @return all assset bundles of this asset manager.
+	 * @return all asset bundles of this asset manager.
 	 */
 	public Map<File, AssetBundle> getAssetBundles() {
 		return assetBundles;
+	}
+
+	/**
+	 * @return all asset bundle hashes.
+	 */
+	public Map<File, String> getAssetBundleHashes() {
+		return assetBundleHashes;
 	}
 
 	/**
@@ -259,5 +281,46 @@ public final class AssetManager implements Serializable {
 	 */
 	public Asset<InputStream> loadStream(String assetPath) throws Exception {
 		return new Asset<InputStream>(this, assetPath, STREAM_LOADER);
+	}
+
+	/*
+	 * (non-Javadoc)
+	 * 
+	 * @see java.lang.Object#hashCode()
+	 */
+	@Override
+	public int hashCode() {
+		final int prime = 31;
+		int result = 1;
+		result = prime * result
+				+ ((assetBundles == null) ? 0 : assetBundles.hashCode());
+		return result;
+	}
+
+	/*
+	 * (non-Javadoc)
+	 * 
+	 * @see java.lang.Object#equals(java.lang.Object)
+	 */
+	@Override
+	public boolean equals(Object obj) {
+		if (this == obj) {
+			return true;
+		}
+		if (obj == null) {
+			return false;
+		}
+		if (!(obj instanceof AssetManager)) {
+			return false;
+		}
+		AssetManager other = (AssetManager) obj;
+		if (assetBundles == null) {
+			if (other.assetBundles != null) {
+				return false;
+			}
+		} else if (!assetBundles.equals(other.assetBundles)) {
+			return false;
+		}
+		return true;
 	}
 }

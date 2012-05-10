@@ -21,7 +21,7 @@ import propra2012.gruppe33.graphics.sprite.Sprite;
  * Utility class to bundle some default graphics routines like creating frames.
  * 
  * @author Christopher Probst
- * 
+ * @author Matthias Hesse
  */
 public final class GraphicsRoutines {
 

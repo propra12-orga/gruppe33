@@ -1,8 +1,6 @@
 package propra2012.gruppe33;
 
 import java.awt.Frame;
-import java.io.FileInputStream;
-import java.io.ObjectInputStream;
 
 import propra2012.gruppe33.graphics.GraphicsRoutines;
 import propra2012.gruppe33.graphics.rendering.scenegraph.SceneProcessor;
@@ -25,17 +23,7 @@ public class SceneProcessorTest {
 				600);
 
 		// Create the grid
-//		Grid grid = PreMilestoneApp.createDemoGame();
-//		// //
-//		ObjectOutputStream oos = new ObjectOutputStream(new FileOutputStream(
-//				new File("C:/test.txt")));
-//		oos.writeObject(grid);
-//		oos.close();
-		//
-		ObjectInputStream ois = new ObjectInputStream(new FileInputStream(
-				"C:/test.txt"));
-		Grid grid = (Grid) ois.readObject();
-		ois.close();
+		Grid grid = PreMilestoneApp.createDemoGame();
 
 		// Set root
 		gridWorld.setRoot(grid);

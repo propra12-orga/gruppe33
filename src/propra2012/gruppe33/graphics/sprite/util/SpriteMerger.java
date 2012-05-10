@@ -12,7 +12,6 @@ import javax.imageio.ImageIO;
 /**
  * 
  * @author Matthias Hesse
- * 
  */
 public class SpriteMerger {
 

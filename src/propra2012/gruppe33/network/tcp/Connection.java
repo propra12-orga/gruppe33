@@ -5,7 +5,6 @@ import java.io.IOException;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
 import java.net.Socket;
-import java.util.Map;
 import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.LinkedBlockingQueue;
 
@@ -14,6 +13,7 @@ import java.util.concurrent.LinkedBlockingQueue;
  * TODO: Doc.
  * 
  * @author Christopher Probst
+ * @auther Matthias Hesse
  */
 public class Connection implements Runnable, Closeable {
 
@@ -30,7 +30,7 @@ public class Connection implements Runnable, Closeable {
 			MAX_QUEUED_OBJECTS);
 
 	// The connection group
-	private final Map<Long, Connection> connectionGroup;
+	private final ConnectionGroup connectionGroup;
 
 	// The server flag
 	private final boolean server;
@@ -42,17 +42,17 @@ public class Connection implements Runnable, Closeable {
 	private final Socket socket;
 
 	public Connection(String host, int port, long id,
-			Map<Long, Connection> connectionGroup) throws IOException {
+			ConnectionGroup connectionGroup) throws IOException {
 		this(new Socket(host, port), false, id, connectionGroup);
 	}
 
-	public Connection(Socket socket, long id,
-			Map<Long, Connection> connectionGroup) throws IOException {
+	public Connection(Socket socket, long id, ConnectionGroup connectionGroup)
+			throws IOException {
 		this(socket, true, id, connectionGroup);
 	}
 
 	private Connection(Socket socket, boolean server, long id,
-			Map<Long, Connection> connectionGroup) throws IOException {
+			ConnectionGroup connectionGroup) throws IOException {
 
 		// The socket cannot be null
 		if (socket == null) {
@@ -122,6 +122,10 @@ public class Connection implements Runnable, Closeable {
 		return messages;
 	}
 
+	public ConnectionGroup getConnectionGroup() {
+		return connectionGroup;
+	}
+
 	/**
 	 * 
 	 * @return the socket.
@@ -145,7 +149,9 @@ public class Connection implements Runnable, Closeable {
 				try {
 					// Read next object
 					messages.put(input.readObject());
-
+					if (connectionGroup != null) {
+						connectionGroup.notifyGroup();
+					}
 				} catch (Exception e) {
 					// Failed to read from socket...
 					System.err.println("Failed to read from socket. Reason: "
@@ -160,6 +166,9 @@ public class Connection implements Runnable, Closeable {
 			try {
 				// Try to offer
 				messages.put(CLOSED);
+				if (connectionGroup != null) {
+					connectionGroup.notifyGroup();
+				}
 			} catch (Exception e) {
 				System.err.println("Failed to offer closed-signature. Reason: "
 						+ e.getMessage());

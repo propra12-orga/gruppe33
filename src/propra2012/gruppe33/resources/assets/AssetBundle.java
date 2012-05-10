@@ -7,6 +7,7 @@ import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
+import java.io.ObjectInputStream;
 import java.io.Serializable;
 import java.security.MessageDigest;
 import java.util.LinkedList;
@@ -211,6 +212,27 @@ public final class AssetBundle implements Serializable {
 	 * This is the archive hash.
 	 */
 	private final String archiveHash;
+
+	private void readObject(ObjectInputStream in) throws IOException,
+			ClassNotFoundException {
+
+		// Restore all vars
+		in.defaultReadObject();
+
+		// Check archive when reading
+		try {
+			switch (validate()) {
+			case InvalidArchiveHash:
+				throw new IOException(
+						"Asset bundle archive does not have the same hash");
+			case ArchiveDoesNotExist:
+				throw new FileNotFoundException(
+						"Asset bundle archive does not exist");
+			}
+		} catch (Exception e) {
+			throw new IOException("Archive cannot be validated", e);
+		}
+	}
 
 	/**
 	 * Creates a new asset bundle using the give archive file. This method will

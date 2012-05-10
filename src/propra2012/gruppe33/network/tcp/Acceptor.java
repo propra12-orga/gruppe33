@@ -2,13 +2,12 @@ package propra2012.gruppe33.network.tcp;
 
 import java.io.IOException;
 import java.net.ServerSocket;
-import java.util.Map;
-import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ExecutorService;
 
 /**
  * 
  * @author Christopher Probst
+ * @auther Matthias Hesse
  * 
  */
 public class Acceptor implements Runnable {
@@ -16,25 +15,34 @@ public class Acceptor implements Runnable {
 	private ExecutorService clientExecutors;
 	private long ids = 0;
 	private final ServerSocket serverSocket;
-	private final Map<Long, Connection> clients = new ConcurrentHashMap<Long, Connection>();
+	private final ConnectionGroup clients = new ConnectionGroup();
 
-	public Acceptor(int port) throws IOException {
-		this(new ServerSocket(port));
+	public Acceptor(int port, ExecutorService clientExecutors)
+			throws IOException {
+		this(new ServerSocket(port), clientExecutors);
 	}
 
-	public Acceptor(ServerSocket serverSocket) {
+	public Acceptor(ServerSocket serverSocket, ExecutorService clientExecutors) {
 		if (serverSocket == null) {
 			throw new NullPointerException("serverSocket");
 		}
+		if (clientExecutors == null) {
+			throw new NullPointerException("clientExecutors");
+		}
 		this.serverSocket = serverSocket;
+		this.clientExecutors = clientExecutors;
 	}
 
-	public Map<Long, Connection> getClients() {
+	public ConnectionGroup getClients() {
 		return clients;
 	}
 
 	public ServerSocket getServerSocket() {
 		return serverSocket;
+	}
+
+	public ExecutorService getClientExecutors() {
+		return clientExecutors;
 	}
 
 	@Override
@@ -44,7 +52,8 @@ public class Acceptor implements Runnable {
 				try {
 
 					// Create a new connection
-					Connection client = new Connection(serverSocket.accept(), ids++, clients);
+					clientExecutors.execute(new Connection(serverSocket
+							.accept(), ids++, clients));
 				} catch (Exception e) {
 					System.err.println("Failed to accept connection. Reason: "
 							+ e.getMessage());

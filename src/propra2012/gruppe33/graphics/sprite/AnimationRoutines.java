@@ -6,7 +6,8 @@ import propra2012.gruppe33.resources.assets.AssetManager;
  * Utility class to bundle some default animation routines.
  * 
  * @author Christopher Probst
- * 
+ * @author Matthias Hesse
+ * @author Malte Schmidt
  */
 public final class AnimationRoutines {
 

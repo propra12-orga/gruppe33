@@ -23,6 +23,7 @@ import propra2012.gruppe33.resources.assets.AssetManager;
  * other features.
  * 
  * @author Christopher Probst
+ * @author Malte Schmidt
  */
 public class Grid extends Scene {
 

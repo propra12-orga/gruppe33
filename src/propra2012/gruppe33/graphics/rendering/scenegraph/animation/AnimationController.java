@@ -13,6 +13,7 @@ import propra2012.gruppe33.graphics.sprite.Sprite;
  * the animated images. You can specify the active animation.
  * 
  * @author Christopher Probst
+ * @author Matthias Hesse
  * @see Animation
  * @see AnimationMap
  * @see Sprite
