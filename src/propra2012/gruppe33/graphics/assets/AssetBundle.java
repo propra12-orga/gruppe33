@@ -8,9 +8,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.Serializable;
-import java.security.DigestException;
 import java.security.MessageDigest;
-import java.security.NoSuchAlgorithmException;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Set;
@@ -18,9 +16,15 @@ import java.util.zip.ZipEntry;
 import java.util.zip.ZipFile;
 
 /**
+ * This class represents a bundle of assets which are located in a single
+ * archive file. An asset bundle can define dependencies to other asset bundles
+ * (other archives) by including a specific file. Please check the
+ * implementation to see which form this file must have.
  * 
  * @author Christopher Probst
- * 
+ * @see Asset
+ * @see AssetLoader
+ * @see AssetManager
  */
 public final class AssetBundle implements Serializable {
 
@@ -29,10 +33,28 @@ public final class AssetBundle implements Serializable {
 	 */
 	private static final long serialVersionUID = 1L;
 
+	/**
+	 * This implementation interpretates "include.txt" as an include file.
+	 */
 	public static final String INCLUDE_FILE_NAME = "include.txt";
 
-	public static final String HEX_RANGE = "0123456789ABCDEF";
+	/*
+	 * Used for faster byte to hex conversion.
+	 */
+	private static final String HEX_RANGE = "0123456789ABCDEF";
 
+	/**
+	 * This method takes an archive and a set of files and collects all
+	 * dependencies of this archive recursively. Duplicate dependencies are
+	 * ignored sinec a set is used to store the archive files.
+	 * 
+	 * @param archive
+	 *            The archive file you want to check.
+	 * @param destination
+	 *            The set where all dependencies will be stored.
+	 * @throws IOException
+	 *             If an I/O exception occurs.
+	 */
 	public static void collectArchives(File archive, Set<File> destination)
 			throws IOException {
 
@@ -60,6 +82,9 @@ public final class AssetBundle implements Serializable {
 				// Try to find entry
 				ZipEntry entry = zipArchive.getEntry(INCLUDE_FILE_NAME);
 
+				/*
+				 * Does this file defines dependencies ?
+				 */
 				if (entry != null) {
 					// Here we store dependencies
 					List<String> dependencies = new LinkedList<String>();
@@ -93,36 +118,70 @@ public final class AssetBundle implements Serializable {
 		}
 	}
 
+	/**
+	 * Simple method to convert binary data to hex.
+	 * 
+	 * @param data
+	 *            The binary data you want to represent as hex.
+	 * @return the hex string.
+	 */
 	public static String toHex(byte[] data) {
 		if (data == null) {
 			throw new NullPointerException("data");
 		}
+
+		// Use a fast string builder for this purpose
 		StringBuilder stringBuilder = new StringBuilder(2 * data.length);
 
+		// Iterate over all bytes
 		for (byte b : data) {
+			// Bit shifting and &-operator do all the magic here...
 			stringBuilder.append(HEX_RANGE.charAt((b & 0xF0) >> 4)).append(
 					HEX_RANGE.charAt((b & 0x0F)));
 		}
+
+		// Represent the final string
 		return stringBuilder.toString();
 	}
 
-	public static String calcHexHash(InputStream inputStream)
-			throws NoSuchAlgorithmException, DigestException, IOException {
+	/**
+	 * Calculates the string hash for a given input stream.
+	 * 
+	 * @param inputStream
+	 *            The input stream.
+	 * @return the hex string.
+	 * @throws Exception
+	 *             If an exception occurs.
+	 */
+	public static String calcHexHash(InputStream inputStream) throws Exception {
 		return toHex(calcHash(inputStream));
 	}
 
-	public static byte[] calcHash(InputStream inputStream)
-			throws NoSuchAlgorithmException, IOException, DigestException {
+	/**
+	 * Calculates the binary hash for a given input stream.
+	 * 
+	 * @param inputStream
+	 *            The input stream.
+	 * @return the binary hash.
+	 * @throws Exception
+	 *             If an exception occurs.
+	 */
+	public static byte[] calcHash(InputStream inputStream) throws Exception {
 		if (inputStream == null) {
 			throw new NullPointerException("inputStream");
 		}
 
 		try {
+			// Use SHA-1 for hashing
 			MessageDigest digest = MessageDigest.getInstance("SHA-1");
 
+			// 0xFFFF should increase calculation
 			byte[] buffer = new byte[0xFFFF];
+
+			// Tmp
 			int read;
 
+			// Read & update as long there are remaining bytes
 			while ((read = inputStream.read(buffer)) != -1) {
 				digest.update(buffer, 0, read);
 			}
@@ -132,6 +191,15 @@ public final class AssetBundle implements Serializable {
 		} finally {
 			inputStream.close();
 		}
+	}
+
+	/**
+	 * Used for {@link AssetBundle#validate()}.
+	 * 
+	 * @author Christopher Probst
+	 */
+	public enum ValidationResult {
+		ArchiveDoesNotExist, InvalidArchiveHash, ArchiveOk
 	}
 
 	/*
@@ -144,8 +212,16 @@ public final class AssetBundle implements Serializable {
 	 */
 	private final String archiveHash;
 
-	AssetBundle(File archive) throws NoSuchAlgorithmException, DigestException,
-			IOException {
+	/**
+	 * Creates a new asset bundle using the give archive file. This method will
+	 * not validate the asset bundle.
+	 * 
+	 * @param archive
+	 *            The archive file.
+	 * @throws Exception
+	 *             If an exception occurs.
+	 */
+	AssetBundle(File archive) throws Exception {
 
 		// Do not allow absolute paths
 		if (archive.isAbsolute()) {
@@ -153,21 +229,22 @@ public final class AssetBundle implements Serializable {
 		}
 
 		// Calc the archive hash
-		String calculatedArchiveHash = calcHexHash(new FileInputStream(archive));
+		archiveHash = calcHexHash(new FileInputStream(archive));
 
 		// Save the archive
 		this.archive = archive;
-
-		// Save the calculated archive hash
-		archiveHash = calculatedArchiveHash;
 	}
 
-	public enum ValidationResult {
-		ArchiveDoesNotExist, InvalidArchiveHash, ArchiveOk
-	}
-
-	public ValidationResult validate() throws NoSuchAlgorithmException,
-			DigestException, IOException {
+	/**
+	 * Validates this asset bundle which means that it will check the existence
+	 * and integrity of the archive file.
+	 * 
+	 * @return the validation result.
+	 * @throws Exception
+	 *             If an exception occurs.
+	 * @see {@link ValidationResult}
+	 */
+	public ValidationResult validate() throws Exception {
 
 		try {
 			// If the hash equals the calculated hash the archive is ok
@@ -180,13 +257,18 @@ public final class AssetBundle implements Serializable {
 			// The archive obviouly does not exist
 			return ValidationResult.ArchiveDoesNotExist;
 		}
-
 	}
 
+	/**
+	 * @return the archive hash string.
+	 */
 	public String getArchiveHash() {
 		return archiveHash;
 	}
 
+	/**
+	 * @return the archive file.
+	 */
 	public File getArchive() {
 		return archive;
 	}

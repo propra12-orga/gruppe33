@@ -4,6 +4,7 @@ import java.awt.image.BufferedImage;
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
+import java.io.ObjectInputStream;
 import java.io.Serializable;
 import java.util.Collections;
 import java.util.LinkedHashMap;
@@ -15,17 +16,26 @@ import java.util.zip.ZipFile;
 
 import javax.imageio.ImageIO;
 
-import propra2012.gruppe33.graphics.assets.AssetBundle.ValidationResult;
 import propra2012.gruppe33.graphics.rendering.scenegraph.grid.GridLoader;
 
 /**
  * This class simplifies the handling of resources. Let it be images, maps,
- * sounds or something else.
+ * sounds or something else. An asset manager basically creates assets which
+ * represent data from an archive.
+ * 
+ * An asset manager and all its components are serializable to heavily simplify
+ * the networking part.
  * 
  * @author Christopher Probst
+ * @see Asset
+ * @see AssetBundle
+ * @see AssetLoader
  */
 public final class AssetManager implements Serializable {
 
+	/*
+	 * The grid loader.
+	 */
 	private static final AssetLoader<char[][]> GRID_LOADER = new AssetLoader<char[][]>() {
 
 		/**
@@ -40,6 +50,9 @@ public final class AssetManager implements Serializable {
 		}
 	};
 
+	/*
+	 * The stream loader.
+	 */
 	private static final AssetLoader<InputStream> STREAM_LOADER = new AssetLoader<InputStream>() {
 
 		/**
@@ -54,6 +67,9 @@ public final class AssetManager implements Serializable {
 		}
 	};
 
+	/*
+	 * The image loader.
+	 */
 	private static final AssetLoader<BufferedImage> IMAGE_LOADER = new AssetLoader<BufferedImage>() {
 
 		/**
@@ -79,28 +95,26 @@ public final class AssetManager implements Serializable {
 	private final Map<File, AssetBundle> assetBundles;
 
 	/*
-	 * Here we store all zip files of this asset manager.
+	 * Here we store all archives of this asset manager.
 	 */
-	private transient Set<ZipFile> openZipFiles = null;
+	private transient Set<ZipFile> archives;
 
 	/**
-	 * @return a set with all open zip files. This will be done once. Please
-	 *         validate the asset bundles before opening them, though this
-	 *         checked here, too. But you could run into trouble detecting the
-	 *         missing asset bundle.
+	 * @return a set with all open zip files.
 	 * @throws Exception
 	 *             If an exception occurs.
 	 */
-	private Set<ZipFile> getOpenZipFiles() throws Exception {
-		if (openZipFiles == null) {
-			openZipFiles = new LinkedHashSet<ZipFile>();
-			for (AssetBundle assetBundle : assetBundles.values()) {
-				if (assetBundle.validate() == ValidationResult.ArchiveOk) {
-					openZipFiles.add(new ZipFile(assetBundle.getArchive()));
-				}
-			}
+	private Set<ZipFile> openArchives() throws Exception {
+
+		Set<ZipFile> tmp = new LinkedHashSet<ZipFile>();
+
+		// Iterate over all asset bundles
+		for (AssetBundle assetBundle : assetBundles.values()) {
+
+			// Open new zip file
+			tmp.add(new ZipFile(assetBundle.getArchive()));
 		}
-		return openZipFiles;
+		return tmp;
 	}
 
 	/**
@@ -113,13 +127,31 @@ public final class AssetManager implements Serializable {
 	 *             If an exception occurs.
 	 */
 	private InputStream open(String assetPath) throws Exception {
-		for (ZipFile source : getOpenZipFiles()) {
+		for (ZipFile source : archives) {
 			ZipEntry entry = source.getEntry(assetPath);
 			if (entry != null) {
 				return source.getInputStream(entry);
 			}
 		}
 		throw new IOException("Zip path does not exist");
+	}
+
+	/*
+	 * When loading the asset manager from stream all archive should be opened
+	 * here.
+	 */
+	private void readObject(ObjectInputStream in) throws IOException,
+			ClassNotFoundException {
+
+		// Restore all vars
+		in.defaultReadObject();
+
+		try {
+			// Try to open the zip files
+			archives = openArchives();
+		} catch (Exception e) {
+			throw new IOException("Failed to load asset", e);
+		}
 	}
 
 	/**
@@ -155,6 +187,9 @@ public final class AssetManager implements Serializable {
 
 		// Save if everything is ok
 		assetBundles = Collections.unmodifiableMap(tmpAssetBundles);
+
+		// Open the archives
+		archives = openArchives();
 	}
 
 	/**
@@ -164,15 +199,42 @@ public final class AssetManager implements Serializable {
 		return assetBundles;
 	}
 
-	public Asset<char[][]> loadGridData(String assetPath) throws Exception {
+	/**
+	 * Loads the grid.
+	 * 
+	 * @param assetPath
+	 *            The asset path of the grid.
+	 * @return an asset containing the grid.
+	 * @throws Exception
+	 *             If an exception occurs.
+	 */
+	public Asset<char[][]> loadGrid(String assetPath) throws Exception {
 		return new Asset<char[][]>(this, assetPath, GRID_LOADER);
 	}
 
+	/**
+	 * Loads the image.
+	 * 
+	 * @param assetPath
+	 *            The asset path of the image.
+	 * @return an asset containing the image.
+	 * @throws Exception
+	 *             If an exception occurs.
+	 */
 	public Asset<BufferedImage> loadImage(String assetPath) throws Exception {
 		return new Asset<BufferedImage>(this, assetPath, IMAGE_LOADER);
 	}
 
-	public Asset<InputStream> loadStream(String assetPath) {
+	/**
+	 * Loads the stream.
+	 * 
+	 * @param assetPath
+	 *            The asset path of the stream.
+	 * @return an asset containing the stream.
+	 * @throws Exception
+	 *             If an exception occurs.
+	 */
+	public Asset<InputStream> loadStream(String assetPath) throws Exception {
 		return new Asset<InputStream>(this, assetPath, STREAM_LOADER);
 	}
 }

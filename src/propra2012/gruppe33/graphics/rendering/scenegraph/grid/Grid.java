@@ -107,7 +107,7 @@ public class Grid extends Scene {
 	 */
 	public Grid(String name, AssetManager assetManager, String mapAssetPath,
 			int width, int height) throws Exception {
-		this(name, assetManager, assetManager.loadGridData(mapAssetPath).get(),
+		this(name, assetManager, assetManager.loadGrid(mapAssetPath).get(),
 				width, height);
 	}
 
