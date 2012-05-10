@@ -1,4 +1,4 @@
-package propra2012.gruppe33.network.udp.broadcast;
+package propra2012.gruppe33.io.network.udp.broadcast;
 
 public class BroadcastTestApp {
 

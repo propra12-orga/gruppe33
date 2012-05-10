@@ -5,6 +5,8 @@ import java.awt.Frame;
 import propra2012.gruppe33.graphics.GraphicsRoutines;
 import propra2012.gruppe33.graphics.rendering.scenegraph.SceneProcessor;
 import propra2012.gruppe33.graphics.rendering.scenegraph.grid.Grid;
+import propra2012.gruppe33.io.ObjectReader;
+import propra2012.gruppe33.io.ObjectWriter;
 
 /**
  * 
@@ -25,6 +27,13 @@ public class SceneProcessorTest {
 		// Create the grid
 		Grid grid = PreMilestoneApp.createDemoGame();
 
+		ObjectWriter ow = new ObjectWriter();
+		byte[] data = ow.put(grid);
+		ObjectReader or = new ObjectReader();
+		grid = (Grid) or.take(data);
+		
+		System.out.println(data.length);
+		
 		// Set root
 		gridWorld.setRoot(grid);
 
