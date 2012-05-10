@@ -1,5 +1,6 @@
 package propra2012.gruppe33.graphics.sprite;
 
+import java.awt.Image;
 import java.awt.Point;
 import java.awt.image.BufferedImage;
 import java.io.IOException;
@@ -14,9 +15,8 @@ import propra2012.gruppe33.graphics.rendering.util.Resource;
 
 /**
  * 
- * This class represents a sprite which uses . A sprite is basically an image
- * which contains sub-images. This is typically used for animations but you can
- * use this as a bundle of images, too.
+ * A sprite is basically an image which contains sub-images which is typically
+ * used for animations.
  * 
  * @author Matthias Hesse
  * @see Animation
@@ -33,7 +33,7 @@ public final class Sprite implements Serializable {
 	private transient BufferedImage[][] subImages;
 
 	// The sprite image resource
-	private final Resource<BufferedImage> imageResource;
+	private final Resource<? extends Image> imageResource;
 
 	// Here we store the raster information
 	private final int rasterX, rasterY;
@@ -84,7 +84,7 @@ public final class Sprite implements Serializable {
 	 * @throws Exception
 	 *             If an exception occurs.
 	 */
-	public Sprite(Resource<BufferedImage> imageResource, int rasterX,
+	public Sprite(Resource<? extends Image> imageResource, int rasterX,
 			int rasterY) throws Exception {
 		if (imageResource == null) {
 			throw new NullPointerException("imageResource");
@@ -103,7 +103,7 @@ public final class Sprite implements Serializable {
 		subImages = loadSubImages();
 	}
 
-	public Resource<BufferedImage> getImageResource() {
+	public Resource<? extends Image> getImageResource() {
 		return imageResource;
 	}
 

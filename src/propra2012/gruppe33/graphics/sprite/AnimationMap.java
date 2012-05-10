@@ -8,7 +8,8 @@ import java.util.Map;
  * This class maps names to animations.
  * 
  * @author Matthias Hesse
- * 
+ * @see Animation
+ * @see Sprite
  */
 public final class AnimationMap extends HashMap<String, Animation> {
 

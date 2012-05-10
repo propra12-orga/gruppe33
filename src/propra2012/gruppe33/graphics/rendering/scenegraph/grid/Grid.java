@@ -1,8 +1,8 @@
 package propra2012.gruppe33.graphics.rendering.scenegraph.grid;
 
+import java.awt.Image;
 import java.awt.Point;
 import java.awt.Transparency;
-import java.awt.image.BufferedImage;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -15,6 +15,7 @@ import propra2012.gruppe33.graphics.rendering.scenegraph.Entity;
 import propra2012.gruppe33.graphics.rendering.scenegraph.Scene;
 import propra2012.gruppe33.graphics.rendering.scenegraph.image.ImageController;
 import propra2012.gruppe33.graphics.rendering.scenegraph.math.Vector2f;
+import propra2012.gruppe33.graphics.rendering.util.Resource;
 
 /**
  * This class represents a grid scene. It contains a char[][] array and some
@@ -169,7 +170,8 @@ public class Grid extends Scene {
 	 * @return an entity which contains all bundled images stored as child image
 	 *         entities.
 	 */
-	public Entity bundle(String name, Map<Character, BufferedImage> chars2Images) {
+	public Entity bundle(String name,
+			Map<Character, Resource<? extends Image>> chars2Images) {
 		if (name == null) {
 			throw new NullPointerException("name");
 		} else if (chars2Images == null) {
@@ -183,7 +185,8 @@ public class Grid extends Scene {
 			for (int y = 0; y < rasterY; y++) {
 
 				// Lookup tile image
-				BufferedImage tile = chars2Images.get(mapData[y][x]);
+				Resource<? extends Image> tile = chars2Images
+						.get(mapData[y][x]);
 
 				// If the char is valid...
 				if (tile != null) {
@@ -240,11 +243,11 @@ public class Grid extends Scene {
 	 * @param chars2Images
 	 *            The map where you can define which image belongs to which
 	 *            char.
-	 * @return a picture entity which contains a rendered image with all bundled
+	 * @return an entity which contains a rendered image with all bundled
 	 *         images.
 	 */
 	public Entity bundleAndRender(String name,
-			Map<Character, BufferedImage> chars2Images) {
+			Map<Character, Resource<? extends Image>> chars2Images) {
 
 		// Create a new entity
 		Entity entity = new Entity(name);

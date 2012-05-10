@@ -1,5 +1,7 @@
 package propra2012.gruppe33.graphics.rendering.scenegraph;
 
+import java.io.Serializable;
+
 /**
  * A simple filter interface. Used to find entities.
  * 
@@ -8,7 +10,7 @@ package propra2012.gruppe33.graphics.rendering.scenegraph;
  * @see Entity#findChildrenRecursively(EntityFilter, boolean)
  * @see Entity#findParents(EntityFilter, boolean)
  */
-public interface EntityFilter {
+public interface EntityFilter extends Serializable {
 
 	/**
 	 * <code>CONTINUE</code> means the search should try to find more entities.

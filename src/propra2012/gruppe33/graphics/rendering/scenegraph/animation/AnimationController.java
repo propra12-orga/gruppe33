@@ -19,6 +19,11 @@ import propra2012.gruppe33.graphics.sprite.Sprite;
  */
 public class AnimationController extends EntityControllerAdapter {
 
+	/**
+	 * 
+	 */
+	private static final long serialVersionUID = 1L;
+
 	// The map which stores all animations
 	public final AnimationMap animationMap;
 

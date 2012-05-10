@@ -15,8 +15,10 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
+import propra2012.gruppe33.graphics.GraphicsRoutines;
 import propra2012.gruppe33.graphics.rendering.scenegraph.image.ImageController;
 import propra2012.gruppe33.graphics.rendering.scenegraph.math.Vector2f;
+import propra2012.gruppe33.graphics.rendering.util.BufferedImageResource;
 
 /**
  * This is the entity class. An entity is basically some kind of object in the
@@ -978,10 +980,10 @@ public class Entity extends EntityControllerAdapter {
 		}
 
 		// Lookup image controller
-		ImageController pic = entity.getController(ImageController.class);
+		ImageController image = entity.getController(ImageController.class);
 
 		// Oops... thats bad
-		if (pic == null) {
+		if (image == null) {
 
 			/*
 			 * If width and height are not valid try to read these data from the
@@ -1009,12 +1011,13 @@ public class Entity extends EntityControllerAdapter {
 			}
 
 			// Create a new image controller and add to entity
-			entity.putController(pic = new ImageController(optWidth, optHeight,
-					optTransparency));
+			entity.putController(image = new ImageController(
+					new BufferedImageResource(GraphicsRoutines.createImage(
+							optWidth, optHeight, optTransparency))));
 		}
 
 		// Render to the image
-		renderTo(pic.getImage());
+		renderTo(image.getImageResource().get());
 	}
 
 	/**

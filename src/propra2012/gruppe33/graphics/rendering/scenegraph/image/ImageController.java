@@ -3,10 +3,10 @@ package propra2012.gruppe33.graphics.rendering.scenegraph.image;
 import java.awt.Graphics2D;
 import java.awt.Image;
 
-import propra2012.gruppe33.graphics.GraphicsRoutines;
 import propra2012.gruppe33.graphics.rendering.scenegraph.Entity;
 import propra2012.gruppe33.graphics.rendering.scenegraph.EntityController;
 import propra2012.gruppe33.graphics.rendering.scenegraph.EntityControllerAdapter;
+import propra2012.gruppe33.graphics.rendering.util.Resource;
 
 /**
  * This class simply renders a centered image. You MUST specify the correct
@@ -26,10 +26,8 @@ public class ImageController extends EntityControllerAdapter {
 
 	/*
 	 * Used for rendering.
-	 * 
-	 * IMPORTANT: The image is transient and must be restored after loading.
 	 */
-	private transient Image image;
+	private Resource<? extends Image> imageResource;
 
 	/**
 	 * Creates an empty image controller with no image.
@@ -38,45 +36,30 @@ public class ImageController extends EntityControllerAdapter {
 	}
 
 	/**
-	 * Creates a new image controller and a new image using the given
-	 * parameters.
+	 * Creates a new image controller using the given image resource.
 	 * 
-	 * @param width
-	 *            The width of the new image.
-	 * @param height
-	 *            The height of the new image.
-	 * @param transparency
-	 *            The transparency of the new image.
+	 * @param imageResource
+	 *            The image resource of the image controller.
 	 */
-	public ImageController(int width, int height, int transparency) {
-		this(GraphicsRoutines.createImage(width, height, transparency));
+	public ImageController(Resource<? extends Image> imageResource) {
+		setImageResource(imageResource);
 	}
 
 	/**
-	 * Creates a new image controller using the given image.
-	 * 
-	 * @param image
-	 *            The image of the image controller.
+	 * @return the image resource.
 	 */
-	public ImageController(Image image) {
-		setImage(image);
+	public Resource<? extends Image> getImageResource() {
+		return imageResource;
 	}
 
 	/**
-	 * @return the image.
-	 */
-	public Image getImage() {
-		return image;
-	}
-
-	/**
-	 * Sets the image.
+	 * Sets the image resource.
 	 * 
-	 * @param image
-	 *            The image you want to set.
+	 * @param imageResource
+	 *            The image resource you want to set.
 	 */
-	public void setImage(Image image) {
-		this.image = image;
+	public void setImageResource(Resource<? extends Image> imageResource) {
+		this.imageResource = imageResource;
 	}
 
 	/*
@@ -92,13 +75,22 @@ public class ImageController extends EntityControllerAdapter {
 			Graphics2D transformed) {
 
 		// Does the image exist ?
-		if (image != null) {
+		if (imageResource != null) {
 
 			// Create a copy...
 			Graphics2D copy = (Graphics2D) transformed.create();
 			try {
 				// Center the image
 				copy.translate(-0.5, -0.5);
+
+				// Try to get image
+				Image image = imageResource.get();
+
+				// Check for null image
+				if (image == null) {
+					throw new IllegalStateException("The image resource get() "
+							+ "method cannot return null");
+				}
 
 				// Draw image
 				copy.drawImage(image, 0, 0, 1, 1, null);

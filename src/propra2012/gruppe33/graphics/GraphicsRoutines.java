@@ -8,6 +8,7 @@ import java.awt.Frame;
 import java.awt.Graphics2D;
 import java.awt.GraphicsConfiguration;
 import java.awt.GraphicsEnvironment;
+import java.awt.Image;
 import java.awt.Transparency;
 import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
@@ -109,8 +110,8 @@ public final class GraphicsRoutines {
 	 * @return the sub image.
 	 * @see Sprite
 	 */
-	public static BufferedImage getSpriteSubImage(BufferedImage image,
-			int rasterX, int rasterY, int x, int y) {
+	public static BufferedImage getSpriteSubImage(Image image, int rasterX,
+			int rasterY, int x, int y) {
 
 		if (image == null) {
 			throw new NullPointerException("image");
@@ -125,8 +126,8 @@ public final class GraphicsRoutines {
 		y = Mathf.clamp(y, 0, rasterY - 1);
 
 		// Calculating the size of one sub image
-		int sizeXPlate = image.getWidth() / rasterX;
-		int sizeYPlate = image.getHeight() / rasterY;
+		int sizeXPlate = image.getWidth(null) / rasterX;
+		int sizeYPlate = image.getHeight(null) / rasterY;
 
 		// Create compatible transparent image
 		BufferedImage subImage = createImage(sizeXPlate, sizeYPlate,
@@ -142,13 +143,10 @@ public final class GraphicsRoutines {
 					y * sizeYPlate, (x + 1) * sizeXPlate, (y + 1) * sizeYPlate,
 					new Color(0, 0, 0, 0), null);
 
+			return subImage;
 		} finally {
 			g2d.dispose();
 		}
-
-		// Creates the actual sub image
-		return image.getSubimage(x * sizeXPlate, y * sizeYPlate, sizeXPlate,
-				sizeYPlate);
 	}
 
 	/**

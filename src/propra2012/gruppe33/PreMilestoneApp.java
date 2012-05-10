@@ -2,6 +2,7 @@ package propra2012.gruppe33;
 
 import java.awt.Color;
 import java.awt.Graphics2D;
+import java.awt.Image;
 import java.awt.Point;
 import java.awt.image.BufferedImage;
 import java.io.File;
@@ -16,6 +17,7 @@ import propra2012.gruppe33.graphics.rendering.scenegraph.Entity;
 import propra2012.gruppe33.graphics.rendering.scenegraph.EntityControllerAdapter;
 import propra2012.gruppe33.graphics.rendering.scenegraph.grid.Grid;
 import propra2012.gruppe33.graphics.rendering.scenegraph.math.Vector2f;
+import propra2012.gruppe33.graphics.rendering.util.Resource;
 import propra2012.gruppe33.graphics.sprite.AnimationRoutines;
 import propra2012.gruppe33.graphics.sprite.Sprite;
 
@@ -45,8 +47,8 @@ public class PreMilestoneApp {
 		Asset<BufferedImage> solidImage = grid.getAssetManager().loadImage(
 				"assets/images/solid.png");
 
-		Map<Character, BufferedImage> map = new HashMap<Character, BufferedImage>();
-		map.put('1', solidImage.get());
+		Map<Character, Resource<? extends Image>> map = new HashMap<Character, Resource<? extends Image>>();
+		map.put('1', solidImage);
 
 		// Bundle render to picture
 		Entity solid = grid.bundleAndRender("solid", map);
@@ -60,7 +62,6 @@ public class PreMilestoneApp {
 		Sprite boom = new Sprite(grid.getAssetManager().loadImage(
 				"assets/images/animated/boom.png"), 5, 5);
 
-		
 		Entity ex = EntityRoutines.createBoom(grid, boom, 1, 1, 5);
 
 		player.getScale().scaleLocal(2);

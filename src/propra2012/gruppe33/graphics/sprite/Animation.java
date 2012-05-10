@@ -13,7 +13,8 @@ import java.util.RandomAccess;
  * This class represents a single Animation
  * 
  * @author Matthias Hesse
- * 
+ * @see AnimationMap
+ * @see Sprite
  */
 public final class Animation implements Serializable {
 
@@ -41,7 +42,7 @@ public final class Animation implements Serializable {
 	private final long animationDuration, timePerImage;
 
 	// The animation step counter
-	private transient int animationStep = 0;
+	private int animationStep;
 
 	// Time vars
 	private transient long timeStamp;
@@ -55,8 +56,8 @@ public final class Animation implements Serializable {
 		// Read the default stuff
 		in.defaultReadObject();
 
-		// Always reset an animation when loading
-		resetAnimation();
+		// Set the TimeStep to the actual time
+		timeStamp = System.currentTimeMillis();
 	}
 
 	Animation(Sprite sprite, String name, List<Point> imageCoords,
@@ -183,5 +184,4 @@ public final class Animation implements Serializable {
 		// Set the TimeStep to the actual time
 		timeStamp = System.currentTimeMillis();
 	}
-
 }
