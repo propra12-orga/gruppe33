@@ -52,8 +52,8 @@ public class PreMilestoneApp {
 		map.put('1', solidImage);
 
 		// Bundle render to picture
-		Entity solid = grid.bundleAndRender("solid", map, Transparency.OPAQUE,
-				Color.white);
+		Entity solid = grid.bundleToRenderedEntity("solid", map,
+				Transparency.OPAQUE, Color.white);
 
 		// Create a new local player
 		Entity player = EntityRoutines.createLocalPlayer("Kr0e",
@@ -83,7 +83,7 @@ public class PreMilestoneApp {
 					Graphics2D transformed) {
 
 				// Get grid in parent hierarchy
-				Grid grid = entity.findParentByClass(Grid.class);
+				Grid grid = entity.findParentByClass(Grid.class, false);
 
 				if (grid != null) {
 					List<Point> points = grid.collectPoints(

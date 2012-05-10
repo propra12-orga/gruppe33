@@ -412,7 +412,7 @@ public class Entity extends EntityControllerAdapter {
 	 * @see Scene
 	 */
 	public Scene findScene() {
-		return findParentByClass(Scene.class);
+		return findParentByClass(Scene.class, true);
 	}
 
 	/**
@@ -420,18 +420,26 @@ public class Entity extends EntityControllerAdapter {
 	 * 
 	 * @param entityClass
 	 *            The entity class you want to find.
+	 * @param allowExtendedClasses
+	 *            If true classes which extend the given class are valid, too.
 	 * @return the next entity of the given class which ownes this entity or
 	 *         this entity if this entity has already the correct class or null
 	 *         if there is no valid parent entity in the hierarchy at all.
 	 */
 	@SuppressWarnings("unchecked")
-	public <T extends Entity> T findParentByClass(Class<T> entityClass) {
+	public <T extends Entity> T findParentByClass(Class<T> entityClass,
+			boolean allowExtendedClasses) {
 		if (entityClass == null) {
 			throw new NullPointerException("entityClass");
 		}
 
-		return getClass().equals(entityClass) ? (T) this
-				: parent != null ? parent.findParentByClass(entityClass) : null;
+		// Fill valid flag
+		boolean valid = allowExtendedClasses ? entityClass
+				.isAssignableFrom(getClass()) : entityClass.equals(getClass());
+
+		// Proceed
+		return valid ? (T) this : parent != null ? parent.findParentByClass(
+				entityClass, allowExtendedClasses) : null;
 	}
 
 	/**
@@ -1034,8 +1042,9 @@ public class Entity extends EntityControllerAdapter {
 	 * 
 	 * @param destination
 	 *            The image you want to render to.
+	 * @return the given destination image.
 	 */
-	public final void renderTo(Image destination) {
+	public final Image renderTo(Image destination) {
 		if (destination == null) {
 			throw new NullPointerException("destination");
 		}
@@ -1052,6 +1061,8 @@ public class Entity extends EntityControllerAdapter {
 				throw new IllegalArgumentException("The image must return a "
 						+ "Graphics2D object when calling getGraphics().");
 			}
+
+			return destination;
 		} finally {
 			// Dispose
 			graphics.dispose();

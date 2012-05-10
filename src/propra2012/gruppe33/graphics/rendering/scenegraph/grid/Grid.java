@@ -15,6 +15,7 @@ import propra2012.gruppe33.graphics.rendering.scenegraph.Scene;
 import propra2012.gruppe33.graphics.rendering.scenegraph.image.ImageController;
 import propra2012.gruppe33.graphics.rendering.scenegraph.math.Vector2f;
 import propra2012.gruppe33.resources.Resource;
+import propra2012.gruppe33.resources.TransientRenderedEntity;
 import propra2012.gruppe33.resources.assets.AssetManager;
 
 /**
@@ -236,7 +237,7 @@ public class Grid extends Scene {
 
 	/**
 	 * Basically iterates over the map data and bundles proper chars which you
-	 * can specify to images and renders them into a picture for fast rendering.
+	 * can specify to images and renders them into an image for fast rendering.
 	 * 
 	 * @param name
 	 *            The name of the new root entity.
@@ -250,16 +251,19 @@ public class Grid extends Scene {
 	 * @return an entity which contains a rendered image with all bundled
 	 *         images.
 	 */
-	public Entity bundleAndRender(String name,
+	public Entity bundleToRenderedEntity(String name,
 			Map<Character, Resource<? extends Image>> chars2Images,
 			int transparency, Color background) {
+
+		// Bundle to entity and store as rendered transient entity
+		TransientRenderedEntity renderedEntity = new TransientRenderedEntity(
+				this, transparency, background, bundle(name, chars2Images));
 
 		// Create a new entity
 		Entity entity = new Entity(name);
 
-		// Render the entity to a picture component
-		bundle(name, chars2Images).renderTo(entity, getWidth(), getHeight(),
-				transparency, background);
+		// Put the rendered image into the entity
+		entity.putController(new ImageController(renderedEntity));
 
 		// Set position
 		entity.getPosition().set(getWidth() * 0.5f, getHeight() * 0.5f);
