@@ -1,12 +1,10 @@
 package propra2012.gruppe33.io.network.tcp;
 
+import java.io.IOException;
 import java.net.InetSocketAddress;
 import java.nio.ByteBuffer;
 import java.nio.channels.SelectionKey;
-import java.nio.channels.Selector;
 import java.nio.channels.ServerSocketChannel;
-import java.nio.channels.SocketChannel;
-import java.util.Iterator;
 
 public class NioServerApp {
 
@@ -15,89 +13,87 @@ public class NioServerApp {
 	 */
 	public static void main(String[] args) throws Exception {
 
-		Selector selector = Selector.open();
+		final SelectionManager sm = new SelectionManager();
 
 		ServerSocketChannel ssc = ServerSocketChannel.open();
 		ssc.configureBlocking(false);
 		ssc.socket().bind(new InetSocketAddress(1337));
-		ssc.register(selector, SelectionKey.OP_ACCEPT);
+		ssc.register(sm.selector(), SelectionKey.OP_ACCEPT);
 
-		SocketChannel sc = SocketChannel.open();
-		sc.configureBlocking(false);
-		sc.register(selector, SelectionKey.OP_CONNECT);
+		Connection client = new Connection(sm);
+		client.interest(SelectionKey.OP_CONNECT);
+		client.channel().connect(new InetSocketAddress("localhost", 1337));
 
-		sc.connect(new InetSocketAddress("localhost", 1337));
+		sm.dispatchers().add(new Dispatcher() {
 
-		for (;;) {
+			@Override
+			public void dispatch(SelectionKey key) throws IOException {
 
-			if (selector.select(1000) >= 0) {
+				if (key.isAcceptable()) {
 
-				System.out.println(selector.keys());
+					// Accept...
+					Connection newClient = new Connection(
+							((ServerSocketChannel) key.channel()).accept(), sm);
 
-				// Get the iterator
-				Iterator<SelectionKey> keys = selector.selectedKeys()
-						.iterator();
+					System.out.println("Neuer client entgegengenommen: "
+							+ newClient);
 
-				while (keys.hasNext()) {
-					// Get key
-					SelectionKey key = keys.next();
+					newClient.interest(SelectionKey.OP_READ);
 
-					// Remove the key directly
-					keys.remove();
+					ByteBuffer data = ByteBuffer.wrap("hello".getBytes());
 
-					if (key.isValid()) {
-						if (key.isAcceptable()) {
+					newClient.write(data);
+				}
 
-							// Accept...
-							SocketChannel client = ((ServerSocketChannel) key
-									.channel()).accept();
-							client.configureBlocking(false);
-							System.out
-									.println("Neuer client entgegengenommen: "
-											+ client);
+				if (key.isWritable()) {
+					System.out.println("writable");
+					Connection c = (Connection) key.attachment();
 
-							client.register(selector, SelectionKey.OP_READ);
+					ByteBuffer buffer = c.peekWriteBuffer();
 
-							ByteBuffer data = ByteBuffer.wrap("hello"
-									.getBytes());
-							client.write(data);
-						}
+					if (buffer.hasRemaining()) {
+						c.channel().write(buffer);
+					}
 
-						if (key.isConnectable()) {
-
-							if (!sc.finishConnect()) {
-								System.out
-										.println("Verbindung nicht aufgebaut");
-								sc.close();
-							} else {
-								System.out.println("Verbindung aufgebaut");
-
-								// Change to read
-								key.interestOps(SelectionKey.OP_READ);
-							}
-						}
-
-						if (key.isReadable()) {
-
-							SocketChannel channel = (SocketChannel) key
-									.channel();
-
-							ByteBuffer buffer = ByteBuffer.allocate(8192);
-
-							int a;
-							System.out.println((a = channel.read(buffer))
-									+ " bytes read.");
-
-							if (a == -1) {
-								channel.close();
-							} else {
-								channel.close();
-							}
-						}
-
+					if (!buffer.hasRemaining()) {
+						c.removeWriteBuffer();
 					}
 				}
+
+				if (key.isConnectable()) {
+
+					Connection con = (Connection) key.attachment();
+
+					if (!con.channel().finishConnect()) {
+						System.out.println("Verbindung nicht aufgebaut");
+						con.close();
+					} else {
+						System.out.println("Verbindung aufgebaut");
+
+						// Change to read
+						con.interest((con.interest() & ~SelectionKey.OP_CONNECT)
+								| SelectionKey.OP_READ);
+					}
+				}
+
+				if (key.isReadable()) {
+
+					Connection con = (Connection) key.attachment();
+
+					ByteBuffer buffer = ByteBuffer.allocate(8192);
+
+					int a;
+					System.out.println((a = con.channel().read(buffer))
+							+ " bytes read.");
+
+					con.close();
+				}
+
 			}
+		});
+
+		for (;;) {
+			sm.select();
 		}
 
 	}
