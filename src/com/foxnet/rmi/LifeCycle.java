@@ -34,9 +34,9 @@ package com.foxnet.rmi;
 /**
  * @author Christopher Probst
  */
-public interface LifeCycle {
+public interface LifeCycle extends Remote {
 
-    void bound() throws Exception;
+	void bound() throws Exception;
 
-    void unbound() throws Exception;
+	void unbound() throws Exception;
 }

@@ -70,12 +70,10 @@ public class TestApp {
 		@Override
 		public void requestQuote() {
 			try {
-				Thread.sleep(100);
+				Thread.sleep(1);
 			} catch (InterruptedException e) {
 				e.printStackTrace();
 			}
-			System.out.println((i++) + ". "
-					+ quotes[random.nextInt(quotes.length)]);
 		}
 	}
 
@@ -102,7 +100,7 @@ public class TestApp {
 
 		QuoteService qs = (QuoteService) rmi.lookup("quote_service");
 
-		for (int i = 1; i < 21; i++) {
+		for (int i = 1; i < 100000; i++) {
 
 			qs.requestQuote();
 

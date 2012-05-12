@@ -37,12 +37,28 @@ import java.util.SortedMap;
 import java.util.TreeMap;
 
 /**
+ * This class represents an abstract binding.
+ * 
  * @author Christopher Probst
  */
 public abstract class Binding extends RemoteObject implements Iterable<Method> {
 
+	/**
+	 * 
+	 */
+	private static final long serialVersionUID = 1L;
+
+	// All interface methods (ordered by name)
 	private final Method[] methods;
 
+	/**
+	 * Creates a new binding.
+	 * 
+	 * @param id
+	 *            The id of this binding.
+	 * @param interfaces
+	 *            The interface classes of this binding.
+	 */
 	public Binding(int id, Class<?>[] interfaces) {
 		super(id, interfaces);
 
@@ -114,18 +130,29 @@ public abstract class Binding extends RemoteObject implements Iterable<Method> {
 		};
 	}
 
+	/**
+	 * @return the method count.
+	 */
 	public int getMethodCount() {
 		return methods.length;
 	}
 
+	/**
+	 * Checks a given method id.
+	 * 
+	 * @param methodId
+	 *            The method id you want to check.
+	 * @return true if the id is valid, otherwise false.
+	 */
 	public boolean containsMethodId(int methodId) {
 		return methodId >= 0 && methodId < methods.length;
 	}
 
-	public Method[] getMethods() {
-		return methods;
-	}
-
+	/**
+	 * @param methodId
+	 *            The method id you want to lookup.
+	 * @return the method with the given method id.
+	 */
 	public Method getMethod(int methodId) {
 		// Index out of bounds
 		if (!containsMethodId(methodId)) {
@@ -136,7 +163,15 @@ public abstract class Binding extends RemoteObject implements Iterable<Method> {
 		return methods[methodId];
 	}
 
-	public abstract boolean isStatic();
+	/**
+	 * @return true if this is a static binding, otherwise false.
+	 */
+	public boolean isStatic() {
+		return !isDynamic();
+	}
 
+	/**
+	 * @return true if this is a dynamic binding, otherwise false.
+	 */
 	public abstract boolean isDynamic();
 }

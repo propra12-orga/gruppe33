@@ -40,13 +40,13 @@ import com.foxnet.rmi.binding.RemoteBinding;
  */
 public interface Invoker {
 
-    Connection getRMIConnection();
+	Connection getConnection();
 
-    Method getMethod(String methodName);
+	Method getMethod(String methodName);
 
-    String getTarget();
+	String getTarget();
 
-    RemoteBinding getRemoteBinding();
+	RemoteBinding getRemoteBinding();
 
-    Invocation invoke(String methodName, Object... args);
+	Invocation invoke(String methodName, Object... args);
 }

@@ -37,13 +37,33 @@ import java.util.HashMap;
 import java.util.Map;
 
 /**
+ * This class represents a remote binding.
+ * 
  * @author Christopher Probst
  */
 public final class RemoteBinding extends Binding {
 
+	/**
+	 * 
+	 */
+	private static final long serialVersionUID = 1L;
+
+	// The dynamic flag
 	private final boolean dynamic;
+
+	// Maps methods to their ids
 	private final Map<Method, Integer> methodIds;
 
+	/**
+	 * Creates a new remote binding.
+	 * 
+	 * @param id
+	 *            The id of this remote binding.
+	 * @param interfaces
+	 *            The interface classes of this remote binding.
+	 * @param dynamic
+	 *            The dynamic flag.
+	 */
 	public RemoteBinding(int id, Class<?>[] interfaces, boolean dynamic) {
 		super(id, interfaces);
 
@@ -61,21 +81,32 @@ public final class RemoteBinding extends Binding {
 		methodIds = Collections.unmodifiableMap(tmpMethodIds);
 	}
 
-	@Override
-	public boolean isStatic() {
-		return !dynamic;
-	}
-
+	/*
+	 * (non-Javadoc)
+	 * 
+	 * @see com.foxnet.rmi.binding.Binding#isDynamic()
+	 */
 	@Override
 	public boolean isDynamic() {
 		return dynamic;
 	}
 
+	/**
+	 * Check whether or not the given method is part of this binding.
+	 * 
+	 * @param method
+	 *            The method you want to check.
+	 * @return true if this method is part of this binding, otherwise false.
+	 */
 	public boolean hasMethodId(Method method) {
 		return methodIds.containsKey(method);
 	}
 
 	public int getMethodId(Method method) {
-		return methodIds.get(method);
+		Integer methodId = methodIds.get(method);
+		if (methodId == null) {
+			throw new IllegalArgumentException("Unknown method: " + methodId);
+		}
+		return methodId.intValue();
 	}
 }

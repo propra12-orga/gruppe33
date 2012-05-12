@@ -31,24 +31,59 @@
  */
 package com.foxnet.rmi.binding;
 
+import java.io.Serializable;
+
 /**
+ * A remote object is basically an id with some interface classes.
+ * 
  * @author Christopher Probst
  */
-public class RemoteObject {
+public class RemoteObject implements Serializable {
 
+	/**
+	 * 
+	 */
+	private static final long serialVersionUID = 1L;
+
+	// The id of this remote object
 	private final int id;
+
+	// The inteface classes of this remote object
 	private final Class<?>[] interfaces;
 
+	/**
+	 * Creates a copy of the given remote object.
+	 * 
+	 * @param copy
+	 *            The object you want to copy.
+	 */
+	public RemoteObject(RemoteObject copy) {
+		this(copy.getId(), copy.getInterfaces());
+	}
+
+	/**
+	 * Creates a new remote object.
+	 * 
+	 * @param id
+	 *            The id of this remote object.
+	 * @param interfaces
+	 *            The interface classes of this remote object.
+	 */
 	public RemoteObject(int id, Class<?>[] interfaces) {
-		// Save
 		this.id = id;
 		this.interfaces = interfaces;
 	}
 
+	/**
+	 * @return the id.
+	 */
 	public int getId() {
 		return id;
 	}
 
+	/**
+	 * @return the interface classes.
+	 */
 	public Class<?>[] getInterfaces() {
 		return interfaces;
 	}

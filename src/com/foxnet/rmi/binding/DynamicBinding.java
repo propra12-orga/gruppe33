@@ -34,15 +34,41 @@ package com.foxnet.rmi.binding;
 import com.foxnet.rmi.Remote;
 
 /**
+ * This class represents a dynamic local binding.
+ * 
  * @author Christopher Probst
  */
 public final class DynamicBinding extends LocalBinding {
 
-    public DynamicBinding(int id, Remote target, Class<?>[] interfaces) {
-	super(id, target, interfaces);
-    }
+	/**
+	 * 
+	 */
+	private static final long serialVersionUID = 1L;
 
-    public DynamicBinding(int id, Remote target) {
-	super(id, target);
-    }
+	/**
+	 * Creates a new dynamic local binding.
+	 * 
+	 * @param id
+	 *            The id of this binding.
+	 * @param target
+	 *            The target of this binding.
+	 * @param interfaces
+	 *            The interface classes of this binding.
+	 */
+	public DynamicBinding(int id, Remote target, Class<?>[] interfaces) {
+		super(id, target, interfaces);
+	}
+
+	/**
+	 * Creates a new dynamic local binding. All interfaces of the given target
+	 * will be used.
+	 * 
+	 * @param id
+	 *            The id of this binding.
+	 * @param target
+	 *            The target of this binding.
+	 */
+	public DynamicBinding(int id, Remote target) {
+		super(id, target);
+	}
 }

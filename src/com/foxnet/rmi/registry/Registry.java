@@ -44,6 +44,8 @@ import com.foxnet.rmi.Remote;
 import com.foxnet.rmi.binding.LocalBinding;
 
 /**
+ * This class represents a simple abstract registry of bindings.
+ * 
  * @author Christopher Probst
  */
 public abstract class Registry<B extends LocalBinding> implements Iterable<B> {

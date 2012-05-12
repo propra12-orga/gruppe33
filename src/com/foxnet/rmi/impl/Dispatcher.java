@@ -34,7 +34,6 @@ package com.foxnet.rmi.impl;
 import java.io.IOException;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
-import java.io.Serializable;
 import java.lang.ref.SoftReference;
 import java.lang.reflect.InvocationHandler;
 import java.lang.reflect.InvocationTargetException;
@@ -68,10 +67,10 @@ import org.jboss.netty.channel.SimpleChannelHandler;
 import org.jboss.netty.channel.socket.SocketChannelConfig;
 
 import com.foxnet.rmi.AsyncVoid;
-import com.foxnet.rmi.Invocation;
-import com.foxnet.rmi.Invoker;
 import com.foxnet.rmi.Connection;
 import com.foxnet.rmi.ConnectionManager;
+import com.foxnet.rmi.Invocation;
+import com.foxnet.rmi.Invoker;
 import com.foxnet.rmi.binding.LocalBinding;
 import com.foxnet.rmi.binding.LocalBinding.OrderedExecutionQueue;
 import com.foxnet.rmi.binding.RemoteBinding;
@@ -84,14 +83,6 @@ import com.foxnet.rmi.registry.DynamicRegistry;
 import com.foxnet.rmi.registry.StaticRegistry;
 
 /**
- * TODO: If Netty4 comes out I probably could implement a better memory channel
- * limitation which includes adjusting
- * {@link Dispatcher#processPackets(ChannelBuffer)} in a way that the method
- * leaves if the channel is not readable anymore. In addition: the
- * {@link Dispatcher#channelInterestChanged(ChannelHandlerContext, ChannelStateEvent)}
- * should take care if the channel becomes readable and there are still
- * remaining packets.
- * 
  * @author Christopher Probst
  */
 public final class Dispatcher extends SimpleChannelHandler implements
@@ -269,10 +260,10 @@ public final class Dispatcher extends SimpleChannelHandler implements
 		/*
 		 * (non-Javadoc)
 		 * 
-		 * @see com.foxnet.rmi.Invoker#getRMIConnection()
+		 * @see com.foxnet.rmi.Invoker#getConnection()
 		 */
 		@Override
-		public Connection getRMIConnection() {
+		public Connection getConnection() {
 			return Dispatcher.this;
 		}
 
@@ -852,14 +843,14 @@ public final class Dispatcher extends SimpleChannelHandler implements
 		// Acquire memory
 		acquireMemory(messageSize);
 
+		// Try to get the queue
+		OrderedExecutionQueue queue = binding.getQueue(methodId);
+
 		/*
 		 * Now execute the invocation. Either directly or the ordered execution
 		 * queue of the method if necessary.
 		 */
-		if (binding.isOrderedExecution(methodId)) {
-
-			// Get the queue
-			OrderedExecutionQueue queue = binding.getQueue(methodId);
+		if (queue != null) {
 
 			// Execute queue if necessary
 			if (queue.addOrderedExecution(invocation)) {
@@ -871,11 +862,6 @@ public final class Dispatcher extends SimpleChannelHandler implements
 			// Execute the invocation now
 			getMethodInvocator().execute(invocation);
 		}
-	}
-
-	private static final class RemoteObjectMessage implements Serializable {
-		public int id;
-		public Class<?>[] interfaces;
 	}
 
 	private void handleLookup(int requestId) throws Exception {
@@ -906,10 +892,7 @@ public final class Dispatcher extends SimpleChannelHandler implements
 				output.writeInt(requestId);
 
 				// Write invocation infos
-				RemoteObjectMessage rom = new RemoteObjectMessage();
-				rom.id = sb.getId();
-				rom.interfaces = sb.getInterfaces();
-				output.writeObject(rom);
+				output.writeObject(new RemoteObject(sb));
 
 				// Always flush when ready!
 				flushAndWrite();
@@ -1062,6 +1045,8 @@ public final class Dispatcher extends SimpleChannelHandler implements
 		}
 	}
 
+	volatile int k = 0;
+
 	/*
 	 * Must be called inside the output lock.
 	 */
@@ -1074,7 +1059,7 @@ public final class Dispatcher extends SimpleChannelHandler implements
 
 		// Check if still open
 		if (!tmpChannel.isOpen()) {
-			throw new IOException("RMIConnection is already closed.");
+			throw new IOException("Connection is already closed.");
 		}
 
 		// Get and set output stream
@@ -1198,7 +1183,7 @@ public final class Dispatcher extends SimpleChannelHandler implements
 
 		// Shutdown the remaining requests
 		requestManager.setCauseToAll(new IOException(
-				"RMIConnection is closed now."));
+				"Connection is closed now."));
 
 		// Unbind all dynamic remote objects
 		dynamicRegistry.unbindAll();
@@ -1271,7 +1256,7 @@ public final class Dispatcher extends SimpleChannelHandler implements
 	/*
 	 * (non-Javadoc)
 	 * 
-	 * @see com.foxnet.rmi.RMIConnection#close()
+	 * @see com.foxnet.rmi.Connection#close()
 	 */
 	@Override
 	public ChannelFuture close() {
@@ -1281,7 +1266,7 @@ public final class Dispatcher extends SimpleChannelHandler implements
 	/*
 	 * (non-Javadoc)
 	 * 
-	 * @see com.foxnet.rmi.RMIConnection#getCloseFuture()
+	 * @see com.foxnet.rmi.Connection#getCloseFuture()
 	 */
 	@Override
 	public ChannelFuture getCloseFuture() {
@@ -1291,7 +1276,7 @@ public final class Dispatcher extends SimpleChannelHandler implements
 	/*
 	 * (non-Javadoc)
 	 * 
-	 * @see com.foxnet.rmi.RMIConnection#getDynamicRegistry()
+	 * @see com.foxnet.rmi.Connection#getDynamicRegistry()
 	 */
 	@Override
 	public DynamicRegistry getDynamicRegistry() {
@@ -1301,7 +1286,7 @@ public final class Dispatcher extends SimpleChannelHandler implements
 	/*
 	 * (non-Javadoc)
 	 * 
-	 * @see com.foxnet.rmi.RMIConnection#getChannel()
+	 * @see com.foxnet.rmi.Connection#getChannel()
 	 */
 	@Override
 	public Channel getChannel() {
@@ -1311,7 +1296,7 @@ public final class Dispatcher extends SimpleChannelHandler implements
 	/*
 	 * (non-Javadoc)
 	 * 
-	 * @see com.foxnet.rmi.RMIConnection#getMethodInvocator()
+	 * @see com.foxnet.rmi.Connection#getMethodInvocator()
 	 */
 	@Override
 	public Executor getMethodInvocator() {
@@ -1321,7 +1306,7 @@ public final class Dispatcher extends SimpleChannelHandler implements
 	/*
 	 * (non-Javadoc)
 	 * 
-	 * @see com.foxnet.rmi.RMIConnection#list()
+	 * @see com.foxnet.rmi.Connection#list()
 	 */
 	@Override
 	public String[] list() throws IOException {
@@ -1357,7 +1342,7 @@ public final class Dispatcher extends SimpleChannelHandler implements
 	/*
 	 * (non-Javadoc)
 	 * 
-	 * @see com.foxnet.rmi.RMIConnection#getManager()
+	 * @see com.foxnet.rmi.Connection#getManager()
 	 */
 	@Override
 	public ConnectionManager getManager() {
@@ -1367,7 +1352,7 @@ public final class Dispatcher extends SimpleChannelHandler implements
 	/*
 	 * (non-Javadoc)
 	 * 
-	 * @see com.foxnet.rmi.RMIConnection#invoker(java.lang.String)
+	 * @see com.foxnet.rmi.Connection#invoker(java.lang.String)
 	 */
 	@Override
 	public Invoker invoker(String target) throws IOException {
@@ -1379,21 +1364,19 @@ public final class Dispatcher extends SimpleChannelHandler implements
 	/*
 	 * (non-Javadoc)
 	 * 
-	 * @see com.foxnet.rmi.RMIConnection#lookup(java.lang.String)
+	 * @see com.foxnet.rmi.Connection#lookup(java.lang.String)
 	 */
 	@Override
 	public Object lookup(String target) throws IOException {
-		RemoteObjectMessage rom = (RemoteObjectMessage) lookupAndWait(target)
-				.getResponse();
-
 		// Create new static proxy
-		return createProxy(new RemoteObject(rom.id, rom.interfaces), false);
+		return createProxy((RemoteObject) lookupAndWait(target).getResponse(),
+				false);
 	}
 
 	/*
 	 * (non-Javadoc)
 	 * 
-	 * @see com.foxnet.rmi.RMIConnection#getStaticRegistry()
+	 * @see com.foxnet.rmi.Connection#getStaticRegistry()
 	 */
 	@Override
 	public StaticRegistry getStaticRegistry() {

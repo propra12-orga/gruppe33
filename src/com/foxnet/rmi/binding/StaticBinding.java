@@ -34,23 +34,57 @@ package com.foxnet.rmi.binding;
 import com.foxnet.rmi.Remote;
 
 /**
+ * This class represents a static local binding.
+ * 
  * @author Christopher Probst
  */
 public final class StaticBinding extends LocalBinding {
 
+	/**
+	 * 
+	 */
+	private static final long serialVersionUID = 1L;
+
+	// The name of this static binding
 	private final String name;
 
+	/**
+	 * Creates a new static local binding.
+	 * 
+	 * @param id
+	 *            The id of this binding.
+	 * @param name
+	 *            The name of this biding.
+	 * @param target
+	 *            The target of this binding.
+	 * @param interfaces
+	 *            The interface classes of this binding.
+	 */
 	public StaticBinding(int id, String name, Remote target,
 			Class<?>[] interfaces) {
 		super(id, target, interfaces);
 		this.name = name;
 	}
 
+	/**
+	 * Creates a new static local binding. All interfaces of the given target
+	 * will be used.
+	 * 
+	 * @param id
+	 *            The id of this binding.
+	 * @param name
+	 *            The name of this biding.
+	 * @param target
+	 *            The target of this binding.
+	 */
 	public StaticBinding(int id, String name, Remote target) {
 		super(id, target);
 		this.name = name;
 	}
 
+	/**
+	 * @return the name.
+	 */
 	public String getName() {
 		return name;
 	}

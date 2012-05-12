@@ -130,7 +130,7 @@ public class Acceptor extends ConnectionManager {
 	/*
 	 * (non-Javadoc)
 	 * 
-	 * @see com.foxnet.rmi.RMIConnectionManager#open(java.net.SocketAddress)
+	 * @see com.foxnet.rmi.ConnectionManager#open(java.net.SocketAddress)
 	 */
 	@Override
 	public ServerChannel open(SocketAddress socketAddress) throws IOException {

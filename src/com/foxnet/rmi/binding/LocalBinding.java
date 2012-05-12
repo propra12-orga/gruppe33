@@ -31,12 +31,14 @@
  */
 package com.foxnet.rmi.binding;
 
+import java.io.Serializable;
+import java.util.Collections;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.LinkedList;
+import java.util.Map;
 import java.util.Queue;
 import java.util.Set;
-import java.util.concurrent.locks.Lock;
-import java.util.concurrent.locks.ReentrantLock;
 
 import com.foxnet.rmi.LifeCycle;
 import com.foxnet.rmi.OrderedExecution;
@@ -44,16 +46,41 @@ import com.foxnet.rmi.Remote;
 import com.foxnet.rmi.RemoteInterfaces;
 
 /**
+ * This represents an abstract local binding.
+ * 
  * @author Christopher Probst
  */
 public abstract class LocalBinding extends Binding {
 
+	/**
+	 * 
+	 */
+
+	private static final long serialVersionUID = 1L;
+
+	/**
+	 * Simply checks whether or not the given interface class is valid.
+	 * 
+	 * @param interfaceClass
+	 *            The interface class you want to check.
+	 * @return true if the interface class is valid, otherwise false.
+	 */
 	private static boolean isValidRemoteInterface(Class<?> interfaceClass) {
 		return interfaceClass != Remote.class
 				&& interfaceClass != LifeCycle.class;
 	}
 
-	private static void collectRemoteInterfaces(Class<?> startClass,
+	/**
+	 * This method collects all valid remote interfaces.
+	 * 
+	 * @param startClass
+	 *            The start class.
+	 * @param endClass
+	 *            The end class.
+	 * @param interfaces
+	 *            The set with all remote interface classes.
+	 */
+	private static void collectAllRemoteInterfaces(Class<?> startClass,
 			Class<?> endClass, Set<Class<?>> interfaces) {
 
 		// Start with the end class
@@ -82,6 +109,15 @@ public abstract class LocalBinding extends Binding {
 		} while (!finished);
 	}
 
+	/**
+	 * This method collects all remote interfaces or uses the
+	 * {@link RemoteInterfaces} annotation if present to use only the specified
+	 * intefaces.
+	 * 
+	 * @param target
+	 *            The remote target.
+	 * @return an array with all valid remote interfaces.
+	 */
 	private static Class<?>[] getRemoteInterfaces(Remote target) {
 		if (target == null) {
 			throw new NullPointerException("target");
@@ -91,7 +127,7 @@ public abstract class LocalBinding extends Binding {
 		RemoteInterfaces interfaces = target.getClass().getAnnotation(
 				RemoteInterfaces.class);
 
-		// Used to copy the interfaces
+		// Used to collect the interfaces
 		Set<Class<?>> uniqueInterfaces = new HashSet<Class<?>>();
 
 		/*
@@ -110,7 +146,7 @@ public abstract class LocalBinding extends Binding {
 			}
 		} else {
 			// Collect all interfaces
-			collectRemoteInterfaces(Object.class, target.getClass(),
+			collectAllRemoteInterfaces(Object.class, target.getClass(),
 					uniqueInterfaces);
 		}
 
@@ -124,34 +160,41 @@ public abstract class LocalBinding extends Binding {
 		return uniqueInterfaces.toArray(new Class<?>[uniqueInterfaces.size()]);
 	}
 
-	public static final class OrderedExecutionQueue implements Runnable {
+	/**
+	 * This class implements the concept of an ordered execution queue.
+	 * 
+	 * @author Christopher Probst
+	 */
+	public static final class OrderedExecutionQueue implements Runnable,
+			Serializable {
+
+		/**
+		 * 
+		 */
+		private static final long serialVersionUID = 1L;
 
 		/*
 		 * Used to queue the runnables.
 		 */
 		private final Queue<Runnable> queue = new LinkedList<Runnable>();
 
-		/*
-		 * Used to synchronize the queue.
+		/**
+		 * This method offers a runnable object.
+		 * 
+		 * @param runnable
+		 *            The runnable you want to add.
+		 * @return true if this queue needs to be executed.
 		 */
-		private final Lock lock = new ReentrantLock();
+		public synchronized boolean addOrderedExecution(Runnable runnable) {
 
-		public boolean addOrderedExecution(Runnable runnable)
-				throws InterruptedException {
-			try {
-				lock.lock();
+			// Does this queue need to be executed ?
+			boolean needsExecution = queue.isEmpty();
 
-				// Does this queue need to be executed ?
-				boolean needsExecution = queue.isEmpty();
+			// Offer command!
+			queue.offer(runnable);
 
-				// Offer command!
-				queue.offer(runnable);
-
-				// Return the state
-				return needsExecution;
-			} finally {
-				lock.unlock();
-			}
+			// Return the state
+			return needsExecution;
 		}
 
 		/*
@@ -164,20 +207,15 @@ public abstract class LocalBinding extends Binding {
 			Runnable runnable = null;
 
 			for (;;) {
-				try {
-					lock.lock();
-
+				synchronized (this) {
 					// Get command
 					runnable = queue.element();
-				} finally {
-					lock.unlock();
 				}
 
 				// Run!
 				runnable.run();
 
-				try {
-					lock.lock();
+				synchronized (this) {
 
 					// Remove command
 					queue.remove();
@@ -186,28 +224,54 @@ public abstract class LocalBinding extends Binding {
 					if (queue.isEmpty()) {
 						return;
 					}
-				} finally {
-					lock.unlock();
 				}
 			}
 		}
 	}
 
-	private final OrderedExecutionQueue[] orderedExecutionQueues;
+	// Here we store all ordered execution queues mapped to their method ids
+	private final Map<Integer, OrderedExecutionQueue> orderedExecutionQueues;
+
+	// Here we store the remote target
 	private final Remote target;
 
+	/**
+	 * Creates a new local binding using the default
+	 * interface-collect-algorithm.
+	 * 
+	 * @param id
+	 *            The id of this binding.
+	 * @param target
+	 *            The target of this binding.
+	 */
 	public LocalBinding(int id, Remote target) {
 		this(id, target, getRemoteInterfaces(target));
 	}
 
+	/**
+	 * Creates a new local binding.
+	 * 
+	 * @param id
+	 *            The id of this binding.
+	 * @param target
+	 *            The target of this binding.
+	 * @param interfaces
+	 *            The interface classes of the target.
+	 */
 	public LocalBinding(int id, Remote target, Class<?>[] interfaces) {
 		super(id, interfaces);
 
+		// Check all given interface classes
+		for (Class<?> interfaceClass : interfaces) {
+			if (!interfaceClass.isAssignableFrom(target.getClass())) {
+				throw new IllegalArgumentException(interfaceClass
+						+ " is not part of the hierarchy of "
+						+ target.getClass());
+			}
+		}
+
 		// Save target
 		this.target = target;
-
-		// Create new ordered execution queues
-		orderedExecutionQueues = new OrderedExecutionQueue[getMethodCount()];
 
 		// The method count
 		int methodCount = getMethodCount();
@@ -215,19 +279,37 @@ public abstract class LocalBinding extends Binding {
 		// Annotation
 		OrderedExecution oe;
 
+		// Create tmp
+		Map<Integer, OrderedExecutionQueue> tmpOrderedExecutionQueues = null;
+
+		// Add all methods which
 		for (int i = 0; i < methodCount; i++) {
 			// Check if OrderedExecution is present...
-			if ((oe = getMethods()[i].getAnnotation(OrderedExecution.class)) != null
+			if ((oe = getMethod(i).getAnnotation(OrderedExecution.class)) != null
 					&& oe.value()) {
 
+				// Lazy setup
+				if (tmpOrderedExecutionQueues == null) {
+					tmpOrderedExecutionQueues = new HashMap<Integer, OrderedExecutionQueue>();
+				}
+
 				// Create new queue
-				orderedExecutionQueues[i] = new OrderedExecutionQueue();
-			} else {
-				orderedExecutionQueues[i] = null;
+				tmpOrderedExecutionQueues.put(i, new OrderedExecutionQueue());
 			}
 		}
+
+		// Set the map
+		orderedExecutionQueues = tmpOrderedExecutionQueues != null ? Collections
+				.unmodifiableMap(tmpOrderedExecutionQueues) : null;
 	}
 
+	/**
+	 * Checks a method for ordered execution.
+	 * 
+	 * @param methodId
+	 *            The method id of the method you want to check.
+	 * @return true if the given method uses ordered execution, otherwise false.
+	 */
 	public boolean isOrderedExecution(int methodId) {
 		// Index out of bounds
 		if (!containsMethodId(methodId)) {
@@ -235,29 +317,41 @@ public abstract class LocalBinding extends Binding {
 					+ ") does not exist");
 		}
 
-		return orderedExecutionQueues[methodId] != null;
+		return orderedExecutionQueues != null ? orderedExecutionQueues
+				.get(methodId) != null : false;
 	}
 
+	/**
+	 * Returns the ordered execution queue of the given method.
+	 * 
+	 * @param methodId
+	 *            The method id.
+	 * @return the queue or null if there is no such queue.
+	 */
 	public OrderedExecutionQueue getQueue(int methodId) {
-		if (!isOrderedExecution(methodId)) {
+		// Index out of bounds
+		if (!containsMethodId(methodId)) {
 			throw new IllegalArgumentException("Method id (" + methodId
-					+ ") does not represent a method with an ordered "
-					+ "execution queue.");
+					+ ") does not exist");
 		}
 
-		// Get the queue
-		return orderedExecutionQueues[methodId];
+		// Try to get the queue
+		return orderedExecutionQueues != null ? orderedExecutionQueues
+				.get(methodId) : null;
 	}
 
+	/**
+	 * @return the remote target.
+	 */
 	public Remote getTarget() {
 		return target;
 	}
 
-	@Override
-	public boolean isStatic() {
-		return !isDynamic();
-	}
-
+	/*
+	 * (non-Javadoc)
+	 * 
+	 * @see com.foxnet.rmi.binding.Binding#isDynamic()
+	 */
 	@Override
 	public boolean isDynamic() {
 		return this instanceof DynamicBinding;
