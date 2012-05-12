@@ -43,7 +43,7 @@ import com.foxnet.rmi.binding.StaticBinding;
 public final class StaticRegistry extends Registry<StaticBinding> {
 
 	// Used to store the ids linked with their static binding
-	private final Map<Integer, StaticBinding> ids = new HashMap<Integer, StaticBinding>();
+	private final Map<Long, StaticBinding> ids = new HashMap<Long, StaticBinding>();
 
 	// Used to store the names linked with their static bindings
 	private final Map<String, StaticBinding> names = new HashMap<String, StaticBinding>();
@@ -54,17 +54,17 @@ public final class StaticRegistry extends Registry<StaticBinding> {
 	 * @see com.foxnet.rmi.binding.registry.AbstractRegistry#getIndexMap()
 	 */
 	@Override
-	protected Map<Integer, StaticBinding> getIndexMap() {
+	protected Map<Long, StaticBinding> getIndexMap() {
 		return ids;
 	}
 
 	/*
 	 * (non-Javadoc)
 	 * 
-	 * @see com.foxnet.rmi.registry.Registry#unbind(int)
+	 * @see com.foxnet.rmi.registry.Registry#unbind(long)
 	 */
 	@Override
-	public synchronized StaticBinding unbind(int id) {
+	public synchronized StaticBinding unbind(long id) {
 
 		// Remove from id map
 		StaticBinding sb = ids.remove(id);
@@ -151,7 +151,7 @@ public final class StaticRegistry extends Registry<StaticBinding> {
 		}
 
 		// Create new binding
-		binding = new StaticBinding(findNextId(), name, (Remote) target);
+		binding = new StaticBinding(getNextId(), name, (Remote) target);
 
 		// Put into maps
 		ids.put(binding.getId(), binding);
@@ -191,7 +191,7 @@ public final class StaticRegistry extends Registry<StaticBinding> {
 		}
 
 		// Create new binding
-		StaticBinding newBinding = new StaticBinding(findNextId(), name,
+		StaticBinding newBinding = new StaticBinding(getNextId(), name,
 				(Remote) target);
 
 		// Put into maps

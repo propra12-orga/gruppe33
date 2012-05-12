@@ -59,7 +59,7 @@ public abstract class Binding extends RemoteObject implements Iterable<Method> {
 	 * @param interfaces
 	 *            The interface classes of this binding.
 	 */
-	public Binding(int id, Class<?>[] interfaces) {
+	public Binding(long id, Class<?>[] interfaces) {
 		super(id, interfaces);
 
 		// This class does not allow null!

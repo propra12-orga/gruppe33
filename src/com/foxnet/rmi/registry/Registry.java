@@ -51,7 +51,7 @@ import com.foxnet.rmi.binding.LocalBinding;
 public abstract class Registry<B extends LocalBinding> implements Iterable<B> {
 
 	// Used to create indeces
-	private int nextId;
+	private long nextId = 0;
 
 	// Used to log infos, warnings or messages
 	protected final Logger logger = Logger.getLogger(getClass().getName());
@@ -82,20 +82,17 @@ public abstract class Registry<B extends LocalBinding> implements Iterable<B> {
 		return false;
 	}
 
-	protected int findNextId() {
-		while (getIndexMap().containsKey(nextId)) {
-			nextId++;
-		}
+	protected long getNextId() {
 		return nextId++;
 	}
 
-	protected abstract Map<Integer, B> getIndexMap();
+	protected abstract Map<Long, B> getIndexMap();
 
-	public abstract B unbind(int id);
+	public abstract B unbind(long id);
 
 	public abstract void unbindAll();
 
-	public synchronized B get(int id) {
+	public synchronized B get(long id) {
 		return getIndexMap().get(id);
 	}
 

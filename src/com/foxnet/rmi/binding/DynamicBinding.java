@@ -55,7 +55,7 @@ public final class DynamicBinding extends LocalBinding {
 	 * @param interfaces
 	 *            The interface classes of this binding.
 	 */
-	public DynamicBinding(int id, Remote target, Class<?>[] interfaces) {
+	public DynamicBinding(long id, Remote target, Class<?>[] interfaces) {
 		super(id, target, interfaces);
 	}
 
@@ -68,7 +68,7 @@ public final class DynamicBinding extends LocalBinding {
 	 * @param target
 	 *            The target of this binding.
 	 */
-	public DynamicBinding(int id, Remote target) {
+	public DynamicBinding(long id, Remote target) {
 		super(id, target);
 	}
 }

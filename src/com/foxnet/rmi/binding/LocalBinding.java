@@ -244,7 +244,7 @@ public abstract class LocalBinding extends Binding {
 	 * @param target
 	 *            The target of this binding.
 	 */
-	public LocalBinding(int id, Remote target) {
+	public LocalBinding(long id, Remote target) {
 		this(id, target, getRemoteInterfaces(target));
 	}
 
@@ -258,7 +258,7 @@ public abstract class LocalBinding extends Binding {
 	 * @param interfaces
 	 *            The interface classes of the target.
 	 */
-	public LocalBinding(int id, Remote target, Class<?>[] interfaces) {
+	public LocalBinding(long id, Remote target, Class<?>[] interfaces) {
 		super(id, interfaces);
 
 		// Check all given interface classes

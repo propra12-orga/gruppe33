@@ -46,7 +46,7 @@ public class RemoteObject implements Serializable {
 	private static final long serialVersionUID = 1L;
 
 	// The id of this remote object
-	private final int id;
+	private final long id;
 
 	// The inteface classes of this remote object
 	private final Class<?>[] interfaces;
@@ -69,7 +69,7 @@ public class RemoteObject implements Serializable {
 	 * @param interfaces
 	 *            The interface classes of this remote object.
 	 */
-	public RemoteObject(int id, Class<?>[] interfaces) {
+	public RemoteObject(long id, Class<?>[] interfaces) {
 		this.id = id;
 		this.interfaces = interfaces;
 	}
@@ -77,7 +77,7 @@ public class RemoteObject implements Serializable {
 	/**
 	 * @return the id.
 	 */
-	public int getId() {
+	public long getId() {
 		return id;
 	}
 

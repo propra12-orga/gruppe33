@@ -711,7 +711,7 @@ public final class Dispatcher extends SimpleChannelHandler implements
 	private void handleInvocation(int type, final Long requestId,
 			final int messageSize) throws Exception {
 
-		int id = input.readInt();
+		long id = input.readLong();
 		int methodId = input.readUnsignedShort();
 		final Object[] args = (Object[]) input.readObject();
 		boolean dynamic = type == DYNAMIC_INVOCATION;
@@ -938,7 +938,7 @@ public final class Dispatcher extends SimpleChannelHandler implements
 						dynamic));
 	}
 
-	private void invokeVoidMethod(boolean dynamic, int id, int methodId,
+	private void invokeVoidMethod(boolean dynamic, long id, int methodId,
 			Object[] args) throws Exception {
 
 		try {
@@ -948,7 +948,7 @@ public final class Dispatcher extends SimpleChannelHandler implements
 					+ (dynamic ? DYNAMIC_INVOCATION : STATIC_INVOCATION));
 
 			// Write invocation infos
-			output.writeInt(id);
+			output.writeLong(id);
 			output.writeShort(methodId);
 			output.writeObject(args);
 
@@ -959,7 +959,7 @@ public final class Dispatcher extends SimpleChannelHandler implements
 		}
 	}
 
-	private Request invokeMethod(boolean dynamic, int id, int methodId,
+	private Request invokeMethod(boolean dynamic, long id, int methodId,
 			Object[] args) throws Exception {
 
 		// Add a new request
@@ -973,7 +973,7 @@ public final class Dispatcher extends SimpleChannelHandler implements
 			output.writeLong(request.getId());
 
 			// Write invocation infos
-			output.writeInt(id);
+			output.writeLong(id);
 			output.writeShort(methodId);
 			output.writeObject(args);
 

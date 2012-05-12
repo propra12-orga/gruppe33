@@ -60,7 +60,7 @@ public final class StaticBinding extends LocalBinding {
 	 * @param interfaces
 	 *            The interface classes of this binding.
 	 */
-	public StaticBinding(int id, String name, Remote target,
+	public StaticBinding(long id, String name, Remote target,
 			Class<?>[] interfaces) {
 		super(id, target, interfaces);
 		this.name = name;
@@ -77,7 +77,7 @@ public final class StaticBinding extends LocalBinding {
 	 * @param target
 	 *            The target of this binding.
 	 */
-	public StaticBinding(int id, String name, Remote target) {
+	public StaticBinding(long id, String name, Remote target) {
 		super(id, target);
 		this.name = name;
 	}

@@ -64,7 +64,7 @@ public final class RemoteBinding extends Binding {
 	 * @param dynamic
 	 *            The dynamic flag.
 	 */
-	public RemoteBinding(int id, Class<?>[] interfaces, boolean dynamic) {
+	public RemoteBinding(long id, Class<?>[] interfaces, boolean dynamic) {
 		super(id, interfaces);
 
 		// Save

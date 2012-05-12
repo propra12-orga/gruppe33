@@ -45,7 +45,7 @@ import com.foxnet.rmi.binding.RemoteObject;
 public final class DynamicRegistry extends Registry<DynamicBinding> {
 
 	// Used to store the ids
-	private final Map<Integer, DynamicBinding> ids = new HashMap<Integer, DynamicBinding>();
+	private final Map<Long, DynamicBinding> ids = new HashMap<Long, DynamicBinding>();
 
 	// Used to store the dynamic objects
 	private final Map<Remote, DynamicBinding> objects = new IdentityHashMap<Remote, DynamicBinding>();
@@ -56,7 +56,7 @@ public final class DynamicRegistry extends Registry<DynamicBinding> {
 	 * @see com.foxnet.rmi.binding.registry.AbstractRegistry#getIndexMap()
 	 */
 	@Override
-	protected Map<Integer, DynamicBinding> getIndexMap() {
+	protected Map<Long, DynamicBinding> getIndexMap() {
 		return ids;
 	}
 
@@ -80,10 +80,10 @@ public final class DynamicRegistry extends Registry<DynamicBinding> {
 	/*
 	 * (non-Javadoc)
 	 * 
-	 * @see com.foxnet.rmi.registry.Registry#unbind(int)
+	 * @see com.foxnet.rmi.registry.Registry#unbind(long)
 	 */
 	@Override
-	public synchronized DynamicBinding unbind(int id) {
+	public synchronized DynamicBinding unbind(long id) {
 		// Remove from id map
 		DynamicBinding db = ids.remove(id);
 
@@ -120,11 +120,8 @@ public final class DynamicRegistry extends Registry<DynamicBinding> {
 			return target;
 		}
 
-		// Try to find binding
-		DynamicBinding db = bindIfAbsent((Remote) target);
-
 		// Get remote binding
-		return new RemoteObject(db.getId(), db.getInterfaces());
+		return new RemoteObject(bindIfAbsent((Remote) target));
 	}
 
 	public synchronized Object[] replaceRemoteObjects(Object[] arguments) {
@@ -152,7 +149,7 @@ public final class DynamicRegistry extends Registry<DynamicBinding> {
 		}
 
 		// Create new temp object binding
-		binding = new DynamicBinding(findNextId(), (Remote) target);
+		binding = new DynamicBinding(getNextId(), (Remote) target);
 
 		// Put into maps
 		objects.put(target, binding);
