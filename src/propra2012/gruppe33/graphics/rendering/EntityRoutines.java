@@ -3,7 +3,6 @@ package propra2012.gruppe33.graphics.rendering;
 import propra2012.gruppe33.graphics.rendering.scenegraph.Entity;
 import propra2012.gruppe33.graphics.rendering.scenegraph.animation.AnimationController;
 import propra2012.gruppe33.graphics.rendering.scenegraph.grid.Grid;
-import propra2012.gruppe33.graphics.rendering.scenegraph.grid.GridController;
 import propra2012.gruppe33.graphics.rendering.scenegraph.timeout.TimeoutController;
 import propra2012.gruppe33.graphics.sprite.AnimationMap;
 import propra2012.gruppe33.graphics.sprite.Sprite;
@@ -43,48 +42,48 @@ public final class EntityRoutines {
 	}
 
 	/**
-	 * Creates a new local player using the given animation map and the coords.
+	 * Creates a new field entity using the given animation map and the coords.
 	 * 
 	 * @param name
-	 *            The name of the new local player.
-	 * @param charAnimation
-	 *            The character animation.
+	 *            The name of the new field entity.
+	 * @param animationMap
+	 *            The animation map of the field entity.
 	 * @param grid
 	 *            The grid.
 	 * @param sx
 	 *            The spawn x.
 	 * @param sy
 	 *            The spawn y.
-	 * @return the player.
+	 * @return the field entity.
 	 */
-	public static Entity createLocalPlayer(String name,
-			AnimationMap charAnimation, Grid grid, int sx, int sy) {
+	public static Entity createFieldEntity(String name,
+			AnimationMap animationMap, Grid grid, int sx, int sy) {
 
 		// Check the coords
 		if (!grid.validate(sx, sy)) {
 			throw new IllegalArgumentException("sx and/or sy out of range");
 		}
 
-		// Create the player entity
-		Entity player = new Entity(name);
+		// Create the field entity
+		Entity field = new Entity(name);
 
-		// Create a new animation controller
-		final AnimationController animation = new AnimationController(
-				charAnimation);
+		// Put animation controller if not null
+		if (animationMap != null) {
+			// Create a new animation controller
+			AnimationController animation = new AnimationController(
+					animationMap);
 
-		// Attach animation
-		player.putController(animation);
-
-		// Attach new grid controller
-		player.putController(new GridController());
+			// Attach animation
+			field.putController(animation);
+		}
 
 		// Adjust scale the grid size
-		player.getScale().set(grid.getRasterWidth(), grid.getRasterHeight());
+		field.getScale().set(grid.getRasterWidth(), grid.getRasterHeight());
 
 		// Set position
-		player.getPosition().set(grid.vectorAt(sx, sy));
+		field.getPosition().set(grid.vectorAt(sx, sy));
 
-		return player;
+		return field;
 	}
 
 	// Should not be instantiated

@@ -5,16 +5,16 @@ import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.IOException;
-import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.ObjectInputStream;
 import java.io.Serializable;
-import java.security.MessageDigest;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Set;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipFile;
+
+import propra2012.gruppe33.io.IoRoutines;
 
 /**
  * This class represents a bundle of assets which are located in a single
@@ -38,11 +38,6 @@ public final class AssetBundle implements Serializable {
 	 * This implementation interpretates "include.txt" as an include file.
 	 */
 	public static final String INCLUDE_FILE_NAME = "include.txt";
-
-	/*
-	 * Used for faster byte to hex conversion.
-	 */
-	private static final String HEX_RANGE = "0123456789ABCDEF";
 
 	/**
 	 * This method takes an archive and a set of files and collects all
@@ -120,81 +115,6 @@ public final class AssetBundle implements Serializable {
 	}
 
 	/**
-	 * Simple method to convert binary data to hex.
-	 * 
-	 * @param data
-	 *            The binary data you want to represent as hex.
-	 * @return the hex string.
-	 */
-	public static String toHex(byte[] data) {
-		if (data == null) {
-			throw new NullPointerException("data");
-		}
-
-		// Use a fast string builder for this purpose
-		StringBuilder stringBuilder = new StringBuilder(2 * data.length);
-
-		// Iterate over all bytes
-		for (byte b : data) {
-			// Bit shifting and &-operator do all the magic here...
-			stringBuilder.append(HEX_RANGE.charAt((b & 0xF0) >> 4)).append(
-					HEX_RANGE.charAt((b & 0x0F)));
-		}
-
-		// Represent the final string
-		return stringBuilder.toString();
-	}
-
-	/**
-	 * Calculates the string hash for a given input stream.
-	 * 
-	 * @param inputStream
-	 *            The input stream.
-	 * @return the hex string.
-	 * @throws Exception
-	 *             If an exception occurs.
-	 */
-	public static String calcHexHash(InputStream inputStream) throws Exception {
-		return toHex(calcHash(inputStream));
-	}
-
-	/**
-	 * Calculates the binary hash for a given input stream.
-	 * 
-	 * @param inputStream
-	 *            The input stream.
-	 * @return the binary hash.
-	 * @throws Exception
-	 *             If an exception occurs.
-	 */
-	public static byte[] calcHash(InputStream inputStream) throws Exception {
-		if (inputStream == null) {
-			throw new NullPointerException("inputStream");
-		}
-
-		try {
-			// Use SHA-1 for hashing
-			MessageDigest digest = MessageDigest.getInstance("SHA-1");
-
-			// 0xFFFF should increase calculation
-			byte[] buffer = new byte[0xFFFF];
-
-			// Tmp
-			int read;
-
-			// Read & update as long there are remaining bytes
-			while ((read = inputStream.read(buffer)) != -1) {
-				digest.update(buffer, 0, read);
-			}
-
-			// Return the hash
-			return digest.digest();
-		} finally {
-			inputStream.close();
-		}
-	}
-
-	/**
 	 * Used for {@link AssetBundle#validate()}.
 	 * 
 	 * @author Christopher Probst
@@ -251,7 +171,7 @@ public final class AssetBundle implements Serializable {
 		}
 
 		// Calc the archive hash
-		archiveHash = calcHexHash(new FileInputStream(archive));
+		archiveHash = IoRoutines.calcHexHash(new FileInputStream(archive));
 
 		// Save the archive
 		this.archive = archive;
@@ -270,8 +190,8 @@ public final class AssetBundle implements Serializable {
 
 		try {
 			// If the hash equals the calculated hash the archive is ok
-			return calcHexHash(new FileInputStream(archive))
-					.equals(archiveHash) ? ValidationResult.ArchiveOk
+			return IoRoutines.calcHexHash(new FileInputStream(archive)).equals(
+					archiveHash) ? ValidationResult.ArchiveOk
 					: ValidationResult.InvalidArchiveHash;
 
 		} catch (FileNotFoundException e) {

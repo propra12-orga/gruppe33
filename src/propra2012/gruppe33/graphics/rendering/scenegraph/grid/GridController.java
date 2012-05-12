@@ -28,8 +28,14 @@ public final class GridController extends EntityControllerAdapter {
 	 */
 	private static final long serialVersionUID = 1L;
 
+	/**
+	 * The "equals"-threshold.
+	 */
 	public static final float THRESHOLD = 0.01f;
 
+	/**
+	 * The run animation prefix when using animation controllers.
+	 */
 	public static final String RUNNING_ANIMATION = "run_";
 
 	/*
@@ -51,6 +57,9 @@ public final class GridController extends EntityControllerAdapter {
 
 	// Stores the last direction (useful for sprite animation)
 	private Direction direction = Direction.North;
+
+	// Stores the last direction of the grid controller
+	private Direction last = null;
 
 	/**
 	 * @return the last direction of the entity.
@@ -374,6 +383,4 @@ public final class GridController extends EntityControllerAdapter {
 			}
 		}
 	}
-
-	private Direction last = null;
 }

@@ -15,6 +15,7 @@ import propra2012.gruppe33.graphics.rendering.EntityRoutines;
 import propra2012.gruppe33.graphics.rendering.scenegraph.Entity;
 import propra2012.gruppe33.graphics.rendering.scenegraph.EntityControllerAdapter;
 import propra2012.gruppe33.graphics.rendering.scenegraph.grid.Grid;
+import propra2012.gruppe33.graphics.rendering.scenegraph.grid.GridController;
 import propra2012.gruppe33.graphics.rendering.scenegraph.math.Vector2f;
 import propra2012.gruppe33.graphics.sprite.AnimationRoutines;
 import propra2012.gruppe33.graphics.sprite.Sprite;
@@ -56,9 +57,11 @@ public class PreMilestoneApp {
 				Transparency.OPAQUE, Color.white);
 
 		// Create a new local player
-		Entity player = EntityRoutines.createLocalPlayer("Kr0e",
+		Entity player = EntityRoutines.createFieldEntity("Kr0e",
 				AnimationRoutines.createKnight(grid.getAssetManager(), 20),
 				grid, 1, 1);
+		
+		player.putController(new GridController());
 
 		// Load sprite
 		Sprite boom = new Sprite(grid.getAssetManager().loadImage(
