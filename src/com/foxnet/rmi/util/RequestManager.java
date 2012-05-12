@@ -29,69 +29,31 @@
  * NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
-package com.foxnet.rmi.kernel;
+package com.foxnet.rmi.util;
 
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
-
-import com.foxnet.rmi.Future;
-import com.foxnet.rmi.FutureCallback;
+import java.util.concurrent.atomic.AtomicLong;
 
 /**
  * @author Christopher Probst
  */
-final class RequestManager {
+public final class RequestManager {
 
-	public final class Request extends Future {
-
-		// Used to identify the request
-		private volatile int id;
-
-		// Used to store the initial request
-		private final Object request;
-
-		private void setId(int id) {
-			this.id = id;
-		}
-
-		private Request(Object request) {
-			this.request = request;
-
-			// Remove this request when completed
-			add(new FutureCallback() {
-
-				@Override
-				public void completed(Future future) throws Exception {
-					// Remove this request
-					requests.remove(id);
-				}
-			});
-		}
-
-		public RequestManager getRequestStorage() {
-			return RequestManager.this;
-		}
-
-		public Object getRequest() {
-			return request;
-		}
-
-		public int getId() {
-			return id;
-		}
-	}
+	// Used to generate ids
+	private final AtomicLong nextId = new AtomicLong(0);
 
 	// Used to store the requests
-	private final ConcurrentMap<Integer, Request> requests = new ConcurrentHashMap<Integer, Request>();
+	final ConcurrentMap<Long, Request> requests = new ConcurrentHashMap<Long, Request>();
 
 	public Collection<Request> getRequests() {
 		return requests.values();
 	}
 
-	public Request getRequest(int id) {
+	public Request getRequest(long id) {
 		// Try to get request
 		return requests.get(id);
 	}
@@ -107,39 +69,17 @@ final class RequestManager {
 	}
 
 	public Request addRequest() {
-
-		// Create request object
-		Request tmpRequest = new Request(null);
-
-		// Get system hash code
-		int hash = System.identityHashCode(tmpRequest);
-
-		while (requests.putIfAbsent(hash, tmpRequest) != null) {
-			// Increase hash
-			hash++;
-		}
-
-		// Finally found a valid hash
-		tmpRequest.setId(hash);
-
-		return tmpRequest;
+		return addRequest(null);
 	}
 
 	public Request addRequest(Object request) {
 
-		// Get system hash code
-		int hash = System.identityHashCode(request);
-
 		// Create request object
-		Request tmpRequest = new Request(request);
+		Request tmpRequest = new Request(this, nextId.getAndIncrement(),
+				request);
 
-		while (requests.putIfAbsent(hash, tmpRequest) != null) {
-			// Increase hash
-			hash++;
-		}
-
-		// Finally found a valid hash
-		tmpRequest.setId(hash);
+		// Add
+		requests.put(tmpRequest.getId(), tmpRequest);
 
 		return tmpRequest;
 	}

@@ -35,7 +35,6 @@ import java.io.IOException;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
 import java.io.StreamCorruptedException;
-import java.lang.ref.SoftReference;
 import java.lang.reflect.InvocationHandler;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
@@ -43,8 +42,6 @@ import java.lang.reflect.Proxy;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
-import java.util.Queue;
-import java.util.concurrent.ConcurrentLinkedQueue;
 import java.util.concurrent.Executor;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.locks.Condition;
@@ -56,7 +53,6 @@ import org.jboss.netty.buffer.ChannelBuffer;
 import org.jboss.netty.buffer.ChannelBufferInputStream;
 import org.jboss.netty.buffer.ChannelBufferOutputStream;
 import org.jboss.netty.buffer.ChannelBuffers;
-import org.jboss.netty.buffer.HeapChannelBufferFactory;
 import org.jboss.netty.channel.Channel;
 import org.jboss.netty.channel.ChannelFuture;
 import org.jboss.netty.channel.ChannelFutureListener;
@@ -79,11 +75,12 @@ import com.foxnet.rmi.binding.LocalBinding.OrderedExecutionQueue;
 import com.foxnet.rmi.binding.RemoteBinding;
 import com.foxnet.rmi.binding.RemoteObject;
 import com.foxnet.rmi.binding.StaticBinding;
-import com.foxnet.rmi.kernel.RequestManager.Request;
 import com.foxnet.rmi.registry.DynamicRegistry;
 import com.foxnet.rmi.registry.StaticRegistry;
 import com.foxnet.rmi.util.ChannelMemoryLimiter;
 import com.foxnet.rmi.util.ChannelMemoryLimiter.ChannelMemory;
+import com.foxnet.rmi.util.Request;
+import com.foxnet.rmi.util.RequestManager;
 import com.foxnet.rmi.util.WrapperInputStream;
 import com.foxnet.rmi.util.WrapperOutputStream;
 
@@ -133,46 +130,7 @@ public final class Dispatcher extends SimpleChannelHandler implements
 	 */
 	private static final int LIST = 0x3;
 
-	// Used to reuse already allocated buffers
-	private static final Queue<SoftReference<ChannelBufferOutputStream>> CIRCULAR_POOL = new ConcurrentLinkedQueue<SoftReference<ChannelBufferOutputStream>>();
-
-	private static ChannelBufferOutputStream acquireOutputStream() {
-
-		// Poll the oldest ref
-		SoftReference<ChannelBufferOutputStream> ref = CIRCULAR_POOL.poll();
-
-		// Tmp
-		ChannelBufferOutputStream cbos;
-
-		if (ref == null || (cbos = ref.get()) == null) {
-			ChannelBuffer cb = ChannelBuffers.dynamicBuffer(
-					INITIAL_OUTPUT_BUFFER_CAPACITY,
-					HeapChannelBufferFactory.getInstance());
-
-			// We always skip the first 4 bytes
-			cb.writerIndex(4);
-
-			// Create new channel buffer output stream
-			cbos = new ChannelBufferOutputStream(cb);
-		} else {
-			// Reset the reader index
-			cbos.buffer().readerIndex(0);
-
-			// We always skip the first 4 bytes
-			cbos.buffer().writerIndex(4);
-		}
-
-		return cbos;
-	}
-
-	private static void releaseOutputStream(ChannelBufferOutputStream cbos) {
-		if (cbos == null) {
-			throw new NullPointerException("cbos");
-		}
-
-		// Queue a new soft reference to the channel buffer output stream
-		CIRCULAR_POOL.offer(new SoftReference<ChannelBufferOutputStream>(cbos));
-	}
+	private static final PooledOutputStreams POOLED_OUTPUT_STREAMS = new PooledOutputStreams();
 
 	/**
 	 * The timeout of an invocation. -1 means no timeout.
@@ -381,7 +339,8 @@ public final class Dispatcher extends SimpleChannelHandler implements
 	};
 
 	private final WrapperOutputStream<ChannelBufferOutputStream> wrappedOutput = new WrapperOutputStream<ChannelBufferOutputStream>(
-			acquireOutputStream());
+			POOLED_OUTPUT_STREAMS
+					.acquireOutputStream(INITIAL_OUTPUT_BUFFER_CAPACITY));
 
 	// Used to write data (Acquire the output stream directly)
 	private final ObjectOutputStream output = new ObjectOutputStream(
@@ -403,7 +362,7 @@ public final class Dispatcher extends SimpleChannelHandler implements
 
 			// At first write request infos
 			output.writeByte(REQUEST + LOOKUP);
-			output.writeInt(request.getId());
+			output.writeLong(request.getId());
 			output.writeObject(target);
 
 			// Always flush when ready!
@@ -685,19 +644,18 @@ public final class Dispatcher extends SimpleChannelHandler implements
 
 			switch (type) {
 			case REQUEST_FAILED:
-				int id = input.readInt();
-				requestManager.getRequest(id).failed(
+				requestManager.getRequest(input.readLong()).failed(
 						(Throwable) input.readObject());
 				break;
 			case REQUEST_SUCCEEDED:
-				id = input.readInt();
-				requestManager.getRequest(id).completed(input.readObject());
+				requestManager.getRequest(input.readLong()).completed(
+						input.readObject());
 				break;
 			default:
-				Integer requestId;
+				Long requestId;
 
 				if (type < MESSAGE) {
-					requestId = input.readInt();
+					requestId = input.readLong();
 				} else {
 					requestId = null;
 					type -= MESSAGE;
@@ -750,7 +708,7 @@ public final class Dispatcher extends SimpleChannelHandler implements
 		}
 	}
 
-	private void handleInvocation(int type, final Integer requestId,
+	private void handleInvocation(int type, final Long requestId,
 			final int messageSize) throws Exception {
 
 		int id = input.readInt();
@@ -886,7 +844,7 @@ public final class Dispatcher extends SimpleChannelHandler implements
 		}
 	}
 
-	private void handleLookup(int requestId) throws Exception {
+	private void handleLookup(long requestId) throws Exception {
 		try {
 			String name;
 
@@ -911,7 +869,7 @@ public final class Dispatcher extends SimpleChannelHandler implements
 				outputLock.lock();
 				// At first write request infos
 				output.writeByte(REQUEST_SUCCEEDED);
-				output.writeInt(requestId);
+				output.writeLong(requestId);
 
 				// Write invocation infos
 				output.writeObject(new RemoteObject(sb));
@@ -926,7 +884,7 @@ public final class Dispatcher extends SimpleChannelHandler implements
 				outputLock.lock();
 				// At first write request infos
 				output.writeByte(REQUEST_FAILED);
-				output.writeInt(requestId);
+				output.writeLong(requestId);
 
 				// Write invocation infos
 				output.writeObject(t);
@@ -939,13 +897,13 @@ public final class Dispatcher extends SimpleChannelHandler implements
 		}
 	}
 
-	private void handleList(int requestId) throws Exception {
+	private void handleList(long requestId) throws Exception {
 		// Send response
 		try {
 			outputLock.lock();
 			// At first write request infos
 			output.writeByte(REQUEST_SUCCEEDED);
-			output.writeInt(requestId);
+			output.writeLong(requestId);
 
 			// Write invocation infos
 			output.writeObject(getStaticRegistry().getNames());
@@ -1012,7 +970,7 @@ public final class Dispatcher extends SimpleChannelHandler implements
 			// At first write request infos
 			output.writeByte(REQUEST
 					+ (dynamic ? DYNAMIC_INVOCATION : STATIC_INVOCATION));
-			output.writeInt(request.getId());
+			output.writeLong(request.getId());
 
 			// Write invocation infos
 			output.writeInt(id);
@@ -1031,13 +989,13 @@ public final class Dispatcher extends SimpleChannelHandler implements
 		return request;
 	}
 
-	private void throwCause(int requestId, Throwable cause) throws Exception {
+	private void throwCause(long requestId, Throwable cause) throws Exception {
 		try {
 			outputLock.lock();
 
 			// At first write request infos
 			output.writeByte(REQUEST_FAILED);
-			output.writeInt(requestId);
+			output.writeLong(requestId);
 
 			// Write invocation infos
 			output.writeObject(cause);
@@ -1049,13 +1007,13 @@ public final class Dispatcher extends SimpleChannelHandler implements
 		}
 	}
 
-	private void returnValue(int requestId, Object value) throws Exception {
+	private void returnValue(long requestId, Object value) throws Exception {
 		try {
 			outputLock.lock();
 
 			// At first write request infos
 			output.writeByte(REQUEST_SUCCEEDED);
-			output.writeInt(requestId);
+			output.writeLong(requestId);
 
 			// Write invocation infos
 			output.writeObject(value);
@@ -1086,7 +1044,8 @@ public final class Dispatcher extends SimpleChannelHandler implements
 
 		// Get and set output stream
 		final ChannelBufferOutputStream cbos = wrappedOutput
-				.setOutput(acquireOutputStream());
+				.setOutput(POOLED_OUTPUT_STREAMS
+						.acquireOutputStream(INITIAL_OUTPUT_BUFFER_CAPACITY));
 
 		// Write length
 		cbos.buffer().setInt(0, cbos.buffer().readableBytes() - 4);
@@ -1099,7 +1058,7 @@ public final class Dispatcher extends SimpleChannelHandler implements
 					public void operationComplete(ChannelFuture future)
 							throws Exception {
 						// Release the output stream
-						releaseOutputStream(cbos);
+						POOLED_OUTPUT_STREAMS.releaseOutputStream(cbos);
 					}
 				});
 	}
@@ -1339,7 +1298,7 @@ public final class Dispatcher extends SimpleChannelHandler implements
 			outputLock.lock();
 			// At first write request infos
 			output.writeByte(REQUEST + LIST);
-			output.writeInt(request.getId());
+			output.writeLong(request.getId());
 			// Always flush when ready!
 			flushAndWrite();
 		} catch (Exception e) {
