@@ -29,11 +29,12 @@
  * NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
-package com.foxnet.rmi.impl;
+package com.foxnet.rmi.kernel;
 
 import java.io.IOException;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
+import java.io.StreamCorruptedException;
 import java.lang.ref.SoftReference;
 import java.lang.reflect.InvocationHandler;
 import java.lang.reflect.InvocationTargetException;
@@ -69,6 +70,8 @@ import org.jboss.netty.channel.socket.SocketChannelConfig;
 import com.foxnet.rmi.AsyncVoid;
 import com.foxnet.rmi.Connection;
 import com.foxnet.rmi.ConnectionManager;
+import com.foxnet.rmi.Future;
+import com.foxnet.rmi.FutureCallback;
 import com.foxnet.rmi.Invocation;
 import com.foxnet.rmi.Invoker;
 import com.foxnet.rmi.binding.LocalBinding;
@@ -76,11 +79,13 @@ import com.foxnet.rmi.binding.LocalBinding.OrderedExecutionQueue;
 import com.foxnet.rmi.binding.RemoteBinding;
 import com.foxnet.rmi.binding.RemoteObject;
 import com.foxnet.rmi.binding.StaticBinding;
-import com.foxnet.rmi.impl.ChannelMemoryLimiter.ChannelMemory;
-import com.foxnet.rmi.impl.RequestManager.Request;
-import com.foxnet.rmi.impl.RequestManager.RequestCallback;
+import com.foxnet.rmi.kernel.RequestManager.Request;
 import com.foxnet.rmi.registry.DynamicRegistry;
 import com.foxnet.rmi.registry.StaticRegistry;
+import com.foxnet.rmi.util.ChannelMemoryLimiter;
+import com.foxnet.rmi.util.ChannelMemoryLimiter.ChannelMemory;
+import com.foxnet.rmi.util.WrapperInputStream;
+import com.foxnet.rmi.util.WrapperOutputStream;
 
 /**
  * @author Christopher Probst
@@ -365,13 +370,26 @@ public final class Dispatcher extends SimpleChannelHandler implements
 	// Used to suspend & resume this dispatcher
 	private volatile ChannelMemory channelMemory;
 
-	// Used to read data
-	private ObjectInputStream input;
+	private final WrapperInputStream<ChannelBufferInputStream> wrappedInput = new WrapperInputStream<ChannelBufferInputStream>();
 
-	private ChannelBufferOutputStream chOutput = acquireOutputStream();
+	// Used to read data
+	private final ObjectInputStream input = new ObjectInputStream(wrappedInput) {
+		protected void readStreamHeader() throws IOException,
+				StreamCorruptedException {
+			// Ignore header...
+		}
+	};
+
+	private final WrapperOutputStream<ChannelBufferOutputStream> wrappedOutput = new WrapperOutputStream<ChannelBufferOutputStream>(
+			acquireOutputStream());
 
 	// Used to write data (Acquire the output stream directly)
-	private ObjectOutputStream output = new ObjectOutputStream(chOutput);
+	private final ObjectOutputStream output = new ObjectOutputStream(
+			wrappedOutput) {
+		protected void writeStreamHeader() throws IOException {
+			// Ignore header...
+		}
+	};
 
 	private final Lock outputLock = new ReentrantLock();
 	private final Condition writable = outputLock.newCondition();
@@ -392,7 +410,7 @@ public final class Dispatcher extends SimpleChannelHandler implements
 			flushAndWrite();
 		} catch (Exception e) {
 			// Set cause
-			request.setCause(e);
+			request.failed(e);
 		} finally {
 			outputLock.unlock();
 		}
@@ -414,9 +432,11 @@ public final class Dispatcher extends SimpleChannelHandler implements
 
 		// If method name is wrong...
 		if (method == null) {
-			return Invocations.failedInvocation(invoker, methodName, args,
-					new IllegalArgumentException("Method with " + "name \""
-							+ methodName + "\" does " + "not exist."));
+			// Create and return failed invocation
+			Invocation invocation = new Invocation(invoker, methodName, args);
+			invocation.failed(new IllegalArgumentException("Method with "
+					+ "name \"" + methodName + "\" does " + "not exist."));
+			return invocation;
 		}
 
 		/*
@@ -446,17 +466,21 @@ public final class Dispatcher extends SimpleChannelHandler implements
 						remoteBinding.getId(),
 						remoteBinding.getMethodId(method), args);
 			} catch (Exception e) {
-				return Invocations.failedInvocation(invoker, methodName, args,
-						e);
+				// Create and return failed invocation
+				Invocation invocation = new Invocation(invoker, methodName,
+						args);
+				invocation.failed(e);
+				return invocation;
 			}
 
-			// Return a new succeeded invocation
-			return Invocations.succeededInvocation(invoker, methodName, args,
-					null);
+			// Return a new completed invocation
+			Invocation invocation = new Invocation(invoker, methodName, args);
+			invocation.completed(null);
+			return invocation;
 		} else {
 			// Create a default invocation
-			final Invocation invocation = Invocations.defaultInvocation(
-					invoker, methodName, args);
+			final Invocation invocation = new Invocation(invoker, methodName,
+					args);
 
 			/*
 			 * Now send the request synchronously to the remote side.
@@ -467,25 +491,24 @@ public final class Dispatcher extends SimpleChannelHandler implements
 						remoteBinding.getId(),
 						remoteBinding.getMethodId(method), args);
 			} catch (Exception e) {
-				return Invocations.failedInvocation(invoker, methodName, args,
-						e);
+				invocation.failed(e);
+				return invocation;
 			}
 
 			// Wait for response asynchronously
-			request.queue(new RequestCallback() {
+			request.add(new FutureCallback() {
 
 				@Override
-				public void requestCompleted(final Request request)
-						throws Exception {
+				public void completed(final Future future) throws Exception {
 					// Execute the notification in an executor
 					getMethodInvocator().execute(new Runnable() {
 
 						@Override
 						public void run() {
-							if (request.isSuccessful()) {
-								invocation.setResponse(request.getResponse());
+							if (future.isSuccessful()) {
+								invocation.completed(future.getAttachment());
 							} else {
-								invocation.setCause(request.getCause());
+								invocation.failed(future.getCause());
 							}
 						}
 					});
@@ -538,7 +561,7 @@ public final class Dispatcher extends SimpleChannelHandler implements
 				/*
 				 * Replace reference and/or return response
 				 */
-				return replaceReference(request.getResponse());
+				return replaceReference(request.getAttachment());
 			} else {
 
 				/*
@@ -655,8 +678,7 @@ public final class Dispatcher extends SimpleChannelHandler implements
 		 */
 		try {
 			// Set source
-			input = new ObjectInputStream(new ChannelBufferInputStream(cb,
-					frameSize));
+			wrappedInput.setInput(new ChannelBufferInputStream(cb, frameSize));
 
 			// Read byte!
 			int type = input.readUnsignedByte();
@@ -664,12 +686,12 @@ public final class Dispatcher extends SimpleChannelHandler implements
 			switch (type) {
 			case REQUEST_FAILED:
 				int id = input.readInt();
-				requestManager.getRequest(id).setCause(
+				requestManager.getRequest(id).failed(
 						(Throwable) input.readObject());
 				break;
 			case REQUEST_SUCCEEDED:
 				id = input.readInt();
-				requestManager.getRequest(id).setResponse(input.readObject());
+				requestManager.getRequest(id).completed(input.readObject());
 				break;
 			default:
 				Integer requestId;
@@ -704,7 +726,7 @@ public final class Dispatcher extends SimpleChannelHandler implements
 			close();
 		} finally {
 			// Help GC!
-			input = null;
+			wrappedInput.setInput(null);
 		}
 	}
 
@@ -1001,7 +1023,7 @@ public final class Dispatcher extends SimpleChannelHandler implements
 			flushAndWrite();
 		} catch (Exception e) {
 			// Set cause
-			request.setCause(e);
+			request.failed(e);
 		} finally {
 			outputLock.unlock();
 		}
@@ -1063,9 +1085,8 @@ public final class Dispatcher extends SimpleChannelHandler implements
 		}
 
 		// Get and set output stream
-		final ChannelBufferOutputStream cbos = chOutput;
-		chOutput = acquireOutputStream();
-		output = new ObjectOutputStream(chOutput);
+		final ChannelBufferOutputStream cbos = wrappedOutput
+				.setOutput(acquireOutputStream());
 
 		// Write length
 		cbos.buffer().setInt(0, cbos.buffer().readableBytes() - 4);
@@ -1099,7 +1120,7 @@ public final class Dispatcher extends SimpleChannelHandler implements
 
 		// Used to limit the channel memory usage locally
 		localChannelMemoryLimiter = new ChannelMemoryLimiter(
-				manager.getMaxLocalChannelMemory());
+				manager.getMemoryUsage().localMemory);
 
 		// Save static registry
 		this.staticRegistry = staticRegistry;
@@ -1323,7 +1344,7 @@ public final class Dispatcher extends SimpleChannelHandler implements
 			flushAndWrite();
 		} catch (Exception e) {
 			// Set cause
-			request.setCause(e);
+			request.failed(e);
 		} finally {
 			outputLock.unlock();
 		}
@@ -1332,7 +1353,7 @@ public final class Dispatcher extends SimpleChannelHandler implements
 		if (request.await(LIST_REQUEST_TIMEOUT, LIST_REQUEST_TIME_UNIT)) {
 
 			// Get response!
-			return (String[]) request.getResponse();
+			return (String[]) request.getAttachment();
 		} else {
 			throw new IOException("List failed. Reason: "
 					+ request.getCause().getMessage(), request.getCause());
@@ -1358,7 +1379,7 @@ public final class Dispatcher extends SimpleChannelHandler implements
 	public Invoker invoker(String target) throws IOException {
 		// Create new static invoker
 		return new DefaultInvoker(target, (RemoteObject) lookupAndWait(target)
-				.getResponse(), false);
+				.getAttachment(), false);
 	}
 
 	/*
@@ -1369,8 +1390,8 @@ public final class Dispatcher extends SimpleChannelHandler implements
 	@Override
 	public Object lookup(String target) throws IOException {
 		// Create new static proxy
-		return createProxy((RemoteObject) lookupAndWait(target).getResponse(),
-				false);
+		return createProxy(
+				(RemoteObject) lookupAndWait(target).getAttachment(), false);
 	}
 
 	/*

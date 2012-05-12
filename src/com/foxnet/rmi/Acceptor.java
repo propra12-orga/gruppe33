@@ -37,90 +37,62 @@ import java.net.SocketAddress;
 
 import org.jboss.netty.bootstrap.ServerBootstrap;
 import org.jboss.netty.channel.ChannelHandlerContext;
-import org.jboss.netty.channel.ChannelPipeline;
-import org.jboss.netty.channel.ChannelPipelineFactory;
 import org.jboss.netty.channel.ChannelStateEvent;
-import org.jboss.netty.channel.Channels;
 import org.jboss.netty.channel.ChildChannelStateEvent;
 import org.jboss.netty.channel.ServerChannel;
 import org.jboss.netty.channel.SimpleChannelUpstreamHandler;
 
-import com.foxnet.rmi.impl.ChannelMemoryLimiter;
-import com.foxnet.rmi.impl.Dispatcher;
-import com.foxnet.rmi.registry.StaticRegistry;
-
 /**
  * @author Christopher Probst
  */
-public class Acceptor extends ConnectionManager {
+public final class Acceptor extends ConnectionManager {
 
-	// Used to bind targets statically
-	private final StaticRegistry staticRegistry = new StaticRegistry();
+	public Acceptor() {
+		this(null, null);
+	}
 
-	// The server bootstrap which is used to accept and manage connections
-	private final ServerBootstrap serverBootstrap;
-
-	// Used to limit channel memory globally
-	private final ChannelMemoryLimiter globalChannelMemoryLimiter;
-
-	public Acceptor(int maxNetworkThreads, int methodInvocationThreads,
-			int maxGlobalChannelMemory, int maxLocalChannelMemory) {
-		super(true, maxNetworkThreads, methodInvocationThreads,
-				maxLocalChannelMemory);
-
-		// Create server bootstrap
-		serverBootstrap = new ServerBootstrap(getChannelFactory());
-
-		// Save the max global channel memory
-		globalChannelMemoryLimiter = new ChannelMemoryLimiter(
-				maxGlobalChannelMemory);
-
-		// Create and set pipeline factory
-		serverBootstrap.setPipelineFactory(new ChannelPipelineFactory() {
-
-			@Override
-			public ChannelPipeline getPipeline() throws Exception {
-				return Channels.pipeline(new Dispatcher(Acceptor.this,
-						globalChannelMemoryLimiter, getStaticRegistry()));
-			}
-		});
+	public Acceptor(ThreadUsage threadUsage, MemoryUsage memoryUsage) {
+		super(true, threadUsage, memoryUsage);
 
 		// Used to add channels
-		serverBootstrap.setParentHandler(new SimpleChannelUpstreamHandler() {
-			/*
-			 * (non-Javadoc)
-			 * 
-			 * @see
-			 * org.jboss.netty.channel.SimpleChannelUpstreamHandler#channelOpen
-			 * (org.jboss.netty.channel.ChannelHandlerContext,
-			 * org.jboss.netty.channel.ChannelStateEvent)
-			 */
-			@Override
-			public void channelOpen(ChannelHandlerContext ctx,
-					ChannelStateEvent e) throws Exception {
-				// Add server channel!
-				getChannels().add(e.getChannel());
+		((ServerBootstrap) bootstrap)
+				.setParentHandler(new SimpleChannelUpstreamHandler() {
+					/*
+					 * (non-Javadoc)
+					 * 
+					 * @see
+					 * org.jboss.netty.channel.SimpleChannelUpstreamHandler#
+					 * channelOpen
+					 * (org.jboss.netty.channel.ChannelHandlerContext,
+					 * org.jboss.netty.channel.ChannelStateEvent)
+					 */
+					@Override
+					public void channelOpen(ChannelHandlerContext ctx,
+							ChannelStateEvent e) throws Exception {
+						// Add server channel!
+						getChannels().add(e.getChannel());
 
-				super.channelOpen(ctx, e);
-			}
+						super.channelOpen(ctx, e);
+					}
 
-			/*
-			 * (non-Javadoc)
-			 * 
-			 * @see
-			 * org.jboss.netty.channel.SimpleChannelUpstreamHandler#childChannelOpen
-			 * (org.jboss.netty.channel.ChannelHandlerContext,
-			 * org.jboss.netty.channel.ChildChannelStateEvent)
-			 */
-			@Override
-			public void childChannelOpen(ChannelHandlerContext ctx,
-					ChildChannelStateEvent e) throws Exception {
-				// Add client channel!
-				getChannels().add(e.getChildChannel());
+					/*
+					 * (non-Javadoc)
+					 * 
+					 * @see
+					 * org.jboss.netty.channel.SimpleChannelUpstreamHandler#
+					 * childChannelOpen
+					 * (org.jboss.netty.channel.ChannelHandlerContext,
+					 * org.jboss.netty.channel.ChildChannelStateEvent)
+					 */
+					@Override
+					public void childChannelOpen(ChannelHandlerContext ctx,
+							ChildChannelStateEvent e) throws Exception {
+						// Add client channel!
+						getChannels().add(e.getChildChannel());
 
-				super.childChannelOpen(ctx, e);
-			}
-		});
+						super.childChannelOpen(ctx, e);
+					}
+				});
 	}
 
 	public ServerChannel open(int port) throws IOException {
@@ -134,14 +106,7 @@ public class Acceptor extends ConnectionManager {
 	 */
 	@Override
 	public ServerChannel open(SocketAddress socketAddress) throws IOException {
-		return (ServerChannel) serverBootstrap.bind(socketAddress);
-	}
-
-	public StaticRegistry getStaticRegistry() {
-		return staticRegistry;
-	}
-
-	public int getMaxGlobalChannelMemory() {
-		return globalChannelMemoryLimiter.getMaxMemory();
+		return (ServerChannel) ((ServerBootstrap) bootstrap)
+				.bind(socketAddress);
 	}
 }

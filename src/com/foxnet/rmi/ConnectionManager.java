@@ -36,20 +36,37 @@ import java.net.SocketAddress;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
+import org.jboss.netty.bootstrap.Bootstrap;
+import org.jboss.netty.bootstrap.ClientBootstrap;
+import org.jboss.netty.bootstrap.ServerBootstrap;
 import org.jboss.netty.channel.Channel;
 import org.jboss.netty.channel.ChannelFactory;
+import org.jboss.netty.channel.ChannelPipeline;
+import org.jboss.netty.channel.ChannelPipelineFactory;
+import org.jboss.netty.channel.Channels;
 import org.jboss.netty.channel.group.ChannelGroup;
 import org.jboss.netty.channel.group.DefaultChannelGroup;
 import org.jboss.netty.channel.socket.nio.NioClientSocketChannelFactory;
 import org.jboss.netty.channel.socket.nio.NioServerSocketChannelFactory;
 import org.jboss.netty.util.internal.ExecutorUtil;
 
-import com.foxnet.rmi.impl.Dispatcher;
+import com.foxnet.rmi.kernel.Dispatcher;
+import com.foxnet.rmi.registry.StaticRegistry;
+import com.foxnet.rmi.util.ChannelMemoryLimiter;
 
 /**
  * @author Christopher Probst
  */
 public abstract class ConnectionManager {
+
+	// The bootstrap of this connection manager
+	protected final Bootstrap bootstrap;
+
+	// Global channel memory limiter
+	private final ChannelMemoryLimiter globalChannelMemoryLimiter;
+
+	// Used to bind targets statically
+	private final StaticRegistry staticRegistry = new StaticRegistry();
 
 	// Cached network executor
 	private final ExecutorService networkExecutor = Executors
@@ -61,46 +78,72 @@ public abstract class ConnectionManager {
 	// Used to invoke methods
 	private final ExecutorService methodInvocator;
 
-	// Used to limit channel memory localally
-	private final int maxLocalChannelMemory;
+	// Used to limit memory usage
+	private final MemoryUsage memoryUsage;
+
+	// Used to limit thread usage
+	private final ThreadUsage threadUsage;
 
 	// Create a channel group to store connections
 	private final ChannelGroup channels = new DefaultChannelGroup();
 
-	/*
-	 * (non-Javadoc)
-	 * 
-	 * @see java.lang.Object#finalize()
-	 */
-	@Override
-	protected void finalize() throws Throwable {
-		super.finalize();
+	public ConnectionManager(boolean server, ThreadUsage threadUsage,
+			MemoryUsage memoryUsage) {
 
-		// Shutdown manager if collected
-		shudown();
-	}
+		// Check thread usage
+		if (threadUsage == null) {
+			threadUsage = ThreadUsage.DEFAULT;
+		}
 
-	public ConnectionManager(boolean server, int maxNetworkThreads,
-			int methodInvocationThreads, int maxLocalChannelMemory) {
+		// Save the thread usage
+		this.threadUsage = threadUsage;
+
+		// Check memory usage
+		if (memoryUsage == null) {
+			memoryUsage = MemoryUsage.DEFAULT;
+		}
+
+		// Save the memory usage
+		this.memoryUsage = memoryUsage;
 
 		// Create the channel factory
 		channelFactory = server ? new NioServerSocketChannelFactory(
-				networkExecutor, networkExecutor, maxNetworkThreads)
+				networkExecutor, networkExecutor, threadUsage.networkThreads)
 				: new NioClientSocketChannelFactory(networkExecutor,
-						networkExecutor, maxNetworkThreads);
+						networkExecutor, threadUsage.networkThreads);
+
+		// Create the correct bootstrap
+		bootstrap = server ? new ServerBootstrap(channelFactory)
+				: new ClientBootstrap(channelFactory);
+
+		// Create and set pipeline factory
+		bootstrap.setPipelineFactory(new ChannelPipelineFactory() {
+
+			@Override
+			public ChannelPipeline getPipeline() throws Exception {
+				return Channels.pipeline(new Dispatcher(ConnectionManager.this,
+						globalChannelMemoryLimiter, getStaticRegistry()));
+			}
+		});
 
 		// Create method invocator
-		methodInvocator = Executors.newFixedThreadPool(methodInvocationThreads);
+		methodInvocator = Executors
+				.newFixedThreadPool(threadUsage.invocationThreads);
 
-		// Save the max local channel memory
-		this.maxLocalChannelMemory = maxLocalChannelMemory;
+		// Create new global channel memory limiter
+		globalChannelMemoryLimiter = new ChannelMemoryLimiter(
+				memoryUsage.globalMemory);
 
 	}
 
 	public abstract Object open(SocketAddress socketAddress) throws IOException;
 
-	public int getMaxLocalChannelMemory() {
-		return maxLocalChannelMemory;
+	public ThreadUsage getThreadUsage() {
+		return threadUsage;
+	}
+
+	public MemoryUsage getMemoryUsage() {
+		return memoryUsage;
 	}
 
 	public ExecutorService getMethodInvocator() {
@@ -126,6 +169,10 @@ public abstract class ConnectionManager {
 
 		// Return the dispatcher
 		return channel.getPipeline().get(Dispatcher.class);
+	}
+
+	public StaticRegistry getStaticRegistry() {
+		return staticRegistry;
 	}
 
 	public void shudown() {

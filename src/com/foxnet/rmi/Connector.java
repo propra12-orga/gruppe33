@@ -38,46 +38,20 @@ import java.net.SocketAddress;
 import org.jboss.netty.bootstrap.ClientBootstrap;
 import org.jboss.netty.channel.ChannelFuture;
 import org.jboss.netty.channel.ChannelFutureListener;
-import org.jboss.netty.channel.ChannelPipeline;
-import org.jboss.netty.channel.ChannelPipelineFactory;
-import org.jboss.netty.channel.Channels;
 
-import com.foxnet.rmi.impl.Dispatcher;
+import com.foxnet.rmi.kernel.Dispatcher;
 
 /**
  * @author Christopher Probst
  */
 public final class Connector extends ConnectionManager {
 
-	// The client bootstrap which is used to open connections
-	private final ClientBootstrap clientBootstrap;
-
-	public Connector(int maxLocalChannelMemory) {
-		this(Runtime.getRuntime().availableProcessors() * 2,
-				maxLocalChannelMemory);
+	public Connector() {
+		this(null, null);
 	}
 
-	public Connector(int methodInvocationThreads, int maxLocalChannelMemory) {
-		this(Runtime.getRuntime().availableProcessors() * 2,
-				methodInvocationThreads, maxLocalChannelMemory);
-	}
-
-	public Connector(int maxNetworkThreads, int methodInvocationThreads,
-			int maxLocalChannelMemory) {
-		super(false, maxNetworkThreads, methodInvocationThreads,
-				maxLocalChannelMemory);
-
-		// Create the bootstrap
-		clientBootstrap = new ClientBootstrap(getChannelFactory());
-
-		// Setup pipeline factory
-		clientBootstrap.setPipelineFactory(new ChannelPipelineFactory() {
-
-			@Override
-			public ChannelPipeline getPipeline() throws Exception {
-				return Channels.pipeline(new Dispatcher(Connector.this));
-			}
-		});
+	public Connector(ThreadUsage threadUsage, MemoryUsage memoryUsage) {
+		super(false, threadUsage, memoryUsage);
 	}
 
 	public Connection open(String host, int port) throws IOException {
@@ -87,8 +61,9 @@ public final class Connector extends ConnectionManager {
 	@Override
 	public Connection open(SocketAddress socketAddress) throws IOException {
 		// Connect to server
-		ChannelFuture cf = clientBootstrap.connect(socketAddress);
+		ChannelFuture cf = ((ClientBootstrap) bootstrap).connect(socketAddress);
 
+		// Add listener
 		cf.addListener(new ChannelFutureListener() {
 
 			@Override

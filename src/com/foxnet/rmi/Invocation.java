@@ -31,38 +31,41 @@
  */
 package com.foxnet.rmi;
 
-import java.util.concurrent.TimeUnit;
-
 /**
  * @author Christopher Probst
  */
-public interface Invocation {
+public final class Invocation extends Future {
 
-    boolean add(InvocationCallback callback);
+	// Used to store the invoker
+	private final Invoker invoker;
 
-    boolean remove(InvocationCallback callback);
+	// Used to store the method name
+	private final String methodName;
 
-    boolean await();
+	// Used to store the args
+	private final Object[] args;
 
-    boolean await(long timeout, TimeUnit timeUnit);
+	public Invocation(Invoker invoker, String methodName, Object... args) {
+		if (invoker == null) {
+			throw new NullPointerException("invoker");
+		} else if (methodName == null) {
+			throw new NullPointerException("methodName");
+		}
 
-    boolean isCompleted();
+		this.invoker = invoker;
+		this.methodName = methodName;
+		this.args = args;
+	}
 
-    boolean isSuccessful();
+	public Invoker getInvoker() {
+		return invoker;
+	}
 
-    boolean isFailed();
+	public String getMethodName() {
+		return methodName;
+	}
 
-    Invoker getInvoker();
-
-    String getMethodName();
-
-    Object[] getArguments();
-
-    Object getCause();
-
-    Object getResponse();
-
-    boolean setResponse(Object response);
-
-    boolean setCause(Throwable cause);
+	public Object[] getArguments() {
+		return args;
+	}
 }

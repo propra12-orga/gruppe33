@@ -29,76 +29,69 @@
  * NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
-package com.foxnet.rmi.test;
+package com.foxnet.rmi.util;
 
-import com.foxnet.rmi.Acceptor;
-import com.foxnet.rmi.Connection;
-import com.foxnet.rmi.Connector;
-import com.foxnet.rmi.Remote;
+import java.io.IOException;
+import java.io.OutputStream;
 
 /**
+ * 
  * @author Christopher Probst
+ * 
+ * @param <T>
  */
-public class TestApp {
+public final class WrapperOutputStream<T extends OutputStream> extends
+		OutputStream {
 
-	public static interface ChatListener extends Remote {
+	private T output;
 
-		void onMessage(String user, String message);
+	public WrapperOutputStream() {
+		this(null);
 	}
 
-	public static interface ChatServer extends Remote {
-
-		void add(ChatListener listener);
+	public WrapperOutputStream(T output) {
+		setOutput(output);
 	}
 
-	public static class ChatProvider implements ChatServer {
+	@Override
+	public void write(byte[] b, int off, int len) throws IOException {
+		output.write(b, off, len);
+	}
 
-		@Override
-		public void add(ChatListener listener) {
-			System.out.println("listener added. sending greeting...");
-			listener.onMessage("SERVER", "hello user");
+	@Override
+	public void write(int b) throws IOException {
+		output.write(b);
+	}
+
+	@Override
+	public void write(byte[] b) throws IOException {
+		output.write(b);
+	}
+
+	@Override
+	public void flush() throws IOException {
+		output.flush();
+	}
+
+	@Override
+	public void close() throws IOException {
+		try {
+			output.flush();
+		} catch (Exception ignored) {
 		}
+		output.close();
 	}
 
-	public static class ChatReactor implements ChatListener {
-
-		@Override
-		public void onMessage(String user, String message) {
-			// TODO Auto-generated method stub
-
-		}
+	public T setOutput(T output) {
+		T oldOutput = this.output;
+		this.output = output;
+		return oldOutput;
 	}
 
-	public static void main(String[] args) throws Exception {
-
-		// Create new rmi acceptor
-		Acceptor rmiAcceptor = new Acceptor();
-
-		// Open new acceptor channel
-		rmiAcceptor.open(1337);
-
-		// Bind the module
-		rmiAcceptor.getStaticRegistry().bind("chat", new ChatProvider());
-
-		// Create a new rmi connector
-		Connector rmiConnector = new Connector();
-
-		// Open rmi connection
-		Connection rmi = rmiConnector.open("localhost", 1337);
-
-		ChatServer serv = (ChatServer) rmi.lookup("chat");
-
-		System.out.println("Chat obj looked up: " + serv.getClass());
-
-		System.out.println(rmi.getStaticRegistry());
-
-		serv.add(new ChatListener() {
-
-			@Override
-			public void onMessage(String user, String message) {
-
-				System.out.println(user + " told you: " + message);
-			}
-		});
+	/**
+	 * @return the underlying output stream.
+	 */
+	public T getOutput() {
+		return output;
 	}
-};
+}

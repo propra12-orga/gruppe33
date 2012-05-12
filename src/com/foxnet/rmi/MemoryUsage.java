@@ -29,76 +29,37 @@
  * NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
-package com.foxnet.rmi.test;
+package com.foxnet.rmi;
 
-import com.foxnet.rmi.Acceptor;
-import com.foxnet.rmi.Connection;
-import com.foxnet.rmi.Connector;
-import com.foxnet.rmi.Remote;
+import java.io.Serializable;
 
 /**
+ * 
  * @author Christopher Probst
+ * 
  */
-public class TestApp {
+public final class MemoryUsage implements Serializable {
 
-	public static interface ChatListener extends Remote {
+	/**
+	 * 
+	 */
+	private static final long serialVersionUID = 1L;
 
-		void onMessage(String user, String message);
-	}
+	public static final MemoryUsage DEFAULT = new MemoryUsage(
+			0x20000000 /* 512MB */, 0xA00000 /* 10MB */);
 
-	public static interface ChatServer extends Remote {
+	public final int globalMemory, localMemory;
 
-		void add(ChatListener listener);
-	}
-
-	public static class ChatProvider implements ChatServer {
-
-		@Override
-		public void add(ChatListener listener) {
-			System.out.println("listener added. sending greeting...");
-			listener.onMessage("SERVER", "hello user");
+	public MemoryUsage(int globalMemory, int localMemory) {
+		if (globalMemory < localMemory) {
+			throw new IllegalArgumentException("Global memory must "
+					+ "be >= local memory");
+		} else if (localMemory < 1) {
+			throw new IllegalArgumentException("Global and local "
+					+ "memory must be positive");
 		}
+
+		this.globalMemory = globalMemory;
+		this.localMemory = localMemory;
 	}
-
-	public static class ChatReactor implements ChatListener {
-
-		@Override
-		public void onMessage(String user, String message) {
-			// TODO Auto-generated method stub
-
-		}
-	}
-
-	public static void main(String[] args) throws Exception {
-
-		// Create new rmi acceptor
-		Acceptor rmiAcceptor = new Acceptor();
-
-		// Open new acceptor channel
-		rmiAcceptor.open(1337);
-
-		// Bind the module
-		rmiAcceptor.getStaticRegistry().bind("chat", new ChatProvider());
-
-		// Create a new rmi connector
-		Connector rmiConnector = new Connector();
-
-		// Open rmi connection
-		Connection rmi = rmiConnector.open("localhost", 1337);
-
-		ChatServer serv = (ChatServer) rmi.lookup("chat");
-
-		System.out.println("Chat obj looked up: " + serv.getClass());
-
-		System.out.println(rmi.getStaticRegistry());
-
-		serv.add(new ChatListener() {
-
-			@Override
-			public void onMessage(String user, String message) {
-
-				System.out.println(user + " told you: " + message);
-			}
-		});
-	}
-};
+}

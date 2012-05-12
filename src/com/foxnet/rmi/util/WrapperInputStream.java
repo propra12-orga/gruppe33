@@ -29,12 +29,82 @@
  * NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
-package com.foxnet.rmi;
+package com.foxnet.rmi.util;
+
+import java.io.IOException;
+import java.io.InputStream;
 
 /**
+ * 
  * @author Christopher Probst
+ * 
+ * @param <T>
  */
-public interface InvocationCallback {
+public final class WrapperInputStream<T extends InputStream> extends
+		InputStream {
 
-    void completed(Invocation invocation) throws Exception;
+	private T input;
+
+	public WrapperInputStream() {
+		this(null);
+	}
+
+	public WrapperInputStream(T input) {
+		setInput(input);
+	}
+
+	public T setInput(T input) {
+		T oldInput = this.input;
+		this.input = input;
+		return oldInput;
+	}
+
+	public T getInput() {
+		return input;
+	}
+
+	@Override
+	public int read() throws IOException {
+		return input.read();
+	}
+
+	@Override
+	public int read(byte[] b) throws IOException {
+		return input.read(b);
+	}
+
+	@Override
+	public int read(byte[] b, int off, int len) throws IOException {
+		return input.read(b, off, len);
+	}
+
+	@Override
+	public void close() throws IOException {
+		input.close();
+	}
+
+	@Override
+	public long skip(long n) throws IOException {
+		return input.skip(n);
+	}
+
+	@Override
+	public int available() throws IOException {
+		return input.available();
+	}
+
+	@Override
+	public void mark(int readlimit) {
+		input.mark(readlimit);
+	}
+
+	@Override
+	public boolean markSupported() {
+		return input.markSupported();
+	}
+
+	@Override
+	public void reset() throws IOException {
+		input.reset();
+	}
 }
