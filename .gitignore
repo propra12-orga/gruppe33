@@ -1,6 +1,1 @@
-/*
-# The following line accepts the src folder
-!/src
-!/scenes
-!/lib
-!/README.md
+bin/
