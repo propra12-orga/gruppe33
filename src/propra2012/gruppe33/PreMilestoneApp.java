@@ -11,17 +11,17 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import propra2012.gruppe33.graphics.rendering.EntityRoutines;
-import propra2012.gruppe33.graphics.rendering.scenegraph.Entity;
-import propra2012.gruppe33.graphics.rendering.scenegraph.EntityControllerAdapter;
-import propra2012.gruppe33.graphics.rendering.scenegraph.grid.Grid;
-import propra2012.gruppe33.graphics.rendering.scenegraph.grid.GridController;
-import propra2012.gruppe33.graphics.rendering.scenegraph.math.Vector2f;
-import propra2012.gruppe33.graphics.sprite.AnimationRoutines;
-import propra2012.gruppe33.graphics.sprite.Sprite;
-import propra2012.gruppe33.resources.Resource;
-import propra2012.gruppe33.resources.assets.Asset;
-import propra2012.gruppe33.resources.assets.AssetManager;
+import propra2012.gruppe33.bomberman.graphics.rendering.EntityRoutines;
+import propra2012.gruppe33.bomberman.graphics.rendering.scenegraph.grid.Grid;
+import propra2012.gruppe33.bomberman.graphics.rendering.scenegraph.grid.GridController;
+import propra2012.gruppe33.bomberman.graphics.sprite.AnimationRoutines;
+import propra2012.gruppe33.engine.graphics.rendering.scenegraph.Entity;
+import propra2012.gruppe33.engine.graphics.rendering.scenegraph.EntityControllerAdapter;
+import propra2012.gruppe33.engine.graphics.rendering.scenegraph.math.Vector2f;
+import propra2012.gruppe33.engine.graphics.sprite.Sprite;
+import propra2012.gruppe33.engine.resources.Resource;
+import propra2012.gruppe33.engine.resources.assets.Asset;
+import propra2012.gruppe33.engine.resources.assets.AssetManager;
 
 /**
  * 
@@ -60,7 +60,7 @@ public class PreMilestoneApp {
 		Entity player = EntityRoutines.createFieldEntity("Kr0e",
 				AnimationRoutines.createKnight(grid.getAssetManager(), 20),
 				grid, 1, 1);
-		
+
 		player.putController(new GridController());
 
 		// Load sprite

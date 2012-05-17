@@ -2,10 +2,9 @@ package propra2012.gruppe33;
 
 import java.awt.Frame;
 
-import propra2012.gruppe33.graphics.GraphicsRoutines;
-import propra2012.gruppe33.graphics.rendering.scenegraph.SceneProcessor;
-import propra2012.gruppe33.graphics.rendering.scenegraph.grid.Grid;
-import propra2012.gruppe33.io.IoRoutines;
+import propra2012.gruppe33.bomberman.graphics.rendering.scenegraph.grid.Grid;
+import propra2012.gruppe33.engine.graphics.GraphicsRoutines;
+import propra2012.gruppe33.engine.graphics.rendering.scenegraph.SceneProcessor;
 
 /**
  * 
@@ -26,14 +25,6 @@ public class SceneProcessorTest {
 		// Create the grid
 		Grid grid = PreMilestoneApp.createDemoGame();
 
-		
-		byte[] data = IoRoutines.serialize(grid);
-		grid = (Grid) IoRoutines.deserialize(data);
-		
-		
-		
-		System.out.println(data.length);
-		
 		// Set root
 		gridWorld.setRoot(grid);
 
