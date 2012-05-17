@@ -91,6 +91,25 @@ public class AnimationController extends EntityControllerAdapter {
 		}
 	}
 
+	protected void onLastImage(Entity entity, Animation animation) {
+	}
+
+	@Override
+	public void doUpdate(Entity entity, float tpf) {
+		// Lookup up active animation
+		Animation tmp = animationMap.get(animation);
+
+		// Render active animation if valid
+		if (tmp != null) {
+			// Update the animation
+			tmp.update();
+
+			if (tmp.isLast()) {
+				onLastImage(entity, tmp);
+			}
+		}
+	}
+
 	/*
 	 * (non-Javadoc)
 	 * 

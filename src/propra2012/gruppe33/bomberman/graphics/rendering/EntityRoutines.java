@@ -1,9 +1,14 @@
 package propra2012.gruppe33.bomberman.graphics.rendering;
 
+import java.awt.Point;
+import java.util.List;
+
 import propra2012.gruppe33.bomberman.graphics.rendering.scenegraph.grid.Grid;
 import propra2012.gruppe33.engine.graphics.rendering.scenegraph.Entity;
+import propra2012.gruppe33.engine.graphics.rendering.scenegraph.EntityControllerAdapter;
 import propra2012.gruppe33.engine.graphics.rendering.scenegraph.animation.AnimationController;
-import propra2012.gruppe33.engine.graphics.rendering.scenegraph.timeout.TimeoutController;
+import propra2012.gruppe33.engine.graphics.rendering.scenegraph.math.Vector2f;
+import propra2012.gruppe33.engine.graphics.sprite.Animation;
 import propra2012.gruppe33.engine.graphics.sprite.AnimationMap;
 import propra2012.gruppe33.engine.graphics.sprite.Sprite;
 
@@ -15,30 +20,67 @@ import propra2012.gruppe33.engine.graphics.sprite.Sprite;
  */
 public final class EntityRoutines {
 
-	public static Entity createBoom(Grid grid, Sprite sprite, int x, int y,
-			float dur) throws Exception {
+	public static Entity createBomb(Grid grid, Sprite sprite, String name,
+			Point p, int distance, float dur) {
+		return createBomb(grid, sprite, name, p.x, p.y, distance, dur);
+	}
 
-		Entity explosion = new Entity("boom");
-		AnimationController ac = new AnimationController();
-		ac.getAnimationMap().addAnimation(
-				sprite.newAnimationFromRange("main", 20, 0, 0, 25));
-		ac.setAnimation("main", true);
-		explosion.putController(ac);
-		explosion.getPosition().set(grid.gridToWorld(x, y));
-		explosion.getScale().set(grid.getRasterWidth(), grid.getRasterHeight());
-		explosion.putController(new TimeoutController(dur) {
+	public static Entity createBomb(Grid grid, Sprite sprite, String name,
+			int x, int y, int distance, float dur) {
 
-			/**
-			 * 
-			 */
-			private static final long serialVersionUID = 1L;
+		// Collect all points
+		List<Point> points = grid.collectPoints(x, y, distance, null);
 
+		// Create animation controller
+		AnimationController explosion = new AnimationController() {
 			@Override
-			protected void onTimeout(Entity entity) {
+			protected void onLastImage(Entity entity, Animation animation) {
 				entity.detach();
 			}
+		};
+		explosion.getAnimationMap().addAnimation(
+				sprite.newAnimationFromRange("main",
+						(long) ((dur / 25) * 1000), 0, 0, 25));
+		explosion.setAnimation("main", true);
+
+		// The entity bomb
+		Entity bomb = new Entity(name);
+
+		// Set position
+		bomb.getPosition().set(grid.vectorAt(x, y));
+
+		bomb.putController(new EntityControllerAdapter() {
+			@Override
+			public void onChildDetached(Entity entity, Entity child) {
+
+				if (!entity.hasChildren()) {
+					entity.detach();
+				}
+			}
 		});
-		return explosion;
+
+		for (Point p : points) {
+			// Get world vector
+			Vector2f v = grid.vectorAt(p);
+
+			// Create new bomb part
+			Entity bombPart = new Entity(name + p);
+
+			// Use explosion controller
+			bombPart.putController(explosion);
+
+			// Set position relative to bomb
+			bombPart.getPosition().set(v.sub(bomb.getPosition()));
+
+			// Config scale
+			bombPart.getScale().set(grid.getRasterWidth(),
+					grid.getRasterHeight());
+
+			// Attach the bomb part
+			bomb.attach(bombPart);
+		}
+
+		return bomb;
 	}
 
 	/**

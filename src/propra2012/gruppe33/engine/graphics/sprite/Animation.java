@@ -136,17 +136,23 @@ public final class Animation implements Serializable {
 		return timePerImage;
 	}
 
-	/**
-	 * This Method returns the actual image of this animation using the actual
-	 * timestamp.
-	 * 
-	 * @return
-	 */
+	public boolean isFirst() {
+		return animationStep == 0;
+	}
+
+	public boolean isLast() {
+		return animationStep == imageCoords.size() - 1;
+	}
+	
 	public BufferedImage getAnimationImage() {
+		Point coord = imageCoords.get(animationStep);
+		return sprite.getSubImages()[coord.x][coord.y];		
+	}
+
+	public void update() {
 
 		if (paused) {
-			Point coord = imageCoords.get(animationStep);
-			return sprite.getSubImages()[coord.x][coord.y];
+			return;
 		}
 
 		// Read the actual time
@@ -155,7 +161,7 @@ public final class Animation implements Serializable {
 		// Calculate if the time difference from the last step is higher then
 		// the time-per-image
 		// If yes the timeStamp will be incresed
-		if (time - timeStamp > timePerImage) {
+		if (time - timeStamp >= timePerImage) {
 			animationStep++;
 			timeStamp = time;
 		}
@@ -168,10 +174,6 @@ public final class Animation implements Serializable {
 				animationStep = imageCoords.size() - 1;
 			}
 		}
-
-		// Return the image of the actual Animation Step
-		Point coord = imageCoords.get(animationStep);
-		return sprite.getSubImages()[coord.x][coord.y];
 	}
 
 	/**
