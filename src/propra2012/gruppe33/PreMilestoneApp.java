@@ -1,6 +1,5 @@
 package propra2012.gruppe33;
 
-import java.awt.BasicStroke;
 import java.awt.Color;
 import java.awt.Graphics2D;
 import java.awt.Image;
@@ -18,6 +17,7 @@ import propra2012.gruppe33.bomberman.graphics.rendering.scenegraph.grid.GridCont
 import propra2012.gruppe33.bomberman.graphics.sprite.AnimationRoutines;
 import propra2012.gruppe33.engine.graphics.rendering.scenegraph.Entity;
 import propra2012.gruppe33.engine.graphics.rendering.scenegraph.EntityControllerAdapter;
+import propra2012.gruppe33.engine.graphics.rendering.scenegraph.TypeFilter;
 import propra2012.gruppe33.engine.graphics.rendering.scenegraph.timeout.TimeoutController;
 import propra2012.gruppe33.engine.graphics.sprite.Sprite;
 import propra2012.gruppe33.engine.resources.Resource;
@@ -70,6 +70,8 @@ public class PreMilestoneApp {
 
 		player.getScale().scaleLocal(2);
 
+		solid.setOrder(-1);
+
 		// Attach solid blocks
 		grid.attach(solid);
 
@@ -83,8 +85,11 @@ public class PreMilestoneApp {
 			@Override
 			public void doUpdate(Entity entity, float tpf) {
 
-				final Grid grid = entity.findParentByClass(Grid.class, false);
+				final Grid grid = (Grid) entity.findParent(new TypeFilter(
+						Grid.class, false), true);
 
+				System.out.println(grid.getChildrenCount());
+				
 				if (grid != null) {
 
 					if (grid.isPressed(KeyEvent.VK_SPACE)) {
@@ -120,7 +125,8 @@ public class PreMilestoneApp {
 							};
 
 							Entity b = new Entity("waiting");
-	
+
+							b.setOrder(-1);
 							b.getScale().set(grid.getRasterWidth(),
 									grid.getRasterHeight());
 

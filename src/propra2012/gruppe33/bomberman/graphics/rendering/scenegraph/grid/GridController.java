@@ -7,6 +7,7 @@ import java.util.Set;
 import propra2012.gruppe33.bomberman.graphics.rendering.scenegraph.grid.Grid.Direction;
 import propra2012.gruppe33.engine.graphics.rendering.scenegraph.Entity;
 import propra2012.gruppe33.engine.graphics.rendering.scenegraph.EntityControllerAdapter;
+import propra2012.gruppe33.engine.graphics.rendering.scenegraph.TypeFilter;
 import propra2012.gruppe33.engine.graphics.rendering.scenegraph.animation.AnimationController;
 import propra2012.gruppe33.engine.graphics.rendering.scenegraph.math.Mathf;
 import propra2012.gruppe33.engine.graphics.rendering.scenegraph.math.Vector2f;
@@ -60,6 +61,9 @@ public final class GridController extends EntityControllerAdapter {
 
 	// Stores the last direction of the grid controller
 	private Direction last = null;
+
+	// The cached grid instance
+	private Grid grid;
 
 	/**
 	 * @return the last direction of the entity.
@@ -203,6 +207,14 @@ public final class GridController extends EntityControllerAdapter {
 		}
 	}
 
+	public Grid getGrid() {
+		return grid;
+	}
+
+	public void setGrid(Grid grid) {
+		this.grid = grid;
+	}
+
 	/*
 	 * (non-Javadoc)
 	 * 
@@ -213,8 +225,11 @@ public final class GridController extends EntityControllerAdapter {
 	@Override
 	public void doUpdate(Entity entity, float tpf) {
 
-		// Get upper grid
-		Grid grid = entity.findParentByClass(Grid.class, true);
+		// Find the grid instance
+		if (grid == null) {
+			grid = (Grid) entity.findParent(new TypeFilter(Grid.class, false),
+					true);
+		}
 
 		// Find nearest grid
 		Point nearest = grid.validate(grid.worldToNearestPoint(entity

@@ -7,14 +7,15 @@ import java.awt.Image;
 import java.awt.geom.AffineTransform;
 import java.util.ArrayList;
 import java.util.Collections;
-import java.util.HashMap;
 import java.util.Iterator;
 import java.util.LinkedHashMap;
 import java.util.LinkedHashSet;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
+import java.util.NavigableMap;
 import java.util.Set;
+import java.util.TreeMap;
 
 import propra2012.gruppe33.engine.graphics.GraphicsRoutines;
 import propra2012.gruppe33.engine.graphics.rendering.scenegraph.image.ImageController;
@@ -40,13 +41,13 @@ import propra2012.gruppe33.engine.resources.BufferedImageResource;
  * - An entity has two flags (visible, childrenVisible) which determine whether
  * or not it/the children is/are drawn.
  * 
- * - An entity has a name. Entities can have the same name but this could lead
- * to bad find-operations since entities with equal names are stored in a list.
+ * - An entity has a name.
  * 
  * - An entity can have controllers which basically provides dynamic behaviour,
  * because you can add or remove controllers whenever you like.
  * 
- * 
+ * - To find an entity you have to use the find*** methods and provide an entity
+ * filter.
  * 
  * 
  * @author Christopher Probst
@@ -54,7 +55,8 @@ import propra2012.gruppe33.engine.resources.BufferedImageResource;
  * @see Scene
  * @see Vector2f
  */
-public class Entity extends EntityControllerAdapter {
+public class Entity extends EntityControllerAdapter implements
+		Comparable<Entity> {
 
 	/**
 	 * 
@@ -82,14 +84,29 @@ public class Entity extends EntityControllerAdapter {
 	private final String name;
 
 	/*
+	 * The order of this entity.
+	 */
+	private int order = 0;
+
+	/*
 	 * The parent entity which ones this entity.
 	 */
 	private Entity parent;
 
 	/*
-	 * The hash set which contains all children.
+	 * The children count.
 	 */
-	private final Set<Entity> children = new LinkedHashSet<Entity>();
+	private int childrenCount = 0;
+
+	/*
+	 * The map which contains all order2entity mappings.
+	 */
+	private final NavigableMap<Integer, Set<Entity>> children = new TreeMap<Integer, Set<Entity>>();
+
+	/*
+	 * Used to cache children iterations.
+	 */
+	private List<Entity> childrenCache = null, readOnlyChildrenCache = null;
 
 	/*
 	 * Maps classes to entity controllers.
@@ -102,42 +119,9 @@ public class Entity extends EntityControllerAdapter {
 	private List<EntityController> controllerCache = null;
 
 	/*
-	 * Maps names to entities.
-	 */
-	private final Map<String, List<Entity>> names2Entities = new HashMap<String, List<Entity>>();
-
-	/*
-	 * Used to cache children iterations.
-	 */
-	private List<Entity> childrenCache = null, readOnlyChildrenCache = null;
-
-	/*
 	 * Tells whether or not this entity and/or its children are visible.
 	 */
 	private boolean visible = true, childrenVisible = true;
-
-	/**
-	 * Returns a valid list for a given name. The list is created if it does not
-	 * exist yet.
-	 * 
-	 * @param name
-	 *            The name of the list.
-	 * @return a valid list impl.
-	 */
-	private List<Entity> getEntityList(String name) {
-		if (name == null) {
-			throw new NullPointerException("name");
-		}
-
-		// Try to get list
-		List<Entity> entities = names2Entities.get(name);
-
-		if (entities == null) {
-			names2Entities.put(name, entities = new LinkedList<Entity>());
-		}
-
-		return entities;
-	}
 
 	/**
 	 * Returns a cached list which contains all controllers. If it does not
@@ -157,6 +141,55 @@ public class Entity extends EntityControllerAdapter {
 	}
 
 	/**
+	 * Removes the given set if it is empty.
+	 * 
+	 * @param order
+	 *            The order of the given set.
+	 * @param entities
+	 *            The entity set.
+	 */
+	private void removeSetIfEmpty(int order, Set<Entity> entities) {
+		if (entities == null) {
+			return;
+		} else if (entities.isEmpty()) {
+			// Try to remove the set from the map
+			Set<Entity> removedEntities = children.remove(order);
+
+			// If it is not the same set readd it (should never happen...)
+			if (removedEntities != entities) {
+
+				// Put again into map
+				children.put(order, removedEntities);
+
+				// Throw an exception
+				throw new IllegalArgumentException("You tried to remove "
+						+ "a set which does not represent the set which "
+						+ "is mapped to the given order");
+			}
+		}
+	}
+
+	/**
+	 * Returns the lazy entity set of the given order. If there is no set yet a
+	 * new one will be created.
+	 * 
+	 * @param order
+	 *            The order.
+	 * @return a valid set.
+	 */
+	private Set<Entity> getLazyEntities(int order) {
+		// Try to get the entities
+		Set<Entity> entities = children.get(order);
+
+		// Lazy creation
+		if (entities == null) {
+			children.put(order, entities = new LinkedHashSet<Entity>());
+		}
+
+		return entities;
+	}
+
+	/**
 	 * Returns a cached list which contains all children. If it does not exist
 	 * yet it will be created.
 	 * 
@@ -168,8 +201,20 @@ public class Entity extends EntityControllerAdapter {
 	 * @return a list which contains all children.
 	 */
 	private List<Entity> getChildrenCache() {
-		return childrenCache != null ? childrenCache
-				: (childrenCache = new ArrayList<Entity>(children));
+		if (childrenCache == null) {
+
+			// Create a new children cache
+			childrenCache = new ArrayList<Entity>(childrenCount);
+
+			// Copy all entities to the list
+			for (Set<Entity> entities : children.values()) {
+				for (Entity entity : entities) {
+					childrenCache.add(entity);
+				}
+			}
+		}
+
+		return childrenCache;
 	}
 
 	/**
@@ -180,6 +225,20 @@ public class Entity extends EntityControllerAdapter {
 		return readOnlyChildrenCache != null ? readOnlyChildrenCache
 				: (readOnlyChildrenCache = Collections
 						.unmodifiableList(getChildrenCache()));
+	}
+
+	/**
+	 * Clears the children cache.
+	 */
+	private void clearChildrenCache() {
+		readOnlyChildrenCache = childrenCache = null;
+	}
+
+	/**
+	 * Clears the controller cache.
+	 */
+	private void clearControllerCache() {
+		controllerCache = null;
 	}
 
 	/**
@@ -253,7 +312,7 @@ public class Entity extends EntityControllerAdapter {
 		}
 
 		// Adding works always...
-		controllerCache = null;
+		clearControllerCache();
 
 		return (T) controllers.put(controller.getClass(), controller);
 	}
@@ -277,7 +336,7 @@ public class Entity extends EntityControllerAdapter {
 
 		// Check for null
 		if (result != null) {
-			controllerCache = null;
+			clearControllerCache();
 		}
 
 		return result;
@@ -303,7 +362,7 @@ public class Entity extends EntityControllerAdapter {
 	 */
 	public void clearControllers() {
 		controllers.clear();
-		controllerCache = null;
+		clearControllerCache();
 	}
 
 	/**
@@ -341,40 +400,6 @@ public class Entity extends EntityControllerAdapter {
 	}
 
 	/**
-	 * @param name
-	 *            The name of the child you want to find.
-	 * @return the first child which has the same name or null if there is no
-	 *         such child.
-	 */
-	public Entity getChildByName(String name) {
-		if (name == null) {
-			throw new NullPointerException("name");
-		}
-
-		// Lookup the name list
-		List<Entity> list = names2Entities.get(name);
-
-		return list != null ? list.get(0) : null;
-	}
-
-	/**
-	 * @param name
-	 *            The name of the children you want to find.
-	 * @return a list of children which have the same name or null if there are
-	 *         no such children.
-	 */
-	public List<Entity> getChildrenByName(String name) {
-		if (name == null) {
-			throw new NullPointerException("name");
-		}
-
-		// Lookup the name list
-		List<Entity> list = names2Entities.get(name);
-
-		return list != null ? Collections.unmodifiableList(list) : null;
-	}
-
-	/**
 	 * Detaches all children from this entity.
 	 */
 	public void detachAll() {
@@ -398,6 +423,58 @@ public class Entity extends EntityControllerAdapter {
 	}
 
 	/**
+	 * @return the order of this entity.
+	 */
+	public int getOrder() {
+		return order;
+	}
+
+	/**
+	 * Sets the order of this entity.
+	 * 
+	 * @param order
+	 *            The new order.
+	 */
+	public void setOrder(int order) {
+		// Diff ?
+		if (order != this.order) {
+
+			// Is there already a parent ?
+			if (parent != null) {
+
+				// Lookup
+				Set<Entity> entities = parent.children.get(this.order);
+
+				// If the set exist
+				if (entities != null) {
+					// Remove this entity
+					if (!entities.remove(this)) {
+						throw new IllegalStateException("This entity could "
+								+ "not be removed from the old parent set. "
+								+ "Please check your code.");
+					}
+
+					// Clean up
+					parent.removeSetIfEmpty(this.order, entities);
+				} else {
+					throw new IllegalStateException("The parent set of this "
+							+ "entity is null. Please check your code.");
+				}
+
+				// Try to add
+				if (!parent.getLazyEntities(order).add(this)) {
+					throw new IllegalStateException("This entity could not be "
+							+ "added to the new parent set. "
+							+ "Please check your code.");
+				}
+			}
+
+			// Save
+			this.order = order;
+		}
+	}
+
+	/**
 	 * @return the root entity (an entity which has no parent) of this entity or
 	 *         this entity if this entity has no parent (which means that this
 	 *         entity is a root entity).
@@ -412,34 +489,45 @@ public class Entity extends EntityControllerAdapter {
 	 * @see Scene
 	 */
 	public Scene findScene() {
-		return findParentByClass(Scene.class, true);
+		return (Scene) findParent(new TypeFilter(Scene.class, true), true);
 	}
 
 	/**
-	 * Find an entity of the given class in the parent hierarchy.
+	 * This method searches for the first child (recursively) which matches the
+	 * given entity filter.
 	 * 
-	 * @param entityClass
-	 *            The entity class you want to find.
-	 * @param allowExtendedClasses
-	 *            If true classes which extend the given class are valid, too.
-	 * @return the next entity of the given class which ownes this entity or
-	 *         this entity if this entity has already the correct class or null
-	 *         if there is no valid parent entity in the hierarchy at all.
+	 * @param entityFilter
+	 *            The entity filter.
+	 * @param includeThis
+	 *            If true the method will also check THIS entity to match the
+	 *            filter.
+	 * @return a valid entity or null.
+	 * @see EntityFilter
 	 */
-	@SuppressWarnings("unchecked")
-	public <T extends Entity> T findParentByClass(Class<T> entityClass,
-			boolean allowExtendedClasses) {
-		if (entityClass == null) {
-			throw new NullPointerException("entityClass");
+	public Entity findChildRecursively(EntityFilter entityFilter,
+			boolean includeThis) {
+
+		// Try the children first
+		Entity entity = findChild(entityFilter, includeThis);
+
+		// Not valid ?
+		if (entity == null) {
+
+			// Iterate over all children
+			for (Entity child : getChildrenCache()) {
+
+				// Try to find the child recursively
+				entity = child.findChildRecursively(entityFilter, false);
+
+				// Already valid ?
+				if (entity != null) {
+					break;
+				}
+			}
 		}
 
-		// Fill valid flag
-		boolean valid = allowExtendedClasses ? entityClass
-				.isAssignableFrom(getClass()) : entityClass.equals(getClass());
-
-		// Proceed
-		return valid ? (T) this : parent != null ? parent.findParentByClass(
-				entityClass, allowExtendedClasses) : null;
+		// Return null...
+		return entity;
 	}
 
 	/**
@@ -470,6 +558,55 @@ public class Entity extends EntityControllerAdapter {
 
 		// Return the merged results
 		return results;
+	}
+
+	/**
+	 * This method searches for the first child which matches the given entity
+	 * filter.
+	 * 
+	 * @param entityFilter
+	 *            The entity filter.
+	 * @param includeThis
+	 *            If true the method will also check THIS entity to match the
+	 *            filter.
+	 * @return a valid entity or null.
+	 * @see EntityFilter
+	 */
+	public Entity findChild(EntityFilter entityFilter, boolean includeThis) {
+
+		if (entityFilter == null) {
+			throw new NullPointerException("entityFilter");
+		}
+
+		// The children iterator
+		Iterator<Entity> childrenIterator = getChildrenCache().iterator();
+
+		// Decide where to start
+		Entity ptr = includeThis ? this
+				: (childrenIterator.hasNext() ? childrenIterator.next() : null);
+
+		// Stop here
+		if (ptr == null) {
+			return null;
+		}
+
+		// Loop...
+		for (;;) {
+
+			// Try to accept an entity
+			int flag = entityFilter.accept(ptr);
+
+			// Should this entity be added ?
+			if ((flag & EntityFilter.VALID) != 0) {
+				return ptr;
+			} else if ((flag & EntityFilter.CONTINUE) != 0
+					&& childrenIterator.hasNext()) {
+				ptr = childrenIterator.next();
+			} else {
+				// Stop here
+				return null;
+			}
+		}
 	}
 
 	/**
@@ -522,6 +659,51 @@ public class Entity extends EntityControllerAdapter {
 			}
 		}
 		return results;
+	}
+
+	/**
+	 * This method searches for the first entity which matches the given entity
+	 * filter.
+	 * 
+	 * @param entityFilter
+	 *            The entity filter.
+	 * @param includeThis
+	 *            If true the method will also check THIS entity to match the
+	 *            filter.
+	 * @return a valid entity or null.
+	 * @see EntityFilter
+	 */
+	public Entity findParent(EntityFilter entityFilter, boolean includeThis) {
+
+		if (entityFilter == null) {
+			throw new NullPointerException("entityFilter");
+		}
+
+		// Decide where to start
+		Entity ptr = includeThis ? this : getParent();
+
+		// Stop here
+		if (ptr == null) {
+			return null;
+		}
+
+		// Loop...
+		for (;;) {
+
+			// Try to accept an entity
+			int flag = entityFilter.accept(ptr);
+
+			// Should this entity be added ?
+			if ((flag & EntityFilter.VALID) != 0) {
+				return ptr;
+			} else if ((flag & EntityFilter.CONTINUE) != 0
+					&& ptr.getParent() != null) {
+				ptr = ptr.getParent();
+			} else {
+				// Do not continue
+				return null;
+			}
+		}
 	}
 
 	/**
@@ -584,14 +766,14 @@ public class Entity extends EntityControllerAdapter {
 	 * @return true if this entity has children, otherwise false.
 	 */
 	public boolean hasChildren() {
-		return !children.isEmpty();
+		return childrenCount > 0;
 	}
 
 	/**
 	 * @return the children count.
 	 */
 	public int getChildrenCount() {
-		return children.size();
+		return childrenCount;
 	}
 
 	/**
@@ -659,13 +841,12 @@ public class Entity extends EntityControllerAdapter {
 	 * 
 	 * @param children
 	 *            The entities you want to attach as children.
-	 * @return true if all entities were attached successfully, otherwise false.
 	 */
-	public boolean attach(Iterable<Entity> children) {
+	public void attach(Iterable<Entity> children) {
 		if (children == null) {
 			throw new NullPointerException("children");
 		}
-		return attach(children.iterator());
+		attach(children.iterator());
 	}
 
 	/**
@@ -675,24 +856,17 @@ public class Entity extends EntityControllerAdapter {
 	 * 
 	 * @param children
 	 *            The entities you want to attach as children.
-	 * @return true if all entities were attached successfully, otherwise false.
 	 */
-	public boolean attach(Iterator<Entity> children) {
+	public void attach(Iterator<Entity> children) {
 		if (children == null) {
 			throw new NullPointerException("children");
 		}
-		boolean success = true;
-
 		// Iterate over the given children
 		while (children.hasNext()) {
 
 			// Attach the next child
-			if (!attach(children.next())) {
-				success = false;
-			}
+			attach(children.next());
 		}
-
-		return success;
 	}
 
 	/**
@@ -701,32 +875,32 @@ public class Entity extends EntityControllerAdapter {
 	 * 
 	 * @param child
 	 *            The entity you want to attach as child.
-	 * @return true if the entity is now a child of this entity, otherwise
-	 *         false.
 	 */
-	public boolean attach(Entity child) {
+	public void attach(Entity child) {
 		if (child == null) {
 			throw new NullPointerException("child");
 		} else if (child.parent != null) {
 			// If this entity is already the parent...
 			if (child.parent == this) {
-				return true;
+				return;
 			} else if (!child.detach()) {
 				throw new IllegalStateException("Unable to detach child");
 			}
 		}
 
-		if (children.add(child)) {
+		// Lookup entity set
+		Set<Entity> entities = getLazyEntities(child.getOrder());
+
+		if (entities.add(child)) {
+
+			// Inc counter
+			childrenCount++;
+
+			// Set parent
 			child.parent = this;
 
-			// Get entity name list
-			List<Entity> list = getEntityList(child.getName());
-
-			// Just add the child
-			list.add(child);
-
 			// Cache is invalid now
-			readOnlyChildrenCache = childrenCache = null;
+			clearChildrenCache();
 
 			// Invoke methods on child
 			child.onAttached(child);
@@ -739,10 +913,9 @@ public class Entity extends EntityControllerAdapter {
 			for (EntityController controller : getControllerCache()) {
 				controller.onChildAttached(this, child);
 			}
-
-			return true;
 		} else {
-			return false;
+			throw new IllegalStateException("This entity could not add the "
+					+ "given child to its set. Please check your code.");
 		}
 	}
 
@@ -768,27 +941,29 @@ public class Entity extends EntityControllerAdapter {
 		if (child == null) {
 			throw new NullPointerException("child");
 		} else if (child.parent != this) {
-			throw new IllegalArgumentException("child must be a "
-					+ "child of this entity");
+			return false;
 		}
 
-		if (children.remove(child)) {
+		// Lookup
+		Set<Entity> entities = children.get(child.getOrder());
+
+		// Check
+		if (entities == null) {
+			throw new IllegalStateException("The entity set of the given "
+					+ "child order does not exist. Please check your code.");
+		} else if (entities.remove(child)) {
+
+			// Clean up
+			removeSetIfEmpty(child.getOrder(), entities);
+
+			// Dec counter
+			childrenCount--;
+
+			// Clear parent
 			child.parent = null;
 
-			// Get entity name list
-			List<Entity> list = getEntityList(child.getName());
-
-			// Remove the child
-			list.remove(child);
-
-			// Was this the last child with the given name ?
-			if (list.isEmpty()) {
-				// Remove from map
-				names2Entities.remove(child.getName());
-			}
-
 			// Cache is invalid now
-			readOnlyChildrenCache = childrenCache = null;
+			clearChildrenCache();
 
 			// Invoke methods on child
 			child.onDetached(child);
@@ -804,7 +979,8 @@ public class Entity extends EntityControllerAdapter {
 
 			return true;
 		} else {
-			return false;
+			throw new IllegalStateException("This entity could not remove "
+					+ "the given child from its set. Please check your code.");
 		}
 	}
 
@@ -1127,6 +1303,22 @@ public class Entity extends EntityControllerAdapter {
 		} finally {
 			// Dispose the transformed copy
 			transformedCopy.dispose();
+		}
+	}
+
+	/*
+	 * (non-Javadoc)
+	 * 
+	 * @see java.lang.Comparable#compareTo(java.lang.Object)
+	 */
+	@Override
+	public int compareTo(Entity o) {
+		if (order > o.order) {
+			return 1;
+		} else if (order == o.order) {
+			return 0;
+		} else {
+			return -1;
 		}
 	}
 }
