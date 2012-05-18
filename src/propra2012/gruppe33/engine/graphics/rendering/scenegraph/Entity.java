@@ -16,6 +16,7 @@ import java.util.Map;
 import java.util.NavigableMap;
 import java.util.Set;
 import java.util.TreeMap;
+import java.util.UUID;
 
 import propra2012.gruppe33.engine.graphics.GraphicsRoutines;
 import propra2012.gruppe33.engine.graphics.rendering.scenegraph.image.ImageController;
@@ -81,7 +82,7 @@ public class Entity extends EntityControllerAdapter implements
 	/*
 	 * The name of this entity.
 	 */
-	private final String name;
+	private String name;
 
 	/*
 	 * The order of this entity.
@@ -91,7 +92,7 @@ public class Entity extends EntityControllerAdapter implements
 	/*
 	 * The parent entity which ones this entity.
 	 */
-	private Entity parent;
+	private Entity parent = null;
 
 	/*
 	 * The children count.
@@ -149,9 +150,8 @@ public class Entity extends EntityControllerAdapter implements
 	 *            The entity set.
 	 */
 	private void removeSetIfEmpty(int order, Set<Entity> entities) {
-		if (entities == null) {
-			return;
-		} else if (entities.isEmpty()) {
+		if (entities != null && entities.isEmpty()) {
+
 			// Try to remove the set from the map
 			Set<Entity> removedEntities = children.remove(order);
 
@@ -183,6 +183,10 @@ public class Entity extends EntityControllerAdapter implements
 
 		// Lazy creation
 		if (entities == null) {
+			/*
+			 * Always use linked-hash-set for better iteration performance and
+			 * correct ordering.
+			 */
 			children.put(order, entities = new LinkedHashSet<Entity>());
 		}
 
@@ -212,6 +216,8 @@ public class Entity extends EntityControllerAdapter implements
 					childrenCache.add(entity);
 				}
 			}
+
+			System.out.println("-> " + childrenCache.size());
 		}
 
 		return childrenCache;
@@ -284,13 +290,29 @@ public class Entity extends EntityControllerAdapter implements
 	}
 
 	/**
-	 * Creates an entity using the given name. You really have to provide a non
-	 * null name since null-keys are not allowed in hashing.
+	 * Creates an entity using a generated name.
+	 */
+	public Entity() {
+		this(UUID.randomUUID().toString());
+	}
+
+	/**
+	 * Creates an entity using the given name.
 	 * 
 	 * @param name
 	 *            the name of this entity after creation.
 	 */
 	public Entity(String name) {
+		setName(name);
+	}
+
+	/**
+	 * Sets the name of this entity.
+	 * 
+	 * @param name
+	 *            The new name.
+	 */
+	public void setName(String name) {
 		if (name == null) {
 			throw new NullPointerException("name");
 		}
@@ -343,10 +365,10 @@ public class Entity extends EntityControllerAdapter implements
 	}
 
 	/**
-	 * Lookup a controller.
+	 * Gets a controller of the given type.
 	 * 
 	 * @param controllerClass
-	 *            The controller class you want to lookup.
+	 *            The controller class you want to get.
 	 * @return an instance of the class you specified or null.
 	 */
 	@SuppressWarnings("unchecked")
@@ -484,8 +506,10 @@ public class Entity extends EntityControllerAdapter implements
 	}
 
 	/**
-	 * {@link Entity#findParentEntity(Class)}
+	 * Tries to find the next parente scene using a {@link TypeFilter} with
+	 * {@link Entity#findParent(EntityFilter, boolean)}.
 	 * 
+	 * @return a parent scene (could be this class) or null.
 	 * @see Scene
 	 */
 	public Scene findScene() {
@@ -517,10 +541,7 @@ public class Entity extends EntityControllerAdapter implements
 			for (Entity child : getChildrenCache()) {
 
 				// Try to find the child recursively
-				entity = child.findChildRecursively(entityFilter, false);
-
-				// Already valid ?
-				if (entity != null) {
+				if ((entity = child.findChildRecursively(entityFilter, false)) != null) {
 					break;
 				}
 			}
@@ -1320,5 +1341,11 @@ public class Entity extends EntityControllerAdapter implements
 		} else {
 			return -1;
 		}
+	}
+
+	@Override
+	public String toString() {
+		return "[Name = " + name + ", Order = " + order + ", Position = "
+				+ position + "]";
 	}
 }

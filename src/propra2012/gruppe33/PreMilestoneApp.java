@@ -70,7 +70,7 @@ public class PreMilestoneApp {
 
 		player.getScale().scaleLocal(2);
 
-		solid.setOrder(-1);
+		solid.setOrder(-100);
 
 		// Attach solid blocks
 		grid.attach(solid);
@@ -88,8 +88,6 @@ public class PreMilestoneApp {
 				final Grid grid = (Grid) entity.findParent(new TypeFilter(
 						Grid.class, false), true);
 
-				System.out.println(grid.getChildrenCount());
-				
 				if (grid != null) {
 
 					if (grid.isPressed(KeyEvent.VK_SPACE)) {
@@ -107,9 +105,14 @@ public class PreMilestoneApp {
 											grid, boom, entity.getName()
 													+ " bomb", exp, 3, 0.5f);
 
-									entity.getParent().attach(bomb);
-
+									Entity p = entity.getParent();
+									
 									entity.detach();
+									
+									p.attach(bomb);
+
+									
+
 								};
 
 								@Override
