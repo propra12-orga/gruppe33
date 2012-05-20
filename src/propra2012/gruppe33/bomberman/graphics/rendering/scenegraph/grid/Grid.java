@@ -10,10 +10,10 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
-import propra2012.gruppe33.engine.graphics.rendering.scenegraph.Entity;
+import propra2012.gruppe33.engine.graphics.rendering.scenegraph.GraphicsEntity;
+import propra2012.gruppe33.engine.graphics.rendering.scenegraph.RenderedImage;
 import propra2012.gruppe33.engine.graphics.rendering.scenegraph.Scene;
-import propra2012.gruppe33.engine.graphics.rendering.scenegraph.image.ImageController;
-import propra2012.gruppe33.engine.graphics.rendering.scenegraph.math.Vector2f;
+import propra2012.gruppe33.engine.graphics.rendering.scenegraph.Vector2f;
 import propra2012.gruppe33.engine.resources.Resource;
 import propra2012.gruppe33.engine.resources.TransientRenderedEntity;
 import propra2012.gruppe33.engine.resources.assets.AssetLoader;
@@ -112,8 +112,6 @@ public class Grid extends Scene {
 	/**
 	 * Creates a new grid using the given parameters.
 	 * 
-	 * @param name
-	 *            The name of the grid.
 	 * @param assetManager
 	 *            The asset manager of this grid. Cannot be null since the map
 	 *            data is loaded directly from the manager.
@@ -126,17 +124,15 @@ public class Grid extends Scene {
 	 * @throws Exception
 	 *             If an exception occurs.
 	 */
-	public Grid(String name, AssetManager assetManager, String mapAssetPath,
-			int width, int height) throws Exception {
-		this(name, assetManager, assetManager.loadAsset(mapAssetPath, LOADER)
-				.get(), width, height);
+	public Grid(AssetManager assetManager, String mapAssetPath, int width,
+			int height) throws Exception {
+		this(assetManager, assetManager.loadAsset(mapAssetPath, LOADER).get(),
+				width, height);
 	}
 
 	/**
 	 * Creates a new grid using the given parameters.
 	 * 
-	 * @param name
-	 *            The name of the grid.
 	 * @param assetManager
 	 *            The asset manager of this grid.
 	 * @param mapData
@@ -148,9 +144,9 @@ public class Grid extends Scene {
 	 * @throws Exception
 	 *             If an exception occurs.
 	 */
-	public Grid(String name, AssetManager assetManager, char[][] mapData,
-			int width, int height) throws Exception {
-		super(name, assetManager, width, height);
+	public Grid(AssetManager assetManager, char[][] mapData, int width,
+			int height) throws Exception {
+		super(assetManager, width, height);
 
 		if (mapData == null) {
 			throw new NullPointerException("mapData");
@@ -182,24 +178,20 @@ public class Grid extends Scene {
 	 * Basically iterates over the map data and bundles proper chars which you
 	 * can specify to images.
 	 * 
-	 * @param name
-	 *            The name of the new root entity.
 	 * @param chars2Images
 	 *            The map where you can define which image belongs to which
 	 *            char.
-	 * @return an entity which contains all bundled images stored as child image
-	 *         entities.
+	 * @return a graphics entity which contains all bundled images stored as
+	 *         child image entities.
 	 */
-	public Entity bundle(String name,
+	public GraphicsEntity bundle(
 			Map<Character, Resource<? extends Image>> chars2Images) {
-		if (name == null) {
-			throw new NullPointerException("name");
-		} else if (chars2Images == null) {
+		if (chars2Images == null) {
 			throw new NullPointerException("chars2Images");
 		}
 
 		// Create new root entity
-		Entity root = new Entity(name);
+		GraphicsEntity root = new GraphicsEntity();
 
 		for (int x = 0; x < rasterX; x++) {
 			for (int y = 0; y < rasterY; y++) {
@@ -212,16 +204,13 @@ public class Grid extends Scene {
 				if (tile != null) {
 
 					// Create child entity
-					Entity child = new Entity(x + ", " + y);
-
-					// Add to controllers
-					child.putController(new ImageController(tile));
+					RenderedImage child = new RenderedImage(tile);
 
 					// At first translate
-					child.setPosition(vectorAt(x, y));
+					child.position(vectorAt(x, y));
 
 					// Scale
-					child.getScale().set(rasterWidth, rasterHeight);
+					child.scale().set(rasterWidth, rasterHeight);
 
 					// Attach to root
 					root.attach(child);
@@ -258,8 +247,6 @@ public class Grid extends Scene {
 	 * Basically iterates over the map data and bundles proper chars which you
 	 * can specify to images and renders them into an image for fast rendering.
 	 * 
-	 * @param name
-	 *            The name of the new root entity.
 	 * @param chars2Images
 	 *            The map where you can define which image belongs to which
 	 *            char.
@@ -267,30 +254,27 @@ public class Grid extends Scene {
 	 *            The transparency level of the rendered image.
 	 * @param background
 	 *            The background color of the rendered image.
-	 * @return an entity which contains a rendered image with all bundled
-	 *         images.
+	 * @return a graphics entity which contains a rendered image with all
+	 *         bundled images.
 	 */
-	public Entity bundleToRenderedEntity(String name,
+	public GraphicsEntity bundleToRenderedEntity(
 			Map<Character, Resource<? extends Image>> chars2Images,
 			int transparency, Color background) {
 
 		// Bundle to entity and store as rendered transient entity
 		TransientRenderedEntity renderedEntity = new TransientRenderedEntity(
-				this, transparency, background, bundle(name, chars2Images));
+				this, transparency, background, bundle(chars2Images));
 
 		// Create a new entity
-		Entity entity = new Entity(name);
-
-		// Put the rendered image into the entity
-		entity.putController(new ImageController(renderedEntity));
+		GraphicsEntity root = new RenderedImage(renderedEntity);
 
 		// Set position
-		entity.getPosition().set(getWidth() * 0.5f, getHeight() * 0.5f);
+		root.position().set(width() * 0.5f, height() * 0.5f);
 
 		// Adjust scale
-		entity.getScale().set(getWidth(), getHeight());
+		root.scale().set(width(), height());
 
-		return entity;
+		return root;
 	}
 
 	/**
@@ -499,6 +483,39 @@ public class Grid extends Scene {
 	 */
 	public char charAt(int x, int y) {
 		return mapData[y][x];
+	}
+
+	/**
+	 * @param location
+	 *            The location in the array.
+	 * @param replace
+	 *            The char you want to set now.
+	 * @return the old char.
+	 */
+	public char charAt(Point location, char replace) {
+		if (location == null) {
+			throw new NullPointerException("location");
+		}
+		return charAt(location.x, location.y, replace);
+	}
+
+	/**
+	 * @param x
+	 *            The column in the array.
+	 * @param y
+	 *            The row in the array.
+	 * @param replace
+	 *            The char you want to set now.
+	 * @return the old char.
+	 */
+	public char charAt(int x, int y, char replace) {
+		// Save the old char
+		char old = mapData[y][x];
+
+		// Replace the old char
+		mapData[y][x] = replace;
+
+		return old;
 	}
 
 	/**

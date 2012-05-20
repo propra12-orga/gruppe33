@@ -1,17 +1,13 @@
-package propra2012.gruppe33.engine.graphics.rendering.scenegraph;
+package propra2012.gruppe33.engine.graphics.rendering.scenegraph.filters;
+
+import propra2012.gruppe33.engine.graphics.rendering.scenegraph.Entity;
+import propra2012.gruppe33.engine.graphics.rendering.scenegraph.EntityFilter;
 
 /**
- * 
  * @author Christopher Probst
- * @see EntityFilter
- * @see Entity
+ * 
  */
 public final class TypeFilter implements EntityFilter {
-
-	/**
-	 * 
-	 */
-	private static final long serialVersionUID = 1L;
 
 	// The entity type you want to find
 	private final Class<? extends Entity> entityType;
@@ -47,16 +43,14 @@ public final class TypeFilter implements EntityFilter {
 	/*
 	 * (non-Javadoc)
 	 * 
-	 * @see
-	 * propra2012.gruppe33.engine.graphics.rendering.scenegraph.EntityFilter
-	 * #accept(propra2012.gruppe33.engine.graphics.rendering.scenegraph.Entity)
+	 * @see propra2012.gruppe33.engine.graphics.rendering.scenegraph.filters.
+	 * IterationFilter#accept(java.lang.Object)
 	 */
 	@Override
-	public int accept(Entity entity) {
+	public boolean accept(Entity entity) {
 		// Fill valid flag
-		return ((allowExtendedClasses ? entityType.isAssignableFrom(entity
-				.getClass()) : entityType.equals(entity.getClass())) ? VALID
-				: 0)
-				| CONTINUE;
+		return entity != null ? (allowExtendedClasses ? entityType
+				.isAssignableFrom(entity.getClass()) : entityType.equals(entity
+				.getClass())) : false;
 	}
 }

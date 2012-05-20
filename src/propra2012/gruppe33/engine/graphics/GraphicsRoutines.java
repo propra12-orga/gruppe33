@@ -13,8 +13,8 @@ import java.awt.event.WindowEvent;
 import java.awt.image.BufferedImage;
 import java.awt.image.VolatileImage;
 
+import propra2012.gruppe33.engine.graphics.rendering.scenegraph.Mathf;
 import propra2012.gruppe33.engine.graphics.rendering.scenegraph.SceneProcessor;
-import propra2012.gruppe33.engine.graphics.rendering.scenegraph.math.Mathf;
 import propra2012.gruppe33.engine.graphics.sprite.Sprite;
 
 /**

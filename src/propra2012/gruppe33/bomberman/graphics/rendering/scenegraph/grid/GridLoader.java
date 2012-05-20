@@ -8,7 +8,7 @@ import java.util.LinkedList;
 import java.util.List;
 
 /**
- * Diese Klasse l�dt aus einer Textdatei Zeilenweise die Karte aus. Kann
+ * Diese Klasse laedt aus einer Textdatei Zeilenweise die Karte aus. Kann
  * IOExceptions werfen.
  * 
  * @author Malte Schmidt
@@ -17,12 +17,12 @@ public final class GridLoader {
 
 	/**
 	 * Berechnet die Map aus der Textdatei und gibt ein Array mit dem Inhalt der
-	 * Map zur�ck. Wirft IOException, wenn die Karte nicht geladen werden kann,
+	 * Map zurueck. Wirft IOException, wenn die Karte nicht geladen werden kann,
 	 * z.B. wenn die File nicht geladen werden kann.
 	 * 
 	 * @param input
 	 *            Die zu ladene Map.
-	 * @return Gibt ein Char-array zur�ck mit den geladenen Werten der Map.
+	 * @return Gibt ein Char-array zurueck mit den geladenen Werten der Map.
 	 * @throws IOException
 	 *             Wenn zu ladene Karte leer oder nicht kompatibel (z.B. Wenn
 	 *             die Strings unterschiedlich lang sind.
@@ -45,7 +45,7 @@ public final class GridLoader {
 		BufferedReader br = new BufferedReader(new InputStreamReader(input));
 
 		try {
-			// Lies Zeile f�r Zeile
+			// Lies Zeile fuer Zeile
 			while ((line = br.readLine()) != null) {
 				cache.add(line);
 			}
@@ -55,7 +55,7 @@ public final class GridLoader {
 				throw new IOException("Empty grid");
 			}
 		} finally {
-			// Schlie�e den Stream
+			// Schliesse den Stream
 			br.close();
 		}
 

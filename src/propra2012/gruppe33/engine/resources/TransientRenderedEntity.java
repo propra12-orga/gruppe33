@@ -6,17 +6,18 @@ import java.io.IOException;
 import java.io.ObjectInputStream;
 
 import propra2012.gruppe33.engine.graphics.GraphicsRoutines;
-import propra2012.gruppe33.engine.graphics.rendering.scenegraph.Entity;
+import propra2012.gruppe33.engine.graphics.rendering.scenegraph.GraphicsEntity;
 import propra2012.gruppe33.engine.graphics.rendering.scenegraph.Scene;
 
 /**
- * This class represents a "rendered entity". This means that you provide an
- * entity which is rendered in an image. But to reduce serialization overhead
- * this class only serializes the entity hierarchy instead of the image.
+ * This class represents a "rendered entity". This means that you provide a
+ * graphics entity which is rendered into an image. But to reduce serialization
+ * overhead this class only serializes the entity hierarchy instead of the
+ * image.
  * 
  * @author Christopher Probst
  * @see Resource
- * @see Entity
+ * @see GraphicsEntity
  */
 public final class TransientRenderedEntity implements Resource<Image> {
 
@@ -31,18 +32,18 @@ public final class TransientRenderedEntity implements Resource<Image> {
 	private transient Image resource;
 	private final int width, height, transparency;
 	private final Color background;
-	private final Entity entity;
+	private final GraphicsEntity graphicsEntity;
 
 	/**
-	 * Renders the entity to an image.
+	 * Renders the graphics entity to an image.
 	 */
 	private void createResource() {
-		// Create entity
-		resource = entity.renderTo(GraphicsRoutines.clear(
+		// Create resource
+		resource = graphicsEntity.renderTo(GraphicsRoutines.clear(
 				GraphicsRoutines.createImage(width, height, transparency),
 				background));
 
-		// Check entity
+		// Check resource
 		if (resource == null) {
 			throw new IllegalStateException("The resource is null. "
 					+ "Please check your code.");
@@ -63,7 +64,7 @@ public final class TransientRenderedEntity implements Resource<Image> {
 	}
 
 	/**
-	 * Creates a transient rendered entity using the given parameters.
+	 * Creates a transient rendered graphics entity using the given parameters.
 	 * 
 	 * @param scene
 	 *            The width and height of the scene will be used.
@@ -71,13 +72,13 @@ public final class TransientRenderedEntity implements Resource<Image> {
 	 *            The transparency of the rendered image.
 	 * @param background
 	 *            The background of the rendered image.
-	 * @param entity
-	 *            The entity which is rendered into an image.
+	 * @param graphicsEntity
+	 *            The graphics entity which is rendered into an image.
 	 */
 	public TransientRenderedEntity(Scene scene, int transparency,
-			Color background, Entity entity) {
-		this(scene.getWidth(), scene.getHeight(), transparency, background,
-				entity);
+			Color background, GraphicsEntity graphicsEntity) {
+		this(scene.width(), scene.height(), transparency, background,
+				graphicsEntity);
 	}
 
 	/**
@@ -91,14 +92,14 @@ public final class TransientRenderedEntity implements Resource<Image> {
 	 *            The transparency of the rendered image.
 	 * @param background
 	 *            The background of the rendered image.
-	 * @param entity
-	 *            The entity which is rendered into an image.
+	 * @param graphicsEntity
+	 *            The graphics entity which is rendered into an image.
 	 */
 	public TransientRenderedEntity(int width, int height, int transparency,
-			Color background, Entity entity) {
+			Color background, GraphicsEntity graphicsEntity) {
 
-		if (entity == null) {
-			throw new NullPointerException("entity");
+		if (graphicsEntity == null) {
+			throw new NullPointerException("graphicsEntity");
 		}
 
 		// Save
@@ -106,7 +107,7 @@ public final class TransientRenderedEntity implements Resource<Image> {
 		this.height = height;
 		this.transparency = transparency;
 		this.background = background;
-		this.entity = entity;
+		this.graphicsEntity = graphicsEntity;
 
 		// Just create the resource
 		createResource();

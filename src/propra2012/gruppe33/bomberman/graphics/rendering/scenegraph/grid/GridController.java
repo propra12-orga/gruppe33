@@ -2,27 +2,28 @@ package propra2012.gruppe33.bomberman.graphics.rendering.scenegraph.grid;
 
 import java.awt.Point;
 import java.awt.event.KeyEvent;
+import java.util.Iterator;
 import java.util.Set;
 
 import propra2012.gruppe33.bomberman.graphics.rendering.scenegraph.grid.Grid.Direction;
 import propra2012.gruppe33.engine.graphics.rendering.scenegraph.Entity;
-import propra2012.gruppe33.engine.graphics.rendering.scenegraph.EntityControllerAdapter;
-import propra2012.gruppe33.engine.graphics.rendering.scenegraph.TypeFilter;
-import propra2012.gruppe33.engine.graphics.rendering.scenegraph.animation.AnimationController;
-import propra2012.gruppe33.engine.graphics.rendering.scenegraph.math.Mathf;
-import propra2012.gruppe33.engine.graphics.rendering.scenegraph.math.Vector2f;
-import propra2012.gruppe33.engine.graphics.sprite.Animation;
+import propra2012.gruppe33.engine.graphics.rendering.scenegraph.GraphicsEntity;
+import propra2012.gruppe33.engine.graphics.rendering.scenegraph.Mathf;
+import propra2012.gruppe33.engine.graphics.rendering.scenegraph.Vector2f;
+import propra2012.gruppe33.engine.graphics.rendering.scenegraph.filters.TypeFilter;
+import propra2012.gruppe33.engine.graphics.rendering.scenegraph.iterators.FilteredIterator;
+import propra2012.gruppe33.engine.graphics.rendering.scenegraph.iterators.ParentIterator;
+import propra2012.gruppe33.engine.graphics.rendering.scenegraph.iterators.SiblingIterator;
 
 /**
- * This class manages the grid movement. If you attach this controller to an
- * entity the entity will react (process movement) when the given keys are
- * pressed.
+ * This class manages the grid movement. If you attach this entity to an entity
+ * the entity will react (process movement) when the given keys are pressed.
  * 
  * @author Christopher Probst
  * @author Malte Schmidt
  * @author Matthias Hesse
  */
-public final class GridController extends EntityControllerAdapter {
+public final class GridController extends Entity {
 
 	/**
 	 * 
@@ -33,11 +34,6 @@ public final class GridController extends EntityControllerAdapter {
 	 * The "equals"-threshold.
 	 */
 	public static final float THRESHOLD = 0.01f;
-
-	/**
-	 * The run animation prefix when using animation controllers.
-	 */
-	public static final String RUNNING_ANIMATION = "run_";
 
 	/*
 	 * Important state variables. Used to decide when to change the key
@@ -54,13 +50,13 @@ public final class GridController extends EntityControllerAdapter {
 	private final Vector2f movement = Vector2f.zero();
 
 	// Stores the moving state of this entity
-	private boolean moving = false;
+	private boolean moving = false, lastMoving = false;
 
 	// Stores the last direction (useful for sprite animation)
 	private Direction direction = Direction.North;
 
 	// Stores the last direction of the grid controller
-	private Direction last = null;
+	private Direction lastDirection = null;
 
 	// The cached grid instance
 	private Grid grid;
@@ -68,7 +64,7 @@ public final class GridController extends EntityControllerAdapter {
 	/**
 	 * @return the last direction of the entity.
 	 */
-	public Direction getDirection() {
+	public Direction direction() {
 		return direction;
 	}
 
@@ -82,7 +78,7 @@ public final class GridController extends EntityControllerAdapter {
 	/**
 	 * @return the velocity multiplier.
 	 */
-	public float getVelocityMultiplier() {
+	public float velocityMultiplier() {
 		return velocityMultiplier;
 	}
 
@@ -92,7 +88,7 @@ public final class GridController extends EntityControllerAdapter {
 	 * @param velocityMultiplier
 	 *            The new multiplier you want to set.
 	 */
-	public void setVelocityMultiplier(float velocityMultiplier) {
+	public void velocityMultiplier(float velocityMultiplier) {
 		this.velocityMultiplier = velocityMultiplier;
 	}
 
@@ -103,7 +99,7 @@ public final class GridController extends EntityControllerAdapter {
 	 *            The direction.
 	 * @param vertical
 	 *            The axis.
-	 * @param entity
+	 * @param graphicsEntity
 	 *            The entity.
 	 * @param grid
 	 *            The grid.
@@ -115,20 +111,21 @@ public final class GridController extends EntityControllerAdapter {
 	 *            The vector in which the results are written.
 	 * @param tpf
 	 *            The time passed since last frame.
+	 * @param movementLineOfSight
+	 *            The valid movement line-of-sight char-set.
 	 */
 	private void processMovement(boolean negative, boolean vertical,
-			Entity entity, Grid grid, Point nearest, float maxSpeed,
-			Vector2f dest, float tpf) {
-
-		// Lookup all valid chars
-		Set<Character> validChars = grid.getMaxFieldVelocities().keySet();
+			GraphicsEntity graphicsEntity, Grid grid, Point nearest,
+			float maxSpeed, Vector2f dest, float tpf,
+			Set<Character> movementLineOfSight) {
 
 		// Get center vector
 		Vector2f center = grid.vectorAt(nearest);
 
 		// Calc dominant site
 		boolean negativeDominant = (vertical ? center.x
-				- entity.getPosition().x : center.y - entity.getPosition().y) > 0;
+				- graphicsEntity.position().x : center.y
+				- graphicsEntity.position().y) > 0;
 
 		// Calc direction
 		int dir = negative ? -1 : 1;
@@ -138,14 +135,14 @@ public final class GridController extends EntityControllerAdapter {
 
 		// Calc the movement based on the grid
 		movement = dir
-				* grid.lineOfSight(entity.getPosition(), maxMovement,
+				* grid.lineOfSight(graphicsEntity.position(), maxMovement,
 						vertical ? (negative ? Direction.North
 								: Direction.South) : (negative ? Direction.West
-								: Direction.East), validChars);
+								: Direction.East), movementLineOfSight);
 
 		// Is the entity already centered ?
-		boolean isCentered = vertical ? entity.getPosition().xThreshold(
-				center.x, THRESHOLD) : entity.getPosition().yThreshold(
+		boolean isCentered = vertical ? graphicsEntity.position().xThreshold(
+				center.x, THRESHOLD) : graphicsEntity.position().yThreshold(
 				center.y, THRESHOLD);
 
 		if (isCentered) {
@@ -164,7 +161,7 @@ public final class GridController extends EntityControllerAdapter {
 			/*
 			 * Test the upper, left-upper, right-upper field to be free.
 			 */
-			if (!validChars.contains(grid.charAt(nearest.x
+			if (!movementLineOfSight.contains(grid.charAt(nearest.x
 					+ (vertical ? offset : dir), nearest.y
 					+ (vertical ? dir : offset)))) {
 
@@ -172,7 +169,7 @@ public final class GridController extends EntityControllerAdapter {
 				offset += negativeDominant ? -1 : 1;
 
 				// Still no luck =(
-				if (!validChars.contains(grid.charAt(nearest.x
+				if (!movementLineOfSight.contains(grid.charAt(nearest.x
 						+ (vertical ? offset : dir), nearest.y
 						+ (vertical ? dir : offset)))) {
 					return;
@@ -186,8 +183,8 @@ public final class GridController extends EntityControllerAdapter {
 
 			// Recalc the distance
 			float centerDistance = vertical ? fieldOfInterest.x
-					- entity.getPosition().x : fieldOfInterest.y
-					- entity.getPosition().y;
+					- graphicsEntity.position().x : fieldOfInterest.y
+					- graphicsEntity.position().y;
 
 			// Calc the orthogonal movement
 			float orthogonalMovement = (centerDistance >= 0 ? 1f : -1f)
@@ -207,11 +204,11 @@ public final class GridController extends EntityControllerAdapter {
 		}
 	}
 
-	public Grid getGrid() {
+	public Grid grid() {
 		return grid;
 	}
 
-	public void setGrid(Grid grid) {
+	public void grid(Grid grid) {
 		this.grid = grid;
 	}
 
@@ -219,21 +216,37 @@ public final class GridController extends EntityControllerAdapter {
 	 * (non-Javadoc)
 	 * 
 	 * @see
-	 * propra2012.gruppe33.graphics.rendering.scenegraph.EntityController#doUpdate
-	 * (propra2012.gruppe33.graphics.rendering.scenegraph.Entity, float)
+	 * propra2012.gruppe33.engine.graphics.rendering.scenegraph.Entity#onUpdate
+	 * (float)
 	 */
 	@Override
-	public void doUpdate(Entity entity, float tpf) {
+	protected void onUpdate(float tpf) {
+
+		// Nothing to process...
+		if (parent() == null || !(parent() instanceof GraphicsEntity)) {
+			return;
+		}
+
+		// Convert parent
+		GraphicsEntity controlledParent = (GraphicsEntity) parent();
 
 		// Find the grid instance
 		if (grid == null) {
-			grid = (Grid) entity.findParent(new TypeFilter(Grid.class, false),
-					true);
+			Iterator<Entity> itr = new FilteredIterator<Entity>(new TypeFilter(
+					Grid.class, false), new ParentIterator(controlledParent,
+					true));
+
+			if (!itr.hasNext()) {
+				return;
+			}
+
+			// Get next entity
+			grid = (Grid) itr.next();
 		}
 
 		// Find nearest grid
-		Point nearest = grid.validate(grid.worldToNearestPoint(entity
-				.getPosition()));
+		Point nearest = grid.validate(grid.worldToNearestPoint(controlledParent
+				.position()));
 
 		// Are we inside the grid ?
 		if (nearest == null) {
@@ -248,8 +261,7 @@ public final class GridController extends EntityControllerAdapter {
 		// Check
 		if (maxSpeedObj == null) {
 			throw new IllegalStateException("Entity grid position invalid: "
-					+ "Field char does not represent a "
-					+ "field on which you can go.");
+					+ "Field char does not have a velocity.");
 		}
 
 		// Reduce boxing...
@@ -274,13 +286,15 @@ public final class GridController extends EntityControllerAdapter {
 
 			if (vertical) {
 				// Calc vertical movement
-				processMovement(north, true, entity, grid, nearest, maxSpeed,
-						movement, tpf);
+				processMovement(north, true, controlledParent, grid, nearest,
+						maxSpeed, movement, tpf,
+						grid.getDefaultLineOfSightChars());
 			} else {
 
 				// Calc horizontal movement
-				processMovement(west, false, entity, grid, nearest, maxSpeed,
-						movement, tpf);
+				processMovement(west, false, controlledParent, grid, nearest,
+						maxSpeed, movement, tpf,
+						grid.getDefaultLineOfSightChars());
 			}
 		} else if (vertical) {
 
@@ -299,12 +313,14 @@ public final class GridController extends EntityControllerAdapter {
 				if (lv >= grid.getRasterHeight()) {
 
 					// Calc horizontal movement
-					processMovement(west, false, entity, grid, nearest,
-							maxSpeed, movement, tpf);
+					processMovement(west, false, controlledParent, grid,
+							nearest, maxSpeed, movement, tpf,
+							grid.getDefaultLineOfSightChars());
 				} else {
 					// Calc vertical movement
-					processMovement(north, true, entity, grid, nearest,
-							maxSpeed, movement, tpf);
+					processMovement(north, true, controlledParent, grid,
+							nearest, maxSpeed, movement, tpf,
+							grid.getDefaultLineOfSightChars());
 				}
 
 				break;
@@ -315,13 +331,15 @@ public final class GridController extends EntityControllerAdapter {
 				if (lh >= grid.getRasterHeight()) {
 
 					// Calc vertical movement
-					processMovement(north, true, entity, grid, nearest,
-							maxSpeed, movement, tpf);
+					processMovement(north, true, controlledParent, grid,
+							nearest, maxSpeed, movement, tpf,
+							grid.getDefaultLineOfSightChars());
 
 				} else {
 					// Calc horizontal movement
-					processMovement(west, false, entity, grid, nearest,
-							maxSpeed, movement, tpf);
+					processMovement(west, false, controlledParent, grid,
+							nearest, maxSpeed, movement, tpf,
+							grid.getDefaultLineOfSightChars());
 				}
 
 				break;
@@ -370,32 +388,32 @@ public final class GridController extends EntityControllerAdapter {
 			}
 
 			// Finally add the new movement component
-			entity.getPosition().addLocal(movement);
+			controlledParent.position().addLocal(movement);
 		}
 
-		/*
-		 * If this entity has an animation controller let us update the image.
-		 */
-		AnimationController ani = entity
-				.getController(AnimationController.class);
+		// Does the direction changed ?
+		if (lastDirection != direction) {
 
-		// Is there an animation controller ?
-		if (ani != null) {
-			if (last != direction) {
-				last = direction;
+			// Save the change
+			lastDirection = direction;
 
-				// Set active animation
-				ani.setAnimation(RUNNING_ANIMATION
-						+ last.toString().toLowerCase(), true);
-			}
-
-			// Lookup the animation
-			Animation running = ani.getAnimationMap().get(ani.getAnimation());
-
-			// Update running state
-			if (running != null) {
-				running.setPaused(!moving);
-			}
+			// Fire event
+			fireEvent(new SiblingIterator(controlledParent, true),
+					Event.DirectionChanged, this);
 		}
+
+		// Does the moving changed
+		if (lastMoving != moving) {
+			// Save the change
+			lastMoving = moving;
+
+			// Fire event
+			fireEvent(new SiblingIterator(controlledParent, true),
+					Event.MovingChanged, this);
+		}
+	}
+
+	public enum Event {
+		DirectionChanged, MovingChanged
 	}
 }

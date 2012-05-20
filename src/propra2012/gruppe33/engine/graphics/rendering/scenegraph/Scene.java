@@ -12,7 +12,6 @@ import java.awt.event.KeyListener;
 import java.util.HashMap;
 import java.util.Map;
 
-import propra2012.gruppe33.engine.graphics.rendering.scenegraph.math.Vector2f;
 import propra2012.gruppe33.engine.resources.assets.AssetManager;
 
 /**
@@ -27,10 +26,10 @@ import propra2012.gruppe33.engine.resources.assets.AssetManager;
  * the entity class. Obviously you can add multiple entities to a scene :-) .
  * 
  * @author Christopher Probst
- * @see Entity
+ * @see GraphicsEntity
  * @see Vector2f
  */
-public class Scene extends Entity implements KeyListener, FocusListener {
+public class Scene extends GraphicsEntity implements KeyListener, FocusListener {
 
 	/**
 	 * 
@@ -74,22 +73,18 @@ public class Scene extends Entity implements KeyListener, FocusListener {
 	/**
 	 * Creates a new scene without an asset manager.
 	 * 
-	 * @param name
-	 *            The name of the scene.
 	 * @param width
 	 *            The provided viewport width.
 	 * @param height
 	 *            The provided viewport height.
 	 */
-	public Scene(String name, int width, int height) throws Exception {
-		this(name, null, width, height);
+	public Scene(int width, int height) throws Exception {
+		this(null, width, height);
 	}
 
 	/**
 	 * Creates a new scene.
 	 * 
-	 * @param name
-	 *            The name of the scene.
 	 * @param assetManager
 	 *            The asset manager of this scene. Can be null if you do not
 	 *            need assets.
@@ -98,9 +93,8 @@ public class Scene extends Entity implements KeyListener, FocusListener {
 	 * @param height
 	 *            The provided viewport height.
 	 */
-	public Scene(String name, AssetManager assetManager, int width, int height)
+	public Scene(AssetManager assetManager, int width, int height)
 			throws Exception {
-		super(name);
 
 		if (width <= 0) {
 			throw new IllegalArgumentException("width must be > 0");
@@ -122,14 +116,14 @@ public class Scene extends Entity implements KeyListener, FocusListener {
 	/**
 	 * @return the asset manager of this scene.
 	 */
-	public AssetManager getAssetManager() {
+	public AssetManager assetManager() {
 		return assetManager;
 	}
 
 	/**
 	 * @return the scene processor.
 	 */
-	public SceneProcessor<?> getProcessor() {
+	public SceneProcessor<?> processor() {
 		return processor;
 	}
 
@@ -138,11 +132,13 @@ public class Scene extends Entity implements KeyListener, FocusListener {
 	 * 
 	 * @param component
 	 *            The component which should manages this scene with events.
+	 * @return this scene for chaining.
 	 */
-	public void connectTo(Component component) {
+	public Scene connectTo(Component component) {
 		// Add listener
 		component.addKeyListener(this);
 		component.addFocusListener(this);
+		return this;
 	}
 
 	/**
@@ -150,10 +146,12 @@ public class Scene extends Entity implements KeyListener, FocusListener {
 	 * 
 	 * @param component
 	 *            The component which manages this scene with events.
+	 * @return this scene for chaining.
 	 */
-	public void disconnectFrom(Component component) {
+	public Scene disconnectFrom(Component component) {
 		component.removeKeyListener(this);
 		component.removeFocusListener(this);
+		return this;
 	}
 
 	/*
@@ -178,12 +176,15 @@ public class Scene extends Entity implements KeyListener, FocusListener {
 
 	/**
 	 * Clears the keyboard state.
+	 * 
+	 * @return this scene for chaining.
 	 */
-	public void clearKeyboardState() {
+	public Scene clearKeyboardState() {
 		// Clear the complete keyboard state
 		if (keyboardState != null && !keyboardState.isEmpty()) {
 			keyboardState.clear();
 		}
+		return this;
 	}
 
 	/**
@@ -230,21 +231,21 @@ public class Scene extends Entity implements KeyListener, FocusListener {
 	/**
 	 * @return the x-y ratio as float.
 	 */
-	public float getRatio() {
+	public float ratio() {
 		return ratio;
 	}
 
 	/**
 	 * @return the viewport width.
 	 */
-	public int getWidth() {
+	public int width() {
 		return width;
 	}
 
 	/**
 	 * @return the viewport height.
 	 */
-	public int getHeight() {
+	public int height() {
 		return height;
 	}
 
@@ -257,9 +258,10 @@ public class Scene extends Entity implements KeyListener, FocusListener {
 	 * 
 	 * @param destination
 	 *            The image you want to render to.
+	 * @return this scene for chaining.
 	 */
-	public final void simulate(Image destination) {
-		simulate(destination, 0);
+	public final Scene simulate(Image destination) {
+		return simulate(destination, 0);
 	}
 
 	/**
@@ -271,8 +273,9 @@ public class Scene extends Entity implements KeyListener, FocusListener {
 	 *            The image you want to render to.
 	 * @param tpf
 	 *            The time-per-frame to update the children states.
+	 * @return this scene for chaining.
 	 */
-	public final void simulate(Image destination, long tpf) {
+	public final Scene simulate(Image destination, long tpf) {
 		if (destination == null) {
 			throw new NullPointerException("destination");
 		}
@@ -284,7 +287,8 @@ public class Scene extends Entity implements KeyListener, FocusListener {
 			if (graphics instanceof Graphics2D) {
 
 				// Simulate the scene to image
-				simulate((Graphics2D) graphics, destination.getWidth(null),
+				return simulate((Graphics2D) graphics,
+						destination.getWidth(null),
 						destination.getHeight(null), tpf);
 
 			} else {
@@ -312,9 +316,10 @@ public class Scene extends Entity implements KeyListener, FocusListener {
 	 * @param height
 	 *            The height of the destination frame. If < 1 the scene is only
 	 *            update.
+	 * @return this scene for chaining.
 	 */
-	public final void simulate(Graphics2D graphics, int width, int height) {
-		simulate(graphics, width, height, 0);
+	public final Scene simulate(Graphics2D graphics, int width, int height) {
+		return simulate(graphics, width, height, 0);
 	}
 
 	/**
@@ -333,8 +338,9 @@ public class Scene extends Entity implements KeyListener, FocusListener {
 	 *            update.
 	 * @param tpf
 	 *            The time-per-frame to update the children states.
+	 * @return this scene for chaining.
 	 */
-	public final void simulate(Graphics2D graphics, int width, int height,
+	public final Scene simulate(Graphics2D graphics, int width, int height,
 			long tpf) {
 
 		// Only update if tpf is > 0
@@ -387,5 +393,6 @@ public class Scene extends Entity implements KeyListener, FocusListener {
 				copy.dispose();
 			}
 		}
+		return this;
 	}
 }

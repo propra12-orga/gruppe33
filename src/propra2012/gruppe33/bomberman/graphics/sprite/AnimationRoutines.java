@@ -1,6 +1,6 @@
 package propra2012.gruppe33.bomberman.graphics.sprite;
 
-import propra2012.gruppe33.engine.graphics.sprite.AnimationMap;
+import propra2012.gruppe33.engine.graphics.sprite.AnimationBundle;
 import propra2012.gruppe33.engine.graphics.sprite.Sprite;
 import propra2012.gruppe33.engine.resources.assets.AssetManager;
 
@@ -13,49 +13,53 @@ import propra2012.gruppe33.engine.resources.assets.AssetManager;
  */
 public final class AnimationRoutines {
 
+	public static final String RUN_PREFIX = "run_", DIE_PREFIX = "die_";
+
 	/**
 	 * Creates an animated knight char with the default keys.
 	 * 
 	 * @param assetManager
 	 *            The asset manager which contains the sprite.
-	 * @param speed
-	 *            The speed of the animation
-	 * @return a new animation map with all animations.
+	 * @param dieSpeed
+	 *            The speed of dying :D.
+	 * @param moveSpeed
+	 *            The speed of moving :D.
+	 * @return a new animation bundle with all animations.
 	 * @throws Exception
 	 *             If an exception occurs.
 	 */
-	public static AnimationMap createKnight(AssetManager assetManager,
-			long speed) throws Exception {
+	public static AnimationBundle createKnight(AssetManager assetManager,
+			long dieSpeed, long moveSpeed) throws Exception {
 		// Load the knight sprite
 		Sprite knightSprite = new Sprite(assetManager.loadImage(
 				"assets/images/animated/chars/knight.png", false), 9, 9);
 
 		// Create a new map
-		AnimationMap knight = new AnimationMap();
+		AnimationBundle knight = new AnimationBundle();
 
 		/*
 		 * Load the die animation.
 		 */
-		knight.addAnimation(knightSprite.newAnimationFromRange("die_north",
-				speed, 5, 4, 9));
-		knight.addAnimation(knightSprite.newAnimationFromRange("die_south",
-				speed, 5, 5, 9));
-		knight.addAnimation(knightSprite.newAnimationFromRange("die_west",
-				speed, 5, 6, 9));
-		knight.addAnimation(knightSprite.newAnimationFromRange("die_east",
-				speed, 5, 3, 9));
+		knight.add(knightSprite.newAnimationFromRange(DIE_PREFIX + "north",
+				dieSpeed, 5, 4, 9));
+		knight.add(knightSprite.newAnimationFromRange(DIE_PREFIX + "south",
+				dieSpeed, 5, 5, 9));
+		knight.add(knightSprite.newAnimationFromRange(DIE_PREFIX + "west",
+				dieSpeed, 5, 6, 9));
+		knight.add(knightSprite.newAnimationFromRange(DIE_PREFIX + "east",
+				dieSpeed, 5, 3, 9));
 
 		/*
 		 * Load the run animation.
 		 */
-		knight.addAnimation(knightSprite.newAnimationFromRange("run_north",
-				speed, 8, 0, 8));
-		knight.addAnimation(knightSprite.newAnimationFromRange("run_south",
-				speed, 7, 1, 8));
-		knight.addAnimation(knightSprite.newAnimationFromRange("run_west",
-				speed, 6, 2, 8));
-		knight.addAnimation(knightSprite.newAnimationFromRange("run_east",
-				speed, 0, 0, 8));
+		knight.add(knightSprite.newAnimationFromRange(RUN_PREFIX + "north",
+				moveSpeed, 8, 0, 8));
+		knight.add(knightSprite.newAnimationFromRange(RUN_PREFIX + "south",
+				moveSpeed, 7, 1, 8));
+		knight.add(knightSprite.newAnimationFromRange(RUN_PREFIX + "west",
+				moveSpeed, 6, 2, 8));
+		knight.add(knightSprite.newAnimationFromRange(RUN_PREFIX + "east",
+				moveSpeed, 0, 0, 8));
 
 		return knight;
 	}

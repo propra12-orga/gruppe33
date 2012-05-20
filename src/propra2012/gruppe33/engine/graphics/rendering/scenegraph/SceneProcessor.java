@@ -272,6 +272,7 @@ public final class SceneProcessor<S extends Scene> extends Canvas {
 			// Synchronize with toolkit
 			Toolkit.getDefaultToolkit().sync();
 		} else {
+
 			// Simulate the scene without drawing
 			root.simulate(null, -1, -1, curTime - lastTime);
 		}

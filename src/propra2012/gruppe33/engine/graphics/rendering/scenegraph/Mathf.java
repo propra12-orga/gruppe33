@@ -1,4 +1,4 @@
-package propra2012.gruppe33.engine.graphics.rendering.scenegraph.math;
+package propra2012.gruppe33.engine.graphics.rendering.scenegraph;
 
 /**
  * A math class.

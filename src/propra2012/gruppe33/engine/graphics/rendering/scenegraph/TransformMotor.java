@@ -1,16 +1,12 @@
-package propra2012.gruppe33.engine.graphics.rendering.scenegraph.transform;
-
-import propra2012.gruppe33.engine.graphics.rendering.scenegraph.Entity;
-import propra2012.gruppe33.engine.graphics.rendering.scenegraph.EntityControllerAdapter;
-import propra2012.gruppe33.engine.graphics.rendering.scenegraph.math.Vector2f;
+package propra2012.gruppe33.engine.graphics.rendering.scenegraph;
 
 /**
- * This class animates the transform.
+ * This entity animates the transform of the parent entity.
  * 
  * @author Christopher Probst
  * 
  */
-public class TransformController extends EntityControllerAdapter {
+public final class TransformMotor extends Entity {
 
 	/**
 	 * 
@@ -25,10 +21,44 @@ public class TransformController extends EntityControllerAdapter {
 					.zero(), scaleAcceleration = Vector2f.zero();
 	private float angularVeloctiy, angularAcceleration;
 
+	/*
+	 * (non-Javadoc)
+	 * 
+	 * @see
+	 * propra2012.gruppe33.engine.graphics.rendering.scenegraph.Entity#onUpdate
+	 * (float)
+	 */
+	@Override
+	protected void onUpdate(float tpf) {
+
+		// Get parent
+		Entity parent = parent();
+
+		if (parent != null && parent instanceof GraphicsEntity) {
+
+			// Convert
+			GraphicsEntity graphicsParent = (GraphicsEntity) parent;
+
+			// Process position
+			graphicsParent.position().addLocal(
+					linearVelocity.addLocal(linearAcceleration.scale(tpf))
+							.scale(tpf));
+
+			// Process scale
+			graphicsParent.scale().addLocal(
+					scaleVelocity.addLocal(scaleAcceleration.scale(tpf)).scale(
+							tpf));
+
+			// Process rotation
+			graphicsParent.rotation(graphicsParent.rotation()
+					+ (angularVeloctiy += angularAcceleration * tpf) * tpf);
+		}
+	}
+
 	/**
 	 * @return the linearVelocity.
 	 */
-	public Vector2f getLinearVelocity() {
+	public Vector2f linearVelocity() {
 		return linearVelocity;
 	}
 
@@ -36,7 +66,7 @@ public class TransformController extends EntityControllerAdapter {
 	 * @param linearVelocity
 	 *            The linearVelocity to set.
 	 */
-	public void setLinearVelocity(Vector2f linearVelocity) {
+	public void linearVelocity(Vector2f linearVelocity) {
 		if (linearVelocity == null) {
 			throw new NullPointerException("linearVelocity");
 		}
@@ -46,7 +76,7 @@ public class TransformController extends EntityControllerAdapter {
 	/**
 	 * @return the linearAcceleration.
 	 */
-	public Vector2f getLinearAcceleration() {
+	public Vector2f linearAcceleration() {
 		return linearAcceleration;
 	}
 
@@ -54,7 +84,7 @@ public class TransformController extends EntityControllerAdapter {
 	 * @param linearAcceleration
 	 *            The linearAcceleration to set.
 	 */
-	public void setLinearAcceleration(Vector2f linearAcceleration) {
+	public void linearAcceleration(Vector2f linearAcceleration) {
 		if (linearAcceleration == null) {
 			throw new NullPointerException("linearAcceleration");
 		}
@@ -64,7 +94,7 @@ public class TransformController extends EntityControllerAdapter {
 	/**
 	 * @return the scaleVelocity.
 	 */
-	public Vector2f getScaleVelocity() {
+	public Vector2f scaleVelocity() {
 		return scaleVelocity;
 	}
 
@@ -72,7 +102,7 @@ public class TransformController extends EntityControllerAdapter {
 	 * @param scaleVelocity
 	 *            The scaleVelocity to set.
 	 */
-	public void setScaleVelocity(Vector2f scaleVelocity) {
+	public void scaleVelocity(Vector2f scaleVelocity) {
 		if (scaleVelocity == null) {
 			throw new NullPointerException("scaleVelocity");
 		}
@@ -82,7 +112,7 @@ public class TransformController extends EntityControllerAdapter {
 	/**
 	 * @return the scaleAcceleration.
 	 */
-	public Vector2f getScaleAcceleration() {
+	public Vector2f scaleAcceleration() {
 		return scaleAcceleration;
 	}
 
@@ -90,7 +120,7 @@ public class TransformController extends EntityControllerAdapter {
 	 * @param scaleAcceleration
 	 *            The scaleAcceleration to set.
 	 */
-	public void setScaleAcceleration(Vector2f scaleAcceleration) {
+	public void scaleAcceleration(Vector2f scaleAcceleration) {
 		if (scaleAcceleration == null) {
 			throw new NullPointerException("scaleAcceleration");
 		}
@@ -100,7 +130,7 @@ public class TransformController extends EntityControllerAdapter {
 	/**
 	 * @return the angularVeloctiy.
 	 */
-	public float getAngularVeloctiy() {
+	public float angularVeloctiy() {
 		return angularVeloctiy;
 	}
 
@@ -108,14 +138,14 @@ public class TransformController extends EntityControllerAdapter {
 	 * @param angularVeloctiy
 	 *            The angularVeloctiy to set.
 	 */
-	public void setAngularVeloctiy(float angularVeloctiy) {
+	public void angularVeloctiy(float angularVeloctiy) {
 		this.angularVeloctiy = angularVeloctiy;
 	}
 
 	/**
 	 * @return the angularAcceleration.
 	 */
-	public float getAngularAcceleration() {
+	public float angularAcceleration() {
 		return angularAcceleration;
 	}
 
@@ -123,33 +153,7 @@ public class TransformController extends EntityControllerAdapter {
 	 * @param angularAcceleration
 	 *            The angularAcceleration to set.
 	 */
-	public void setAngularAcceleration(float angularAcceleration) {
+	public void angularAcceleration(float angularAcceleration) {
 		this.angularAcceleration = angularAcceleration;
-	}
-
-	/*
-	 * (non-Javadoc)
-	 * 
-	 * @see
-	 * propra2012.gruppe33.graphics.rendering.scenegraph.EntityController#doUpdate
-	 * (propra2012.gruppe33.graphics.rendering.scenegraph.Entity, float)
-	 */
-	@Override
-	public void doUpdate(Entity entity, float tpf) {
-
-		// Process position
-		entity.getPosition().addLocal(
-				linearVelocity.addLocal(linearAcceleration.scale(tpf)).scale(
-						tpf));
-
-		// Process scale
-		entity.getScale()
-				.addLocal(
-						scaleVelocity.addLocal(scaleAcceleration.scale(tpf))
-								.scale(tpf));
-
-		// Process rotation
-		entity.setRotation(entity.getRotation()
-				+ (angularVeloctiy + angularAcceleration * tpf) * tpf);
 	}
 }

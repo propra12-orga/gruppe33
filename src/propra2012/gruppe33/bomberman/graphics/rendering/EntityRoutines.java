@@ -1,15 +1,19 @@
 package propra2012.gruppe33.bomberman.graphics.rendering;
 
 import java.awt.Point;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 import propra2012.gruppe33.bomberman.graphics.rendering.scenegraph.grid.Grid;
+import propra2012.gruppe33.bomberman.graphics.rendering.scenegraph.grid.GridController;
 import propra2012.gruppe33.engine.graphics.rendering.scenegraph.Entity;
-import propra2012.gruppe33.engine.graphics.rendering.scenegraph.EntityControllerAdapter;
-import propra2012.gruppe33.engine.graphics.rendering.scenegraph.animation.AnimationController;
-import propra2012.gruppe33.engine.graphics.rendering.scenegraph.math.Vector2f;
+import propra2012.gruppe33.engine.graphics.rendering.scenegraph.DefaultEntityController;
+import propra2012.gruppe33.engine.graphics.rendering.scenegraph.Vector2f;
+import propra2012.gruppe33.engine.graphics.rendering.scenegraph.animation.RenderedAnimation;
+import propra2012.gruppe33.engine.graphics.rendering.scenegraph.timeout.Timeout;
 import propra2012.gruppe33.engine.graphics.sprite.Animation;
-import propra2012.gruppe33.engine.graphics.sprite.AnimationMap;
+import propra2012.gruppe33.engine.graphics.sprite.AnimationBundle;
 import propra2012.gruppe33.engine.graphics.sprite.Sprite;
 
 /**
@@ -25,6 +29,10 @@ public final class EntityRoutines {
 		return createBomb(grid, sprite, name, p.x, p.y, distance, dur);
 	}
 
+	public static Map<Point, Timeout> BOMBS = new HashMap<Point, Timeout>();
+
+	public static Entity PLAYER;
+
 	public static Entity createBomb(Grid grid, Sprite sprite, String name,
 			int x, int y, int distance, float dur) {
 
@@ -32,16 +40,23 @@ public final class EntityRoutines {
 		List<Point> points = grid.collectPoints(x, y, distance, null);
 
 		// Create animation controller
-		AnimationController explosion = new AnimationController() {
+		RenderedAnimation explosion = new RenderedAnimation() {
 			@Override
-			protected void onLastImage(Entity entity, Animation animation) {
-				entity.detach();
+			public void onMessage(Entity entity, Object message, Object... args) {
+
+				if (message == Message.LastImage) {
+					entity.detach();
+				}
 			}
+
 		};
+
 		explosion.getAnimationMap().addAnimation(
 				sprite.newAnimationFromRange("main",
 						(long) ((dur / 25) * 1000), 0, 0, 25));
-		explosion.setAnimation("main", true);
+		explosion.setAnimationName("main", true);
+		explosion.getAnimation().setLoop(false);
+		explosion.getAnimation().setPaused(false);
 
 		// The entity bomb
 		Entity bomb = new Entity(name);
@@ -49,7 +64,7 @@ public final class EntityRoutines {
 		// Set position
 		bomb.getPosition().set(grid.vectorAt(x, y));
 
-		bomb.putController(new EntityControllerAdapter() {
+		bomb.putController(new DefaultEntityController() {
 			@Override
 			public void onChildDetached(Entity entity, Entity child) {
 
@@ -60,6 +75,37 @@ public final class EntityRoutines {
 		});
 
 		for (Point p : points) {
+
+			Timeout tc = BOMBS.remove(p);
+			if (tc != null) {
+				tc.setTimeout(0);
+			}
+
+			if (PLAYER != null) {
+				// Is the player dead now ?
+				if (grid.worldToNearestPoint(PLAYER.getPosition()).equals(p)) {
+
+					RenderedAnimation ac = PLAYER
+							.getController(RenderedAnimation.class);
+
+					ac.setAnimationName(
+							"die_"
+									+ PLAYER.getController(GridController.class)
+											.getDirection().toString()
+											.toLowerCase(), true);
+
+					PLAYER.removeController(GridController.class);
+
+					Animation running = ac.getAnimationMap().get(
+							ac.getAnimation());
+
+					running.setLoop(false);
+					running.setPaused(false);
+
+					PLAYER = null;
+				}
+			}
+
 			// Get world vector
 			Vector2f v = grid.vectorAt(p);
 
@@ -99,7 +145,7 @@ public final class EntityRoutines {
 	 * @return the field entity.
 	 */
 	public static Entity createFieldEntity(String name,
-			AnimationMap animationMap, Grid grid, int sx, int sy) {
+			AnimationBundle animationMap, Grid grid, int sx, int sy) {
 
 		// Check the coords
 		if (!grid.validate(sx, sy)) {
@@ -112,7 +158,7 @@ public final class EntityRoutines {
 		// Put animation controller if not null
 		if (animationMap != null) {
 			// Create a new animation controller
-			AnimationController animation = new AnimationController(
+			RenderedAnimation animation = new RenderedAnimation(
 					animationMap);
 
 			// Attach animation

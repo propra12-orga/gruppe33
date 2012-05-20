@@ -1,7 +1,6 @@
 package propra2012.gruppe33;
 
 import java.awt.Color;
-import java.awt.Graphics2D;
 import java.awt.Image;
 import java.awt.Point;
 import java.awt.Transparency;
@@ -16,9 +15,15 @@ import propra2012.gruppe33.bomberman.graphics.rendering.scenegraph.grid.Grid;
 import propra2012.gruppe33.bomberman.graphics.rendering.scenegraph.grid.GridController;
 import propra2012.gruppe33.bomberman.graphics.sprite.AnimationRoutines;
 import propra2012.gruppe33.engine.graphics.rendering.scenegraph.Entity;
-import propra2012.gruppe33.engine.graphics.rendering.scenegraph.EntityControllerAdapter;
-import propra2012.gruppe33.engine.graphics.rendering.scenegraph.TypeFilter;
-import propra2012.gruppe33.engine.graphics.rendering.scenegraph.timeout.TimeoutController;
+import propra2012.gruppe33.engine.graphics.rendering.scenegraph.EntityController;
+import propra2012.gruppe33.engine.graphics.rendering.scenegraph.DefaultEntityController;
+import propra2012.gruppe33.engine.graphics.rendering.scenegraph.RenderedImage;
+import propra2012.gruppe33.engine.graphics.rendering.scenegraph.TransformMotor;
+import propra2012.gruppe33.engine.graphics.rendering.scenegraph.Vector2f;
+import propra2012.gruppe33.engine.graphics.rendering.scenegraph.animation.RenderedAnimation;
+import propra2012.gruppe33.engine.graphics.rendering.scenegraph.filters.TypeFilter;
+import propra2012.gruppe33.engine.graphics.rendering.scenegraph.timeout.Timeout;
+import propra2012.gruppe33.engine.graphics.sprite.Animation;
 import propra2012.gruppe33.engine.graphics.sprite.Sprite;
 import propra2012.gruppe33.engine.resources.Resource;
 import propra2012.gruppe33.engine.resources.assets.Asset;
@@ -41,14 +46,21 @@ public class PreMilestoneApp {
 		// Define the chars on which the character can move
 		grid.getMaxFieldVelocities().put('0', 600f);
 		grid.getMaxFieldVelocities().put('2', 300f);
+		grid.getMaxFieldVelocities().put('3', 600f);
 
-		// Copy the default chars
+		// Same as vec fields
 		grid.getDefaultCollectChars().addAll(
 				grid.getMaxFieldVelocities().keySet());
+
+		grid.getDefaultLineOfSightChars().add('0');
+		grid.getDefaultLineOfSightChars().add('2');
 
 		// Render solid block
 		Asset<BufferedImage> solidImage = grid.getAssetManager().loadImage(
 				"assets/images/solid.png", true);
+
+		final Asset<BufferedImage> bombImage = grid.getAssetManager()
+				.loadImage("assets/images/bomb.png", true);
 
 		Map<Character, Resource<? extends Image>> map = new HashMap<Character, Resource<? extends Image>>();
 		map.put('1', solidImage);
@@ -62,7 +74,46 @@ public class PreMilestoneApp {
 				AnimationRoutines.createKnight(grid.getAssetManager(), 33),
 				grid, 1, 1);
 
+		// Use default grid control
 		player.putController(new GridController());
+
+		player.putController(new DefaultEntityController() {
+			@Override
+			public void onMessage(Entity entity, Object message, Object... args) {
+
+				/*
+				 * If this entity has an animation controller let us update the
+				 * image.
+				 */
+				RenderedAnimation ani = entity
+						.getController(RenderedAnimation.class);
+
+				if (message == GridController.GridController.DirectionChanged) {
+
+					GridController gc = (GridController) args[0];
+
+					// Set active animation
+					ani.setAnimationName("run_"
+							+ gc.getDirection().toString().toLowerCase(), true);
+
+					ani.getAnimation().setLoop(true);
+					ani.getAnimation().setPaused(!gc.isMoving());
+
+				} else if (message == GridController.GridController.MovingChanged) {
+
+					GridController gc = (GridController) args[0];
+
+					// Lookup the animation
+					Animation running = ani.getAnimationMap().get(
+							ani.getAnimation());
+
+					// Update running state
+					if (running != null) {
+						running.setPaused(!gc.isMoving());
+					}
+				}
+			}
+		});
 
 		// Load sprite
 		final Sprite boom = new Sprite(grid.getAssetManager().loadImage(
@@ -70,6 +121,7 @@ public class PreMilestoneApp {
 
 		player.getScale().scaleLocal(2);
 
+		// Put to background
 		solid.setOrder(-100);
 
 		// Attach solid blocks
@@ -78,7 +130,9 @@ public class PreMilestoneApp {
 		// Attach child
 		grid.attach(player);
 
-		player.putController(new EntityControllerAdapter() {
+		EntityRoutines.PLAYER = player;
+
+		player.putController(new DefaultEntityController() {
 
 			boolean valid = true;
 
@@ -92,52 +146,61 @@ public class PreMilestoneApp {
 
 					if (grid.isPressed(KeyEvent.VK_SPACE)) {
 
-						if (valid) {
+						final Point exp = grid.worldToNearestPoint(entity
+								.getPosition());
+
+						if (valid && !EntityRoutines.BOMBS.containsKey(exp)) {
 							valid = false;
 
-							final Point exp = grid.worldToNearestPoint(entity
-									.getPosition());
+							final char oldChar = grid.charAt(exp, '3');
 
-							TimeoutController tc = new TimeoutController(3f) {
-								protected void onTimeout(Entity entity) {
+							Timeout tc = new Timeout(3);
 
-									Entity bomb = EntityRoutines.createBomb(
-											grid, boom, entity.getName()
-													+ " bomb", exp, 3, 0.5f);
+							EntityController ec = new DefaultEntityController() {
 
-									Entity p = entity.getParent();
-									
-									entity.detach();
-									
-									p.attach(bomb);
+								public void onMessage(Entity entity,
+										Object message, Object[] args) {
 
-									
+									if (message == TimeoutController.Timeout.Timeout) {
+										Entity bomb = EntityRoutines
+												.createBomb(grid, boom,
+														entity.getName()
+																+ " bomb", exp,
+														10, 0.25f);
 
-								};
+										Entity p = entity.getParent();
 
-								@Override
-								public void doRender(Entity entity,
-										Graphics2D original,
-										Graphics2D transformed) {
+										entity.detach();
 
-									transformed.setColor(Color.BLACK);
-									transformed.translate(-0.25f, -0.25f);
-									transformed.scale(0.5f, 0.5f);
-									transformed.fillArc(0, 0, 1, 1, 0, 360);
+										p.attach(bomb);
+
+										grid.charAt(exp, oldChar);
+
+									}
 								}
 							};
 
+							EntityRoutines.BOMBS.put(exp, tc);
+
 							Entity b = new Entity("waiting");
+							b.putController(new RenderedImage(bombImage));
 
 							b.setOrder(-1);
 							b.getScale().set(grid.getRasterWidth(),
 									grid.getRasterHeight());
 
+							b.putController(ec);
 							b.putController(tc);
 
 							b.getPosition().set(grid.vectorAt(exp));
 
 							entity.getParent().attach(b);
+
+							b.getScale().scaleLocal(0.5f);
+							b.putController(new TransformMotor());
+							b.getController(TransformMotor.class)
+									.setScaleVelocity(new Vector2f(20f, 20f));
+
 						}
 					} else {
 						valid = true;

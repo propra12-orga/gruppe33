@@ -13,7 +13,7 @@ import java.util.RandomAccess;
  * This class represents a single Animation
  * 
  * @author Matthias Hesse
- * @see AnimationMap
+ * @see AnimationBundle
  * @see Sprite
  */
 public final class Animation implements Serializable {
@@ -33,16 +33,16 @@ public final class Animation implements Serializable {
 	private final String name;
 
 	// Should this animation loop ?
-	private boolean loop = true;
+	private boolean loop = false;
 
 	// Is this animation paused ?
-	private boolean paused = false;
+	private boolean paused = true;
 
 	// The duration of the animation
-	private final long animationDuration, timePerImage;
+	private final long duration, timePerImage;
 
-	// The animation step counter
-	private int animationStep;
+	// The step counter
+	private int step;
 
 	// Time vars
 	private transient long timeStamp;
@@ -84,7 +84,7 @@ public final class Animation implements Serializable {
 		this.name = name;
 
 		// Calculate the duration for the whole animation
-		animationDuration = imageCoords.size() * timePerImage;
+		duration = imageCoords.size() * timePerImage;
 
 		// Save the time per image
 		this.timePerImage = timePerImage;
@@ -93,7 +93,12 @@ public final class Animation implements Serializable {
 		this.imageCoords = Collections.unmodifiableList(imageCoords);
 
 		// Start...
-		resetAnimation();
+		reset();
+	}
+
+	public Animation duplicate() {
+		// Create clone
+		return new Animation(sprite, name, imageCoords, timePerImage);
 	}
 
 	public Sprite getSprite() {
@@ -104,28 +109,30 @@ public final class Animation implements Serializable {
 		return paused;
 	}
 
-	public void setPaused(boolean paused) {
+	public Animation setPaused(boolean paused) {
 		this.paused = paused;
+		return this;
 	}
 
 	public boolean isLoop() {
 		return loop;
 	}
 
-	public void setLoop(boolean loop) {
+	public Animation setLoop(boolean loop) {
 		this.loop = loop;
+		return this;
 	}
 
 	public String getName() {
 		return name;
 	}
 
-	public long getAnimationDuration() {
-		return animationDuration;
+	public long geDuration() {
+		return duration;
 	}
 
-	public int getAnimationStep() {
-		return animationStep;
+	public int getStep() {
+		return step;
 	}
 
 	public List<Point> getImageCoords() {
@@ -137,53 +144,56 @@ public final class Animation implements Serializable {
 	}
 
 	public boolean isFirst() {
-		return animationStep == 0;
+		return step == 0;
 	}
 
 	public boolean isLast() {
-		return animationStep == imageCoords.size() - 1;
-	}
-	
-	public BufferedImage getAnimationImage() {
-		Point coord = imageCoords.get(animationStep);
-		return sprite.getSubImages()[coord.x][coord.y];		
+		return step == imageCoords.size() - 1;
 	}
 
-	public void update() {
+	public BufferedImage getImage() {
+		Point coord = imageCoords.get(step);
+		return sprite.getSubImages()[coord.x][coord.y];
+	}
 
-		if (paused) {
-			return;
-		}
+	public Animation update() {
 
-		// Read the actual time
-		long time = System.currentTimeMillis();
+		if (!paused) {
 
-		// Calculate if the time difference from the last step is higher then
-		// the time-per-image
-		// If yes the timeStamp will be incresed
-		if (time - timeStamp >= timePerImage) {
-			animationStep++;
-			timeStamp = time;
-		}
+			// Read the actual time
+			long time = System.currentTimeMillis();
 
-		// If the animation is at the end the animation is resetted
-		if (animationStep >= imageCoords.size()) {
-			if (loop) {
-				animationStep = 0;
-			} else {
-				animationStep = imageCoords.size() - 1;
+			// Calculate if the time difference from the last step is higher
+			// then
+			// the time-per-image
+			// If yes the timeStamp will be incresed
+			if (time - timeStamp >= timePerImage) {
+				step++;
+				timeStamp = time;
+			}
+
+			// If the animation is at the end the animation is resetted
+			if (step >= imageCoords.size()) {
+				if (loop) {
+					step = 0;
+				} else {
+					step = imageCoords.size() - 1;
+				}
 			}
 		}
+		return this;
 	}
 
 	/**
 	 * This Method resets the current Animation.
 	 */
-	public void resetAnimation() {
+	public Animation reset() {
 		// Reset the step
-		animationStep = 0;
+		step = 0;
 
 		// Set the TimeStep to the actual time
 		timeStamp = System.currentTimeMillis();
+
+		return this;
 	}
 }
