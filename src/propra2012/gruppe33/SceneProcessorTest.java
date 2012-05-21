@@ -4,7 +4,6 @@ import java.awt.Frame;
 import java.io.File;
 
 import propra2012.gruppe33.engine.graphics.GraphicsRoutines;
-import propra2012.gruppe33.engine.graphics.rendering.scenegraph.Entity;
 import propra2012.gruppe33.engine.graphics.rendering.scenegraph.RenderedImage;
 import propra2012.gruppe33.engine.graphics.rendering.scenegraph.Scene;
 import propra2012.gruppe33.engine.graphics.rendering.scenegraph.SceneProcessor;
@@ -48,7 +47,7 @@ public class SceneProcessorTest {
 
 		ic.attach(tm);
 
-		sceneProcessor.setRoot(scene);
+		sceneProcessor.root(scene);
 
 		while (!sceneProcessor.isShutdownRequested()) {
 

@@ -268,11 +268,11 @@ public final class GraphicsRoutines {
 					public void windowClosing(WindowEvent e) {
 
 						// Schedule for shutdown
-						processor.getTasks().add(new Runnable() {
+						processor.tasks().add(new Runnable() {
 
 							@Override
 							public void run() {
-								processor.setShutdownRequest(true);
+								processor.shutdownRequest(true);
 							}
 						});
 					}

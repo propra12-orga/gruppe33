@@ -10,10 +10,10 @@ import propra2012.gruppe33.engine.graphics.rendering.scenegraph.Entity;
 import propra2012.gruppe33.engine.graphics.rendering.scenegraph.GraphicsEntity;
 import propra2012.gruppe33.engine.graphics.rendering.scenegraph.Mathf;
 import propra2012.gruppe33.engine.graphics.rendering.scenegraph.Vector2f;
-import propra2012.gruppe33.engine.graphics.rendering.scenegraph.filters.TypeFilter;
-import propra2012.gruppe33.engine.graphics.rendering.scenegraph.iterators.FilteredIterator;
-import propra2012.gruppe33.engine.graphics.rendering.scenegraph.iterators.ParentIterator;
-import propra2012.gruppe33.engine.graphics.rendering.scenegraph.iterators.SiblingIterator;
+import propra2012.gruppe33.engine.graphics.rendering.scenegraph.util.ParentIterator;
+import propra2012.gruppe33.engine.graphics.rendering.scenegraph.util.SiblingIterator;
+import propra2012.gruppe33.engine.graphics.rendering.scenegraph.util.TypeFilter;
+import propra2012.gruppe33.engine.util.FilteredIterator;
 
 /**
  * This class manages the grid movement. If you attach this entity to an entity

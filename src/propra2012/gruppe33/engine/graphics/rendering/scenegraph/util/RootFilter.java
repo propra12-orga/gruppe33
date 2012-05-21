@@ -1,14 +1,18 @@
-package propra2012.gruppe33.engine.graphics.rendering.scenegraph.filters;
+package propra2012.gruppe33.engine.graphics.rendering.scenegraph.util;
 
 import propra2012.gruppe33.engine.graphics.rendering.scenegraph.Entity;
 import propra2012.gruppe33.engine.graphics.rendering.scenegraph.EntityFilter;
 
 /**
- * @author Christopher Probst
+ * A simple root entity filter.
  * 
+ * @author Christopher Probst
  */
 public final class RootFilter implements EntityFilter {
 
+	/**
+	 * Public instance for more performance.
+	 */
 	public static final RootFilter INSTANCE = new RootFilter();
 
 	/*
@@ -22,6 +26,7 @@ public final class RootFilter implements EntityFilter {
 		return entity != null && entity.isRoot();
 	}
 
+	// Should be instantiated
 	private RootFilter() {
 	}
 }

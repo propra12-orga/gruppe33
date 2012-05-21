@@ -3,7 +3,7 @@ package propra2012.gruppe33.engine.graphics.rendering.scenegraph.animation;
 import java.awt.Graphics2D;
 
 import propra2012.gruppe33.engine.graphics.rendering.scenegraph.GraphicsEntity;
-import propra2012.gruppe33.engine.graphics.rendering.scenegraph.iterators.SiblingIterator;
+import propra2012.gruppe33.engine.graphics.rendering.scenegraph.util.SiblingIterator;
 import propra2012.gruppe33.engine.graphics.sprite.Animation;
 import propra2012.gruppe33.engine.graphics.sprite.AnimationBundle;
 import propra2012.gruppe33.engine.graphics.sprite.Sprite;

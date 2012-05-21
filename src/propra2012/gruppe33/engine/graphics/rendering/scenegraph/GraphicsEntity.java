@@ -4,11 +4,11 @@ import java.awt.Graphics;
 import java.awt.Graphics2D;
 import java.awt.Image;
 import java.awt.geom.AffineTransform;
-import java.util.Iterator;
 
-import propra2012.gruppe33.engine.graphics.rendering.scenegraph.filters.TypeFilter;
-import propra2012.gruppe33.engine.graphics.rendering.scenegraph.iterators.FilteredIterator;
-import propra2012.gruppe33.engine.graphics.rendering.scenegraph.iterators.ParentIterator;
+import propra2012.gruppe33.engine.graphics.rendering.scenegraph.util.ParentIterator;
+import propra2012.gruppe33.engine.util.FilteredIterator;
+import propra2012.gruppe33.engine.util.IterationRoutines;
+import propra2012.gruppe33.engine.util.TypeFilter;
 
 /**
  * 
@@ -87,15 +87,15 @@ public class GraphicsEntity extends Entity {
 	 *         or null if there is no scene at all.
 	 */
 	public Scene findScene() {
-		Iterator<Entity> itr = new FilteredIterator<Entity>(new TypeFilter(
-				Scene.class, true), new ParentIterator(this, true));
-		return itr.hasNext() ? (Scene) itr.next() : null;
+		return (Scene) IterationRoutines.next(new FilteredIterator<Entity>(
+				new TypeFilter(Scene.class, true), new ParentIterator(this,
+						true)));
 	}
 
 	/**
 	 * @return the children visible flag.
 	 */
-	public boolean isChildrenVisible() {
+	public boolean childrenVisible() {
 		return childrenVisible;
 	}
 
@@ -112,7 +112,7 @@ public class GraphicsEntity extends Entity {
 	 * 
 	 * @param visible
 	 */
-	public void setVisible(boolean visible) {
+	public void visible(boolean visible) {
 		this.visible = visible;
 	}
 
@@ -122,7 +122,7 @@ public class GraphicsEntity extends Entity {
 	 * 
 	 * @param childrenVisible
 	 */
-	public void setChildrenVisible(boolean childrenVisible) {
+	public void areChildrenVisible(boolean childrenVisible) {
 		this.childrenVisible = childrenVisible;
 	}
 

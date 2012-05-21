@@ -1,4 +1,4 @@
-package propra2012.gruppe33.engine.graphics.rendering.scenegraph.iterators;
+package propra2012.gruppe33.engine.graphics.rendering.scenegraph.util;
 
 import java.util.Deque;
 import java.util.Iterator;
@@ -6,21 +6,40 @@ import java.util.LinkedList;
 import java.util.NoSuchElementException;
 
 import propra2012.gruppe33.engine.graphics.rendering.scenegraph.Entity;
+import propra2012.gruppe33.engine.util.ArrayIterator;
 
 /**
- * @author Christopher Probst
+ * This is a recursive-child iterator implementation.
  * 
+ * @author Christopher Probst
  */
-public final class RecursiveChildIterator extends AbstractEntityIterator {
+public final class RecursiveChildIterator extends
+		AbstractRemovableEntityIterator {
 
 	// The iteration stack
 	private final Deque<Iterator<? extends Entity>> stack = new LinkedList<Iterator<? extends Entity>>();
 
-	public RecursiveChildIterator(Entity root, boolean includeRoot) {
+	/**
+	 * Creates a new recursive child iterator using the given root. The root
+	 * will be part of the iteration, too.
+	 * 
+	 * @param root
+	 *            The root entity.
+	 */
+	public RecursiveChildIterator(Entity root) {
+		this(root, true);
+	}
 
-		if (root == null) {
-			throw new NullPointerException("root");
-		}
+	/**
+	 * Creates a new recursive child iterator using the given root.
+	 * 
+	 * @param root
+	 *            The root entity.
+	 * @param includeRoot
+	 *            The include-root flag.
+	 */
+	public RecursiveChildIterator(Entity root, boolean includeRoot) {
+		super(root, includeRoot);
 
 		// Create new iterator
 		Iterator<? extends Entity> itr = includeRoot ? new ArrayIterator<Entity>(
@@ -36,6 +55,16 @@ public final class RecursiveChildIterator extends AbstractEntityIterator {
 	/*
 	 * (non-Javadoc)
 	 * 
+	 * @see java.lang.Iterable#iterator()
+	 */
+	@Override
+	public RecursiveChildIterator iterator() {
+		return new RecursiveChildIterator(root, includeRoot);
+	}
+
+	/*
+	 * (non-Javadoc)
+	 * 
 	 * @see java.util.Iterator#hasNext()
 	 */
 	@Override
@@ -43,6 +72,11 @@ public final class RecursiveChildIterator extends AbstractEntityIterator {
 		return !stack.isEmpty();
 	}
 
+	/*
+	 * (non-Javadoc)
+	 * 
+	 * @see java.util.Iterator#next()
+	 */
 	@Override
 	public Entity next() {
 		// Do we have any elements ?

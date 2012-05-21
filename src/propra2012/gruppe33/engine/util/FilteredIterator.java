@@ -1,40 +1,31 @@
-package propra2012.gruppe33.engine.graphics.rendering.scenegraph.iterators;
+package propra2012.gruppe33.engine.util;
 
 import java.util.Iterator;
 import java.util.NoSuchElementException;
 
-import propra2012.gruppe33.engine.graphics.rendering.scenegraph.filters.IterationFilter;
-
-public final class FilteredIterator<E> implements Iterator<E> {
+/**
+ * An iterator implementation which uses a filter to iterator over a peer
+ * iterator.
+ * 
+ * @author Chistopher Probst
+ * 
+ * @param <E>
+ *            The element type.
+ */
+public final class FilteredIterator<E> extends WrappedIterator<E> {
 
 	// Used to filter elements during iteration
-	private final IterationFilter<? super E> filter;
+	private final Filter<? super E> filter;
 
-	// Get iterator
-	private final Iterator<? extends E> peerIterator;
-
-	// The next entity
+	// The next and the remove pointer
 	private E next = null, removePtr = null;
 
-	public FilteredIterator(IterationFilter<? super E> filter,
+	public FilteredIterator(Filter<? super E> filter,
 			Iterator<? extends E> peerIterator) {
-		if (peerIterator == null) {
-			throw new NullPointerException("peerIterator");
-		}
+		super(peerIterator);
 
 		// Save the iteration filter
 		this.filter = filter;
-
-		// Save the peer iterator
-		this.peerIterator = peerIterator;
-	}
-
-	public IterationFilter<? super E> filter() {
-		return filter;
-	}
-
-	public Iterator<? extends E> peerIterator() {
-		return peerIterator;
 	}
 
 	/*
@@ -49,12 +40,17 @@ public final class FilteredIterator<E> implements Iterator<E> {
 			return true;
 		}
 
+		// As long as there are elements...
 		while (peerIterator.hasNext()) {
 			// Get next
-			next = peerIterator.next();
+			E ptr = peerIterator.next();
 
 			// Seems to be a valid value!
-			if (filter == null || filter.accept(next)) {
+			if (filter == null || filter.accept(ptr)) {
+				// Save to next
+				next = ptr;
+
+				// Success...
 				return true;
 			}
 		}

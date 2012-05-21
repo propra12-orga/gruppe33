@@ -1,9 +1,10 @@
-package propra2012.gruppe33.engine.graphics.rendering.scenegraph.iterators;
+package propra2012.gruppe33.engine.util;
 
 import java.util.Iterator;
 import java.util.NoSuchElementException;
 
 /**
+ * An empty iterator of the given element type.
  * 
  * @author Christopher Probst
  * 

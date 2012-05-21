@@ -1,7 +1,7 @@
 package propra2012.gruppe33.engine.graphics.rendering.scenegraph.timeout;
 
 import propra2012.gruppe33.engine.graphics.rendering.scenegraph.Entity;
-import propra2012.gruppe33.engine.graphics.rendering.scenegraph.iterators.SiblingIterator;
+import propra2012.gruppe33.engine.graphics.rendering.scenegraph.util.SiblingIterator;
 
 /**
  * This simple controller handles timeouts.

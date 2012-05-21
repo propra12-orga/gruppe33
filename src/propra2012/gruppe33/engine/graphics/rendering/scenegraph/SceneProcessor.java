@@ -99,7 +99,7 @@ public final class SceneProcessor<S extends Scene> extends Canvas {
 	/**
 	 * @return the scene root.
 	 */
-	public S getRoot() {
+	public S root() {
 		return root;
 	}
 
@@ -109,7 +109,7 @@ public final class SceneProcessor<S extends Scene> extends Canvas {
 	 * @param root
 	 *            The root you want to set.
 	 */
-	public void setRoot(S root) {
+	public void root(S root) {
 
 		// Remove old link
 		if (this.root != null) {
@@ -135,7 +135,7 @@ public final class SceneProcessor<S extends Scene> extends Canvas {
 	 * 
 	 * @return the task queue.
 	 */
-	public BlockingQueue<Runnable> getTasks() {
+	public BlockingQueue<Runnable> tasks() {
 		return tasks;
 	}
 
@@ -159,7 +159,7 @@ public final class SceneProcessor<S extends Scene> extends Canvas {
 	 * @param shutdownRequested
 	 *            The boolean value.
 	 */
-	public void setShutdownRequest(boolean shutdownRequested) {
+	public void shutdownRequest(boolean shutdownRequested) {
 		this.shutdownRequested = shutdownRequested;
 	}
 

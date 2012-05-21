@@ -1,33 +1,58 @@
-package propra2012.gruppe33.engine.graphics.rendering.scenegraph.iterators;
+package propra2012.gruppe33.engine.graphics.rendering.scenegraph.util;
 
 import java.util.Iterator;
 
 import propra2012.gruppe33.engine.graphics.rendering.scenegraph.Entity;
+import propra2012.gruppe33.engine.util.ArrayIterator;
+import propra2012.gruppe33.engine.util.CompositeIterator;
 
 /**
+ * This is a child iterator implementation.
  * 
  * @author Christopher Probst
- * 
  */
-public final class ChildIterator extends AbstractEntityIterator {
+public final class ChildIterator extends AbstractRemovableEntityIterator {
 
 	// The peer iterator
 	private final Iterator<? extends Entity> peerIterator;
 
+	/**
+	 * Creates a new child iterator using the given root. The root will be part
+	 * of the iteration, too.
+	 * 
+	 * @param root
+	 *            The root entity.
+	 */
 	public ChildIterator(Entity root) {
 		this(root, true);
 	}
 
+	/**
+	 * Creates a new child iterator using the given root.
+	 * 
+	 * @param root
+	 *            The root entity.
+	 * @param includeRoot
+	 *            The include-root flag.
+	 */
 	@SuppressWarnings("unchecked")
 	public ChildIterator(Entity root, boolean includeRoot) {
-		if (root == null) {
-			throw new NullPointerException("root");
-		}
+		super(root, includeRoot);
 
 		// Save peer iterator
 		peerIterator = includeRoot ? new CompositeIterator<Entity>(
 				new ArrayIterator<Entity>(root), root.children().iterator())
 				: root.children().iterator();
+	}
+
+	/*
+	 * (non-Javadoc)
+	 * 
+	 * @see java.lang.Iterable#iterator()
+	 */
+	@Override
+	public ChildIterator iterator() {
+		return new ChildIterator(root, includeRoot);
 	}
 
 	/*

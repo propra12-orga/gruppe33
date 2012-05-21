@@ -10,11 +10,12 @@ import java.util.NavigableMap;
 import java.util.Set;
 import java.util.TreeMap;
 
-import propra2012.gruppe33.engine.graphics.rendering.scenegraph.filters.RootFilter;
-import propra2012.gruppe33.engine.graphics.rendering.scenegraph.iterators.ChildIterator;
-import propra2012.gruppe33.engine.graphics.rendering.scenegraph.iterators.FilteredIterator;
-import propra2012.gruppe33.engine.graphics.rendering.scenegraph.iterators.ParentIterator;
-import propra2012.gruppe33.engine.graphics.rendering.scenegraph.iterators.RecursiveChildIterator;
+import propra2012.gruppe33.engine.graphics.rendering.scenegraph.util.ChildIterator;
+import propra2012.gruppe33.engine.graphics.rendering.scenegraph.util.ParentIterator;
+import propra2012.gruppe33.engine.graphics.rendering.scenegraph.util.RecursiveChildIterator;
+import propra2012.gruppe33.engine.graphics.rendering.scenegraph.util.RootFilter;
+import propra2012.gruppe33.engine.util.FilteredIterator;
+import propra2012.gruppe33.engine.util.IterationRoutines;
 
 /**
  * 
@@ -140,7 +141,7 @@ public class Entity implements Comparable<Entity>, Iterable<Entity>,
 	 *            The order.
 	 * @return a valid set.
 	 */
-	private Set<Entity> getLazyEntities(int order) {
+	private Set<Entity> lazyEntities(int order) {
 		// Try to get the entities
 		Set<Entity> entities = children.get(order);
 
@@ -254,7 +255,7 @@ public class Entity implements Comparable<Entity>, Iterable<Entity>,
 	/**
 	 * @return the name.
 	 */
-	public String getName() {
+	public String name() {
 		return name;
 	}
 
@@ -264,7 +265,7 @@ public class Entity implements Comparable<Entity>, Iterable<Entity>,
 	 * @param name
 	 *            The new name.
 	 */
-	public void setName(String name) {
+	public void name(String name) {
 		if (name == null) {
 			throw new NullPointerException("name");
 		}
@@ -373,7 +374,7 @@ public class Entity implements Comparable<Entity>, Iterable<Entity>,
 				}
 
 				// Try to add
-				if (!parent.getLazyEntities(index).add(this)) {
+				if (!parent.lazyEntities(index).add(this)) {
 					throw new IllegalStateException("This entity could not be "
 							+ "added to the new parent set. "
 							+ "Please check your code.");
@@ -396,9 +397,8 @@ public class Entity implements Comparable<Entity>, Iterable<Entity>,
 	 *         entity is a root entity).
 	 */
 	public Entity root() {
-		Iterator<Entity> itr = new FilteredIterator<Entity>(
-				RootFilter.INSTANCE, new ParentIterator(this, true));
-		return itr.hasNext() ? itr.next() : null;
+		return IterationRoutines.next(new FilteredIterator<Entity>(
+				RootFilter.INSTANCE, new ParentIterator(this, true)));
 	}
 
 	/**
@@ -456,7 +456,7 @@ public class Entity implements Comparable<Entity>, Iterable<Entity>,
 		}
 
 		// Lookup entity set
-		Set<Entity> entities = getLazyEntities(child.index());
+		Set<Entity> entities = lazyEntities(child.index());
 
 		if (entities.add(child)) {
 
