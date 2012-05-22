@@ -79,4 +79,12 @@ public final class GridLoader {
 	// Muss nicht erstellbar sein.
 	private GridLoader() {
 	}
+	
+	private boolean nextTo(char[][] map, int x, int y, char typ) {
+		if (map[y-1][x]==typ) {return true;}
+		else if (map[y][x+1]==typ) {return true;}
+		else if (map[y+1][x]==typ) {return true;}
+		else if (map[y][x-1]==typ) {return true;}
+		else {return false;}
+	}
 }
