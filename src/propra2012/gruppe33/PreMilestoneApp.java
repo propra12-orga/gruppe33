@@ -1,19 +1,12 @@
 package propra2012.gruppe33;
 
 import java.awt.Color;
-import java.awt.Image;
-import java.awt.image.BufferedImage;
 import java.io.File;
-import java.util.HashMap;
-import java.util.Map;
 
 import propra2012.gruppe33.bomberman.graphics.rendering.EntityRoutines;
 import propra2012.gruppe33.bomberman.graphics.rendering.scenegraph.grid.Grid;
 import propra2012.gruppe33.engine.graphics.rendering.scenegraph.Entity;
 import propra2012.gruppe33.engine.graphics.rendering.scenegraph.GraphicsEntity;
-import propra2012.gruppe33.engine.graphics.sprite.Sprite;
-import propra2012.gruppe33.engine.resources.Resource;
-import propra2012.gruppe33.engine.resources.assets.Asset;
 import propra2012.gruppe33.engine.resources.assets.AssetManager;
 
 /**
@@ -30,82 +23,31 @@ public class PreMilestoneApp {
 		Grid grid = new Grid(assets, "assets/maps/smallmap.txt", 2048, 2048);
 
 		// Define the chars on which the character can move
-		grid.getMaxFieldVelocities().put('0', 600f);
-		grid.getMaxFieldVelocities().put('3', 600f);
+		grid.maxFieldVelocities().put('0', 600f);
+		grid.maxFieldVelocities().put('3', 600f);
 
 		// Same as vec fields
-		grid.getDefaultCollectChars().addAll(
-				grid.getMaxFieldVelocities().keySet());
+		grid.defaultCollectChars().addAll(grid.maxFieldVelocities().keySet());
 
-		grid.getDefaultLineOfSightChars().add('0');
-		grid.getDefaultLineOfSightChars().add('2');
+		grid.defaultLineOfSightChars().add('0');
+		grid.defaultLineOfSightChars().add('2');
 
-		// Render solid block
-		Asset<BufferedImage> solidImage = grid.assetManager().loadImage(
-				"assets/images/box1.png", true);
+		// Create ground
+		Entity ground = EntityRoutines.createGround(grid);
 
-		Asset<BufferedImage> groundImage = grid.assetManager().loadImage(
-				"assets/images/ground3.jpg", true);
+		// Create walls
+		Entity walls = EntityRoutines.createWalls(grid);
 
-		final Asset<BufferedImage> bombImage = grid.assetManager().loadImage(
-				"assets/images/bomb.png", true);
-
-		final Asset<BufferedImage> wallUP = grid.assetManager().loadImage(
-				"assets/images/wall/wallUP.png", true);
-
-		final Asset<BufferedImage> wallDOWN = grid.assetManager().loadImage(
-				"assets/images/wall/wallDOWN.png", true);
-
-		final Asset<BufferedImage> wallLEFT = grid.assetManager().loadImage(
-				"assets/images/wall/wallLEFT.png", true);
-
-		final Asset<BufferedImage> wallRIGHT = grid.assetManager().loadImage(
-				"assets/images/wall/wallRIGHT.png", true);
-
-		final Asset<BufferedImage> rc = grid.assetManager().loadImage(
-				"assets/images/wall/cornerRU.png", true);
-
-		final Asset<BufferedImage> lc = grid.assetManager().loadImage(
-				"assets/images/wall/cornerLU.png", true);
-
-		Map<Character, Resource<? extends Image>> map = new HashMap<Character, Resource<? extends Image>>();
-		map.put('1', solidImage);
-		map.put('9', wallUP);
-		map.put('8', wallDOWN);
-
-		map.put('7', wallLEFT);
-		map.put('6', wallRIGHT);
-
-		map.put('a', rc);
-		map.put('b', lc);
-
-		Map<Character, Resource<? extends Image>> floorMap = new HashMap<Character, Resource<? extends Image>>();
-		floorMap.put('1', groundImage);
-		floorMap.put('0', groundImage);
-		floorMap.put('9', groundImage);
-		floorMap.put('8', groundImage);
-		floorMap.put('7', groundImage);
-		floorMap.put('6', groundImage);
-		floorMap.put('b', groundImage);
-		floorMap.put('a', groundImage);
-
-		// Bundle render to picture
-		Entity ground = grid.bundle(floorMap);
-
-		// Bundle render to picture
-		Entity solid = grid.bundle(map);
+		// Create the solid blocks
+		Entity solids = EntityRoutines.createSolidBlocks(grid);
 
 		// Create a new local player
-		GraphicsEntity player = EntityRoutines.createPlayer(grid, 1, 1);
-
-		// Load sprite
-		final Sprite boom = new Sprite(grid.assetManager().loadImage(
-				"assets/images/animated/boom.png", false), 5, 5);
+		GraphicsEntity player = EntityRoutines.createPlayer("Kr0e", grid, 1, 1);
 
 		GraphicsEntity merged = new GraphicsEntity();
 		merged.attach(ground);
-		merged.attach(solid);
-
+		merged.attach(walls);
+		merged.attach(solids);
 		merged = grid.renderedOpaqueEntity(Color.white, merged);
 
 		grid.attach(merged);

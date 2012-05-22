@@ -256,8 +256,7 @@ public final class GridController extends Entity {
 		}
 
 		// Lookup the max speed on this field
-		Float maxSpeedObj = grid.getMaxFieldVelocities().get(
-				grid.charAt(nearest));
+		Float maxSpeedObj = grid.maxFieldVelocities().get(grid.charAt(nearest));
 
 		// Check
 		if (maxSpeedObj == null) {
@@ -288,14 +287,12 @@ public final class GridController extends Entity {
 			if (vertical) {
 				// Calc vertical movement
 				processMovement(north, true, controlledParent, grid, nearest,
-						maxSpeed, movement, tpf,
-						grid.getDefaultLineOfSightChars());
+						maxSpeed, movement, tpf, grid.defaultLineOfSightChars());
 			} else {
 
 				// Calc horizontal movement
 				processMovement(west, false, controlledParent, grid, nearest,
-						maxSpeed, movement, tpf,
-						grid.getDefaultLineOfSightChars());
+						maxSpeed, movement, tpf, grid.defaultLineOfSightChars());
 			}
 		} else if (vertical) {
 
@@ -311,17 +308,17 @@ public final class GridController extends Entity {
 			case North:
 			case South:
 
-				if (lv >= grid.getRasterHeight()) {
+				if (lv >= grid.rasterHeight()) {
 
 					// Calc horizontal movement
 					processMovement(west, false, controlledParent, grid,
 							nearest, maxSpeed, movement, tpf,
-							grid.getDefaultLineOfSightChars());
+							grid.defaultLineOfSightChars());
 				} else {
 					// Calc vertical movement
 					processMovement(north, true, controlledParent, grid,
 							nearest, maxSpeed, movement, tpf,
-							grid.getDefaultLineOfSightChars());
+							grid.defaultLineOfSightChars());
 				}
 
 				break;
@@ -329,18 +326,18 @@ public final class GridController extends Entity {
 			case West:
 			case East:
 
-				if (lh >= grid.getRasterHeight()) {
+				if (lh >= grid.rasterHeight()) {
 
 					// Calc vertical movement
 					processMovement(north, true, controlledParent, grid,
 							nearest, maxSpeed, movement, tpf,
-							grid.getDefaultLineOfSightChars());
+							grid.defaultLineOfSightChars());
 
 				} else {
 					// Calc horizontal movement
 					processMovement(west, false, controlledParent, grid,
 							nearest, maxSpeed, movement, tpf,
-							grid.getDefaultLineOfSightChars());
+							grid.defaultLineOfSightChars());
 				}
 
 				break;

@@ -183,7 +183,7 @@ public class Grid extends Scene {
 	 *         child image entities.
 	 */
 	public GraphicsEntity bundle(
-			Map<Character, Resource<? extends Image>> chars2Images) {
+			Map<Character, ? extends Resource<? extends Image>> chars2Images) {
 		if (chars2Images == null) {
 			throw new NullPointerException("chars2Images");
 		}
@@ -220,24 +220,65 @@ public class Grid extends Scene {
 	}
 
 	/**
+	 * Basically iterates over the map data and creates an entity for every
+	 * field with the given tile image.
+	 * 
+	 * @param tile
+	 *            The tile image.
+	 * @return a graphics entity which contains all bundled images stored as
+	 *         child image entities.
+	 */
+	public GraphicsEntity bundle(Resource<? extends Image> tile) {
+		if (tile == null) {
+			throw new NullPointerException("image");
+		}
+
+		// Create new root entity
+		GraphicsEntity root = new GraphicsEntity();
+
+		for (int x = 0; x < rasterX; x++) {
+			for (int y = 0; y < rasterY; y++) {
+
+				// If the char is valid...
+				if (tile != null) {
+
+					// Create child entity
+					RenderedImage child = new RenderedImage(tile);
+
+					// At first translate
+					child.position(vectorAt(x, y));
+
+					// Scale
+					child.scale().set(rasterWidth, rasterHeight);
+
+					// Attach to root
+					root.attach(child);
+				}
+			}
+		}
+
+		return root;
+	}
+
+	/**
 	 * @return the map which contains the max field velocities. Only chars
 	 *         listed here represent valid fields on which you can move.
 	 */
-	public Map<Character, Float> getMaxFieldVelocities() {
+	public Map<Character, Float> maxFieldVelocities() {
 		return maxFieldVelocities;
 	}
 
 	/**
 	 * @return the default set of chars which do not affect line-of-sight.
 	 */
-	public Set<Character> getDefaultLineOfSightChars() {
+	public Set<Character> defaultLineOfSightChars() {
 		return defaultLineOfSightChars;
 	}
 
 	/**
 	 * @return the default set of chars which do not affect collection.
 	 */
-	public Set<Character> getDefaultCollectChars() {
+	public Set<Character> defaultCollectChars() {
 		return defaultCollectChars;
 	}
 
@@ -555,14 +596,14 @@ public class Grid extends Scene {
 	/**
 	 * @return the map data.
 	 */
-	public char[][] getMapData() {
+	public char[][] mapData() {
 		return mapData;
 	}
 
 	/**
 	 * @return the world map.
 	 */
-	public Vector2f[][] getWorldMap() {
+	public Vector2f[][] worldMap() {
 		return worldMap;
 	}
 
@@ -570,7 +611,7 @@ public class Grid extends Scene {
 	 * 
 	 * @return the raster width.
 	 */
-	public float getRasterWidth() {
+	public float rasterWidth() {
 		return rasterWidth;
 	}
 
@@ -578,21 +619,21 @@ public class Grid extends Scene {
 	 * 
 	 * @return the raster height.
 	 */
-	public float getRasterHeight() {
+	public float rasterHeight() {
 		return rasterHeight;
 	}
 
 	/**
 	 * @return the rasterX.
 	 */
-	public int getRasterX() {
+	public int rasterX() {
 		return rasterX;
 	}
 
 	/**
 	 * @return the rasterY.
 	 */
-	public int getRasterY() {
+	public int rasterY() {
 		return rasterY;
 	}
 
