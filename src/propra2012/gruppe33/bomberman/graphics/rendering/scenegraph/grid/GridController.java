@@ -10,7 +10,6 @@ import propra2012.gruppe33.engine.graphics.rendering.scenegraph.Entity;
 import propra2012.gruppe33.engine.graphics.rendering.scenegraph.GraphicsEntity;
 import propra2012.gruppe33.engine.graphics.rendering.scenegraph.Mathf;
 import propra2012.gruppe33.engine.graphics.rendering.scenegraph.Vector2f;
-import propra2012.gruppe33.engine.graphics.rendering.scenegraph.util.SiblingIterator;
 import propra2012.gruppe33.engine.util.FilteredIterator;
 import propra2012.gruppe33.engine.util.TypeFilter;
 
@@ -33,6 +32,10 @@ public final class GridController extends Entity {
 	 * The "equals"-threshold.
 	 */
 	public static final float THRESHOLD = 0.01f;
+
+	public enum GridControllerEvent {
+		DirectionChanged, MovingChanged
+	}
 
 	/*
 	 * Important state variables. Used to decide when to change the key
@@ -396,8 +399,8 @@ public final class GridController extends Entity {
 			lastDirection = direction;
 
 			// Fire event
-			fireEvent(new SiblingIterator(controlledParent, true),
-					Event.DirectionChanged, this);
+			fireEvent(siblingIterator(true),
+					GridControllerEvent.DirectionChanged, this);
 		}
 
 		// Does the moving changed
@@ -406,12 +409,8 @@ public final class GridController extends Entity {
 			lastMoving = moving;
 
 			// Fire event
-			fireEvent(new SiblingIterator(controlledParent, true),
-					Event.MovingChanged, this);
+			fireEvent(siblingIterator(true), GridControllerEvent.MovingChanged,
+					this);
 		}
-	}
-
-	public enum Event {
-		DirectionChanged, MovingChanged
 	}
 }

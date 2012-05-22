@@ -45,10 +45,10 @@ public class RenderedAnimation extends GraphicsEntity {
 	protected void onUpdate(float tpf) {
 
 		// At first update
-		Animation animation = animationBundle.update(animationName);
+		Animation animation = animation();
 
 		// Check for last
-		if (animation.isLast()) {
+		if (animation != null && animation.update().isLast()) {
 			// Fire event
 			fireEvent(siblingIterator(true), AnimationEvent.LastImage, this,
 					animation);
@@ -65,20 +65,22 @@ public class RenderedAnimation extends GraphicsEntity {
 	@Override
 	protected void onRender(Graphics2D original, Graphics2D transformed) {
 
-		// Draw centered
-		transformed.translate(-0.5, -0.5);
-		transformed.drawImage(animationBundle.getImage(animationName), 0, 0, 1,
-				1, null);
+		// Get animation
+		Animation animation = animation();
+
+		if (animation != null) {
+			// Draw centered
+			transformed.translate(-0.5, -0.5);
+			transformed.drawImage(animation.image(), 0, 0, 1, 1, null);
+		}
 	}
 
 	/**
 	 * Creates a new animation controller with an empty animation bundle.
 	 * 
-	 * @param animationName
-	 *            The name of the animation you want to switch to.
 	 */
-	public RenderedAnimation(String animationName) {
-		this(new AnimationBundle(), animationName);
+	public RenderedAnimation() {
+		this(new AnimationBundle());
 	}
 
 	/**
@@ -86,16 +88,13 @@ public class RenderedAnimation extends GraphicsEntity {
 	 * 
 	 * @param animationBundle
 	 *            The animation bundle you want to use.
-	 * @param animationName
-	 *            The name of the animation you want to switch to.
 	 */
-	public RenderedAnimation(AnimationBundle animationBundle,
-			String animationName) {
+	public RenderedAnimation(AnimationBundle animationBundle) {
 		if (animationBundle == null) {
 			throw new NullPointerException("animationBundle");
 		}
-		animationName(animationName);
 		this.animationBundle = animationBundle;
+		animationName(animationName);
 	}
 
 	/**
@@ -120,15 +119,8 @@ public class RenderedAnimation extends GraphicsEntity {
 	 * @return the animation.
 	 */
 	public Animation animationName(String animationName) {
-
-		// Check the name of the animation
-		Animation animation = animationBundle
-				.get(this.animationName = animationName);
-		if (animation == null) {
-			throw new IllegalArgumentException("Name not in use");
-		} else {
-			return animation;
-		}
+		// Set and get
+		return animationBundle.get(this.animationName = animationName);
 	}
 
 	public Animation animation() {

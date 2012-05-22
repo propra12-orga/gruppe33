@@ -27,6 +27,7 @@ import propra2012.gruppe33.engine.graphics.GraphicsRoutines;
  * the networking part.
  * 
  * @author Christopher Probst
+ * @author Matthias Hesse
  * @see Asset
  * @see AssetBundle
  * @see AssetLoader
@@ -265,7 +266,7 @@ public final class AssetManager implements Serializable {
 				return source.getInputStream(entry);
 			}
 		}
-		throw new IOException("Zip path does not exist");
+		throw new IOException("Zip path \"" + assetPath + "\" does not exist");
 	}
 
 	/*

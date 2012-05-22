@@ -1,6 +1,5 @@
 package propra2012.gruppe33.bomberman.graphics.rendering.scenegraph.grid;
 
-import java.awt.Color;
 import java.awt.Image;
 import java.awt.Point;
 import java.util.ArrayList;
@@ -15,7 +14,6 @@ import propra2012.gruppe33.engine.graphics.rendering.scenegraph.RenderedImage;
 import propra2012.gruppe33.engine.graphics.rendering.scenegraph.Scene;
 import propra2012.gruppe33.engine.graphics.rendering.scenegraph.Vector2f;
 import propra2012.gruppe33.engine.resources.Resource;
-import propra2012.gruppe33.engine.resources.TransientRenderedEntity;
 import propra2012.gruppe33.engine.resources.assets.AssetLoader;
 import propra2012.gruppe33.engine.resources.assets.AssetManager;
 
@@ -241,40 +239,6 @@ public class Grid extends Scene {
 	 */
 	public Set<Character> getDefaultCollectChars() {
 		return defaultCollectChars;
-	}
-
-	/**
-	 * Basically iterates over the map data and bundles proper chars which you
-	 * can specify to images and renders them into an image for fast rendering.
-	 * 
-	 * @param chars2Images
-	 *            The map where you can define which image belongs to which
-	 *            char.
-	 * @param transparency
-	 *            The transparency level of the rendered image.
-	 * @param background
-	 *            The background color of the rendered image.
-	 * @return a graphics entity which contains a rendered image with all
-	 *         bundled images.
-	 */
-	public GraphicsEntity bundleToRenderedEntity(
-			Map<Character, Resource<? extends Image>> chars2Images,
-			int transparency, Color background) {
-
-		// Bundle to entity and store as rendered transient entity
-		TransientRenderedEntity renderedEntity = new TransientRenderedEntity(
-				this, transparency, background, bundle(chars2Images));
-
-		// Create a new entity
-		GraphicsEntity root = new RenderedImage(renderedEntity);
-
-		// Set position
-		root.position().set(width() * 0.5f, height() * 0.5f);
-
-		// Adjust scale
-		root.scale().set(width(), height());
-
-		return root;
 	}
 
 	/**

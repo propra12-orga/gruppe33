@@ -101,7 +101,7 @@ public final class Animation implements Serializable {
 		return new Animation(sprite, name, imageCoords, timePerImage);
 	}
 
-	public Sprite getSprite() {
+	public Sprite sprite() {
 		return sprite;
 	}
 
@@ -109,7 +109,7 @@ public final class Animation implements Serializable {
 		return paused;
 	}
 
-	public Animation setPaused(boolean paused) {
+	public Animation paused(boolean paused) {
 		this.paused = paused;
 		return this;
 	}
@@ -118,28 +118,28 @@ public final class Animation implements Serializable {
 		return loop;
 	}
 
-	public Animation setLoop(boolean loop) {
+	public Animation loop(boolean loop) {
 		this.loop = loop;
 		return this;
 	}
 
-	public String getName() {
+	public String name() {
 		return name;
 	}
 
-	public long geDuration() {
+	public long duration() {
 		return duration;
 	}
 
-	public int getStep() {
+	public int step() {
 		return step;
 	}
 
-	public List<Point> getImageCoords() {
+	public List<Point> imageCoords() {
 		return imageCoords;
 	}
 
-	public long getTimePerImage() {
+	public long timePerImage() {
 		return timePerImage;
 	}
 
@@ -151,7 +151,7 @@ public final class Animation implements Serializable {
 		return step == imageCoords.size() - 1;
 	}
 
-	public BufferedImage getImage() {
+	public BufferedImage image() {
 		Point coord = imageCoords.get(step);
 		return sprite.getSubImages()[coord.x][coord.y];
 	}

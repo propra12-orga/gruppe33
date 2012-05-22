@@ -5,6 +5,7 @@ import java.awt.Component;
 import java.awt.Graphics;
 import java.awt.Graphics2D;
 import java.awt.Image;
+import java.awt.Transparency;
 import java.awt.event.FocusEvent;
 import java.awt.event.FocusListener;
 import java.awt.event.KeyEvent;
@@ -12,6 +13,7 @@ import java.awt.event.KeyListener;
 import java.util.HashMap;
 import java.util.Map;
 
+import propra2012.gruppe33.engine.resources.TransientRenderedEntity;
 import propra2012.gruppe33.engine.resources.assets.AssetManager;
 
 /**
@@ -247,6 +249,50 @@ public class Scene extends GraphicsEntity implements KeyListener, FocusListener 
 	 */
 	public int height() {
 		return height;
+	}
+
+	/**
+	 * Creates a rendered opaque image using the given graphics entity.
+	 * 
+	 * @param bgColor
+	 *            The background color.
+	 * @param graphicsEntity
+	 *            The graphics entity you want to render.
+	 * @return a rendered opaque image.
+	 */
+	public RenderedImage renderedOpaqueEntity(Color bgColor,
+			GraphicsEntity graphicsEntity) {
+		return renderedEntity(Transparency.OPAQUE, bgColor, graphicsEntity);
+	}
+
+	/**
+	 * Creates a rendered image using the given graphics entity.
+	 * 
+	 * @param transparency
+	 *            The transparency.
+	 * @param bgColor
+	 *            The background color.
+	 * @param graphicsEntity
+	 *            The graphics entity you want to render.
+	 * @return a rendered image.
+	 */
+	public RenderedImage renderedEntity(int transparency, Color bgColor,
+			GraphicsEntity graphicsEntity) {
+
+		// Bundle to entity and store as rendered transient entity
+		TransientRenderedEntity renderedEntity = new TransientRenderedEntity(
+				this, transparency, bgColor, graphicsEntity);
+
+		// Create a new entity
+		RenderedImage root = new RenderedImage(renderedEntity);
+
+		// Set position
+		root.position().set(width * 0.5f, height * 0.5f);
+
+		// Adjust scale
+		root.scale().set(width, height);
+
+		return root;
 	}
 
 	/**

@@ -1,5 +1,10 @@
 package propra2012.gruppe33.bomberman.graphics.sprite;
 
+import propra2012.gruppe33.bomberman.graphics.rendering.scenegraph.grid.GridController;
+import propra2012.gruppe33.bomberman.graphics.rendering.scenegraph.grid.GridController.GridControllerEvent;
+import propra2012.gruppe33.engine.graphics.rendering.scenegraph.Entity;
+import propra2012.gruppe33.engine.graphics.rendering.scenegraph.animation.RenderedAnimation;
+import propra2012.gruppe33.engine.graphics.sprite.Animation;
 import propra2012.gruppe33.engine.graphics.sprite.AnimationBundle;
 import propra2012.gruppe33.engine.graphics.sprite.Sprite;
 import propra2012.gruppe33.engine.resources.assets.AssetManager;
@@ -14,6 +19,63 @@ import propra2012.gruppe33.engine.resources.assets.AssetManager;
 public final class AnimationRoutines {
 
 	public static final String RUN_PREFIX = "run_", DIE_PREFIX = "die_";
+
+	public static Entity createGridControllerAnimationHandler(
+			final RenderedAnimation renderedAnimation) {
+		if (renderedAnimation == null) {
+			throw new NullPointerException("renderedAnimation");
+		}
+
+		return new Entity() {
+
+			/**
+			 * 
+			 */
+			private static final long serialVersionUID = 1L;
+
+			@Override
+			protected void onEvent(Object event, Object... params) {
+				super.onEvent(event, params);
+
+				if (event instanceof GridControllerEvent) {
+
+					switch ((GridControllerEvent) event) {
+					case DirectionChanged:
+
+						GridController gc = (GridController) params[0];
+
+						// Set active animation
+						renderedAnimation.animationName(RUN_PREFIX
+								+ gc.direction().toString().toLowerCase());
+
+						// Lookup the animation
+						Animation running = renderedAnimation.animation();
+
+						if (running != null) {
+							running.reset().loop(true).paused(!gc.isMoving());
+						}
+
+						break;
+
+					case MovingChanged:
+
+						gc = (GridController) params[0];
+
+						// Lookup the animation
+						running = renderedAnimation.animation();
+
+						if (running != null) {
+							// Update running state
+							running.paused(!gc.isMoving());
+						}
+
+						break;
+					}
+
+				}
+			}
+		};
+	}
 
 	/**
 	 * Creates an animated knight char with the default keys.

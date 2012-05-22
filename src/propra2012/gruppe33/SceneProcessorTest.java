@@ -1,14 +1,12 @@
 package propra2012.gruppe33;
 
 import java.awt.Frame;
-import java.io.File;
 
+import propra2012.gruppe33.bomberman.graphics.rendering.scenegraph.grid.Grid;
 import propra2012.gruppe33.engine.graphics.GraphicsRoutines;
-import propra2012.gruppe33.engine.graphics.rendering.scenegraph.RenderedImage;
 import propra2012.gruppe33.engine.graphics.rendering.scenegraph.Scene;
 import propra2012.gruppe33.engine.graphics.rendering.scenegraph.SceneProcessor;
-import propra2012.gruppe33.engine.graphics.rendering.scenegraph.TransformMotor;
-import propra2012.gruppe33.engine.resources.assets.AssetManager;
+import propra2012.gruppe33.engine.io.IoRoutines;
 
 /**
  * 
@@ -27,27 +25,12 @@ public class SceneProcessorTest {
 				800, 600);
 
 		// Create the grid
-		// Grid grid = PreMilestoneApp.createDemoGame();
+		Grid grid = PreMilestoneApp.createDemoGame();
+
+		grid = (Grid) IoRoutines.deserialize(IoRoutines.serialize(grid));
 
 		// Set root
-		// gridWorld.setRoot(grid);
-
-		Scene scene = new Scene(
-				new AssetManager(new File("scenes/default.zip")), 1024, 1024);
-
-		RenderedImage ic = new RenderedImage(scene.assetManager().loadImage(
-				"assets/images/solid.png", true));
-
-		ic.scale().scaleLocal(400);
-		ic.position().set(512, 512);
-		scene.attach(ic);
-
-		TransformMotor tm = new TransformMotor();
-		tm.angularAcceleration(1);
-
-		ic.attach(tm);
-
-		sceneProcessor.root(scene);
+		sceneProcessor.root(grid);
 
 		while (!sceneProcessor.isShutdownRequested()) {
 
