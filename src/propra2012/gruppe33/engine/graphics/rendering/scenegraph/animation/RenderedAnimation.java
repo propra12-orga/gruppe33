@@ -24,7 +24,7 @@ public class RenderedAnimation extends GraphicsEntity {
 	 */
 	private static final long serialVersionUID = 1L;
 
-	public enum AnimationEvent {
+	public enum RenderedAnimationEvent {
 		LastImage
 	}
 
@@ -50,8 +50,10 @@ public class RenderedAnimation extends GraphicsEntity {
 		// Check for last
 		if (animation != null && animation.update().isLast()) {
 			// Fire event
-			fireEvent(siblingIterator(true), AnimationEvent.LastImage, this,
-					animation);
+			fireEvent(siblingIterator(true), RenderedAnimationEvent.LastImage,
+					this, animation);
+			fireEvent(childIterator(false, false),
+					RenderedAnimationEvent.LastImage, this, animation);
 		}
 	}
 

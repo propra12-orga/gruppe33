@@ -3,6 +3,7 @@ package propra2012.gruppe33.engine.graphics.rendering.scenegraph;
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.HashSet;
 import java.util.Iterator;
 import java.util.LinkedHashSet;
 import java.util.List;
@@ -100,6 +101,11 @@ public class Entity implements Comparable<Entity>, Iterable<Entity>,
 	 * which are mapped to their indeces.
 	 */
 	private final NavigableMap<Integer, Set<Entity>> children = new TreeMap<Integer, Set<Entity>>();
+
+	/*
+	 * The tags of this entity.
+	 */
+	private final Set<String> tags = new HashSet<String>();
 
 	/*
 	 * Used to cache children iterations.
@@ -539,6 +545,13 @@ public class Entity implements Comparable<Entity>, Iterable<Entity>,
 		for (Entity child : this) {
 			detach(child);
 		}
+	}
+
+	/**
+	 * @return the tag-set of this entity.
+	 */
+	public Set<String> tags() {
+		return tags;
 	}
 
 	/**

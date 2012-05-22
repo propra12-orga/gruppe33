@@ -1,15 +1,25 @@
 package propra2012.gruppe33.bomberman.graphics.rendering;
 
+import java.awt.Graphics;
 import java.awt.Image;
+import java.awt.Point;
 import java.awt.image.BufferedImage;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 import propra2012.gruppe33.bomberman.graphics.rendering.scenegraph.grid.Grid;
 import propra2012.gruppe33.bomberman.graphics.rendering.scenegraph.grid.GridController;
 import propra2012.gruppe33.bomberman.graphics.sprite.AnimationRoutines;
+import propra2012.gruppe33.engine.graphics.rendering.scenegraph.Entity;
 import propra2012.gruppe33.engine.graphics.rendering.scenegraph.GraphicsEntity;
+import propra2012.gruppe33.engine.graphics.rendering.scenegraph.RenderedImage;
+import propra2012.gruppe33.engine.graphics.rendering.scenegraph.TransformMotor;
 import propra2012.gruppe33.engine.graphics.rendering.scenegraph.animation.RenderedAnimation;
+import propra2012.gruppe33.engine.graphics.rendering.scenegraph.animation.RenderedAnimation.RenderedAnimationEvent;
+import propra2012.gruppe33.engine.graphics.rendering.scenegraph.timeout.DetachOnTimeout;
+import propra2012.gruppe33.engine.graphics.rendering.scenegraph.timeout.Timeout;
+import propra2012.gruppe33.engine.graphics.sprite.Sprite;
 import propra2012.gruppe33.engine.resources.Resource;
 import propra2012.gruppe33.engine.resources.assets.Asset;
 
@@ -125,6 +135,153 @@ public final class EntityRoutines {
 	//
 	// return bomb;
 	// }
+
+	// Here we can store all items
+	private static final Map<Point, GraphicsEntity> items = new HashMap<Point, GraphicsEntity>();
+
+	// Here we can store all explosions
+	private static final Map<Point, RenderedAnimation> explosions = new HashMap<Point, RenderedAnimation>();
+
+	public static boolean createBomb(final Grid grid, final Sprite sprite,
+			Resource<? extends Image> bombImage, int x, int y, float growSize,
+			float timeout, final int range) {
+
+		// Create point for the explosion
+		final Point p = new Point(x, y);
+
+		// Lookup older explosion
+		GraphicsEntity item = items.get(p);
+
+		if (item != null) {
+			System.out.println("bereits besetzt");
+			return false;
+		}
+
+		// Create new entity
+		item = new RenderedImage(bombImage) {
+
+			/**
+			 * 
+			 */
+			private static final long serialVersionUID = 1L;
+
+			@Override
+			protected void onDetached() {
+				super.onDetached();
+				items.remove(p);
+
+				List<Point> points = grid.collectPoints(p, range, null);
+
+				for (Point pp : points) {
+					createExplosion(grid, sprite, pp.x, pp.y);
+				}
+			}
+		};
+		item.tags().add("bomb");
+		items.put(p, item);
+
+		// Set index to 10
+		item.index(-1);
+
+		// Adjust position and scale
+		item.scale().set(grid.rasterWidth() / 3, grid.rasterHeight() / 3);
+		item.position().set(grid.vectorAt(x, y));
+
+		// Create transform motor
+		TransformMotor tm = new TransformMotor();
+		tm.scaleVelocity().set(1, 1).scaleLocal(growSize);
+
+		// Attach motor
+		item.attach(tm);
+
+		// Attach timeout
+		item.attach(new Timeout(timeout));
+		item.attach(new DetachOnTimeout());
+
+		// Attach to grid
+		grid.attach(item);
+
+		return true;
+	}
+
+	public static boolean createExplosion(Grid grid, Sprite sprite, int x, int y) {
+
+		// Create point for the explosion
+		final Point p = new Point(x, y);
+
+		GraphicsEntity bomb = items.get(p);
+
+		if (bomb != null && bomb.tags().contains("bomb")) {
+			bomb.detach();
+		}
+
+		// Lookup older explosion
+		RenderedAnimation renderedAnimation = explosions.get(p);
+
+		if (renderedAnimation != null) {
+			renderedAnimation.animation().reset();
+			return true;
+		}
+
+		// Create new boom animation
+		renderedAnimation = new RenderedAnimation() {
+
+			/**
+			 * 
+			 */
+			private static final long serialVersionUID = 1L;
+
+			@Override
+			protected void onDetached() {
+				super.onDetached();
+				// Remove the explosion
+				explosions.remove(p);
+			}
+		};
+		explosions.put(p, renderedAnimation);
+		renderedAnimation.animationBundle.add(sprite.newAnimationFromRange(
+				"boom", 33, 0, 0, 25));
+		renderedAnimation.animationName("boom").loop(false).paused(false);
+
+		// Set index to 10
+		renderedAnimation.index(10);
+
+		// Adjust position and scale
+		renderedAnimation.scale().set(grid.rasterWidth(), grid.rasterHeight());
+		renderedAnimation.position().set(grid.vectorAt(x, y));
+
+		// Detach if finished
+
+		renderedAnimation.attach(new Entity() {
+
+			/**
+				 * 
+				 */
+			private static final long serialVersionUID = 1L;
+
+			/*
+			 * (non-Javadoc)
+			 * 
+			 * @see propra2012.gruppe33.engine.graphics.rendering.scenegraph.
+			 * Entity#onEvent(java.lang.Object, java.lang.Object[])
+			 */
+			@Override
+			protected void onEvent(Object event, Object... params) {
+				super.onEvent(event, params);
+				if (event instanceof RenderedAnimationEvent) {
+					switch ((RenderedAnimationEvent) event) {
+					case LastImage:
+						((RenderedAnimation) params[0]).detach();
+						break;
+					}
+				}
+			}
+
+		});
+
+		grid.attach(renderedAnimation);
+		return true;
+	}
 
 	public static GraphicsEntity createGround(Grid grid) throws Exception {
 

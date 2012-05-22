@@ -1,12 +1,19 @@
 package propra2012.gruppe33;
 
 import java.awt.Color;
+import java.awt.Point;
+import java.awt.event.KeyEvent;
+import java.awt.image.BufferedImage;
 import java.io.File;
+import java.util.HashMap;
+import java.util.Map;
 
 import propra2012.gruppe33.bomberman.graphics.rendering.EntityRoutines;
 import propra2012.gruppe33.bomberman.graphics.rendering.scenegraph.grid.Grid;
 import propra2012.gruppe33.engine.graphics.rendering.scenegraph.Entity;
 import propra2012.gruppe33.engine.graphics.rendering.scenegraph.GraphicsEntity;
+import propra2012.gruppe33.engine.graphics.sprite.Sprite;
+import propra2012.gruppe33.engine.resources.assets.Asset;
 import propra2012.gruppe33.engine.resources.assets.AssetManager;
 
 /**
@@ -20,18 +27,36 @@ public class PreMilestoneApp {
 		AssetManager assets = new AssetManager(new File("scenes/default.zip"));
 
 		// Load grid from file
-		Grid grid = new Grid(assets, "assets/maps/smallmap.txt", 2048, 2048);
+		final Grid grid = new Grid(assets, "assets/maps/smallmap.txt", 2048,
+				2048);
 
 		// Define the chars on which the character can move
 		grid.maxFieldVelocities().put('0', 600f);
-		grid.maxFieldVelocities().put('3', 600f);
 
 		// Same as vec fields
 		grid.defaultCollectChars().addAll(grid.maxFieldVelocities().keySet());
 
 		grid.defaultLineOfSightChars().add('0');
-		grid.defaultLineOfSightChars().add('2');
 
+		// The explosion sprite
+		final Sprite explosion = new Sprite(assets.loadImage(
+				"assets/images/animated/boom.png", true), 5, 5);
+
+		final Asset<BufferedImage> bomb = assets.loadImage(
+				"assets/images/bomb.png", true);
+
+		final Asset<BufferedImage> breakable = assets.loadImage(
+				"assets/images/break.png", true);
+
+		Map<Character, Asset<BufferedImage>> m = new HashMap<Character, Asset<BufferedImage>>();
+		m.put('2', breakable);
+
+		GraphicsEntity b = grid.bundle(m);
+		b.index(1);
+		
+		grid.attach(b);
+		
+		
 		// Create ground
 		Entity ground = EntityRoutines.createGround(grid);
 
@@ -44,12 +69,36 @@ public class PreMilestoneApp {
 		// Create a new local player
 		GraphicsEntity player = EntityRoutines.createPlayer("Kr0e", grid, 1, 1);
 
+		player.attach(new Entity() {
+
+			boolean valid = true;
+
+			@Override
+			protected void onUpdate(float tpf) {
+				super.onUpdate(tpf);
+
+				if (grid.isPressed(KeyEvent.VK_SPACE) && valid) {
+					valid = false;
+					Point p = grid
+							.worldToNearestPoint(((GraphicsEntity) parent())
+									.position());
+
+					EntityRoutines.createBomb(grid, explosion, bomb, p.x, p.y,
+							30, 3, 3);
+
+				} else if (!grid.isPressed(KeyEvent.VK_SPACE)) {
+					valid = true;
+				}
+			}
+
+		});
+
 		GraphicsEntity merged = new GraphicsEntity();
 		merged.attach(ground);
 		merged.attach(walls);
 		merged.attach(solids);
 		merged = grid.renderedOpaqueEntity(Color.white, merged);
-
+		merged.index(-10);
 		grid.attach(merged);
 
 		// Attach child
