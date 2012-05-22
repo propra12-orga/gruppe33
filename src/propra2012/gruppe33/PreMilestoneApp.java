@@ -10,6 +10,7 @@ import java.util.Map;
 
 import propra2012.gruppe33.bomberman.graphics.rendering.EntityRoutines;
 import propra2012.gruppe33.bomberman.graphics.rendering.scenegraph.grid.Grid;
+import propra2012.gruppe33.bomberman.graphics.rendering.scenegraph.grid.GridLoader;
 import propra2012.gruppe33.engine.graphics.rendering.scenegraph.Entity;
 import propra2012.gruppe33.engine.graphics.rendering.scenegraph.GraphicsEntity;
 import propra2012.gruppe33.engine.graphics.sprite.Sprite;
@@ -30,13 +31,19 @@ public class PreMilestoneApp {
 		final Grid grid = new Grid(assets, "assets/maps/smallmap.txt", 2048,
 				2048);
 
+		GridLoader.generate(grid.mapData(), 1337);
+
 		// Define the chars on which the character can move
 		grid.maxFieldVelocities().put('0', 600f);
+		grid.maxFieldVelocities().put('s', 600f);
+		grid.maxFieldVelocities().put((char) ('0' + 1000), 600f);
 
 		// Same as vec fields
 		grid.defaultCollectChars().addAll(grid.maxFieldVelocities().keySet());
 
 		grid.defaultLineOfSightChars().add('0');
+		grid.defaultLineOfSightChars().add('s');
+		grid.defaultLineOfSightChars().add((char) ('0' + 1000));
 
 		// The explosion sprite
 		final Sprite explosion = new Sprite(assets.loadImage(
@@ -49,14 +56,13 @@ public class PreMilestoneApp {
 				"assets/images/break.png", true);
 
 		Map<Character, Asset<BufferedImage>> m = new HashMap<Character, Asset<BufferedImage>>();
-		m.put('2', breakable);
+		m.put((char) ('0' + 1000), breakable);
 
 		GraphicsEntity b = grid.bundle(m);
 		b.index(1);
-		
+
 		grid.attach(b);
-		
-		
+
 		// Create ground
 		Entity ground = EntityRoutines.createGround(grid);
 

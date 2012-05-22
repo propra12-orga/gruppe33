@@ -88,7 +88,7 @@ public final class GridLoader {
 			for (int x = 1; x < map[0].length - 1; x++) {
 				if (!nextTo(map, x, y, 's') && map[y][x] != '1') {
 					if (ran.nextInt(10 - nextToCount(map, x, y)) > 2) {
-						(int)map[y][x] += 1000;
+						map[y][x] += 1000;
 					}
 				}
 			}
