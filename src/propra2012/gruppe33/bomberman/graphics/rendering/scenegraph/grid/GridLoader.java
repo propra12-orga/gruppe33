@@ -6,6 +6,7 @@ import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.Random;
 
 /**
  * Diese Klasse laedt aus einer Textdatei Zeilenweise die Karte aus. Kann
@@ -79,12 +80,77 @@ public final class GridLoader {
 	// Muss nicht erstellbar sein.
 	private GridLoader() {
 	}
-	
-	private boolean nextTo(char[][] map, int x, int y, char typ) {
-		if (map[y-1][x]==typ) {return true;}
-		else if (map[y][x+1]==typ) {return true;}
-		else if (map[y+1][x]==typ) {return true;}
-		else if (map[y][x-1]==typ) {return true;}
-		else {return false;}
+
+	public static char[][] generate(char[][] map, long seed) {
+		// int blockcount = Math.round((map.length * map[0].length) * 0.8f);
+		Random ran = new Random(seed);
+		for (int y = 1; y < map.length - 2; y++) {
+			for (int x = 1; x < map[0].length - 2; x++) {
+				if (!nextTo(map, x, y, 's') && map[y][x] != 1) {
+					if (ran.nextInt(10 - nextToCount(map, x, y)) > 2) {
+						map[y][x] += 1000;
+					}
+				}
+			}
+		}
+		return map;
+	}
+
+	/**
+	 * Get's one field of an array and controls whether their is a field of the
+	 * expected type next to it.
+	 * 
+	 * @param map
+	 *            the array
+	 * @param x
+	 *            x coordinate of the field
+	 * @param y
+	 *            y coordinate of the field
+	 * @param typ
+	 *            the expected type
+	 * @return true, for their is a block next to it and false, for their is no
+	 *         block of teh expected typ
+	 */
+	private static boolean nextTo(char[][] map, int x, int y, char typ) {
+		if (map[y - 1][x] == typ) {
+			return true;
+		} else if (map[y][x + 1] == typ) {
+			return true;
+		} else if (map[y + 1][x] == typ) {
+			return true;
+		} else if (map[y][x - 1] == typ) {
+			return true;
+		} else {
+			return false;
+		}
+	}
+
+	/**
+	 * Get's one field of an array and counts the number of destructible blocks
+	 * around it.
+	 * 
+	 * @param map
+	 *            the array
+	 * @param x
+	 *            x coordinate of the field
+	 * @param y
+	 *            y coordinate of the field
+	 * @return the number of destructible blocks around the field.
+	 */
+	private static int nextToCount(char[][] map, int x, int y) {
+		int count = 0;
+		if (map[y - 1][x] >= (char) 1000) {
+			count++;
+		}
+		if (map[y][x + 1] >= (char) 1000) {
+			count++;
+		}
+		if (map[y + 1][x] >= (char) 1000) {
+			count++;
+		}
+		if (map[y][x - 1] >= (char) 1000) {
+			count++;
+		}
+		return count;
 	}
 }
