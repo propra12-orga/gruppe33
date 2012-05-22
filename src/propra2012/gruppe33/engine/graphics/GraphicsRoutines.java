@@ -200,7 +200,7 @@ public final class GraphicsRoutines {
 	 * @throws Exception
 	 *             If init fails.
 	 */
-	public static Frame createFrame(SceneProcessor<?> processor, String title,
+	public static Frame createFrame(SceneProcessor processor, String title,
 			int width, int height) throws Exception {
 		return createFrame(processor, title, width, height, true);
 	}
@@ -222,7 +222,7 @@ public final class GraphicsRoutines {
 	 * @throws Exception
 	 *             If init fails.
 	 */
-	public static Frame createFrame(final SceneProcessor<?> processor,
+	public static Frame createFrame(final SceneProcessor processor,
 			final String title, final int width, final int height,
 			final boolean visible) throws Exception {
 

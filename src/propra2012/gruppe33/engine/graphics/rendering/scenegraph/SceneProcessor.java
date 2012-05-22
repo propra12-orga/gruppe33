@@ -26,7 +26,7 @@ import propra2012.gruppe33.engine.graphics.GraphicsRoutines;
  * @author Christopher Probst
  * @see Scene
  */
-public final class SceneProcessor<S extends Scene> extends Canvas {
+public final class SceneProcessor extends Canvas {
 
 	/**
 	 * 
@@ -59,7 +59,7 @@ public final class SceneProcessor<S extends Scene> extends Canvas {
 	/*
 	 * The scene which we want to render.
 	 */
-	private S root;
+	private Scene root;
 
 	/*
 	 * Used for timed rendering.
@@ -99,7 +99,7 @@ public final class SceneProcessor<S extends Scene> extends Canvas {
 	/**
 	 * @return the scene root.
 	 */
-	public S root() {
+	public Scene root() {
 		return root;
 	}
 
@@ -109,7 +109,7 @@ public final class SceneProcessor<S extends Scene> extends Canvas {
 	 * @param root
 	 *            The root you want to set.
 	 */
-	public void root(S root) {
+	public void root(Scene root) {
 
 		// Remove old link
 		if (this.root != null) {

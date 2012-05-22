@@ -154,6 +154,7 @@ public class Entity implements Comparable<Entity>, Iterable<Entity>,
 
 		// Lazy creation
 		if (entities == null) {
+
 			/*
 			 * Always use linked-hash-set for better iteration performance and
 			 * correct ordering.
@@ -292,6 +293,7 @@ public class Entity implements Comparable<Entity>, Iterable<Entity>,
 	 *         unmodifiable list.
 	 */
 	public List<Entity> children() {
+
 		// Do we already have created the cache?
 		if (cachedChildren == null) {
 

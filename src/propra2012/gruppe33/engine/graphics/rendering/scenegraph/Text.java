@@ -53,7 +53,7 @@ public class Text extends GraphicsEntity {
 
 		transformed.setFont(font);
 		transformed.setColor(fontColor);
-		transformed.scale(1f / text.length(), 1f / text.length());
+		//transformed.scale(1f / text.length(), 1f / text.length());
 		transformed.drawString(text, 0, 0);
 	}
 }

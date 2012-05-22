@@ -86,13 +86,22 @@ public final class GridLoader {
 		Random ran = new Random(seed);
 		for (int y = 1; y < map.length - 1; y++) {
 			for (int x = 1; x < map[0].length - 1; x++) {
-				if (!nextTo(map, x, y, 's') && map[y][x] != '1') {
+				if (!nextTo(map, x, y, 's') && map[y][x] != '1'
+						&& map[y][x] != 's') {
 					if (ran.nextInt(10 - nextToCount(map, x, y)) > 2) {
 						map[y][x] += 1000;
 					}
 				}
 			}
 		}
+
+		// for (int y = 1; y < map.length - 1; y++) {
+		// for (int x = 1; x < map[0].length - 1; x++) {
+		// System.out.print(map[y][x]);
+		// }
+		// System.out.println();
+		// }
+
 		return map;
 	}
 

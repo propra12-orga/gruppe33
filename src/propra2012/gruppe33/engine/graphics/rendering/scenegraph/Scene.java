@@ -70,7 +70,7 @@ public class Scene extends GraphicsEntity implements KeyListener, FocusListener 
 	 * 
 	 * IMPORTANT: This attribute is transient.
 	 */
-	transient SceneProcessor<?> processor = null;
+	transient SceneProcessor processor = null;
 
 	/**
 	 * Creates a new scene without an asset manager.
@@ -125,7 +125,7 @@ public class Scene extends GraphicsEntity implements KeyListener, FocusListener 
 	/**
 	 * @return the scene processor.
 	 */
-	public SceneProcessor<?> processor() {
+	public SceneProcessor processor() {
 		return processor;
 	}
 

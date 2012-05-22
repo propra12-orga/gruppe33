@@ -261,7 +261,8 @@ public final class GridController extends Entity {
 		// Check
 		if (maxSpeedObj == null) {
 			throw new IllegalStateException("Entity grid position invalid: "
-					+ "Field char does not have a velocity.");
+					+ nearest + ". Field char " + grid.charAt(nearest)
+					+ " does not have a velocity.");
 		}
 
 		// Reduce boxing...

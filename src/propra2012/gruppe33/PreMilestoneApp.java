@@ -1,18 +1,25 @@
 package propra2012.gruppe33;
 
 import java.awt.Color;
+import java.awt.Graphics2D;
 import java.awt.Point;
 import java.awt.event.KeyEvent;
 import java.awt.image.BufferedImage;
 import java.io.File;
+import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
+import java.util.Random;
 
 import propra2012.gruppe33.bomberman.graphics.rendering.EntityRoutines;
 import propra2012.gruppe33.bomberman.graphics.rendering.scenegraph.grid.Grid;
 import propra2012.gruppe33.bomberman.graphics.rendering.scenegraph.grid.GridLoader;
 import propra2012.gruppe33.engine.graphics.rendering.scenegraph.Entity;
 import propra2012.gruppe33.engine.graphics.rendering.scenegraph.GraphicsEntity;
+import propra2012.gruppe33.engine.graphics.rendering.scenegraph.Scene;
+import propra2012.gruppe33.engine.graphics.rendering.scenegraph.SceneProcessor;
+import propra2012.gruppe33.engine.graphics.rendering.scenegraph.Text;
 import propra2012.gruppe33.engine.graphics.sprite.Sprite;
 import propra2012.gruppe33.engine.resources.assets.Asset;
 import propra2012.gruppe33.engine.resources.assets.AssetManager;
@@ -23,6 +30,43 @@ import propra2012.gruppe33.engine.resources.assets.AssetManager;
  */
 public class PreMilestoneApp {
 
+	public static Scene createGUI() throws Exception {
+
+		final Scene gui = new Scene(new AssetManager(new File(
+				"scenes/default.zip")), 1024, 1024);
+
+		gui.attach(new GraphicsEntity() {
+
+			@Override
+			protected void onRender(Graphics2D original, Graphics2D transformed) {
+				super.onRender(original, transformed);
+
+				transformed.setColor(Color.black);
+				transformed.drawString("START DEMO", 0, 0);
+				transformed.drawString("PRESS ENTER", -3, 10);
+			}
+
+			@Override
+			protected void onUpdate(float tpf) {
+				super.onUpdate(tpf);
+
+				if (gui.isPressed(KeyEvent.VK_ENTER)) {
+					SceneProcessor sp = gui.processor();
+					try {
+						sp.root(createDemoGame());
+					} catch (Exception e) {
+						e.printStackTrace();
+					}
+				}
+			}
+		});
+
+		gui.scale().set(10, 10);
+		gui.position().set(120, 512);
+
+		return gui;
+	}
+
 	public static Grid createDemoGame() throws Exception {
 
 		AssetManager assets = new AssetManager(new File("scenes/default.zip"));
@@ -31,19 +75,20 @@ public class PreMilestoneApp {
 		final Grid grid = new Grid(assets, "assets/maps/smallmap.txt", 2048,
 				2048);
 
-		GridLoader.generate(grid.mapData(), 1337);
+		GridLoader.generate(grid.mapData(), System.nanoTime());
 
 		// Define the chars on which the character can move
 		grid.maxFieldVelocities().put('0', 600f);
 		grid.maxFieldVelocities().put('s', 600f);
-		grid.maxFieldVelocities().put((char) ('0' + 1000), 600f);
+		// grid.maxFieldVelocities().put((char) ('0' + 1000), 600f);
 
 		// Same as vec fields
 		grid.defaultCollectChars().addAll(grid.maxFieldVelocities().keySet());
+		grid.defaultCollectChars().add((char) ('0' + 1000));
 
 		grid.defaultLineOfSightChars().add('0');
 		grid.defaultLineOfSightChars().add('s');
-		grid.defaultLineOfSightChars().add((char) ('0' + 1000));
+		// grid.defaultLineOfSightChars().add((char) ('0' + 1000));
 
 		// The explosion sprite
 		final Sprite explosion = new Sprite(assets.loadImage(
@@ -61,7 +106,27 @@ public class PreMilestoneApp {
 		GraphicsEntity b = grid.bundle(m);
 		b.index(1);
 
-		grid.attach(b);
+		List<Point> ptr = new ArrayList<Point>();
+		for (int y = 1; y < grid.mapData().length - 1; y++) {
+			for (int x = 1; x < grid.mapData()[0].length - 1; x++) {
+				if (grid.mapData()[y][x] >= 1000) {
+					ptr.add(new Point(x, y));
+				}
+			}
+		}
+
+		Random r = new Random();
+		EntityRoutines.randomExit = ptr.get(r.nextInt(ptr.size()));
+		EntityRoutines.exit = assets
+				.loadImage("assets/images/escape.png", true);
+
+		for (Entity e : b) {
+			GraphicsEntity ge = (GraphicsEntity) e;
+			Point p = grid.worldToNearestPoint(ge.position());
+			EntityRoutines.items.put(p, ge);
+
+			grid.attach(ge);
+		}
 
 		// Create ground
 		Entity ground = EntityRoutines.createGround(grid);

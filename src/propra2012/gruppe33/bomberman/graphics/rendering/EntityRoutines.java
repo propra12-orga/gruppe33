@@ -1,6 +1,5 @@
 package propra2012.gruppe33.bomberman.graphics.rendering;
 
-import java.awt.Graphics;
 import java.awt.Image;
 import java.awt.Point;
 import java.awt.image.BufferedImage;
@@ -8,12 +7,15 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import propra2012.gruppe33.PreMilestoneApp;
 import propra2012.gruppe33.bomberman.graphics.rendering.scenegraph.grid.Grid;
 import propra2012.gruppe33.bomberman.graphics.rendering.scenegraph.grid.GridController;
 import propra2012.gruppe33.bomberman.graphics.sprite.AnimationRoutines;
 import propra2012.gruppe33.engine.graphics.rendering.scenegraph.Entity;
 import propra2012.gruppe33.engine.graphics.rendering.scenegraph.GraphicsEntity;
 import propra2012.gruppe33.engine.graphics.rendering.scenegraph.RenderedImage;
+import propra2012.gruppe33.engine.graphics.rendering.scenegraph.Scene;
+import propra2012.gruppe33.engine.graphics.rendering.scenegraph.SceneProcessor;
 import propra2012.gruppe33.engine.graphics.rendering.scenegraph.TransformMotor;
 import propra2012.gruppe33.engine.graphics.rendering.scenegraph.animation.RenderedAnimation;
 import propra2012.gruppe33.engine.graphics.rendering.scenegraph.animation.RenderedAnimation.RenderedAnimationEvent;
@@ -30,6 +32,10 @@ import propra2012.gruppe33.engine.resources.assets.Asset;
  * 
  */
 public final class EntityRoutines {
+
+	public static Point randomExit;
+	public static Asset<BufferedImage> exit;
+	public static boolean active = false;
 
 	// public static Entity createBomb(Grid grid, Sprite sprite, String name,
 	// Point p, int distance, float dur) {
@@ -137,10 +143,10 @@ public final class EntityRoutines {
 	// }
 
 	// Here we can store all items
-	private static final Map<Point, GraphicsEntity> items = new HashMap<Point, GraphicsEntity>();
+	public static final Map<Point, GraphicsEntity> items = new HashMap<Point, GraphicsEntity>();
 
 	// Here we can store all explosions
-	private static final Map<Point, RenderedAnimation> explosions = new HashMap<Point, RenderedAnimation>();
+	public static final Map<Point, RenderedAnimation> explosions = new HashMap<Point, RenderedAnimation>();
 
 	public static boolean createBomb(final Grid grid, final Sprite sprite,
 			Resource<? extends Image> bombImage, int x, int y, float growSize,
@@ -153,7 +159,7 @@ public final class EntityRoutines {
 		GraphicsEntity item = items.get(p);
 
 		if (item != null) {
-			System.out.println("bereits besetzt");
+
 			return false;
 		}
 
@@ -174,6 +180,8 @@ public final class EntityRoutines {
 
 				for (Point pp : points) {
 					createExplosion(grid, sprite, pp.x, pp.y);
+
+					grid.charAt(pp, '0');
 				}
 			}
 		};
@@ -211,8 +219,20 @@ public final class EntityRoutines {
 
 		GraphicsEntity bomb = items.get(p);
 
-		if (bomb != null && bomb.tags().contains("bomb")) {
+		if (bomb != null) {
+
 			bomb.detach();
+
+			if (p.equals(randomExit)) {
+				RenderedImage ri = new RenderedImage(exit);
+				ri.scale().set(grid.rasterWidth(), grid.rasterHeight());
+				ri.position().set(grid.vectorAt(p));
+				ri.index(-1);
+				grid.attach(ri);
+				active = true;
+			}
+
+			items.remove(p);
 		}
 
 		// Lookup older explosion
@@ -352,10 +372,35 @@ public final class EntityRoutines {
 		return grid.bundle(map);
 	}
 
-	public static GraphicsEntity createPlayer(String playerName, Grid grid,
-			int sx, int sy) throws Exception {
+	public static GraphicsEntity createPlayer(String playerName,
+			final Grid grid, int sx, int sy) throws Exception {
 		// Create a new local player
 		GraphicsEntity player = EntityRoutines.createFieldEntity(grid, sx, sy);
+
+		player.attach(new Entity() {
+
+			@Override
+			protected void onUpdate(float tpf) {
+				super.onUpdate(tpf);
+
+				GraphicsEntity p = (GraphicsEntity) parent();
+				if (grid.worldToNearestPoint(p.position()).equals(randomExit)
+						&& active) {
+					active = false;
+					randomExit = null;
+					exit = null;
+					items.clear();
+					explosions.clear();
+					SceneProcessor s = grid.processor();
+					try {
+						s.root(PreMilestoneApp.createDemoGame());
+					} catch (Exception e) {
+						// TODO Auto-generated catch block
+						e.printStackTrace();
+					}
+				}
+			}
+		});
 
 		// Set player name
 		player.name(playerName);
