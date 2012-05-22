@@ -14,6 +14,7 @@ import propra2012.gruppe33.engine.graphics.rendering.scenegraph.util.ChildIterat
 import propra2012.gruppe33.engine.graphics.rendering.scenegraph.util.ParentIterator;
 import propra2012.gruppe33.engine.graphics.rendering.scenegraph.util.RecursiveChildIterator;
 import propra2012.gruppe33.engine.graphics.rendering.scenegraph.util.RootFilter;
+import propra2012.gruppe33.engine.graphics.rendering.scenegraph.util.SiblingIterator;
 import propra2012.gruppe33.engine.util.FilteredIterator;
 import propra2012.gruppe33.engine.util.IterationRoutines;
 
@@ -323,6 +324,60 @@ public class Entity implements Comparable<Entity>, Iterable<Entity>,
 	}
 
 	/**
+	 * {@link SiblingIterator#SiblingIterator(Entity)}
+	 */
+	public Iterator<Entity> siblingIterator() {
+		return new SiblingIterator(this);
+	}
+
+	/**
+	 * {@link SiblingIterator#SiblingIterator(Entity, boolean)}
+	 */
+	public Iterator<Entity> siblingIterator(boolean includeParent) {
+		return new SiblingIterator(this, includeParent);
+	}
+
+	/**
+	 * 
+	 * {@link ChildIterator#ChildIterator(Entity)}
+	 * <p>
+	 * OR
+	 * <p>
+	 * {@link RecursiveChildIterator#RecursiveChildIterator(Entity)}
+	 */
+	public Iterator<Entity> childIterator(boolean recursive) {
+		return recursive ? new RecursiveChildIterator(this)
+				: new ChildIterator(this);
+	}
+
+	/**
+	 * 
+	 * {@link ChildIterator#ChildIterator(Entity, boolean)}
+	 * <p>
+	 * OR
+	 * <p>
+	 * {@link RecursiveChildIterator#RecursiveChildIterator(Entity, boolean)}
+	 */
+	public Iterator<Entity> childIterator(boolean includeThis, boolean recursive) {
+		return recursive ? new RecursiveChildIterator(this, includeThis)
+				: new ChildIterator(this, includeThis);
+	}
+
+	/**
+	 * {@link ParentIterator#ParentIterator(Entity)}
+	 */
+	public Iterator<Entity> parentIterator() {
+		return new ParentIterator(this);
+	}
+
+	/**
+	 * {@link ParentIterator#ParentIterator(Entity, boolean)}
+	 */
+	public Iterator<Entity> parentIterator(boolean includeThis) {
+		return new ParentIterator(this, includeThis);
+	}
+
+	/**
 	 * @return true if this entity has no parent, otherwise false.
 	 */
 	public boolean isRoot() {
@@ -398,7 +453,7 @@ public class Entity implements Comparable<Entity>, Iterable<Entity>,
 	 */
 	public Entity root() {
 		return IterationRoutines.next(new FilteredIterator<Entity>(
-				RootFilter.INSTANCE, new ParentIterator(this, true)));
+				RootFilter.INSTANCE, parentIterator(true)));
 	}
 
 	/**
@@ -604,9 +659,9 @@ public class Entity implements Comparable<Entity>, Iterable<Entity>,
 	public final void update(EntityFilter entityFilter, float tpf) {
 
 		// Fire event for all children
-		fireEvent(new FilteredIterator<Entity>(entityFilter,
-				new RecursiveChildIterator(this, true)), EntityEvent.Update,
-				tpf);
+		fireEvent(
+				new FilteredIterator<Entity>(entityFilter, childIterator(true,
+						true)), EntityEvent.Update, tpf);
 	}
 
 	/*

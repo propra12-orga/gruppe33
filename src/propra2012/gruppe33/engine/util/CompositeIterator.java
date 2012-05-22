@@ -32,14 +32,16 @@ public final class CompositeIterator<E> implements Iterator<E> {
 	}
 
 	/**
-	 * Creates a new composite iterator using the iterable iterators.
+	 * Creates a new composite iterator using the iterator.
 	 * 
 	 * @param iterators
 	 */
-	public CompositeIterator(Iterable<? extends Iterator<? extends E>> iterators) {
+	public CompositeIterator(Iterator<? extends Iterator<? extends E>> iterators) {
 		if (iterators != null) {
-			// As long as there are iterators...
-			for (Iterator<? extends E> iterator : iterators) {
+			// Iterate...
+			while (iterators.hasNext()) {
+				// Get next
+				Iterator<? extends E> iterator = iterators.next();
 
 				// Add only valid iterators...
 				if (iterator != null && iterator.hasNext()) {

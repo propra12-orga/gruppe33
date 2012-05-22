@@ -20,6 +20,14 @@ public final class FilteredIterator<E> extends WrappedIterator<E> {
 	// The next and the remove pointer
 	private E next = null, removePtr = null;
 
+	/**
+	 * Creates a new filtered iterator.
+	 * 
+	 * @param filter
+	 *            The filter.
+	 * @param peerIterator
+	 *            The peer iterator which will be filtered.
+	 */
 	public FilteredIterator(Filter<? super E> filter,
 			Iterator<? extends E> peerIterator) {
 		super(peerIterator);

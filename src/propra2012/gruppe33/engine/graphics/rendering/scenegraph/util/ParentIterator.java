@@ -9,7 +9,7 @@ import propra2012.gruppe33.engine.graphics.rendering.scenegraph.Entity;
  * 
  * @author Christopher Probst
  */
-public final class ParentIterator extends AbstractRemovableEntityIterator {
+public final class ParentIterator extends AbstractEntityIterator {
 
 	// The next entity
 	private Entity next;
@@ -34,20 +34,11 @@ public final class ParentIterator extends AbstractRemovableEntityIterator {
 	 *            The include-root flag.
 	 */
 	public ParentIterator(Entity root, boolean includeRoot) {
-		super(root, includeRoot);
-
+		if (root == null) {
+			throw new NullPointerException("root");
+		}
 		// Setup next
 		this.next = includeRoot ? root : root.parent();
-	}
-
-	/*
-	 * (non-Javadoc)
-	 * 
-	 * @see java.lang.Iterable#iterator()
-	 */
-	@Override
-	public ParentIterator iterator() {
-		return new ParentIterator(next, includeRoot);
 	}
 
 	/*

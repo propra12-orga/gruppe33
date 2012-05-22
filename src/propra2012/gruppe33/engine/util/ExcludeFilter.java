@@ -1,5 +1,9 @@
 package propra2012.gruppe33.engine.util;
 
+import java.util.Iterator;
+import java.util.LinkedList;
+import java.util.List;
+
 /**
  * An exlcude filter basically excludes the given elements during filtering.
  * 
@@ -10,7 +14,7 @@ package propra2012.gruppe33.engine.util;
 public final class ExcludeFilter<E> implements Filter<E> {
 
 	// The excluded iterable elements
-	private final Iterable<? extends E> excluded;
+	private final List<E> excluded = new LinkedList<E>();
 
 	/**
 	 * Creates a new exclude filter using the given array elements.
@@ -23,18 +27,20 @@ public final class ExcludeFilter<E> implements Filter<E> {
 	}
 
 	/**
-	 * Creates a new exclude filter using the given iterable elements.
+	 * Creates a new exclude filter using the given element iterator.
 	 * 
 	 * @param excluded
 	 *            The excluded elements.
 	 */
-	public ExcludeFilter(Iterable<? extends E> excluded) {
+	public ExcludeFilter(Iterator<? extends E> excluded) {
 		if (excluded == null) {
 			throw new NullPointerException("excluded");
 		}
 
-		// Save the exluded elements
-		this.excluded = excluded;
+		// Add all iterator elements
+		while (excluded.hasNext()) {
+			this.excluded.add(excluded.next());
+		}
 	}
 
 	/*

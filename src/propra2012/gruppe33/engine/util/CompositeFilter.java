@@ -1,5 +1,9 @@
 package propra2012.gruppe33.engine.util;
 
+import java.util.Iterator;
+import java.util.LinkedList;
+import java.util.List;
+
 /**
  * A composite filter combines multiple filters to accept elements.
  * 
@@ -11,7 +15,7 @@ package propra2012.gruppe33.engine.util;
 public final class CompositeFilter<E> implements Filter<E> {
 
 	// The filters
-	private final Iterable<? extends Filter<? super E>> filters;
+	private final List<Filter<? super E>> filters = new LinkedList<Filter<? super E>>();
 
 	/**
 	 * Creates a new composite filter using the given filter array.
@@ -24,18 +28,20 @@ public final class CompositeFilter<E> implements Filter<E> {
 	}
 
 	/**
-	 * Creates a new composite filter using the given iterable filters.
+	 * Creates a new composite filter using the given filter iterator.
 	 * 
 	 * @param filters
 	 *            The filters.
 	 */
-	public CompositeFilter(Iterable<? extends Filter<? super E>> filters) {
+	public CompositeFilter(Iterator<? extends Filter<? super E>> filters) {
 		if (filters == null) {
 			throw new NullPointerException("filters");
 		}
 
 		// Save the filters
-		this.filters = filters;
+		while (filters.hasNext()) {
+			this.filters.add(filters.next());
+		}
 	}
 
 	/*

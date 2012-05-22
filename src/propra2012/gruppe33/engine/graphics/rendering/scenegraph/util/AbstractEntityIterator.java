@@ -5,35 +5,27 @@ import java.util.Iterator;
 import propra2012.gruppe33.engine.graphics.rendering.scenegraph.Entity;
 
 /**
- * An abstract entity iterator implementation.
+ * An abstract entity iterator implementation which detaches an entity when
+ * removing.
  * 
  * @author Christopher Probst
- * 
  */
-public abstract class AbstractEntityIterator implements Iterator<Entity>,
-		Iterable<Entity> {
+public abstract class AbstractEntityIterator implements Iterator<Entity> {
 
-	// The root entity
-	protected final Entity root;
+	// The remove pointer
+	protected Entity removePtr = null;
 
-	// The include root flag
-	protected final boolean includeRoot;
-
-	/**
-	 * Creates a new abstract entity iterator using the given root.
+	/*
+	 * (non-Javadoc)
 	 * 
-	 * @param root
-	 *            The root entity.
-	 * @param includeRoot
-	 *            The include-root flag.
+	 * @see java.util.Iterator#remove()
 	 */
-	public AbstractEntityIterator(Entity root, boolean includeRoot) {
-		if (root == null) {
-			throw new NullPointerException("root");
+	@Override
+	public void remove() {
+		// Remove by detaching
+		if (removePtr != null) {
+			removePtr.detach();
+			removePtr = null;
 		}
-
-		// Save the parameter
-		this.root = root;
-		this.includeRoot = includeRoot;
 	}
 }

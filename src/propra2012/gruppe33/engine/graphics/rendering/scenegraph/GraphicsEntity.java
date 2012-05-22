@@ -5,7 +5,6 @@ import java.awt.Graphics2D;
 import java.awt.Image;
 import java.awt.geom.AffineTransform;
 
-import propra2012.gruppe33.engine.graphics.rendering.scenegraph.util.ParentIterator;
 import propra2012.gruppe33.engine.util.FilteredIterator;
 import propra2012.gruppe33.engine.util.IterationRoutines;
 import propra2012.gruppe33.engine.util.TypeFilter;
@@ -88,8 +87,7 @@ public class GraphicsEntity extends Entity {
 	 */
 	public Scene findScene() {
 		return (Scene) IterationRoutines.next(new FilteredIterator<Entity>(
-				new TypeFilter(Scene.class, true), new ParentIterator(this,
-						true)));
+				new TypeFilter(Scene.class, true), parentIterator(true)));
 	}
 
 	/**

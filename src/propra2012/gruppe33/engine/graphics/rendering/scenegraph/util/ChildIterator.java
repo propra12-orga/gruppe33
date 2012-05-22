@@ -11,7 +11,7 @@ import propra2012.gruppe33.engine.util.CompositeIterator;
  * 
  * @author Christopher Probst
  */
-public final class ChildIterator extends AbstractRemovableEntityIterator {
+public final class ChildIterator extends AbstractEntityIterator {
 
 	// The peer iterator
 	private final Iterator<? extends Entity> peerIterator;
@@ -37,22 +37,14 @@ public final class ChildIterator extends AbstractRemovableEntityIterator {
 	 */
 	@SuppressWarnings("unchecked")
 	public ChildIterator(Entity root, boolean includeRoot) {
-		super(root, includeRoot);
+		if (root == null) {
+			throw new NullPointerException("root");
+		}
 
 		// Save peer iterator
 		peerIterator = includeRoot ? new CompositeIterator<Entity>(
 				new ArrayIterator<Entity>(root), root.children().iterator())
 				: root.children().iterator();
-	}
-
-	/*
-	 * (non-Javadoc)
-	 * 
-	 * @see java.lang.Iterable#iterator()
-	 */
-	@Override
-	public ChildIterator iterator() {
-		return new ChildIterator(root, includeRoot);
 	}
 
 	/*

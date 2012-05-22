@@ -10,10 +10,9 @@ import propra2012.gruppe33.engine.graphics.rendering.scenegraph.Entity;
 import propra2012.gruppe33.engine.graphics.rendering.scenegraph.GraphicsEntity;
 import propra2012.gruppe33.engine.graphics.rendering.scenegraph.Mathf;
 import propra2012.gruppe33.engine.graphics.rendering.scenegraph.Vector2f;
-import propra2012.gruppe33.engine.graphics.rendering.scenegraph.util.ParentIterator;
 import propra2012.gruppe33.engine.graphics.rendering.scenegraph.util.SiblingIterator;
-import propra2012.gruppe33.engine.graphics.rendering.scenegraph.util.TypeFilter;
 import propra2012.gruppe33.engine.util.FilteredIterator;
+import propra2012.gruppe33.engine.util.TypeFilter;
 
 /**
  * This class manages the grid movement. If you attach this entity to an entity
@@ -233,8 +232,7 @@ public final class GridController extends Entity {
 		// Find the grid instance
 		if (grid == null) {
 			Iterator<Entity> itr = new FilteredIterator<Entity>(new TypeFilter(
-					Grid.class, false), new ParentIterator(controlledParent,
-					true));
+					Grid.class, false), controlledParent.parentIterator(true));
 
 			if (!itr.hasNext()) {
 				return;

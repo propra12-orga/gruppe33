@@ -60,6 +60,7 @@ public class RenderedImage extends GraphicsEntity {
 	 * Creates an empty image controller with no image.
 	 */
 	public RenderedImage() {
+		this(null);
 	}
 
 	/**

@@ -1,7 +1,6 @@
 package propra2012.gruppe33.engine.graphics.rendering.scenegraph.timeout;
 
 import propra2012.gruppe33.engine.graphics.rendering.scenegraph.Entity;
-import propra2012.gruppe33.engine.graphics.rendering.scenegraph.util.SiblingIterator;
 
 /**
  * This simple controller handles timeouts.
@@ -52,8 +51,7 @@ public class Timeout extends Entity {
 		// Timeout happend
 		if (timeout <= 0) {
 			// Fire event
-			fireEvent(new SiblingIterator(this, true), TimeoutEvent.Timeout,
-					this);
+			fireEvent(siblingIterator(true), TimeoutEvent.Timeout, this);
 		}
 	}
 

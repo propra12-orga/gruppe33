@@ -3,7 +3,6 @@ package propra2012.gruppe33.engine.graphics.rendering.scenegraph.animation;
 import java.awt.Graphics2D;
 
 import propra2012.gruppe33.engine.graphics.rendering.scenegraph.GraphicsEntity;
-import propra2012.gruppe33.engine.graphics.rendering.scenegraph.util.SiblingIterator;
 import propra2012.gruppe33.engine.graphics.sprite.Animation;
 import propra2012.gruppe33.engine.graphics.sprite.AnimationBundle;
 import propra2012.gruppe33.engine.graphics.sprite.Sprite;
@@ -51,8 +50,8 @@ public class RenderedAnimation extends GraphicsEntity {
 		// Check for last
 		if (animation.isLast()) {
 			// Fire event
-			fireEvent(new SiblingIterator(this, true),
-					AnimationEvent.LastImage, this, animation);
+			fireEvent(siblingIterator(true), AnimationEvent.LastImage, this,
+					animation);
 		}
 	}
 

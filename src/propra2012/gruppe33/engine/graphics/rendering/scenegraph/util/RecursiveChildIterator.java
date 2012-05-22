@@ -14,7 +14,7 @@ import propra2012.gruppe33.engine.util.ArrayIterator;
  * @author Christopher Probst
  */
 public final class RecursiveChildIterator extends
-		AbstractRemovableEntityIterator {
+		AbstractEntityIterator {
 
 	// The iteration stack
 	private final Deque<Iterator<? extends Entity>> stack = new LinkedList<Iterator<? extends Entity>>();
@@ -39,7 +39,9 @@ public final class RecursiveChildIterator extends
 	 *            The include-root flag.
 	 */
 	public RecursiveChildIterator(Entity root, boolean includeRoot) {
-		super(root, includeRoot);
+		if (root == null) {
+			throw new NullPointerException("root");
+		}
 
 		// Create new iterator
 		Iterator<? extends Entity> itr = includeRoot ? new ArrayIterator<Entity>(
@@ -50,16 +52,6 @@ public final class RecursiveChildIterator extends
 			// Start with the root iterator
 			stack.push(itr);
 		}
-	}
-
-	/*
-	 * (non-Javadoc)
-	 * 
-	 * @see java.lang.Iterable#iterator()
-	 */
-	@Override
-	public RecursiveChildIterator iterator() {
-		return new RecursiveChildIterator(root, includeRoot);
 	}
 
 	/*
