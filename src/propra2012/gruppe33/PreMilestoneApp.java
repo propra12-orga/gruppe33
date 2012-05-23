@@ -163,7 +163,7 @@ public class PreMilestoneApp {
 			}
 
 		});
-
+		
 		GraphicsEntity merged = new GraphicsEntity();
 		merged.attach(ground);
 		merged.attach(walls);
