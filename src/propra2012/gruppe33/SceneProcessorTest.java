@@ -2,7 +2,6 @@ package propra2012.gruppe33;
 
 import java.awt.Frame;
 
-import propra2012.gruppe33.bomberman.graphics.rendering.scenegraph.grid.Grid;
 import propra2012.gruppe33.engine.graphics.GraphicsRoutines;
 import propra2012.gruppe33.engine.graphics.rendering.scenegraph.SceneProcessor;
 

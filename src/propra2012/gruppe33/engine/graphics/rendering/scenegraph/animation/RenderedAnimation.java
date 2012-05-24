@@ -50,9 +50,7 @@ public class RenderedAnimation extends GraphicsEntity {
 		// Check for last
 		if (animation != null && animation.update().isLast()) {
 			// Fire event
-			fireEvent(siblingIterator(true), RenderedAnimationEvent.LastImage,
-					this, animation);
-			fireEvent(childIterator(false, false),
+			fireEvent(iterableEventEntities().iterator(),
 					RenderedAnimationEvent.LastImage, this, animation);
 		}
 	}

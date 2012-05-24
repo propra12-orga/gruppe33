@@ -1,5 +1,6 @@
 package propra2012.gruppe33.engine.graphics.rendering.scenegraph;
 
+import java.awt.Point;
 import java.io.Serializable;
 
 /**
@@ -149,7 +150,7 @@ public final class Vector2f implements Serializable {
 	 *            The x component of this vector.
 	 * @param y
 	 *            The y component of this vector.
-	 * @return this.
+	 * @return this for chaining.
 	 */
 	public Vector2f set(float x, float y) {
 		this.x = x;
@@ -162,7 +163,7 @@ public final class Vector2f implements Serializable {
 	 * 
 	 * @param other
 	 *            The vector which you want to copy.
-	 * @return this.
+	 * @return this for chaining.
 	 */
 	public Vector2f set(Vector2f other) {
 		if (other == null) {
@@ -183,7 +184,7 @@ public final class Vector2f implements Serializable {
 	/**
 	 * Sets this vector to 0,0.
 	 * 
-	 * @return this.
+	 * @return this for chaining.
 	 */
 	public Vector2f setZero() {
 		x = y = 0;
@@ -195,7 +196,7 @@ public final class Vector2f implements Serializable {
 	 * 
 	 * @param other
 	 *            The vector you want to add to this.
-	 * @return this.
+	 * @return this for chaining.
 	 */
 	public Vector2f addLocal(Vector2f other) {
 		if (other == null) {
@@ -212,7 +213,7 @@ public final class Vector2f implements Serializable {
 	 * 
 	 * @param other
 	 *            The vector you want to subtract.
-	 * @return this.
+	 * @return this for chaining.
 	 */
 	public Vector2f subLocal(Vector2f other) {
 		if (other == null) {
@@ -229,7 +230,7 @@ public final class Vector2f implements Serializable {
 	 * 
 	 * @param scalar
 	 *            The scale factor.
-	 * @return this.
+	 * @return this for chaining.
 	 */
 	public Vector2f scaleLocal(float scalar) {
 		x *= scalar;
@@ -247,6 +248,36 @@ public final class Vector2f implements Serializable {
 	 */
 	public Vector2f scale(float scalar) {
 		return new Vector2f(this).scaleLocal(scalar);
+	}
+
+	/**
+	 * Scales this vector by multiplying each component with each other
+	 * component of the other vector.
+	 * 
+	 * @param other
+	 *            The scale vector.
+	 * @return this for chaining.
+	 */
+	public Vector2f scaleLocal(Vector2f other) {
+		if (other == null) {
+			throw new NullPointerException("other");
+		}
+
+		x *= other.x;
+		y *= other.y;
+		return this;
+	}
+
+	/**
+	 * Multiplies each component of this vector with each component of the other
+	 * vector and returns a new vector which contains the result.
+	 * 
+	 * @param other
+	 *            The scale vector.
+	 * @return the new result vector.
+	 */
+	public Vector2f scale(Vector2f other) {
+		return new Vector2f(this).scaleLocal(other);
 	}
 
 	/**
@@ -281,6 +312,24 @@ public final class Vector2f implements Serializable {
 		return new Vector2f(this).subLocal(other);
 	}
 
+	/**
+	 * Inverts this vector.
+	 * 
+	 * @return this for chaining.
+	 */
+	public Vector2f invertLocal() {
+		x = 1f / x;
+		y = 1f / y;
+		return this;
+	}
+
+	/**
+	 * @return a new vector which contains the inverse of this vector.
+	 */
+	public Vector2f invert() {
+		return new Vector2f(this).invert();
+	}
+
 	/*
 	 * (non-Javadoc)
 	 * 
@@ -293,6 +342,21 @@ public final class Vector2f implements Serializable {
 		result = prime * result + Float.floatToIntBits(x);
 		result = prime * result + Float.floatToIntBits(y);
 		return result;
+	}
+
+	/**
+	 * @return the nearest vector with integer values.
+	 */
+	public Vector2f nearest() {
+		return new Vector2f(Math.round(x), Math.round(y));
+	}
+
+	/**
+	 * @return the vector as point. The float components will not be rounded but
+	 *         converted to integers.
+	 */
+	public Point point() {
+		return new Point((int) x, (int) y);
 	}
 
 	/**

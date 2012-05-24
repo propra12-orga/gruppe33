@@ -16,10 +16,16 @@ import propra2012.gruppe33.engine.graphics.rendering.scenegraph.util.ParentItera
 import propra2012.gruppe33.engine.graphics.rendering.scenegraph.util.RecursiveChildIterator;
 import propra2012.gruppe33.engine.graphics.rendering.scenegraph.util.RootFilter;
 import propra2012.gruppe33.engine.graphics.rendering.scenegraph.util.SiblingIterator;
+import propra2012.gruppe33.engine.util.CompositeIterator;
 import propra2012.gruppe33.engine.util.FilteredIterator;
 import propra2012.gruppe33.engine.util.IterationRoutines;
 
 /**
+ * 
+ * An entity is basically a node of tree. Each entity (node) can have multiple
+ * children which are sorted by their indeces. This ensures modifiable event
+ * ordering. The entity-tree-concept is the key feature for processing
+ * hierarchically ordered data.
  * 
  * @author Christopher Probst
  * @see EntityFilter
@@ -35,7 +41,7 @@ public class Entity implements Comparable<Entity>, Iterable<Entity>,
 	 * 
 	 */
 	public enum EntityEvent {
-		Attached, ChildAttached, Detached, ChildDetached, Update
+		Attached, Detached, Update
 	}
 
 	/**
@@ -103,6 +109,23 @@ public class Entity implements Comparable<Entity>, Iterable<Entity>,
 	private final NavigableMap<Integer, Set<Entity>> children = new TreeMap<Integer, Set<Entity>>();
 
 	/*
+	 * Used to create event iterators. The default impl. iterates over all
+	 * children and sub-children.
+	 */
+	private Iterable<? extends Entity> iterableEventEntities = new Iterable<Entity>() {
+
+		/*
+		 * (non-Javadoc)
+		 * 
+		 * @see java.lang.Iterable#iterator()
+		 */
+		@Override
+		public Iterator<Entity> iterator() {
+			return childIterator(true, true);
+		}
+	};
+
+	/*
 	 * The tags of this entity.
 	 */
 	private final Set<String> tags = new HashSet<String>();
@@ -111,6 +134,11 @@ public class Entity implements Comparable<Entity>, Iterable<Entity>,
 	 * Used to cache children iterations.
 	 */
 	private List<Entity> cachedChildren = null;
+
+	/*
+	 * The attach/detach event creation flags.
+	 */
+	private boolean attachEvents = true, detachEvents = true;
 
 	/**
 	 * Removes the given set if it is empty.
@@ -189,17 +217,41 @@ public class Entity implements Comparable<Entity>, Iterable<Entity>,
 		if (event instanceof EntityEvent) {
 			switch ((EntityEvent) event) {
 			case Attached:
-				onAttached();
-				break;
-			case ChildAttached:
-				onChildAttached((Entity) params[0]);
+
+				// Convert
+				Entity parent = (Entity) params[0],
+				child = (Entity) params[1];
+
+				// Invoke default event
+				onAttached(parent, child);
+
+				// Evaluate the other events...
+				if (this == parent) {
+					onChildAttached(child);
+				} else if (this == child) {
+					onAttached();
+				} else if (parent == child) {
+					onParentAttached();
+				}
 				break;
 			case Detached:
-				onDetached();
+				// Convert
+				parent = (Entity) params[0];
+				child = (Entity) params[1];
+
+				// Invoke default event
+				onDetached(parent, child);
+
+				// Evaluate the other events...
+				if (this == parent) {
+					onChildDetached(child);
+				} else if (this == child) {
+					onDetached();
+				} else if (parent == child) {
+					onParentDetached();
+				}
 				break;
-			case ChildDetached:
-				onChildDetached((Entity) params[0]);
-				break;
+
 			case Update:
 				onUpdate((Float) params[0]);
 			}
@@ -209,19 +261,23 @@ public class Entity implements Comparable<Entity>, Iterable<Entity>,
 	/**
 	 * OVERRIDE FOR CUSTOM BEHAVIOUR.
 	 * 
-	 * This method is called when this entity is attached to an entity.
+	 * This method is called when an entity was attached to an entity.
+	 * 
+	 * @param parent
+	 *            The parent which attached the given child.
+	 * @param child
+	 *            The child which has been attached.
 	 */
-	protected void onAttached() {
+	protected void onAttached(Entity parent, Entity child) {
 
 	}
 
 	/**
 	 * OVERRIDE FOR CUSTOM BEHAVIOUR.
 	 * 
-	 * This method is called when this entity is detached from an entity.
+	 * This method is called when this entity was attached to an entity.
 	 */
-	protected void onDetached() {
-
+	protected void onAttached() {
 	}
 
 	/**
@@ -239,6 +295,36 @@ public class Entity implements Comparable<Entity>, Iterable<Entity>,
 	/**
 	 * OVERRIDE FOR CUSTOM BEHAVIOUR.
 	 * 
+	 * This method is called when the parent of this entity was attached to an
+	 * entity.
+	 */
+	protected void onParentAttached() {
+	}
+
+	/**
+	 * OVERRIDE FOR CUSTOM BEHAVIOUR.
+	 * 
+	 * This method is called when an entity was detached from an entity.
+	 * 
+	 * @param parent
+	 *            The parent which detached the given child.
+	 * @param child
+	 *            The child which has been detached.
+	 */
+	protected void onDetached(Entity parent, Entity child) {
+	}
+
+	/**
+	 * OVERRIDE FOR CUSTOM BEHAVIOUR.
+	 * 
+	 * This method is called when this entity was detached from an entity.
+	 */
+	protected void onDetached() {
+	}
+
+	/**
+	 * OVERRIDE FOR CUSTOM BEHAVIOUR.
+	 * 
 	 * This method is called when a child is detached from this entity.
 	 * 
 	 * @param child
@@ -246,6 +332,15 @@ public class Entity implements Comparable<Entity>, Iterable<Entity>,
 	 */
 	protected void onChildDetached(Entity child) {
 
+	}
+
+	/**
+	 * OVERRIDE FOR CUSTOM BEHAVIOUR.
+	 * 
+	 * This method is called when the parent of this entity was detached from an
+	 * entity.
+	 */
+	protected void onParentDetached() {
 	}
 
 	/**
@@ -272,13 +367,15 @@ public class Entity implements Comparable<Entity>, Iterable<Entity>,
 	 * 
 	 * @param name
 	 *            The new name.
+	 * @return this for chaining.
 	 */
-	public void name(String name) {
+	public Entity name(String name) {
 		if (name == null) {
 			throw new NullPointerException("name");
 		}
 
 		this.name = name;
+		return this;
 	}
 
 	/**
@@ -465,18 +562,62 @@ public class Entity implements Comparable<Entity>, Iterable<Entity>,
 	}
 
 	/**
+	 * Sets the fires-attach-events flag.
+	 * 
+	 * @param attachEvents
+	 *            True if this entity should fire attach events, otherwise
+	 *            false.
+	 * @return this for chaining.
+	 */
+	public Entity firesAttachEvents(boolean attachEvents) {
+		this.attachEvents = attachEvents;
+		return this;
+	}
+
+	/**
+	 * Sets the fires-detach-events flag.
+	 * 
+	 * @param detachEvents
+	 *            True if this entity should fire detach events, otherwise
+	 *            false.
+	 * @return this for chaining.
+	 */
+	public Entity firesDetachEvents(boolean detachEvents) {
+		this.detachEvents = detachEvents;
+		return this;
+	}
+
+	/**
+	 * @return true if this entity is able to fire attach events, otherwise
+	 *         false.
+	 */
+	public boolean firesAttachEvents() {
+		return attachEvents;
+	}
+
+	/**
+	 * @return true if this entity is able to fire detach events, otherwise
+	 *         false.
+	 */
+	public boolean firesDetachEvents() {
+		return detachEvents;
+	}
+
+	/**
 	 * Attaches all children given by the iterable interface to this entity. If
 	 * these entities have already parents they are detached automatically and
 	 * will be attached afterwards.
 	 * 
 	 * @param children
 	 *            The entities you want to attach as children.
+	 * @return this for chaining.
 	 */
-	public void attach(Iterable<Entity> children) {
+	public Entity attach(Iterable<Entity> children) {
 		if (children == null) {
 			throw new NullPointerException("children");
 		}
 		attach(children.iterator());
+		return this;
 	}
 
 	/**
@@ -486,8 +627,9 @@ public class Entity implements Comparable<Entity>, Iterable<Entity>,
 	 * 
 	 * @param children
 	 *            The entities you want to attach as children.
+	 * @return this for chaining.
 	 */
-	public void attach(Iterator<Entity> children) {
+	public Entity attach(Iterator<Entity> children) {
 		if (children == null) {
 			throw new NullPointerException("children");
 		}
@@ -497,6 +639,7 @@ public class Entity implements Comparable<Entity>, Iterable<Entity>,
 			// Attach the next child
 			attach(children.next());
 		}
+		return this;
 	}
 
 	/**
@@ -505,14 +648,19 @@ public class Entity implements Comparable<Entity>, Iterable<Entity>,
 	 * 
 	 * @param child
 	 *            The entity you want to attach as child.
+	 * @return this for chaining.
 	 */
-	public void attach(Entity child) {
+	@SuppressWarnings("unchecked")
+	public Entity attach(Entity child) {
 		if (child == null) {
 			throw new NullPointerException("child");
+		} else if (child == this) {
+			throw new IllegalArgumentException("You cannot attach an entity "
+					+ "to it self");
 		} else if (child.parent != null) {
 			// If this entity is already the parent...
 			if (child.parent == this) {
-				return;
+				return this;
 			} else if (!child.detach()) {
 				throw new IllegalStateException("Unable to detach child");
 			}
@@ -529,11 +677,21 @@ public class Entity implements Comparable<Entity>, Iterable<Entity>,
 			// Cache is invalid now
 			clearCachedChildren();
 
-			// Fire the attached event
-			fireEvent(child, EntityEvent.Attached);
-
-			// Fire the child attached event
-			fireEvent(this, EntityEvent.ChildAttached, child);
+			/*
+			 * Is this entity configured to fire attach events ?
+			 */
+			if (attachEvents) {
+				// Fire the attached event recursive
+				fireEvent(
+						// Use composite itr
+						new CompositeIterator<Entity>(
+						// Notify THIS tree
+								iterableEventEntities.iterator(),
+								// Notify the child tree
+								child.iterableEventEntities.iterator()),
+						EntityEvent.Attached, this, child);
+			}
+			return this;
 		} else {
 			throw new IllegalStateException("This entity could not add the "
 					+ "given child to its set. Please check your code.");
@@ -543,10 +701,8 @@ public class Entity implements Comparable<Entity>, Iterable<Entity>,
 	/**
 	 * Detaches all children from this entity.
 	 */
-	public void detachAll() {
-		for (Entity child : this) {
-			detach(child);
-		}
+	public boolean detachAll() {
+		return detach(iterator());
 	}
 
 	/**
@@ -615,9 +771,13 @@ public class Entity implements Comparable<Entity>, Iterable<Entity>,
 	 * @return true if the entity was a child of this entity and is detached
 	 *         successfully, otherwise false.
 	 */
+	@SuppressWarnings("unchecked")
 	public boolean detach(Entity child) {
 		if (child == null) {
 			throw new NullPointerException("child");
+		} else if (child == this) {
+			throw new IllegalArgumentException("You cannot detach an entity "
+					+ "from it self");
 		} else if (child.parent != this) {
 			return false;
 		}
@@ -640,11 +800,20 @@ public class Entity implements Comparable<Entity>, Iterable<Entity>,
 			// Cache is invalid now
 			clearCachedChildren();
 
-			// Fire the detached event
-			fireEvent(child, EntityEvent.Detached);
-
-			// Fire the child detached event
-			fireEvent(this, EntityEvent.ChildDetached, child);
+			/*
+			 * Is this entity configured to fire detach events ?
+			 */
+			if (detachEvents) {
+				// Fire the detached event recursive
+				fireEvent(
+						// Use composite itr
+						new CompositeIterator<Entity>(
+						// Notify THIS tree
+								iterableEventEntities.iterator(),
+								// Notify the child tree
+								child.iterableEventEntities.iterator()),
+						EntityEvent.Detached, this, child);
+			}
 
 			return true;
 		} else {
@@ -654,13 +823,39 @@ public class Entity implements Comparable<Entity>, Iterable<Entity>,
 	}
 
 	/**
+	 * 
+	 * @return the iterable event entities.
+	 */
+	public Iterable<? extends Entity> iterableEventEntities() {
+		return iterableEventEntities;
+	}
+
+	/**
+	 * Sets the iterable event entities.
+	 * 
+	 * @param iterableEventEntities
+	 *            The new iterable event entities.
+	 * @return this for chaining.
+	 */
+	public Entity iterableEventEntities(
+			Iterable<? extends Entity> iterableEventEntities) {
+		if (iterableEventEntities == null) {
+			throw new NullPointerException("iterableEventEntities");
+		}
+
+		this.iterableEventEntities = iterableEventEntities;
+		return this;
+	}
+
+	/**
 	 * Updates this entity and all children.
 	 * 
 	 * @param tpf
 	 *            The passed time to update time-sensitive data.
+	 * @return this for chaining.
 	 */
-	public final void update(float tpf) {
-		update(null, tpf);
+	public Entity update(float tpf) {
+		return update(null, tpf);
 	}
 
 	/**
@@ -670,13 +865,14 @@ public class Entity implements Comparable<Entity>, Iterable<Entity>,
 	 *            The entity filter or null.
 	 * @param tpf
 	 *            The passed time to update time-sensitive data.
+	 * @return this for chaining.
 	 */
-	public final void update(EntityFilter entityFilter, float tpf) {
+	public Entity update(EntityFilter entityFilter, float tpf) {
 
 		// Fire event for all children
-		fireEvent(
-				new FilteredIterator<Entity>(entityFilter, childIterator(true,
-						true)), EntityEvent.Update, tpf);
+		fireEvent(new FilteredIterator<Entity>(entityFilter,
+				iterableEventEntities.iterator()), EntityEvent.Update, tpf);
+		return this;
 	}
 
 	/*

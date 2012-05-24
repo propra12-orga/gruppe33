@@ -8,7 +8,6 @@ import java.util.List;
 import java.util.Map;
 
 import propra2012.gruppe33.PreMilestoneApp;
-import propra2012.gruppe33.bomberman.graphics.rendering.scenegraph.grid.Grid;
 import propra2012.gruppe33.bomberman.graphics.rendering.scenegraph.grid.GridController;
 import propra2012.gruppe33.bomberman.graphics.sprite.AnimationRoutines;
 import propra2012.gruppe33.engine.graphics.rendering.scenegraph.Entity;
@@ -19,6 +18,7 @@ import propra2012.gruppe33.engine.graphics.rendering.scenegraph.SceneProcessor;
 import propra2012.gruppe33.engine.graphics.rendering.scenegraph.TransformMotor;
 import propra2012.gruppe33.engine.graphics.rendering.scenegraph.animation.RenderedAnimation;
 import propra2012.gruppe33.engine.graphics.rendering.scenegraph.animation.RenderedAnimation.RenderedAnimationEvent;
+import propra2012.gruppe33.engine.graphics.rendering.scenegraph.grid.Grid;
 import propra2012.gruppe33.engine.graphics.rendering.scenegraph.timeout.DetachOnTimeout;
 import propra2012.gruppe33.engine.graphics.rendering.scenegraph.timeout.Timeout;
 import propra2012.gruppe33.engine.graphics.sprite.Sprite;
@@ -36,111 +36,6 @@ public final class EntityRoutines {
 	public static Point randomExit;
 	public static Asset<BufferedImage> exit;
 	public static boolean active = false;
-
-	// public static Entity createBomb(Grid grid, Sprite sprite, String name,
-	// Point p, int distance, float dur) {
-	// return createBomb(grid, sprite, name, p.x, p.y, distance, dur);
-	// }
-	//
-	// public static Map<Point, Timeout> BOMBS = new HashMap<Point, Timeout>();
-	//
-	// public static Entity PLAYER;
-	//
-	// public static Entity createBomb(Grid grid, Sprite sprite, String name,
-	// int x, int y, int distance, float dur) {
-	//
-	// // Collect all points
-	// List<Point> points = grid.collectPoints(x, y, distance, null);
-	//
-	// // Create animation controller
-	// RenderedAnimation explosion = new RenderedAnimation() {
-	// @Override
-	// public void onMessage(Entity entity, Object message, Object... args) {
-	//
-	// if (message == Message.LastImage) {
-	// entity.detach();
-	// }
-	// }
-	//
-	// };
-	//
-	// explosion.getAnimationMap().addAnimation(
-	// sprite.newAnimationFromRange("main",
-	// (long) ((dur / 25) * 1000), 0, 0, 25));
-	// explosion.setAnimationName("main", true);
-	// explosion.getAnimation().setLoop(false);
-	// explosion.getAnimation().setPaused(false);
-	//
-	// // The entity bomb
-	// Entity bomb = new Entity(name);
-	//
-	// // Set position
-	// bomb.getPosition().set(grid.vectorAt(x, y));
-	//
-	// bomb.putController(new DefaultEntityController() {
-	// @Override
-	// public void onChildDetached(Entity entity, Entity child) {
-	//
-	// if (!entity.hasChildren()) {
-	// entity.detach();
-	// }
-	// }
-	// });
-	//
-	// for (Point p : points) {
-	//
-	// Timeout tc = BOMBS.remove(p);
-	// if (tc != null) {
-	// tc.setTimeout(0);
-	// }
-	//
-	// if (PLAYER != null) {
-	// // Is the player dead now ?
-	// if (grid.worldToNearestPoint(PLAYER.getPosition()).equals(p)) {
-	//
-	// RenderedAnimation ac = PLAYER
-	// .getController(RenderedAnimation.class);
-	//
-	// ac.setAnimationName(
-	// "die_"
-	// + PLAYER.getController(GridController.class)
-	// .getDirection().toString()
-	// .toLowerCase(), true);
-	//
-	// PLAYER.removeController(GridController.class);
-	//
-	// Animation running = ac.getAnimationMap().get(
-	// ac.getAnimation());
-	//
-	// running.setLoop(false);
-	// running.setPaused(false);
-	//
-	// PLAYER = null;
-	// }
-	// }
-	//
-	// // Get world vector
-	// Vector2f v = grid.vectorAt(p);
-	//
-	// // Create new bomb part
-	// Entity bombPart = new Entity(name + p);
-	//
-	// // Use explosion controller
-	// bombPart.putController(explosion);
-	//
-	// // Set position relative to bomb
-	// bombPart.getPosition().set(v.sub(bomb.getPosition()));
-	//
-	// // Config scale
-	// bombPart.getScale().set(grid.getRasterWidth(),
-	// grid.getRasterHeight());
-	//
-	// // Attach the bomb part
-	// bomb.attach(bombPart);
-	// }
-	//
-	// return bomb;
-	// }
 
 	// Here we can store all items
 	public static final Map<Point, GraphicsEntity> items = new HashMap<Point, GraphicsEntity>();
@@ -203,8 +98,7 @@ public final class EntityRoutines {
 		item.attach(tm);
 
 		// Attach timeout
-		item.attach(new Timeout(timeout));
-		item.attach(new DetachOnTimeout());
+		item.attach(new Timeout(timeout).attach(new DetachOnTimeout()));
 
 		// Attach to grid
 		grid.attach(item);
@@ -330,30 +224,30 @@ public final class EntityRoutines {
 	/**
 	 * Bundles all wall components.
 	 * 
-	 * @param grid
+	 * @param scene
 	 * @return
 	 * @throws Exception
 	 */
-	public static GraphicsEntity createWalls(Grid grid) throws Exception {
+	public static GraphicsEntity createWalls(Scene scene, Grid grid) throws Exception {
 
 		/*
 		 * Load all components!
 		 */
-		Asset<BufferedImage> wallUP = grid.assetManager().loadImage(
+		Asset<BufferedImage> wallUP = scene.assetManager().loadImage(
 				"assets/images/walls/wallUP.png", true);
-		Asset<BufferedImage> wallDOWN = grid.assetManager().loadImage(
+		Asset<BufferedImage> wallDOWN = scene.assetManager().loadImage(
 				"assets/images/walls/wallDOWN.png", true);
-		Asset<BufferedImage> wallLEFT = grid.assetManager().loadImage(
+		Asset<BufferedImage> wallLEFT = scene.assetManager().loadImage(
 				"assets/images/walls/wallLEFT.png", true);
-		Asset<BufferedImage> wallRIGHT = grid.assetManager().loadImage(
+		Asset<BufferedImage> wallRIGHT = scene.assetManager().loadImage(
 				"assets/images/walls/wallRIGHT.png", true);
-		Asset<BufferedImage> ulc = grid.assetManager().loadImage(
+		Asset<BufferedImage> ulc = scene.assetManager().loadImage(
 				"assets/images/walls/cornerLU.png", true);
-		Asset<BufferedImage> urc = grid.assetManager().loadImage(
+		Asset<BufferedImage> urc = scene.assetManager().loadImage(
 				"assets/images/walls/cornerRU.png", true);
-		Asset<BufferedImage> dlc = grid.assetManager().loadImage(
+		Asset<BufferedImage> dlc = scene.assetManager().loadImage(
 				"assets/images/walls/cornerLD.png", true);
-		Asset<BufferedImage> drc = grid.assetManager().loadImage(
+		Asset<BufferedImage> drc = scene.assetManager().loadImage(
 				"assets/images/walls/cornerRD.png", true);
 
 		/*

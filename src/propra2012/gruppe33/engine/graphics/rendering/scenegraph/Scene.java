@@ -2,6 +2,7 @@ package propra2012.gruppe33.engine.graphics.rendering.scenegraph;
 
 import java.awt.Color;
 import java.awt.Component;
+import java.awt.Dimension;
 import java.awt.Graphics;
 import java.awt.Graphics2D;
 import java.awt.Image;
@@ -249,6 +250,20 @@ public class Scene extends GraphicsEntity implements KeyListener, FocusListener 
 	 */
 	public int height() {
 		return height;
+	}
+
+	/**
+	 * @return the size as vector.
+	 */
+	public Vector2f sizeAsVector() {
+		return new Vector2f(width, height);
+	}
+
+	/**
+	 * @return the size as dimension.
+	 */
+	public Dimension size() {
+		return new Dimension(width, height);
 	}
 
 	/**

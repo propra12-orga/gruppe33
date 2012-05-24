@@ -1,4 +1,4 @@
-package propra2012.gruppe33.bomberman.graphics.rendering.scenegraph.grid;
+package propra2012.gruppe33.engine.graphics.rendering.scenegraph.grid;
 
 import java.io.BufferedReader;
 import java.io.IOException;
@@ -8,6 +8,9 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.Random;
 
+import propra2012.gruppe33.engine.resources.assets.AssetLoader;
+import propra2012.gruppe33.engine.resources.assets.AssetManager;
+
 /**
  * Diese Klasse laedt aus einer Textdatei Zeilenweise die Karte aus. Kann
  * IOExceptions werfen.
@@ -15,6 +18,23 @@ import java.util.Random;
  * @author Malte Schmidt
  */
 public final class GridLoader {
+
+	/*
+	 * The grid loader.
+	 */
+	public static final AssetLoader<char[][]> LOADER = new AssetLoader<char[][]>() {
+
+		/**
+		 * 
+		 */
+		private static final long serialVersionUID = 1L;
+
+		@Override
+		public char[][] loadAsset(AssetManager assetManager, String assetPath)
+				throws Exception {
+			return GridLoader.load(assetManager.open(assetPath));
+		}
+	};
 
 	/**
 	 * Berechnet die Map aus der Textdatei und gibt ein Array mit dem Inhalt der

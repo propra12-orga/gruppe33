@@ -51,7 +51,8 @@ public class Timeout extends Entity {
 		// Timeout happend
 		if (timeout <= 0) {
 			// Fire event
-			fireEvent(siblingIterator(true), TimeoutEvent.Timeout, this);
+			fireEvent(iterableEventEntities().iterator(), TimeoutEvent.Timeout,
+					this);
 		}
 	}
 

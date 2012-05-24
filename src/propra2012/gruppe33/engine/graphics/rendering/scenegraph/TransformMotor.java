@@ -65,12 +65,14 @@ public final class TransformMotor extends Entity {
 	/**
 	 * @param linearVelocity
 	 *            The linearVelocity to set.
+	 * @return this for chaining.
 	 */
-	public void linearVelocity(Vector2f linearVelocity) {
+	public TransformMotor linearVelocity(Vector2f linearVelocity) {
 		if (linearVelocity == null) {
 			throw new NullPointerException("linearVelocity");
 		}
 		this.linearVelocity = linearVelocity;
+		return this;
 	}
 
 	/**
@@ -83,12 +85,14 @@ public final class TransformMotor extends Entity {
 	/**
 	 * @param linearAcceleration
 	 *            The linearAcceleration to set.
+	 * @return this for chaining.
 	 */
-	public void linearAcceleration(Vector2f linearAcceleration) {
+	public TransformMotor linearAcceleration(Vector2f linearAcceleration) {
 		if (linearAcceleration == null) {
 			throw new NullPointerException("linearAcceleration");
 		}
 		this.linearAcceleration = linearAcceleration;
+		return this;
 	}
 
 	/**
@@ -101,12 +105,14 @@ public final class TransformMotor extends Entity {
 	/**
 	 * @param scaleVelocity
 	 *            The scaleVelocity to set.
+	 * @return this for chaining.
 	 */
-	public void scaleVelocity(Vector2f scaleVelocity) {
+	public TransformMotor scaleVelocity(Vector2f scaleVelocity) {
 		if (scaleVelocity == null) {
 			throw new NullPointerException("scaleVelocity");
 		}
 		this.scaleVelocity = scaleVelocity;
+		return this;
 	}
 
 	/**
@@ -119,12 +125,14 @@ public final class TransformMotor extends Entity {
 	/**
 	 * @param scaleAcceleration
 	 *            The scaleAcceleration to set.
+	 * @return this for chaining.
 	 */
-	public void scaleAcceleration(Vector2f scaleAcceleration) {
+	public TransformMotor scaleAcceleration(Vector2f scaleAcceleration) {
 		if (scaleAcceleration == null) {
 			throw new NullPointerException("scaleAcceleration");
 		}
 		this.scaleAcceleration = scaleAcceleration;
+		return this;
 	}
 
 	/**
@@ -137,9 +145,11 @@ public final class TransformMotor extends Entity {
 	/**
 	 * @param angularVeloctiy
 	 *            The angularVeloctiy to set.
+	 * @return this for chaining.
 	 */
-	public void angularVeloctiy(float angularVeloctiy) {
+	public TransformMotor angularVeloctiy(float angularVeloctiy) {
 		this.angularVeloctiy = angularVeloctiy;
+		return this;
 	}
 
 	/**
@@ -152,8 +162,10 @@ public final class TransformMotor extends Entity {
 	/**
 	 * @param angularAcceleration
 	 *            The angularAcceleration to set.
+	 * @return this for chaining.
 	 */
-	public void angularAcceleration(float angularAcceleration) {
+	public TransformMotor angularAcceleration(float angularAcceleration) {
 		this.angularAcceleration = angularAcceleration;
+		return this;
 	}
 }

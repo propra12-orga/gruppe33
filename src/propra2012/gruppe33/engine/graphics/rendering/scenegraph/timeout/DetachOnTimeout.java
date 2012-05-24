@@ -4,7 +4,7 @@ import propra2012.gruppe33.engine.graphics.rendering.scenegraph.Entity;
 import propra2012.gruppe33.engine.graphics.rendering.scenegraph.timeout.Timeout.TimeoutEvent;
 
 /**
- * Simply detaches the entity when timeout is reached.
+ * Simply detaches the parent of the timeout entity when the timeout is reached.
  * 
  * @author Christopher Probst
  * 

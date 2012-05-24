@@ -2,16 +2,15 @@ package propra2012.gruppe33.bomberman.graphics.rendering.scenegraph.grid;
 
 import java.awt.Point;
 import java.awt.event.KeyEvent;
-import java.util.Iterator;
 import java.util.Set;
 
-import propra2012.gruppe33.bomberman.graphics.rendering.scenegraph.grid.Grid.Direction;
 import propra2012.gruppe33.engine.graphics.rendering.scenegraph.Entity;
 import propra2012.gruppe33.engine.graphics.rendering.scenegraph.GraphicsEntity;
 import propra2012.gruppe33.engine.graphics.rendering.scenegraph.Mathf;
+import propra2012.gruppe33.engine.graphics.rendering.scenegraph.Scene;
 import propra2012.gruppe33.engine.graphics.rendering.scenegraph.Vector2f;
-import propra2012.gruppe33.engine.util.FilteredIterator;
-import propra2012.gruppe33.engine.util.TypeFilter;
+import propra2012.gruppe33.engine.graphics.rendering.scenegraph.grid.Grid;
+import propra2012.gruppe33.engine.graphics.rendering.scenegraph.grid.Grid.Direction;
 
 /**
  * This class manages the grid movement. If you attach this entity to an entity
@@ -59,9 +58,6 @@ public final class GridController extends Entity {
 
 	// Stores the last direction of the grid controller
 	private Direction lastDirection = null;
-
-	// The cached grid instance
-	private Grid grid;
 
 	/**
 	 * @return the last direction of the entity.
@@ -113,13 +109,10 @@ public final class GridController extends Entity {
 	 *            The vector in which the results are written.
 	 * @param tpf
 	 *            The time passed since last frame.
-	 * @param movementLineOfSight
-	 *            The valid movement line-of-sight char-set.
 	 */
 	private void processMovement(boolean negative, boolean vertical,
 			GraphicsEntity graphicsEntity, Grid grid, Point nearest,
-			float maxSpeed, Vector2f dest, float tpf,
-			Set<Character> movementLineOfSight) {
+			float maxSpeed, Vector2f dest, float tpf) {
 
 		// Get center vector
 		Vector2f center = grid.vectorAt(nearest);
@@ -140,7 +133,7 @@ public final class GridController extends Entity {
 				* grid.lineOfSight(graphicsEntity.position(), maxMovement,
 						vertical ? (negative ? Direction.North
 								: Direction.South) : (negative ? Direction.West
-								: Direction.East), movementLineOfSight);
+								: Direction.East));
 
 		// Is the entity already centered ?
 		boolean isCentered = vertical ? graphicsEntity.position().xThreshold(
@@ -206,14 +199,6 @@ public final class GridController extends Entity {
 		}
 	}
 
-	public Grid grid() {
-		return grid;
-	}
-
-	public void grid(Grid grid) {
-		this.grid = grid;
-	}
-
 	/*
 	 * (non-Javadoc)
 	 * 
@@ -225,25 +210,23 @@ public final class GridController extends Entity {
 	protected void onUpdate(float tpf) {
 
 		// Nothing to process...
-		if (parent() == null || !(parent() instanceof GraphicsEntity)) {
+		if (!(parent() instanceof GraphicsEntity)) {
 			return;
 		}
 
 		// Convert parent
 		GraphicsEntity controlledParent = (GraphicsEntity) parent();
 
-		// Find the grid instance
-		if (grid == null) {
-			Iterator<Entity> itr = new FilteredIterator<Entity>(new TypeFilter(
-					Grid.class, false), controlledParent.parentIterator(true));
-
-			if (!itr.hasNext()) {
-				return;
-			}
-
-			// Get next entity
-			grid = (Grid) itr.next();
+		// The parent of the controlled parent must be a grid
+		if (!(controlledParent.parent() instanceof Grid)) {
+			return;
 		}
+
+		// Get grid
+		Grid grid = (Grid) controlledParent.parent();
+
+		// Find the scene instance
+		Scene scene = grid.findScene();
 
 		// Find nearest grid
 		Point nearest = grid.validate(grid.worldToNearestPoint(controlledParent
@@ -269,9 +252,9 @@ public final class GridController extends Entity {
 		float maxSpeed = maxSpeedObj.floatValue();
 
 		// Init the input flags
-		boolean north = grid.isPressed(KeyEvent.VK_UP), south = grid
-				.isPressed(KeyEvent.VK_DOWN), west = grid
-				.isPressed(KeyEvent.VK_LEFT), east = grid
+		boolean north = scene.isPressed(KeyEvent.VK_UP), south = scene
+				.isPressed(KeyEvent.VK_DOWN), west = scene
+				.isPressed(KeyEvent.VK_LEFT), east = scene
 				.isPressed(KeyEvent.VK_RIGHT);
 
 		// Set zero

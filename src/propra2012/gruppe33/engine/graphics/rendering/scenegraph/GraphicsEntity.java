@@ -44,7 +44,16 @@ public class GraphicsEntity extends Entity {
 	/*
 	 * Tells whether or not this entity and/or its children are visible.
 	 */
-	private boolean visible = true, childrenVisible = true;
+	private boolean visible = true, childrenVisible = true,
+	/*
+	 * Tells whether or not this entity is affected by the parent layout.
+	 */
+	affectedByLayout = true;
+
+	/*
+	 * The layout which is used to layout the children.
+	 */
+	private Layout layout;
 
 	@Override
 	protected void onEvent(Object event, Object... params) {
@@ -138,7 +147,7 @@ public class GraphicsEntity extends Entity {
 	 *            The vector you want to use as scale now.
 	 */
 	public void scale(Vector2f scale) {
-		if (scale != null) {
+		if (scale == null) {
 			throw new NullPointerException("scale");
 		}
 		this.scale = scale;
@@ -264,6 +273,40 @@ public class GraphicsEntity extends Entity {
 	}
 
 	/**
+	 * @return the layout of this entity.
+	 */
+	public Layout layout() {
+		return layout;
+	}
+
+	/**
+	 * Sets the layout of this entity.
+	 * 
+	 * @param layout
+	 *            The layout.
+	 */
+	public void layout(Layout layout) {
+		this.layout = layout;
+	}
+
+	/**
+	 * @return the affected-by-layout flag.
+	 */
+	public boolean isAffectedByLayout() {
+		return affectedByLayout;
+	}
+
+	/**
+	 * Sets the affected-by-layout flag.
+	 * 
+	 * @param affectedByLayout
+	 *            The flag.
+	 */
+	public void affectedByLayout(boolean affectedByLayout) {
+		this.affectedByLayout = affectedByLayout;
+	}
+
+	/**
 	 * Renders this entity and all children to a graphics context. This method
 	 * uses the visible/childrenVisible flags to determine what to render.
 	 * 
@@ -314,10 +357,36 @@ public class GraphicsEntity extends Entity {
 			}
 
 			if (childrenVisible) {
+				// The counter
+				int counter = 0;
 				// Now render the other entities
 				for (Entity child : this) {
 					if (child instanceof GraphicsEntity) {
-						((GraphicsEntity) child).render(original, transformed);
+
+						// Convert
+						GraphicsEntity graphicsChild = (GraphicsEntity) child;
+
+						/*
+						 * Only do layout when the child is requesting it and
+						 * the layout exists.
+						 */
+						if (layout != null && graphicsChild.affectedByLayout) {
+							// Layout the transformed graphics context
+							Graphics2D transformedLayout = layout.layout(
+									graphicsChild, counter++,
+									(Graphics2D) transformed.create());
+							try {
+								// Recursive rendering
+								graphicsChild.render(original,
+										transformedLayout);
+							} finally {
+								// Dispose the transformed layout
+								transformedLayout.dispose();
+							}
+						} else {
+							// Recursive rendering
+							graphicsChild.render(original, transformed);
+						}
 					}
 				}
 			}
