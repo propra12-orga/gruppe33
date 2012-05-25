@@ -6,6 +6,11 @@ import propra2012.gruppe33.engine.graphics.rendering.scenegraph.Entity;
 import propra2012.gruppe33.engine.graphics.rendering.scenegraph.GraphicsEntity;
 
 /**
+ * This entity manages the grid coords. When you attach this entity to an entity
+ * which is attached to a {@link Grid} the grid will be informed by this entity
+ * when the grid position (nearest integer position) changed. Please note that
+ * the parent should be able to fire attach/detach events. Otherwise this entity
+ * will not work correctly.
  * 
  * @author Christopher Probst
  * 
@@ -16,8 +21,13 @@ public class GridPositionUpdater extends Entity {
 	 */
 	private static final long serialVersionUID = 1L;
 
-	public enum GridPositionUpdaterEvent {
-		GridPositionChanged
+	/**
+	 * 
+	 * @author Christopher Probst
+	 * 
+	 */
+	public enum GridEvent {
+		PositionChanged
 	}
 
 	// The last point
@@ -26,27 +36,44 @@ public class GridPositionUpdater extends Entity {
 	// The grid instance
 	private Grid grid;
 
+	/**
+	 * Validates the last point and removes the parent of this entity from the
+	 * field set.
+	 */
 	private void removeFromLastField() {
 		// Validate last point
 		if (grid.validate(lastPoint) != null) {
 
 			// Remove from old grid field
-			grid.entitiesAt(lastPoint).remove((GraphicsEntity) grid.parent());
+			grid.entitiesAt(lastPoint).remove((GraphicsEntity) parent());
 		}
 	}
 
+	/**
+	 * Validates the new point and adds the parent to the field set. The last
+	 * point will be updated by this method.
+	 * 
+	 * @param newPoint
+	 *            The new point of the parent.
+	 */
 	private void addToNewField(Point newPoint) {
 		// Validate new point
 		if (grid.validate(newPoint) != null) {
 
 			// Add to new grid field
-			grid.entitiesAt(newPoint).add((GraphicsEntity) grid.parent());
+			grid.entitiesAt(newPoint).add((GraphicsEntity) parent());
 		}
 
 		// Save to last point
 		lastPoint = newPoint;
 	}
 
+	/**
+	 * Ensures that the grid is valid. If the hierarchy is not valid the grid
+	 * will be set to null.
+	 * 
+	 * @return true if the grid var is valid, otherwise false.
+	 */
 	private boolean ensureGrid() {
 		if (grid != null) {
 			return true;
@@ -65,6 +92,10 @@ public class GridPositionUpdater extends Entity {
 		}
 	}
 
+	/**
+	 * Removes the parent from the field set, if the given grid exists. All vars
+	 * are cleared after this method.
+	 */
 	private void clearGrid() {
 		// Do we have a grid ?
 		if (grid != null) {
@@ -87,14 +118,15 @@ public class GridPositionUpdater extends Entity {
 	 * (java.lang.Object, java.lang.Object[])
 	 */
 	@Override
-	protected void onEvent(Object event, Object... params) {
-		super.onEvent(event, params);
+	protected void onEvent(Entity source, Object event, Object... params) {
+		super.onEvent(source, event, params);
 
-		if (event instanceof GridPositionUpdaterEvent) {
-			switch ((GridPositionUpdaterEvent) event) {
-			case GridPositionChanged:
-				onGridPositionChanged((GridPositionUpdater) params[0],
-						(Point) params[1], (Point) params[2]);
+		if (event instanceof GridEvent) {
+			switch ((GridEvent) event) {
+			case PositionChanged:
+				// Simply invoke the event method
+				onPositionChanged((GridPositionUpdater) source,
+						(Point) params[0], (Point) params[1]);
 				break;
 			}
 		}
@@ -113,8 +145,8 @@ public class GridPositionUpdater extends Entity {
 	 * @param to
 	 *            The latest point.
 	 */
-	protected void onGridPositionChanged(
-			GridPositionUpdater gridPositionUpdater, Point from, Point to) {
+	protected void onPositionChanged(GridPositionUpdater gridPositionUpdater,
+			Point from, Point to) {
 	}
 
 	/*
@@ -146,6 +178,13 @@ public class GridPositionUpdater extends Entity {
 		clearGrid();
 	}
 
+	/*
+	 * (non-Javadoc)
+	 * 
+	 * @see
+	 * propra2012.gruppe33.engine.graphics.rendering.scenegraph.Entity#onUpdate
+	 * (float)
+	 */
 	@Override
 	protected void onUpdate(float tpf) {
 		super.onUpdate(tpf);
@@ -172,10 +211,12 @@ public class GridPositionUpdater extends Entity {
 				addToNewField(newPoint);
 
 				// Fire an event
-				fireEvent(iterableEventEntities().iterator(),
-						GridPositionUpdaterEvent.GridPositionChanged, this,
-						ptr, newPoint);
+				fireEvent(GridEvent.PositionChanged, ptr, newPoint);
 			}
 		}
+	}
+
+	public GridPositionUpdater() {
+		events().put(GridEvent.PositionChanged, iterableChildren(true, true));
 	}
 }

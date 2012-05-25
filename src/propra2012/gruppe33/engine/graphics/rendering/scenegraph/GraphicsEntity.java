@@ -5,6 +5,7 @@ import java.awt.Graphics2D;
 import java.awt.Image;
 import java.awt.geom.AffineTransform;
 
+import propra2012.gruppe33.engine.util.ArrayIterator;
 import propra2012.gruppe33.engine.util.FilteredIterator;
 import propra2012.gruppe33.engine.util.IterationRoutines;
 import propra2012.gruppe33.engine.util.TypeFilter;
@@ -17,7 +18,7 @@ import propra2012.gruppe33.engine.util.TypeFilter;
  */
 public class GraphicsEntity extends Entity {
 
-	public enum GraphicsEntityEvent {
+	public enum GraphicsEvent {
 		Render
 	}
 
@@ -55,14 +56,22 @@ public class GraphicsEntity extends Entity {
 	 */
 	private Layout layout;
 
+	/*
+	 * (non-Javadoc)
+	 * 
+	 * @see
+	 * propra2012.gruppe33.engine.graphics.rendering.scenegraph.Entity#onEvent
+	 * (propra2012.gruppe33.engine.graphics.rendering.scenegraph.Entity,
+	 * java.lang.Object, java.lang.Object[])
+	 */
 	@Override
-	protected void onEvent(Object event, Object... params) {
+	protected void onEvent(Entity source, Object event, Object... params) {
 		// Process other events...
-		super.onEvent(event, params);
+		super.onEvent(source, event, params);
 
 		// Check
-		if (event instanceof GraphicsEntityEvent) {
-			switch ((GraphicsEntityEvent) event) {
+		if (event instanceof GraphicsEvent) {
+			switch ((GraphicsEvent) event) {
 
 			case Render:
 				// Convert and invoke
@@ -88,6 +97,11 @@ public class GraphicsEntity extends Entity {
 	 * 
 	 */
 	protected void onRender(Graphics2D original, Graphics2D transformed) {
+	}
+
+	public GraphicsEntity() {
+		// Register the default entity events
+		events().put(GraphicsEvent.Render, new ArrayIterator<Entity>(this));
 	}
 
 	/**
@@ -343,8 +357,8 @@ public class GraphicsEntity extends Entity {
 					try {
 
 						// Render this entity
-						fireEvent(this, GraphicsEntityEvent.Render,
-								originalCopy, transformedCopy);
+						fireEvent(GraphicsEvent.Render, originalCopy,
+								transformedCopy);
 
 					} finally {
 						// Dispose the transformed copy

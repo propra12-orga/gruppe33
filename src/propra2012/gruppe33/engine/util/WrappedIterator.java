@@ -1,6 +1,7 @@
 package propra2012.gruppe33.engine.util;
 
 import java.util.Iterator;
+import java.util.NoSuchElementException;
 
 /**
  * A simple wrapped iterator.
@@ -22,9 +23,6 @@ public class WrappedIterator<E> implements Iterator<E> {
 	 *            The peer iterator.
 	 */
 	public WrappedIterator(Iterator<? extends E> peerIterator) {
-		if (peerIterator == null) {
-			throw new NullPointerException("peerIterator");
-		}
 		this.peerIterator = peerIterator;
 	}
 
@@ -35,7 +33,7 @@ public class WrappedIterator<E> implements Iterator<E> {
 	 */
 	@Override
 	public boolean hasNext() {
-		return peerIterator.hasNext();
+		return peerIterator != null && peerIterator.hasNext();
 	}
 
 	/*
@@ -45,6 +43,9 @@ public class WrappedIterator<E> implements Iterator<E> {
 	 */
 	@Override
 	public E next() {
+		if (peerIterator == null) {
+			throw new NoSuchElementException();
+		}
 		return peerIterator.next();
 	}
 
@@ -55,6 +56,9 @@ public class WrappedIterator<E> implements Iterator<E> {
 	 */
 	@Override
 	public void remove() {
+		if (peerIterator == null) {
+			throw new IllegalStateException("Peer iterator is null");
+		}
 		peerIterator.remove();
 	}
 }

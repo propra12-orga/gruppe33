@@ -83,10 +83,9 @@ public class PreMilestoneApp {
 
 		// This entity should update its position to the grid
 		img.attach(new GridPositionUpdater()).attach(
-				new TransformMotor().linearVelocity(new Vector2f(3f, 2f))
-						.angularVeloctiy(3)
-						.scaleVelocity(Vector2f.left().scaleLocal(10)));
+				new TransformMotor().linearVelocity(new Vector2f(0.5f, 0.5f)));
 		img.position(new Vector2f(3, 3));
+		img.attach(new GridPositionUpdater());
 
 		grid.attach(img).attach(img);
 		return scene;

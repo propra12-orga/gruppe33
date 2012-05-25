@@ -34,8 +34,8 @@ public final class AnimationRoutines {
 			private static final long serialVersionUID = 1L;
 
 			@Override
-			protected void onEvent(Object event, Object... params) {
-				super.onEvent(event, params);
+			protected void onEvent(Entity source, Object event, Object... params) {
+				super.onEvent(source, event, params);
 
 				if (event instanceof GridControllerEvent) {
 

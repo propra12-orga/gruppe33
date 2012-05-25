@@ -50,8 +50,7 @@ public class RenderedAnimation extends GraphicsEntity {
 		// Check for last
 		if (animation != null && animation.update().isLast()) {
 			// Fire event
-			fireEvent(iterableEventEntities().iterator(),
-					RenderedAnimationEvent.LastImage, this, animation);
+			fireEvent(RenderedAnimationEvent.LastImage, animation);
 		}
 	}
 
@@ -95,6 +94,9 @@ public class RenderedAnimation extends GraphicsEntity {
 		}
 		this.animationBundle = animationBundle;
 		animationName(animationName);
+
+		events().put(RenderedAnimationEvent.LastImage,
+				iterableChildren(true, true));
 	}
 
 	/**

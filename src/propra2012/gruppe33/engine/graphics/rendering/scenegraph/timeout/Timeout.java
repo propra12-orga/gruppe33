@@ -23,13 +23,13 @@ public class Timeout extends Entity {
 	private float timeout;
 
 	@Override
-	protected void onEvent(Object event, Object... params) {
-		super.onEvent(event, params);
+	protected void onEvent(Entity source, Object event, Object... params) {
+		super.onEvent(source, event, params);
 
 		if (event instanceof TimeoutEvent) {
 			switch ((TimeoutEvent) event) {
 			case Timeout:
-				onTimeout((Timeout) params[0]);
+				onTimeout((Timeout) source);
 				break;
 			}
 		}
@@ -51,12 +51,15 @@ public class Timeout extends Entity {
 		// Timeout happend
 		if (timeout <= 0) {
 			// Fire event
-			fireEvent(iterableEventEntities().iterator(), TimeoutEvent.Timeout,
-					this);
+			fireEvent(TimeoutEvent.Timeout);
 		}
 	}
 
 	protected void onTimeout(Timeout timeout) {
+	}
+
+	public Timeout() {
+		events().put(TimeoutEvent.Timeout, iterableChildren(true, true));
 	}
 
 	/**
