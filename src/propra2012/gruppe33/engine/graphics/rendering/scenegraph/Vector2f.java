@@ -14,6 +14,33 @@ public final class Vector2f implements Serializable {
 
 	/**
 	 * 
+	 * @author Christopher Probst
+	 * 
+	 */
+	public enum Direction {
+		North, South, East, West, Undefined;
+
+		public Vector2f vector() {
+			switch (this) {
+			case North:
+				return Vector2f.up();
+			case South:
+				return Vector2f.down();
+			case West:
+				return Vector2f.left();
+			case East:
+				return Vector2f.right();
+			case Undefined:
+				return Vector2f.zero();
+			default:
+				throw new UnsupportedOperationException(this
+						+ " not implemented");
+			}
+		}
+	}
+
+	/**
+	 * 
 	 */
 	private static final long serialVersionUID = 1L;
 
@@ -83,7 +110,7 @@ public final class Vector2f implements Serializable {
 	/**
 	 * @return a new vector initialized with 0,1
 	 */
-	public static Vector2f forward() {
+	public static Vector2f down() {
 		return new Vector2f(0, 1);
 	}
 
@@ -104,7 +131,7 @@ public final class Vector2f implements Serializable {
 	/**
 	 * @return a new vector initialized with 0,-1
 	 */
-	public static Vector2f back() {
+	public static Vector2f up() {
 		return new Vector2f(0, -1);
 	}
 
@@ -114,10 +141,20 @@ public final class Vector2f implements Serializable {
 	public float x, y;
 
 	/**
-	 * Creates a copy of a given vector.
+	 * Creates a copy of the given point.
+	 * 
+	 * @param point
+	 *            The point you want to copy.
+	 */
+	public Vector2f(Point point) {
+		this(point.x, point.y);
+	}
+
+	/**
+	 * Creates a copy of the given vector.
 	 * 
 	 * @param other
-	 *            The vector you want to clone.
+	 *            The vector you want to copy.
 	 */
 	public Vector2f(Vector2f other) {
 		this(other.x, other.y);
@@ -345,10 +382,21 @@ public final class Vector2f implements Serializable {
 	}
 
 	/**
-	 * @return the nearest vector with integer values.
+	 * Rounds this entity.
+	 * 
+	 * @return this for chaining.
 	 */
-	public Vector2f nearest() {
-		return new Vector2f(Math.round(x), Math.round(y));
+	public Vector2f roundLocal() {
+		x = Math.round(x);
+		y = Math.round(y);
+		return this;
+	}
+
+	/**
+	 * @return a new rounded vector.
+	 */
+	public Vector2f round() {
+		return new Vector2f(this).roundLocal();
 	}
 
 	/**
@@ -360,25 +408,61 @@ public final class Vector2f implements Serializable {
 	}
 
 	/**
+	 * @return the nearest direction of this vector.
+	 */
+	public Direction nearestDirection() {
+
+		if (equals(Vector2f.zero())) {
+			return Direction.Undefined;
+		} else if (Math.max(Math.abs(x), Math.abs(y)) == x) {
+			return x > 0.0f ? Direction.East : Direction.West;
+		} else {
+			return y > 0.0f ? Direction.South : Direction.North;
+		}
+	}
+
+	/**
+	 * Check whether or not this vector is inside the given rectangle.
+	 * 
+	 * @param leftUp
+	 *            The left-up corner.
+	 * @param rightDown
+	 *            The right-down corner.
+	 * @return true if this vector is inside the rectangle, otherwise false.
+	 */
+	public boolean inside(Vector2f leftUp, Vector2f rightDown) {
+		if (leftUp == null) {
+			throw new NullPointerException("leftUp");
+		} else if (rightDown == null) {
+			throw new NullPointerException("rightDown");
+		}
+
+		return x >= leftUp.x && x <= rightDown.x && y >= leftUp.y
+				&& y <= rightDown.y;
+	}
+
+	/**
 	 * @param v
 	 *            The value you want to compare with the x component.
 	 * @param threshold
+	 *            The threshold.
 	 * @return true if |x-v| is smaller than the given threshold, otherwise
 	 *         false.
 	 */
 	public boolean xThreshold(float v, float threshold) {
-		return Math.abs(x - v) < Math.abs(threshold);
+		return Mathf.threshold(x, v, threshold);
 	}
 
 	/**
 	 * @param v
 	 *            The value you want to compare with the y component.
 	 * @param threshold
+	 *            The threshold.
 	 * @return true if |y-v| is smaller than the given threshold, otherwise
 	 *         false.
 	 */
 	public boolean yThreshold(float v, float threshold) {
-		return Math.abs(y - v) < Math.abs(threshold);
+		return Mathf.threshold(y, v, threshold);
 	}
 
 	/**

@@ -4,7 +4,6 @@ import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
-import java.util.HashSet;
 import java.util.Iterator;
 import java.util.LinkedHashSet;
 import java.util.List;
@@ -18,6 +17,7 @@ import propra2012.gruppe33.engine.graphics.rendering.scenegraph.util.ParentItera
 import propra2012.gruppe33.engine.graphics.rendering.scenegraph.util.RecursiveChildIterator;
 import propra2012.gruppe33.engine.graphics.rendering.scenegraph.util.RootFilter;
 import propra2012.gruppe33.engine.graphics.rendering.scenegraph.util.SiblingIterator;
+import propra2012.gruppe33.engine.util.ArrayIterator;
 import propra2012.gruppe33.engine.util.FilteredIterator;
 import propra2012.gruppe33.engine.util.IterationRoutines;
 
@@ -33,6 +33,11 @@ import propra2012.gruppe33.engine.util.IterationRoutines;
  */
 public class Entity implements Comparable<Entity>, Iterable<Entity>,
 		Serializable {
+
+	/**
+	 * Used for tags.
+	 */
+	public static final Object TAG_OBJECT = new Object();
 
 	/**
 	 * 
@@ -124,9 +129,9 @@ public class Entity implements Comparable<Entity>, Iterable<Entity>,
 	private final Map<Object, Iterable<? extends Entity>> events = new HashMap<Object, Iterable<? extends Entity>>();
 
 	/*
-	 * The tags of this entity.
+	 * The properties of this entity.
 	 */
-	private final Set<String> tags = new HashSet<String>();
+	private final Map<String, Object> props = new HashMap<String, Object>();
 
 	/*
 	 * Used to cache children iterations.
@@ -523,9 +528,9 @@ public class Entity implements Comparable<Entity>, Iterable<Entity>,
 	 * 
 	 * @param index
 	 *            The new index.
-	 * @return the old index.
+	 * @return this for chaining.
 	 */
-	public int index(int index) {
+	public Entity index(int index) {
 		// A new index ??
 		if (index != this.index) {
 
@@ -564,12 +569,8 @@ public class Entity implements Comparable<Entity>, Iterable<Entity>,
 
 			// Save
 			this.index = index;
-
-			// Return the old index
-			return oldIndex;
-		} else {
-			return this.index;
 		}
+		return this;
 	}
 
 	/**
@@ -627,6 +628,19 @@ public class Entity implements Comparable<Entity>, Iterable<Entity>,
 		fireEvent(entityFilter != null ? new FilteredIterator<Entity>(
 				entityFilter, eventIterator(event)) : eventIterator(event),
 				this, event, params);
+	}
+
+	/**
+	 * Attaches all children in the array to this entity. If these entities have
+	 * already parents they are detached automatically and will be attached
+	 * afterwards.
+	 * 
+	 * @param children
+	 *            The entities you want to attach as children.
+	 * @return this for chaining.
+	 */
+	public Entity attach(Entity... children) {
+		return attach((Iterator<Entity>) new ArrayIterator<Entity>(children));
 	}
 
 	/**
@@ -715,6 +729,74 @@ public class Entity implements Comparable<Entity>, Iterable<Entity>,
 	}
 
 	/**
+	 * @return the properties of this entity.
+	 */
+	public Map<String, Object> props() {
+		return props;
+	}
+
+	/**
+	 * Puts the given property. If the key already exists the old value will be
+	 * replaced.
+	 * 
+	 * @param key
+	 *            The prop key.
+	 * @param value
+	 *            The prop value.
+	 * @return this for chaining.
+	 */
+	public Entity addProp(String key, Object value) {
+		props.put(key, value);
+		return this;
+	}
+
+	/**
+	 * Removes the given property.
+	 * 
+	 * @param key
+	 *            The prop key.
+	 * @return this for chaining.
+	 */
+	public Entity removeProp(String key) {
+		props.remove(key);
+		return this;
+	}
+
+	/**
+	 * Puts the given tag. If the key (tag) already exists the old value will be
+	 * replaced.
+	 * 
+	 * @param tag
+	 *            The tag.
+	 * @return this for chaining.
+	 */
+	public Entity tag(String tag) {
+		return addProp(tag, TAG_OBJECT);
+	}
+
+	/**
+	 * Removes the given tag.
+	 * 
+	 * @param tag
+	 *            The tag.
+	 * @return this for chaining.
+	 */
+	public Entity untag(String tag) {
+		return removeProp(tag);
+	}
+
+	/**
+	 * Tells whether or not the given tag exists.
+	 * 
+	 * @param tag
+	 *            The tag you want to check.
+	 * @return true if the tag exists, otherwise false.
+	 */
+	public boolean tagged(String tag) {
+		return props.get(tag) == TAG_OBJECT;
+	}
+
+	/**
 	 * Detaches all children from this entity.
 	 */
 	public boolean detachAll() {
@@ -722,10 +804,15 @@ public class Entity implements Comparable<Entity>, Iterable<Entity>,
 	}
 
 	/**
-	 * @return the tag-set of this entity.
+	 * Detaches all children in the array from this entity.
+	 * 
+	 * @param children
+	 *            The entities you want to detach from this entity.
+	 * @return true if all entities were children of this entity and are
+	 *         detached successfully, otherwise false.
 	 */
-	public Set<String> tags() {
-		return tags;
+	public boolean detach(Entity... children) {
+		return detach((Iterator<Entity>) new ArrayIterator<Entity>(children));
 	}
 
 	/**
@@ -872,6 +959,7 @@ public class Entity implements Comparable<Entity>, Iterable<Entity>,
 
 	@Override
 	public String toString() {
-		return "[Name = " + name + ", Index = " + index + "]";
+		return "[Name = " + name + ", Index = " + index + ", Properties = "
+				+ props + "]";
 	}
 }

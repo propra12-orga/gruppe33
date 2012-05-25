@@ -301,6 +301,9 @@ public class Scene extends GraphicsEntity implements KeyListener, FocusListener 
 		// Create a new entity
 		RenderedImage root = new RenderedImage(renderedEntity);
 
+		// This image is centered
+		root.centered(true);
+
 		// Set position
 		root.position().set(width * 0.5f, height * 0.5f);
 

@@ -14,6 +14,35 @@ public final class Mathf {
 	public static final float kEpsilon = 1E-6f;
 
 	/**
+	 * 
+	 * @param a
+	 *            The first value.
+	 * @param b
+	 *            The seconds valud.
+	 * 
+	 * @return true if |a-b| is smaller than {@link Mathf#kEpsilon}, otherwise
+	 *         false.
+	 */
+	public static boolean threshold(float a, float b) {
+		return threshold(a, b, kEpsilon);
+	}
+
+	/**
+	 * 
+	 * @param a
+	 *            The first value.
+	 * @param b
+	 *            The seconds valud.
+	 * @param threshold
+	 *            The threshold.
+	 * @return true if |a-b| is smaller than the given threshold, otherwise
+	 *         false.
+	 */
+	public static boolean threshold(float a, float b, float threshold) {
+		return Math.abs(a - b) < Math.abs(threshold);
+	}
+
+	/**
 	 * Clamps the absolute value of a value.
 	 * 
 	 * @param v

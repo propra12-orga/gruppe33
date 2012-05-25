@@ -2,18 +2,20 @@ package propra2012.gruppe33;
 
 import java.awt.Color;
 import java.awt.Graphics2D;
+import java.awt.Point;
 import java.awt.event.KeyEvent;
 import java.awt.image.BufferedImage;
 import java.io.File;
 
+import propra2012.gruppe33.bomberman.graphics.rendering.scenegraph.grid.Grid;
+import propra2012.gruppe33.bomberman.graphics.rendering.scenegraph.grid.GridController;
+import propra2012.gruppe33.bomberman.graphics.rendering.scenegraph.grid.GridLoader;
+import propra2012.gruppe33.bomberman.graphics.rendering.scenegraph.grid.GridPositionUpdater;
+import propra2012.gruppe33.bomberman.graphics.sprite.AnimationRoutines;
 import propra2012.gruppe33.engine.graphics.rendering.scenegraph.GraphicsEntity;
-import propra2012.gruppe33.engine.graphics.rendering.scenegraph.RenderedImage;
 import propra2012.gruppe33.engine.graphics.rendering.scenegraph.Scene;
 import propra2012.gruppe33.engine.graphics.rendering.scenegraph.SceneProcessor;
-import propra2012.gruppe33.engine.graphics.rendering.scenegraph.TransformMotor;
-import propra2012.gruppe33.engine.graphics.rendering.scenegraph.Vector2f;
-import propra2012.gruppe33.engine.graphics.rendering.scenegraph.grid.Grid;
-import propra2012.gruppe33.engine.graphics.rendering.scenegraph.grid.GridPositionUpdater;
+import propra2012.gruppe33.engine.graphics.rendering.scenegraph.animation.RenderedAnimation;
 import propra2012.gruppe33.engine.resources.assets.Asset;
 import propra2012.gruppe33.engine.resources.assets.AssetManager;
 
@@ -62,32 +64,54 @@ public class PreMilestoneApp {
 
 	public static Scene createDemoGame() throws Exception {
 
+		// Create new asset manager using the given zip file
 		AssetManager assets = new AssetManager(new File("scenes/default.zip"));
 
 		// Create new scene with the given assets
 		Scene scene = new Scene(assets, 1024, 1024);
 
-		// Load grid from file
-		final Grid grid = new Grid(10, 10);
-		grid.scale(scene.sizeAsVector().scale(
-				grid.rasterAsVector().invertLocal()));
+		// Load the char array
+		char[][] map = assets.loadAsset("assets/maps/smallmap.txt",
+				GridLoader.LOADER).get();
 
 		final Asset<BufferedImage> breakable = assets.loadImage(
 				"assets/images/break.png", true);
 
-		// Attach the grid
-		scene.attach(grid);
+		GridLoader.generate(map, 5678);
 
-		// Create new rendered image
-		RenderedImage img = new RenderedImage(breakable);
+		// Parse and setup map
+		Grid grid = GridLoader.parse(map, scene);
 
-		// This entity should update its position to the grid
-		img.attach(new GridPositionUpdater()).attach(
-				new TransformMotor().linearVelocity(new Vector2f(0.5f, 0.5f)));
-		img.position(new Vector2f(3, 3));
-		img.attach(new GridPositionUpdater());
+		GraphicsEntity player = new GraphicsEntity();
 
-		grid.attach(img).attach(img);
+		// Set player name
+		player.name("Kr0e");
+
+		// Create knight animation
+		RenderedAnimation charAni = new RenderedAnimation(
+				AnimationRoutines.createKnight(scene.assetManager(), 33, 33));
+
+		// Attach char ani
+		player.attach(charAni);
+
+		// Use default grid control
+		player.attach(new GridController().attach(AnimationRoutines
+				.createGridControllerAnimationHandler(charAni)),
+				new GridPositionUpdater() {
+					@Override
+					protected void onPositionChanged(
+							GridPositionUpdater gridPositionUpdater,
+							Point from, Point to) {
+						System.out.println("from " + from + " to " + to);
+					}
+
+				});
+
+		player.position().set(1, 1);
+		player.scale().scaleLocal(1.5f);
+
+		grid.attach(player);
+
 		return scene;
 	}
 	// public static Scene createDemoGame() throws Exception {

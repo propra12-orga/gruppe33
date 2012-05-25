@@ -8,6 +8,7 @@ import java.util.List;
 import java.util.Map;
 
 import propra2012.gruppe33.PreMilestoneApp;
+import propra2012.gruppe33.bomberman.graphics.rendering.scenegraph.grid.Grid;
 import propra2012.gruppe33.bomberman.graphics.rendering.scenegraph.grid.GridController;
 import propra2012.gruppe33.bomberman.graphics.sprite.AnimationRoutines;
 import propra2012.gruppe33.engine.graphics.rendering.scenegraph.Entity;
@@ -18,7 +19,6 @@ import propra2012.gruppe33.engine.graphics.rendering.scenegraph.SceneProcessor;
 import propra2012.gruppe33.engine.graphics.rendering.scenegraph.TransformMotor;
 import propra2012.gruppe33.engine.graphics.rendering.scenegraph.animation.RenderedAnimation;
 import propra2012.gruppe33.engine.graphics.rendering.scenegraph.animation.RenderedAnimation.RenderedAnimationEvent;
-import propra2012.gruppe33.engine.graphics.rendering.scenegraph.grid.Grid;
 import propra2012.gruppe33.engine.graphics.rendering.scenegraph.timeout.DetachOnTimeout;
 import propra2012.gruppe33.engine.graphics.rendering.scenegraph.timeout.Timeout;
 import propra2012.gruppe33.engine.graphics.sprite.Sprite;
@@ -197,74 +197,6 @@ public final class EntityRoutines {
 		return true;
 	}
 
-	public static GraphicsEntity createGround(Grid grid) throws Exception {
-
-		/*
-		 * Load the ground component.
-		 */
-		Asset<BufferedImage> groundImage = grid.assetManager().loadImage(
-				"assets/images/ground.jpg", true);
-
-		// Create ground
-		return grid.bundle(groundImage);
-	}
-
-	public static GraphicsEntity createSolidBlocks(Grid grid) throws Exception {
-		Asset<BufferedImage> solid = grid.assetManager().loadImage(
-				"assets/images/solid.png", true);
-		/*
-		 * Build map.
-		 */
-		Map<Character, Resource<? extends Image>> map = new HashMap<Character, Resource<? extends Image>>();
-		map.put('1', solid);
-
-		return grid.bundle(map);
-	}
-
-	/**
-	 * Bundles all wall components.
-	 * 
-	 * @param scene
-	 * @return
-	 * @throws Exception
-	 */
-	public static GraphicsEntity createWalls(Scene scene, Grid grid) throws Exception {
-
-		/*
-		 * Load all components!
-		 */
-		Asset<BufferedImage> wallUP = scene.assetManager().loadImage(
-				"assets/images/walls/wallUP.png", true);
-		Asset<BufferedImage> wallDOWN = scene.assetManager().loadImage(
-				"assets/images/walls/wallDOWN.png", true);
-		Asset<BufferedImage> wallLEFT = scene.assetManager().loadImage(
-				"assets/images/walls/wallLEFT.png", true);
-		Asset<BufferedImage> wallRIGHT = scene.assetManager().loadImage(
-				"assets/images/walls/wallRIGHT.png", true);
-		Asset<BufferedImage> ulc = scene.assetManager().loadImage(
-				"assets/images/walls/cornerLU.png", true);
-		Asset<BufferedImage> urc = scene.assetManager().loadImage(
-				"assets/images/walls/cornerRU.png", true);
-		Asset<BufferedImage> dlc = scene.assetManager().loadImage(
-				"assets/images/walls/cornerLD.png", true);
-		Asset<BufferedImage> drc = scene.assetManager().loadImage(
-				"assets/images/walls/cornerRD.png", true);
-
-		/*
-		 * Build map using the default wall-block-language.
-		 */
-		Map<Character, Resource<? extends Image>> map = new HashMap<Character, Resource<? extends Image>>();
-		map.put('u', wallUP);
-		map.put('d', wallDOWN);
-		map.put('l', wallLEFT);
-		map.put('r', wallRIGHT);
-		map.put('(', ulc);
-		map.put(')', urc);
-		map.put('[', dlc);
-		map.put(']', drc);
-
-		return grid.bundle(map);
-	}
 
 	public static GraphicsEntity createPlayer(String playerName,
 			final Grid grid, int sx, int sy) throws Exception {

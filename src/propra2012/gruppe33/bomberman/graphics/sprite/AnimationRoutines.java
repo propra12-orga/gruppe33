@@ -1,5 +1,7 @@
 package propra2012.gruppe33.bomberman.graphics.sprite;
 
+import java.util.concurrent.TimeUnit;
+
 import propra2012.gruppe33.bomberman.graphics.rendering.scenegraph.grid.GridController;
 import propra2012.gruppe33.bomberman.graphics.rendering.scenegraph.grid.GridController.GridControllerEvent;
 import propra2012.gruppe33.engine.graphics.rendering.scenegraph.Entity;
@@ -34,7 +36,8 @@ public final class AnimationRoutines {
 			private static final long serialVersionUID = 1L;
 
 			@Override
-			protected void onEvent(Entity source, Object event, Object... params) {
+			protected void onEvent(Entity source, Object event,
+					Object... params) {
 				super.onEvent(source, event, params);
 
 				if (event instanceof GridControllerEvent) {
@@ -42,7 +45,7 @@ public final class AnimationRoutines {
 					switch ((GridControllerEvent) event) {
 					case DirectionChanged:
 
-						GridController gc = (GridController) params[0];
+						GridController gc = (GridController) source;
 
 						// Set active animation
 						renderedAnimation.animationName(RUN_PREFIX
@@ -59,7 +62,7 @@ public final class AnimationRoutines {
 
 					case MovingChanged:
 
-						gc = (GridController) params[0];
+						gc = (GridController) source;
 
 						// Lookup the animation
 						running = renderedAnimation.animation();
