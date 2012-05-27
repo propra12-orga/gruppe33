@@ -9,8 +9,8 @@ import java.util.List;
 import java.util.Random;
 
 /**
- * Diese Klasse laedt aus einer Textdatei Zeilenweise die Karte aus. Kann
- * IOExceptions werfen.
+ * This class loads the map for the Game and generates randomly destructible
+ * blocks on it. Is able to throw IOExceptions.
  * 
  * @author Malte Schmidt
  */
@@ -22,11 +22,11 @@ public final class GridLoader {
 	 * z.B. wenn die File nicht geladen werden kann.
 	 * 
 	 * @param input
-	 *            Die zu ladene Map.
-	 * @return Gibt ein Char-array zurueck mit den geladenen Werten der Map.
+	 *            the stream which loads the map
+	 * @return a 2D char array with the loaded map.
 	 * @throws IOException
-	 *             Wenn zu ladene Karte leer oder nicht kompatibel (z.B. Wenn
-	 *             die Strings unterschiedlich lang sind.
+	 *             If the map is empty or not compatible (g.E. if the length of
+	 *             the strings differs from each other)
 	 */
 	public static char[][] load(InputStream input) throws IOException {
 		if (input == null) {
@@ -81,6 +81,16 @@ public final class GridLoader {
 	private GridLoader() {
 	}
 
+	/**
+	 * Generates random destructible blocks through a seed. Gets the map as a 2D
+	 * char array and the seed to create the map.
+	 * 
+	 * @param map
+	 *            the array/map
+	 * @param seed
+	 *            the needed seed to create the destructible blocks
+	 * @return the map with the changed values for destructible blocks
+	 */
 	public static char[][] generate(char[][] map, long seed) {
 		// int blockcount = Math.round((map.length * map[0].length) * 0.8f);
 		Random ran = new Random(seed);
