@@ -5,7 +5,7 @@ import java.awt.Graphics2D;
 import java.awt.Image;
 import java.awt.geom.AffineTransform;
 
-import propra2012.gruppe33.engine.util.ArrayIterator;
+import propra2012.gruppe33.engine.graphics.rendering.scenegraph.math.Vector2f;
 import propra2012.gruppe33.engine.util.FilteredIterator;
 import propra2012.gruppe33.engine.util.IterationRoutines;
 import propra2012.gruppe33.engine.util.TypeFilter;
@@ -27,10 +27,28 @@ public class GraphicsEntity extends Entity {
 	 */
 	private static final long serialVersionUID = 1L;
 
+	/**
+	 * Only accepts graphics entities.
+	 */
+	public static final TypeFilter TYPE_FILTER = new TypeFilter(
+			GraphicsEntity.class, true);
+
 	/*
 	 * The position of this entity stored as Vector2f.
 	 */
-	private Vector2f position = Vector2f.zero();
+	private Vector2f position = Vector2f.zero(),
+
+	/*
+	 * The scale of this entity.
+	 */
+	scale = new Vector2f(1, 1);
+
+	/*
+	 * The last affine origin transform.
+	 */
+	private AffineTransform lastOriginWorldTransform = new AffineTransform(),
+			lastWorldTransform = new AffineTransform(),
+			lastTransform = new AffineTransform();
 
 	/*
 	 * The rotation of this entity.
@@ -38,23 +56,9 @@ public class GraphicsEntity extends Entity {
 	private float rotation = 0;
 
 	/*
-	 * The scale of this entity.
+	 * Tells whether or not this entity is visible.
 	 */
-	private Vector2f scale = new Vector2f(1, 1);
-
-	/*
-	 * Tells whether or not this entity and/or its children are visible.
-	 */
-	private boolean visible = true, childrenVisible = true,
-	/*
-	 * Tells whether or not this entity is affected by the parent layout.
-	 */
-	affectedByLayout = true;
-
-	/*
-	 * The layout which is used to layout the children.
-	 */
-	private Layout layout;
+	private boolean visible = true;
 
 	/*
 	 * (non-Javadoc)
@@ -74,15 +78,48 @@ public class GraphicsEntity extends Entity {
 			switch ((GraphicsEvent) event) {
 
 			case Render:
-				// Convert and invoke
-				onRender((Graphics2D) params[0], (Graphics2D) params[1]);
+
+				/*
+				 * At first we have to update the transforms.
+				 */
+				updateTransforms();
+
+				/*
+				 * Do the rendering.
+				 */
+				if (visible) {
+					// Convert and create copy
+					Graphics2D original = (Graphics2D) ((Graphics2D) params[0])
+							.create();
+
+					try {
+
+						// Create new copy
+						Graphics2D transformed = (Graphics2D) original.create();
+
+						try {
+							// Use the last world transform
+							transformed.transform(lastWorldTransform);
+
+							// Render this entity
+							onRender(original, transformed);
+						} finally {
+							// Dispose
+							transformed.dispose();
+						}
+
+					} finally {
+						// Dispose
+						original.dispose();
+					}
+				}
 				break;
 			}
 		}
 	}
 
 	/**
-	 * OVERRIDE FOR CUSTOM RENDER BEHAVIOUR:
+	 * OVERRIDE FOR CUSTOM RENDER BEHAVIOUR.
 	 * 
 	 * This method gets called every frame to render this entity if the visible
 	 * flag is set to true.
@@ -101,7 +138,7 @@ public class GraphicsEntity extends Entity {
 
 	public GraphicsEntity() {
 		// Register the default entity events
-		events().put(GraphicsEvent.Render, new ArrayIterator<Entity>(this));
+		events().put(GraphicsEvent.Render, iterableChildren(true, true));
 	}
 
 	/**
@@ -114,13 +151,6 @@ public class GraphicsEntity extends Entity {
 	}
 
 	/**
-	 * @return the children visible flag.
-	 */
-	public boolean childrenVisible() {
-		return childrenVisible;
-	}
-
-	/**
 	 * @return the visible flag.
 	 */
 	public boolean isVisible() {
@@ -128,23 +158,55 @@ public class GraphicsEntity extends Entity {
 	}
 
 	/**
+	 * Updates all transforms of this entity. You should only call this method
+	 * if you know what you are doing. Usually this method is called every frame
+	 * before rendering.
+	 * 
+	 * @return this for chaining.
+	 */
+	public GraphicsEntity updateTransforms() {
+
+		// Set to identity
+		lastOriginWorldTransform.setToIdentity();
+		lastWorldTransform.setToIdentity();
+		lastTransform.setToIdentity();
+
+		// Apply local transform
+		lastTransform.translate(position.x, position.y);
+		lastTransform.rotate(rotation);
+		lastTransform.scale(scale.x, scale.y);
+
+		// Try to find the next graphics parent
+		GraphicsEntity result = (GraphicsEntity) IterationRoutines
+				.next(new FilteredIterator<Entity>(TYPE_FILTER,
+						parentIterator(false)));
+
+		// If the parent exists
+		if (result != null) {
+
+			// Set the last world transform
+			lastOriginWorldTransform.setTransform(result.lastWorldTransform());
+
+			// Copy from origin
+			lastWorldTransform.setTransform(lastOriginWorldTransform);
+		}
+
+		// Concatenate with local transform
+		lastWorldTransform.concatenate(lastTransform);
+
+		return this;
+	}
+
+	/**
 	 * Sets the visible flag. True means this entity is rendered. This flag does
 	 * not influence the rendering of the children, too.
 	 * 
 	 * @param visible
+	 * @return this for chaining.
 	 */
-	public void visible(boolean visible) {
+	public GraphicsEntity visible(boolean visible) {
 		this.visible = visible;
-	}
-
-	/**
-	 * Sets the children visible flag. True means all children are rendered.
-	 * This flag does not influence the rendering of this entity.
-	 * 
-	 * @param childrenVisible
-	 */
-	public void areChildrenVisible(boolean childrenVisible) {
-		this.childrenVisible = childrenVisible;
+		return this;
 	}
 
 	/**
@@ -159,12 +221,14 @@ public class GraphicsEntity extends Entity {
 	 * 
 	 * @param scale
 	 *            The vector you want to use as scale now.
+	 * @return this for chaining.
 	 */
-	public void scale(Vector2f scale) {
+	public GraphicsEntity scale(Vector2f scale) {
 		if (scale == null) {
 			throw new NullPointerException("scale");
 		}
 		this.scale = scale;
+		return this;
 	}
 
 	/**
@@ -179,9 +243,11 @@ public class GraphicsEntity extends Entity {
 	 * 
 	 * @param rotation
 	 *            The rotation value stored as float you want to set.
+	 * @return this for chaining.
 	 */
-	public void rotation(float rotation) {
+	public GraphicsEntity rotation(float rotation) {
 		this.rotation = rotation;
+		return this;
 	}
 
 	/**
@@ -192,65 +258,43 @@ public class GraphicsEntity extends Entity {
 	}
 
 	/**
+	 * @return the last affine origin world transform.
+	 * @see GraphicsEntity#updateTransforms()
+	 */
+	public AffineTransform lastOriginWorldTransform() {
+		return lastOriginWorldTransform;
+	}
+
+	/**
+	 * @return the last affine world transform.
+	 * @see GraphicsEntity#updateTransforms()
+	 */
+	public AffineTransform lastWorldTransform() {
+		return lastWorldTransform;
+	}
+
+	/**
+	 * @return the last affine transform.
+	 * @see GraphicsEntity#updateTransforms()
+	 */
+	public AffineTransform lastTransform() {
+		return lastTransform;
+	}
+
+	/**
 	 * Sets the relative position of this entity.
 	 * 
 	 * @param position
 	 *            The vector you want to use as position now.
+	 * @return this for chaining.
 	 */
-	public void position(Vector2f position) {
+	public GraphicsEntity position(Vector2f position) {
 		if (position == null) {
 			throw new NullPointerException("position");
 		}
 
 		this.position = position;
-	}
-
-	/**
-	 * Applies local transform to a given graphics context.
-	 * 
-	 * @param graphics
-	 *            The graphics context you want to transform.
-	 * @return the given transformed graphics context for chaining.
-	 */
-	public final Graphics2D transform(Graphics2D graphics) {
-		if (graphics == null) {
-			throw new NullPointerException("graphics");
-		}
-
-		// Translate
-		graphics.translate(position.x, position.y);
-
-		// Rotate the graphics
-		graphics.rotate(rotation);
-
-		// Scale the graphics
-		graphics.scale(scale.x, scale.y);
-
-		return graphics;
-	}
-
-	/**
-	 * Applies local transform to a given affine transform.
-	 * 
-	 * @param transform
-	 *            The affine transform you want to transform.
-	 * @return the given transformed affine transform for chaining.
-	 */
-	public final AffineTransform transform(AffineTransform transform) {
-		if (transform == null) {
-			throw new NullPointerException("transform");
-		}
-		transform.translate(position.x, position.y);
-		transform.rotate(rotation);
-		transform.scale(scale.x, scale.y);
-		return transform;
-	}
-
-	/**
-	 * @return a affine transform containing the state of this entity.
-	 */
-	public AffineTransform transform() {
-		return transform(new AffineTransform());
+		return this;
 	}
 
 	/**
@@ -273,7 +317,7 @@ public class GraphicsEntity extends Entity {
 			if (graphics instanceof Graphics2D) {
 
 				// Just render to image
-				render((Graphics2D) graphics, (Graphics2D) graphics);
+				render((Graphics2D) graphics);
 			} else {
 				throw new IllegalArgumentException("The image must return a "
 						+ "Graphics2D object when calling getGraphics().");
@@ -287,126 +331,29 @@ public class GraphicsEntity extends Entity {
 	}
 
 	/**
-	 * @return the layout of this entity.
-	 */
-	public Layout layout() {
-		return layout;
-	}
-
-	/**
-	 * Sets the layout of this entity.
-	 * 
-	 * @param layout
-	 *            The layout.
-	 */
-	public void layout(Layout layout) {
-		this.layout = layout;
-	}
-
-	/**
-	 * @return the affected-by-layout flag.
-	 */
-	public boolean isAffectedByLayout() {
-		return affectedByLayout;
-	}
-
-	/**
-	 * Sets the affected-by-layout flag.
-	 * 
-	 * @param affectedByLayout
-	 *            The flag.
-	 */
-	public void affectedByLayout(boolean affectedByLayout) {
-		this.affectedByLayout = affectedByLayout;
-	}
-
-	/**
-	 * Renders this entity and all children to a graphics context. This method
-	 * uses the visible/childrenVisible flags to determine what to render.
+	 * Renders this entity and all children.
 	 * 
 	 * @param original
-	 *            The graphics context which is NOT affected by entity
-	 *            transformation.
-	 * @param transformed
-	 *            The graphics context which is affected by entity
-	 *            transformation.
-	 * 
+	 *            The original graphics context.
+	 * @return this for chaining.
 	 */
-	public final void render(Graphics2D original, Graphics2D transformed) {
+	public GraphicsEntity render(Graphics2D original) {
+		return render(null, original);
+	}
 
-		if (original == null) {
-			throw new NullPointerException("original");
-		} else if (transformed == null) {
-			throw new NullPointerException("transformed");
-		}
+	/**
+	 * Renders this entity and all children using the given filter.
+	 * 
+	 * @param EntityFilter
+	 *            The entity filter or null.
+	 * @param original
+	 *            The original graphics context.
+	 * @return this for chaining.
+	 */
+	public GraphicsEntity render(EntityFilter entityFilter, Graphics2D original) {
 
-		// Create a copy of the transformed graphics
-		transformed = transform((Graphics2D) transformed.create());
-		try {
-
-			if (visible) {
-				// Create a copy the original graphics
-				Graphics2D originalCopy = (Graphics2D) original.create();
-
-				try {
-
-					// Create a copy of the transformed graphics
-					Graphics2D transformedCopy = (Graphics2D) transformed
-							.create();
-
-					try {
-
-						// Render this entity
-						fireEvent(GraphicsEvent.Render, originalCopy,
-								transformedCopy);
-
-					} finally {
-						// Dispose the transformed copy
-						transformedCopy.dispose();
-					}
-				} finally {
-					// Dispose the original copy
-					originalCopy.dispose();
-				}
-			}
-
-			if (childrenVisible) {
-				// The counter
-				int counter = 0;
-				// Now render the other entities
-				for (Entity child : this) {
-					if (child instanceof GraphicsEntity) {
-
-						// Convert
-						GraphicsEntity graphicsChild = (GraphicsEntity) child;
-
-						/*
-						 * Only do layout when the child is requesting it and
-						 * the layout exists.
-						 */
-						if (layout != null && graphicsChild.affectedByLayout) {
-							// Layout the transformed graphics context
-							Graphics2D transformedLayout = layout.layout(
-									graphicsChild, counter++,
-									(Graphics2D) transformed.create());
-							try {
-								// Recursive rendering
-								graphicsChild.render(original,
-										transformedLayout);
-							} finally {
-								// Dispose the transformed layout
-								transformedLayout.dispose();
-							}
-						} else {
-							// Recursive rendering
-							graphicsChild.render(original, transformed);
-						}
-					}
-				}
-			}
-		} finally {
-			// Dispose the transformed copy
-			transformed.dispose();
-		}
+		// Fire event for all children
+		fireEvent(entityFilter, GraphicsEvent.Render, original);
+		return this;
 	}
 }

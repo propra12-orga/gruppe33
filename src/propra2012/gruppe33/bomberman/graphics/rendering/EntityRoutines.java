@@ -18,7 +18,7 @@ import propra2012.gruppe33.engine.graphics.rendering.scenegraph.Scene;
 import propra2012.gruppe33.engine.graphics.rendering.scenegraph.SceneProcessor;
 import propra2012.gruppe33.engine.graphics.rendering.scenegraph.TransformMotor;
 import propra2012.gruppe33.engine.graphics.rendering.scenegraph.animation.RenderedAnimation;
-import propra2012.gruppe33.engine.graphics.rendering.scenegraph.animation.RenderedAnimation.RenderedAnimationEvent;
+import propra2012.gruppe33.engine.graphics.rendering.scenegraph.animation.RenderedAnimation.AnimationEvent;
 import propra2012.gruppe33.engine.graphics.rendering.scenegraph.timeout.DetachOnTimeout;
 import propra2012.gruppe33.engine.graphics.rendering.scenegraph.timeout.Timeout;
 import propra2012.gruppe33.engine.graphics.sprite.Sprite;
@@ -182,8 +182,8 @@ public final class EntityRoutines {
 			@Override
 			protected void onEvent(Object event, Object... params) {
 				super.onEvent(event, params);
-				if (event instanceof RenderedAnimationEvent) {
-					switch ((RenderedAnimationEvent) event) {
+				if (event instanceof AnimationEvent) {
+					switch ((AnimationEvent) event) {
 					case LastImage:
 						((RenderedAnimation) params[0]).detach();
 						break;

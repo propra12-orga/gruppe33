@@ -2,20 +2,19 @@ package propra2012.gruppe33;
 
 import java.awt.Color;
 import java.awt.Graphics2D;
-import java.awt.Point;
 import java.awt.event.KeyEvent;
 import java.awt.image.BufferedImage;
 import java.io.File;
 
-import propra2012.gruppe33.bomberman.graphics.rendering.scenegraph.grid.Grid;
-import propra2012.gruppe33.bomberman.graphics.rendering.scenegraph.grid.GridController;
 import propra2012.gruppe33.bomberman.graphics.rendering.scenegraph.grid.GridLoader;
-import propra2012.gruppe33.bomberman.graphics.rendering.scenegraph.grid.GridPositionUpdater;
 import propra2012.gruppe33.bomberman.graphics.sprite.AnimationRoutines;
 import propra2012.gruppe33.engine.graphics.rendering.scenegraph.GraphicsEntity;
 import propra2012.gruppe33.engine.graphics.rendering.scenegraph.Scene;
 import propra2012.gruppe33.engine.graphics.rendering.scenegraph.SceneProcessor;
+import propra2012.gruppe33.engine.graphics.rendering.scenegraph.TransformMotor;
 import propra2012.gruppe33.engine.graphics.rendering.scenegraph.animation.RenderedAnimation;
+import propra2012.gruppe33.engine.graphics.rendering.scenegraph.math.Grid;
+import propra2012.gruppe33.engine.graphics.rendering.scenegraph.math.Vector2f;
 import propra2012.gruppe33.engine.resources.assets.Asset;
 import propra2012.gruppe33.engine.resources.assets.AssetManager;
 
@@ -80,7 +79,7 @@ public class PreMilestoneApp {
 		GridLoader.generate(map, 5678);
 
 		// Parse and setup map
-		Grid grid = GridLoader.parse(map, scene);
+		GraphicsEntity grid = GridLoader.parse(map, scene);
 
 		GraphicsEntity player = new GraphicsEntity();
 
@@ -89,31 +88,37 @@ public class PreMilestoneApp {
 
 		// Create knight animation
 		RenderedAnimation charAni = new RenderedAnimation(
-				AnimationRoutines.createKnight(scene.assetManager(), 33, 33));
+				AnimationRoutines.createKnight(scene.assetManager(), 35, 35));
 
 		// Attach char ani
 		player.attach(charAni);
 
-		// Use default grid control
-		player.attach(new GridController().attach(AnimationRoutines
-				.createGridControllerAnimationHandler(charAni)),
-				new GridPositionUpdater() {
-					@Override
-					protected void onPositionChanged(
-							GridPositionUpdater gridPositionUpdater,
-							Point from, Point to) {
-						System.out.println("from " + from + " to " + to);
-					}
+		// // Use default grid control
+		// player.attach(new GridController().attach(AnimationRoutines
+		// .createGridControllerAnimationHandler(charAni)),
+		// new GridPositionUpdater() {
+		// @Override
+		// protected void onPositionChanged(
+		// GridPositionUpdater gridPositionUpdater,
+		// Point from, Point to) {
+		// System.out.println("from " + from + " to " + to);
+		// }
+		//
+		// });
 
-				});
+		charAni.animationName("run_north").paused(false);
 
-		player.position().set(1, 1);
 		player.scale().scaleLocal(1.5f);
+		player.attach(new TransformMotor().linearVelocity(Vector2f.left()
+				.scaleLocal(1)));
 
-		grid.attach(player);
+		Grid g = (Grid) grid.props().get("grid");
+		
+		grid.children().get(g.index(5, 3)).attach(player);
 
 		return scene;
 	}
+
 	// public static Scene createDemoGame() throws Exception {
 	//
 	// AssetManager assets = new AssetManager(new File("scenes/default.zip"));
@@ -227,4 +232,5 @@ public class PreMilestoneApp {
 	//
 	// return grid;
 	// }
+
 }

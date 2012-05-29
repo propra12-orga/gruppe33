@@ -105,26 +105,34 @@ public final class AnimationRoutines {
 		/*
 		 * Load the die animation.
 		 */
-		knight.add(knightSprite.newAnimationFromRange(DIE_PREFIX + "north",
-				dieSpeed, 5, 4, 9));
-		knight.add(knightSprite.newAnimationFromRange(DIE_PREFIX + "south",
-				dieSpeed, 5, 5, 9));
-		knight.add(knightSprite.newAnimationFromRange(DIE_PREFIX + "west",
-				dieSpeed, 5, 6, 9));
-		knight.add(knightSprite.newAnimationFromRange(DIE_PREFIX + "east",
-				dieSpeed, 5, 3, 9));
+		knight.add(
+				knightSprite.newAnimationFromRange(DIE_PREFIX + "north",
+						dieSpeed, 5, 4, 9)).loop(true).paused(true);
+		knight.add(
+				knightSprite.newAnimationFromRange(DIE_PREFIX + "south",
+						dieSpeed, 5, 5, 9)).loop(true).paused(true);
+		knight.add(
+				knightSprite.newAnimationFromRange(DIE_PREFIX + "west",
+						dieSpeed, 5, 6, 9)).loop(true).paused(true);
+		knight.add(
+				knightSprite.newAnimationFromRange(DIE_PREFIX + "east",
+						dieSpeed, 5, 3, 9)).loop(true).paused(true);
 
 		/*
 		 * Load the run animation.
 		 */
-		knight.add(knightSprite.newAnimationFromRange(RUN_PREFIX + "north",
-				moveSpeed, 8, 0, 8));
-		knight.add(knightSprite.newAnimationFromRange(RUN_PREFIX + "south",
-				moveSpeed, 7, 1, 8));
-		knight.add(knightSprite.newAnimationFromRange(RUN_PREFIX + "west",
-				moveSpeed, 6, 2, 8));
-		knight.add(knightSprite.newAnimationFromRange(RUN_PREFIX + "east",
-				moveSpeed, 0, 0, 8));
+		knight.add(
+				knightSprite.newAnimationFromRange(RUN_PREFIX + "north",
+						moveSpeed, 8, 0, 8)).loop(true).paused(true);
+		knight.add(
+				knightSprite.newAnimationFromRange(RUN_PREFIX + "south",
+						moveSpeed, 7, 1, 8)).loop(true).paused(true);
+		knight.add(
+				knightSprite.newAnimationFromRange(RUN_PREFIX + "west",
+						moveSpeed, 6, 2, 8)).loop(true).paused(true);
+		knight.add(
+				knightSprite.newAnimationFromRange(RUN_PREFIX + "east",
+						moveSpeed, 0, 0, 8)).loop(true).paused(true);
 
 		return knight;
 	}

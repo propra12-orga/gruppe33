@@ -135,6 +135,14 @@ public final class Animation implements Serializable {
 		return step;
 	}
 
+	public int nextStep() {
+		if (paused) {
+			return step;
+		}
+
+		return step >= imageCoords.size() - 1 ? (loop ? 0 : -1) : step + 1;
+	}
+
 	public List<Point> imageCoords() {
 		return imageCoords;
 	}
@@ -151,34 +159,35 @@ public final class Animation implements Serializable {
 		return step == imageCoords.size() - 1;
 	}
 
+	public boolean isValid() {
+		return step != -1;
+	}
+
 	public BufferedImage image() {
+		if (!isValid()) {
+			throw new IllegalStateException("Animation is not valid anymore");
+		}
 		Point coord = imageCoords.get(step);
 		return sprite.getSubImages()[coord.x][coord.y];
 	}
 
 	public Animation update() {
 
-		if (!paused) {
+		if (!paused && isValid()) {
 
 			// Read the actual time
 			long time = System.currentTimeMillis();
 
-			// Calculate if the time difference from the last step is higher
-			// then
-			// the time-per-image
-			// If yes the timeStamp will be incresed
+			/*
+			 * Calculate if the time difference from the last step is higher
+			 * then the time-per-image If yes the timeStamp will be incresed
+			 */
 			if (time - timeStamp >= timePerImage) {
-				step++;
-				timeStamp = time;
-			}
 
-			// If the animation is at the end the animation is resetted
-			if (step >= imageCoords.size()) {
-				if (loop) {
-					step = 0;
-				} else {
-					step = imageCoords.size() - 1;
-				}
+				// Swap
+				step = nextStep();
+
+				timeStamp = time;
 			}
 		}
 		return this;

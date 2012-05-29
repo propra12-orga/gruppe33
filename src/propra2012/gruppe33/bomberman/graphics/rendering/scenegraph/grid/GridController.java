@@ -7,9 +7,9 @@ import propra2012.gruppe33.bomberman.graphics.rendering.scenegraph.grid.Grid.Dir
 import propra2012.gruppe33.engine.graphics.rendering.scenegraph.Entity;
 import propra2012.gruppe33.engine.graphics.rendering.scenegraph.EntityFilter;
 import propra2012.gruppe33.engine.graphics.rendering.scenegraph.GraphicsEntity;
-import propra2012.gruppe33.engine.graphics.rendering.scenegraph.Mathf;
 import propra2012.gruppe33.engine.graphics.rendering.scenegraph.Scene;
-import propra2012.gruppe33.engine.graphics.rendering.scenegraph.Vector2f;
+import propra2012.gruppe33.engine.graphics.rendering.scenegraph.math.Mathf;
+import propra2012.gruppe33.engine.graphics.rendering.scenegraph.math.Vector2f;
 
 /**
  * This class manages the grid movement. If you attach this entity to an entity

@@ -1,4 +1,4 @@
-package propra2012.gruppe33.engine.graphics.rendering.scenegraph;
+package propra2012.gruppe33.engine.graphics.rendering.scenegraph.math;
 
 /**
  * A math class.
@@ -12,7 +12,7 @@ public final class Mathf {
 	 * Used to compare floats with a given threshold.
 	 */
 	public static final float kEpsilon = 1E-6f;
-
+	
 	/**
 	 * 
 	 * @param a

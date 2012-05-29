@@ -1,7 +1,9 @@
-package propra2012.gruppe33.engine.graphics.rendering.scenegraph;
+package propra2012.gruppe33.engine.graphics.rendering.scenegraph.math;
 
 import java.awt.Point;
 import java.io.Serializable;
+
+import propra2012.gruppe33.engine.graphics.rendering.scenegraph.Entity;
 
 /**
  * This is a simple 2d vector implementation. It contains the most basic

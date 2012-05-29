@@ -14,6 +14,7 @@ import java.awt.event.KeyListener;
 import java.util.HashMap;
 import java.util.Map;
 
+import propra2012.gruppe33.engine.graphics.rendering.scenegraph.math.Vector2f;
 import propra2012.gruppe33.engine.resources.TransientRenderedEntity;
 import propra2012.gruppe33.engine.resources.assets.AssetManager;
 
@@ -452,7 +453,7 @@ public class Scene extends GraphicsEntity implements KeyListener, FocusListener 
 				copy.clearRect(0, 0, this.width, this.height);
 
 				// Finally render
-				render(copy, copy);
+				render(copy);
 			} finally {
 				copy.dispose();
 			}

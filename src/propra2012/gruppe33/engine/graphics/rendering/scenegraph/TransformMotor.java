@@ -1,5 +1,7 @@
 package propra2012.gruppe33.engine.graphics.rendering.scenegraph;
 
+import propra2012.gruppe33.engine.graphics.rendering.scenegraph.math.Vector2f;
+
 /**
  * This entity animates the transform of the parent entity.
  * 
@@ -30,6 +32,7 @@ public final class TransformMotor extends Entity {
 	 */
 	@Override
 	protected void onUpdate(float tpf) {
+		super.onUpdate(tpf);
 
 		// Get parent
 		Entity parent = parent();

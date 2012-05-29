@@ -44,6 +44,7 @@ public class Timeout extends Entity {
 	 */
 	@Override
 	protected void onUpdate(float tpf) {
+		super.onUpdate(tpf);
 
 		// Reduce the timeout
 		timeout -= tpf;
@@ -55,6 +56,14 @@ public class Timeout extends Entity {
 		}
 	}
 
+	/**
+	 * OVERRIDE FOR CUSTOM RENDER BEHAVIOUR.
+	 * 
+	 * This method gets called when the timeout has reached.
+	 * 
+	 * @param timeout
+	 *            The timeout entity.
+	 */
 	protected void onTimeout(Timeout timeout) {
 	}
 
@@ -69,7 +78,7 @@ public class Timeout extends Entity {
 	 *            The timeout in seconds.
 	 */
 	public Timeout(float timeout) {
-		setTimeout(timeout);
+		timeout(timeout);
 	}
 
 	/**
@@ -77,18 +86,20 @@ public class Timeout extends Entity {
 	 * 
 	 * @param timeout
 	 *            The new timeout in seconds.
+	 * @return this for chaining.
 	 */
-	public void setTimeout(float timeout) {
+	public Timeout timeout(float timeout) {
 		if (timeout < 0) {
 			throw new IllegalArgumentException("Timeout must be >= 0");
 		}
 		this.timeout = timeout;
+		return this;
 	}
 
 	/**
 	 * @return the specified timeout in seconds.
 	 */
-	public float getTimeout() {
+	public float timeout() {
 		return timeout;
 	}
 }

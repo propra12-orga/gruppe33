@@ -108,9 +108,15 @@ public class Entity implements Comparable<Entity>, Iterable<Entity>,
 	private String name = super.toString();
 
 	/*
-	 * The index of this entity.
+	 * The ordering index of this entity.
 	 */
-	private int index = 0;
+	private int index = 0,
+
+	/*
+	 * The index in the parent cache. This value will be set by the parent if
+	 * the cache changes.
+	 */
+	cacheIndex = 0;
 
 	/*
 	 * The parent entity which ones this entity.
@@ -342,7 +348,7 @@ public class Entity implements Comparable<Entity>, Iterable<Entity>,
 	}
 
 	/**
-	 * OVERRIDE FOR CUSTOM UPDATE BEHAVIOUR:
+	 * OVERRIDE FOR CUSTOM UPDATE BEHAVIOUR.
 	 * 
 	 * This method gets called every frame to update the state of this entity.
 	 * 
@@ -391,6 +397,13 @@ public class Entity implements Comparable<Entity>, Iterable<Entity>,
 	}
 
 	/**
+	 * @return true if this entity has a parent, otherwise false.
+	 */
+	public boolean hasParent() {
+		return parent != null;
+	}
+
+	/**
 	 * @return a snapshot of all children sorted by their indeces as
 	 *         unmodifiable list.
 	 */
@@ -402,10 +415,17 @@ public class Entity implements Comparable<Entity>, Iterable<Entity>,
 			// Create a new list
 			cachedChildren = new ArrayList<Entity>();
 
+			// Used to give the children cache indeces
+			int counter = 0;
+
 			// Copy all entities to the list
 			for (Set<Entity> entities : children.values()) {
 				for (Entity entity : entities) {
+					// The cache index
 					cachedChildren.add(entity);
+
+					// Set the cache index
+					entity.cacheIndex = counter++;
 				}
 			}
 
@@ -516,15 +536,31 @@ public class Entity implements Comparable<Entity>, Iterable<Entity>,
 	}
 
 	/**
-	 * @return the index of this entity.
+	 * @return the ordering index of this entity.
 	 */
 	public int index() {
 		return index;
 	}
 
 	/**
-	 * Sets the index of this entity. If this entity is already attached the
-	 * parent will sort its children again.
+	 * @return true if and only if the cache index is completely valid.
+	 */
+	public boolean isCacheIndexValid() {
+		return parent != null && parent.cachedChildren != null
+				&& cacheIndex < parent.cachedChildren.size() ? parent.cachedChildren
+				.get(cacheIndex) == this : false;
+	}
+
+	/**
+	 * @return the cache index of this entity.
+	 */
+	public int cacheIndex() {
+		return cacheIndex;
+	}
+
+	/**
+	 * Sets the ordering index of this entity. If this entity is already
+	 * attached the parent will sort its children again.
 	 * 
 	 * @param index
 	 *            The new index.
@@ -926,7 +962,7 @@ public class Entity implements Comparable<Entity>, Iterable<Entity>,
 	}
 
 	/**
-	 * Updates this entity and all children.
+	 * Updates this entity and all children using the given filter.
 	 * 
 	 * @param EntityFilter
 	 *            The entity filter or null.
