@@ -404,6 +404,15 @@ public class Entity implements Comparable<Entity>, Iterable<Entity>,
 	}
 
 	/**
+	 * @param cacheIndex
+	 *            The cache index.
+	 * @return the child which is stored at the given cache index.
+	 */
+	public Entity childAt(int cacheIndex) {
+		return children().get(cacheIndex);
+	}
+
+	/**
 	 * @return a snapshot of all children sorted by their indeces as
 	 *         unmodifiable list.
 	 */
@@ -762,6 +771,15 @@ public class Entity implements Comparable<Entity>, Iterable<Entity>,
 			throw new IllegalStateException("This entity could not add the "
 					+ "given child to its set. Please check your code.");
 		}
+	}
+
+	/**
+	 * @param key
+	 *            The key of the value you want to lookup.
+	 * @return the value of the given key or null.
+	 */
+	public Object prop(String key) {
+		return props.get(key);
 	}
 
 	/**

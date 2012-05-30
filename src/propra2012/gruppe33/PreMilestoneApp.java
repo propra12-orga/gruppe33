@@ -73,9 +73,6 @@ public class PreMilestoneApp {
 		char[][] map = assets.loadAsset("assets/maps/smallmap.txt",
 				GridLoader.LOADER).get();
 
-		final Asset<BufferedImage> breakable = assets.loadImage(
-				"assets/images/break.png", true);
-
 		GridLoader.generate(map, 5678);
 
 		// Parse and setup map
@@ -112,9 +109,9 @@ public class PreMilestoneApp {
 		player.attach(new TransformMotor().linearVelocity(Vector2f.left()
 				.scaleLocal(1)));
 
-		Grid g = (Grid) grid.props().get("grid");
-		
-		grid.children().get(g.index(5, 3)).attach(player);
+		Grid g = (Grid) grid.prop("grid");
+
+		grid.childAt(g.index(5, 3)).attach(player);
 
 		return scene;
 	}

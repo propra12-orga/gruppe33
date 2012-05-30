@@ -56,81 +56,6 @@ public final class GridLoader implements GridConstants {
 		// Set grid
 		gridEntity.addProp("grid", grid);
 
-		// Attach all nodes
-		for (int y = 0; y < ry; y++) {
-			for (int x = 0; x < rx; x++) {
-				// Create a new node
-				GraphicsEntity node = new GraphicsEntity() {
-
-					/**
-					 * 
-					 */
-					private static final long serialVersionUID = 1L;
-
-					/*
-					 * (non-Javadoc)
-					 * 
-					 * @see
-					 * propra2012.gruppe33.engine.graphics.rendering.scenegraph
-					 * .Entity#onUpdate(float)
-					 */
-					@Override
-					protected void onUpdate(float tpf) {
-						super.onUpdate(tpf);
-
-						// Iterate over all children
-						for (Entity child : this) {
-
-							if (child instanceof GraphicsEntity) {
-								// Convert
-								GraphicsEntity graphicsChild = (GraphicsEntity) child;
-
-								// Get point
-								Point a = grid.point(cacheIndex()), b = graphicsChild
-										.position().round().point();
-
-								Point old = new Point(a);
-								
-								// Check coords
-								if (!b.equals(new Point(0, 0))) {
-									// Move a!
-									a.translate(b.x, b.y);
-
-									// New point valid ??
-									if (grid.inside(a)) {
-										// Lookup other child
-										Entity otherChild = parent().children()
-												.get(grid.index(a));
-										
-										// Attach to it
-										otherChild.attach(child);
-
-										// Change position
-										graphicsChild.position().subLocal(new Vector2f(b));
-										
-										System.out.println("Reattching "
-												+ child + " from " + old + " to " + a);
-									} else {
-										System.out.println(child
-												+ " moved out of grid: " + a);
-									}
-								}
-							}
-						}
-					}
-				};
-
-				// Set position on grid
-				node.position().set(x + 0.5f, y + 0.5f);
-
-				// Not visible...
-				node.visible(false);
-
-				// Attach the node to the grid
-				gridEntity.attach(node);
-			}
-		}
-
 		/*
 		 * The breakable image.
 		 */
@@ -175,9 +100,76 @@ public final class GridLoader implements GridConstants {
 		// The barriers
 		GraphicsEntity solids = new GraphicsEntity();
 
-		for (int y = 0; y < map.length; y++) {
-			for (int x = 0; x < map[y].length; x++) {
+		for (int y = 0; y < ry; y++) {
+			for (int x = 0; x < rx; x++) {
 
+				// Create a new node
+				GraphicsEntity node = new GraphicsEntity() {
+
+					/**
+					 * 
+					 */
+					private static final long serialVersionUID = 1L;
+
+					/*
+					 * (non-Javadoc)
+					 * 
+					 * @see
+					 * propra2012.gruppe33.engine.graphics.rendering.scenegraph
+					 * .Entity#onUpdate(float)
+					 */
+					@Override
+					protected void onUpdate(float tpf) {
+						super.onUpdate(tpf);
+
+						// Iterate over all children
+						for (Entity child : this) {
+
+							if (child instanceof GraphicsEntity) {
+								// Convert
+								GraphicsEntity graphicsChild = (GraphicsEntity) child;
+
+								// Get point
+								Point a = grid.point(cacheIndex()), b = graphicsChild
+										.position().round().point();
+
+								// Check coords
+								if (!b.equals(new Point(0, 0))) {
+									// Move a!
+									a.translate(b.x, b.y);
+
+									// New point valid ??
+									if (grid.inside(a)) {
+										// Lookup other child
+										Entity otherChild = parent().children()
+												.get(grid.index(a));
+
+										// Attach to it
+										otherChild.attach(child);
+
+										// Change position
+										graphicsChild.position().subLocal(
+												new Vector2f(b));
+									}
+								}
+							}
+						}
+					}
+				};
+
+				// Set position on grid
+				node.position().set(x + 0.5f, y + 0.5f);
+
+				// Not visible...
+				node.visible(false);
+
+				// Attach the node to the grid
+				gridEntity.attach(node);
+				
+				/*
+				 * PARSE FIELD!
+				 */
+				
 				// Create and add tile
 				RenderedImage tile = new RenderedImage(groundImage);
 				tile.centered(false).position().set(x, y);
@@ -223,20 +215,10 @@ public final class GridLoader implements GridConstants {
 					solid.centered(false);
 					solids.attach(solid);
 
+				} else if (map[y][x] >= BREAKABLE_OFFSET) {
+					// Not solid ? Well, maybe a breakable component ?
+					gridEntity.childAt(grid.index(x, y)).attach(new RenderedImage(breakable).centered(true));
 				}
-
-				// else if (map[y][x] >= BREAKABLE_OFFSET) {
-				/*
-				 * Not solid ? Well, maybe a breakable component ?
-				 */
-				// RenderedImage breakableImg = new
-				// RenderedImage(breakable);
-				// breakableImg.position().set(x, y);
-				//
-				// // Finally attach to grid
-				// grid.attach(breakableImg.centered(false).attach(
-				// new GridPositionUpdater()));
-				// }
 			}
 		}
 
