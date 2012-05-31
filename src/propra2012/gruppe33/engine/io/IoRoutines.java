@@ -12,6 +12,7 @@ import java.security.MessageDigest;
  * Provides some simple I/O routines.
  * 
  * @author Christopher Probst
+ * @author Matthias Hesse
  */
 public final class IoRoutines {
 
@@ -31,6 +32,10 @@ public final class IoRoutines {
 	 *             If an I/O exception occurs.
 	 */
 	public static byte[] readFully(InputStream inputStream) throws IOException {
+		if (inputStream == null) {
+			throw new NullPointerException("inputStream");
+		}
+
 		ByteArrayOutputStream array = new ByteArrayOutputStream();
 		byte[] buffer = new byte[0xFFFF];
 		int read;
@@ -38,7 +43,7 @@ public final class IoRoutines {
 		while ((read = inputStream.read(buffer)) != -1) {
 			array.write(buffer, 0, read);
 		}
-		return buffer;
+		return array.toByteArray();
 	}
 
 	/**
