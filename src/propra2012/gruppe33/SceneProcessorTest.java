@@ -4,8 +4,9 @@ import java.awt.Frame;
 
 import javax.sound.sampled.Clip;
 
-import propra2012.gruppe33.engine.graphics.GraphicsRoutines;
-import propra2012.gruppe33.engine.graphics.rendering.scenegraph.SceneProcessor;
+import com.indyforge.twod.engine.graphics.GraphicsRoutines;
+import com.indyforge.twod.engine.graphics.rendering.scenegraph.SceneProcessor;
+
 
 /**
  * 

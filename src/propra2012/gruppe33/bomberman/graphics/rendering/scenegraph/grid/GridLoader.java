@@ -10,14 +10,15 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.Random;
 
-import propra2012.gruppe33.engine.graphics.rendering.scenegraph.Entity;
-import propra2012.gruppe33.engine.graphics.rendering.scenegraph.GraphicsEntity;
-import propra2012.gruppe33.engine.graphics.rendering.scenegraph.RenderedImage;
-import propra2012.gruppe33.engine.graphics.rendering.scenegraph.Scene;
-import propra2012.gruppe33.engine.graphics.rendering.scenegraph.math.Grid;
-import propra2012.gruppe33.engine.resources.assets.Asset;
-import propra2012.gruppe33.engine.resources.assets.AssetLoader;
-import propra2012.gruppe33.engine.resources.assets.AssetManager;
+import com.indyforge.twod.engine.graphics.rendering.scenegraph.Entity;
+import com.indyforge.twod.engine.graphics.rendering.scenegraph.GraphicsEntity;
+import com.indyforge.twod.engine.graphics.rendering.scenegraph.RenderedImage;
+import com.indyforge.twod.engine.graphics.rendering.scenegraph.Scene;
+import com.indyforge.twod.engine.graphics.rendering.scenegraph.math.Grid;
+import com.indyforge.twod.engine.resources.assets.Asset;
+import com.indyforge.twod.engine.resources.assets.AssetLoader;
+import com.indyforge.twod.engine.resources.assets.AssetManager;
+
 
 /**
  * This class loads the map for the Game and generates randomly destructible

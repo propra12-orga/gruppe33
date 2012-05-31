@@ -1,13 +1,14 @@
 package propra2012.gruppe33.bomberman.graphics.sprite;
 
+import com.indyforge.twod.engine.graphics.rendering.scenegraph.Entity;
+import com.indyforge.twod.engine.graphics.rendering.scenegraph.animation.RenderedAnimation;
+import com.indyforge.twod.engine.graphics.sprite.Animation;
+import com.indyforge.twod.engine.graphics.sprite.AnimationBundle;
+import com.indyforge.twod.engine.graphics.sprite.Sprite;
+import com.indyforge.twod.engine.resources.assets.AssetManager;
+
 import propra2012.gruppe33.bomberman.graphics.rendering.scenegraph.grid.GridController;
 import propra2012.gruppe33.bomberman.graphics.rendering.scenegraph.grid.GridController.GridControllerEvent;
-import propra2012.gruppe33.engine.graphics.rendering.scenegraph.Entity;
-import propra2012.gruppe33.engine.graphics.rendering.scenegraph.animation.RenderedAnimation;
-import propra2012.gruppe33.engine.graphics.sprite.Animation;
-import propra2012.gruppe33.engine.graphics.sprite.AnimationBundle;
-import propra2012.gruppe33.engine.graphics.sprite.Sprite;
-import propra2012.gruppe33.engine.resources.assets.AssetManager;
 
 /**
  * Utility class to bundle some default animation routines.

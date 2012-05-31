@@ -2,19 +2,20 @@ package propra2012.gruppe33.bomberman.graphics.rendering.scenegraph.grid;
 
 import java.awt.Point;
 
+import com.indyforge.twod.engine.graphics.rendering.scenegraph.Entity;
+import com.indyforge.twod.engine.graphics.rendering.scenegraph.EntityFilter;
+import com.indyforge.twod.engine.graphics.rendering.scenegraph.GraphicsEntity;
+import com.indyforge.twod.engine.graphics.rendering.scenegraph.animation.RenderedAnimation;
+import com.indyforge.twod.engine.graphics.rendering.scenegraph.animation.RenderedAnimation.AnimationEvent;
+import com.indyforge.twod.engine.graphics.rendering.scenegraph.math.Grid;
+import com.indyforge.twod.engine.graphics.rendering.scenegraph.math.Vector2f;
+import com.indyforge.twod.engine.graphics.rendering.scenegraph.math.Vector2f.Direction;
+import com.indyforge.twod.engine.graphics.sprite.Animation;
+import com.indyforge.twod.engine.graphics.sprite.AnimationBundle;
+import com.indyforge.twod.engine.graphics.sprite.Sprite;
+import com.indyforge.twod.engine.resources.assets.AssetManager;
+
 import propra2012.gruppe33.bomberman.graphics.sprite.AnimationRoutines;
-import propra2012.gruppe33.engine.graphics.rendering.scenegraph.Entity;
-import propra2012.gruppe33.engine.graphics.rendering.scenegraph.EntityFilter;
-import propra2012.gruppe33.engine.graphics.rendering.scenegraph.GraphicsEntity;
-import propra2012.gruppe33.engine.graphics.rendering.scenegraph.animation.RenderedAnimation;
-import propra2012.gruppe33.engine.graphics.rendering.scenegraph.animation.RenderedAnimation.AnimationEvent;
-import propra2012.gruppe33.engine.graphics.rendering.scenegraph.math.Grid;
-import propra2012.gruppe33.engine.graphics.rendering.scenegraph.math.Vector2f;
-import propra2012.gruppe33.engine.graphics.rendering.scenegraph.math.Vector2f.Direction;
-import propra2012.gruppe33.engine.graphics.sprite.Animation;
-import propra2012.gruppe33.engine.graphics.sprite.AnimationBundle;
-import propra2012.gruppe33.engine.graphics.sprite.Sprite;
-import propra2012.gruppe33.engine.resources.assets.AssetManager;
 
 /**
  * 
@@ -332,7 +333,7 @@ public final class GridRoutines implements GridConstants {
 					 * (non-Javadoc)
 					 * 
 					 * @see
-					 * propra2012.gruppe33.engine.graphics.rendering.scenegraph
+					 * com.indyforge.twod.engine.graphics.rendering.scenegraph
 					 * .Entity#onUpdate(float)
 					 */
 					@Override

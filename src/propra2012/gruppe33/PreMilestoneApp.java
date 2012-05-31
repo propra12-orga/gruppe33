@@ -5,16 +5,17 @@ import java.awt.Graphics2D;
 import java.awt.event.KeyEvent;
 import java.io.File;
 
+import com.indyforge.twod.engine.graphics.rendering.scenegraph.Entity;
+import com.indyforge.twod.engine.graphics.rendering.scenegraph.GraphicsEntity;
+import com.indyforge.twod.engine.graphics.rendering.scenegraph.Scene;
+import com.indyforge.twod.engine.graphics.rendering.scenegraph.SceneProcessor;
+import com.indyforge.twod.engine.graphics.rendering.scenegraph.math.Grid;
+import com.indyforge.twod.engine.graphics.sprite.Sprite;
+import com.indyforge.twod.engine.resources.assets.AssetManager;
+import com.indyforge.twod.engine.sound.SoundManager;
+
 import propra2012.gruppe33.bomberman.graphics.rendering.scenegraph.grid.GridLoader;
 import propra2012.gruppe33.bomberman.graphics.rendering.scenegraph.grid.GridRoutines;
-import propra2012.gruppe33.engine.graphics.rendering.scenegraph.Entity;
-import propra2012.gruppe33.engine.graphics.rendering.scenegraph.GraphicsEntity;
-import propra2012.gruppe33.engine.graphics.rendering.scenegraph.Scene;
-import propra2012.gruppe33.engine.graphics.rendering.scenegraph.SceneProcessor;
-import propra2012.gruppe33.engine.graphics.rendering.scenegraph.math.Grid;
-import propra2012.gruppe33.engine.graphics.sprite.Sprite;
-import propra2012.gruppe33.engine.resources.assets.AssetManager;
-import propra2012.gruppe33.engine.sound.SoundManager;
 
 /**
  * 

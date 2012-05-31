@@ -4,14 +4,15 @@ import java.awt.Point;
 import java.awt.event.KeyEvent;
 import java.util.Iterator;
 
-import propra2012.gruppe33.engine.graphics.rendering.scenegraph.Entity;
-import propra2012.gruppe33.engine.graphics.rendering.scenegraph.GraphicsEntity;
-import propra2012.gruppe33.engine.graphics.rendering.scenegraph.Scene;
-import propra2012.gruppe33.engine.graphics.rendering.scenegraph.math.Grid;
-import propra2012.gruppe33.engine.graphics.rendering.scenegraph.math.Mathf;
-import propra2012.gruppe33.engine.graphics.rendering.scenegraph.math.Vector2f;
-import propra2012.gruppe33.engine.graphics.rendering.scenegraph.math.Vector2f.Direction;
-import propra2012.gruppe33.engine.util.FilteredIterator;
+import com.indyforge.twod.engine.graphics.rendering.scenegraph.Entity;
+import com.indyforge.twod.engine.graphics.rendering.scenegraph.GraphicsEntity;
+import com.indyforge.twod.engine.graphics.rendering.scenegraph.Scene;
+import com.indyforge.twod.engine.graphics.rendering.scenegraph.math.Grid;
+import com.indyforge.twod.engine.graphics.rendering.scenegraph.math.Mathf;
+import com.indyforge.twod.engine.graphics.rendering.scenegraph.math.Vector2f;
+import com.indyforge.twod.engine.graphics.rendering.scenegraph.math.Vector2f.Direction;
+import com.indyforge.twod.engine.util.FilteredIterator;
+
 
 /**
  * This class manages the grid movement. If you attach this entity to an entity
@@ -200,7 +201,7 @@ public final class GridController extends Entity {
 	 * (non-Javadoc)
 	 * 
 	 * @see
-	 * propra2012.gruppe33.engine.graphics.rendering.scenegraph.Entity#onUpdate
+	 * com.indyforge.twod.engine.graphics.rendering.scenegraph.Entity#onUpdate
 	 * (float)
 	 */
 	@Override
