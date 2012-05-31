@@ -1,7 +1,6 @@
 package propra2012.gruppe33.bomberman.graphics.rendering.scenegraph.grid;
 
 import java.awt.Color;
-import java.awt.Point;
 import java.awt.image.BufferedImage;
 import java.io.BufferedReader;
 import java.io.IOException;
@@ -16,7 +15,6 @@ import propra2012.gruppe33.engine.graphics.rendering.scenegraph.GraphicsEntity;
 import propra2012.gruppe33.engine.graphics.rendering.scenegraph.RenderedImage;
 import propra2012.gruppe33.engine.graphics.rendering.scenegraph.Scene;
 import propra2012.gruppe33.engine.graphics.rendering.scenegraph.math.Grid;
-import propra2012.gruppe33.engine.graphics.rendering.scenegraph.math.Vector2f;
 import propra2012.gruppe33.engine.resources.assets.Asset;
 import propra2012.gruppe33.engine.resources.assets.AssetLoader;
 import propra2012.gruppe33.engine.resources.assets.AssetManager;
@@ -40,21 +38,28 @@ public final class GridLoader implements GridConstants {
 	public static GraphicsEntity parse(char[][] map, Scene scene)
 			throws Exception {
 
-		// Load grid from file
-		GraphicsEntity gridEntity = new GraphicsEntity();
-
-		// Calc
+		// Calc the dim
 		int rx = map[0].length, ry = map.length;
 
-		// Create grid
-		final Grid grid = new Grid(rx, ry);
+		// Create a new grid entity
+		GraphicsEntity gridEntity = GridRoutines.createGridEntity(rx, ry);
+
+		// Add shift
+		gridEntity.position().x += 0.5f;
+		gridEntity.position().y += 0.5f;
+
+		// Lookup the grid
+		Grid grid = gridEntity.typeProp(Grid.class);
+
+		// Create a new grid holder
+		GraphicsEntity gridHolder = new GraphicsEntity();
 
 		// Set correct scale
-		gridEntity.scale(scene.sizeAsVector().scale(
-				new Vector2f(rx, ry).invertLocal()));
+		gridHolder.scale(scene.sizeAsVector().scale(
+				grid.sizeAsVector().invertLocal()));
 
-		// Set grid
-		gridEntity.addProp("grid", grid);
+		// Attach grid to holder
+		gridHolder.attach(gridEntity);
 
 		/*
 		 * The breakable image.
@@ -103,73 +108,10 @@ public final class GridLoader implements GridConstants {
 		for (int y = 0; y < ry; y++) {
 			for (int x = 0; x < rx; x++) {
 
-				// Create a new node
-				GraphicsEntity node = new GraphicsEntity() {
-
-					/**
-					 * 
-					 */
-					private static final long serialVersionUID = 1L;
-
-					/*
-					 * (non-Javadoc)
-					 * 
-					 * @see
-					 * propra2012.gruppe33.engine.graphics.rendering.scenegraph
-					 * .Entity#onUpdate(float)
-					 */
-					@Override
-					protected void onUpdate(float tpf) {
-						super.onUpdate(tpf);
-
-						// Iterate over all children
-						for (Entity child : this) {
-
-							if (child instanceof GraphicsEntity) {
-								// Convert
-								GraphicsEntity graphicsChild = (GraphicsEntity) child;
-
-								// Get point
-								Point a = grid.point(cacheIndex()), b = graphicsChild
-										.position().round().point();
-
-								// Check coords
-								if (!b.equals(new Point(0, 0))) {
-									// Move a!
-									a.translate(b.x, b.y);
-
-									// New point valid ??
-									if (grid.inside(a)) {
-										// Lookup other child
-										Entity otherChild = parent().children()
-												.get(grid.index(a));
-
-										// Attach to it
-										otherChild.attach(child);
-
-										// Change position
-										graphicsChild.position().subLocal(
-												new Vector2f(b));
-									}
-								}
-							}
-						}
-					}
-				};
-
-				// Set position on grid
-				node.position().set(x + 0.5f, y + 0.5f);
-
-				// Not visible...
-				node.visible(false);
-
-				// Attach the node to the grid
-				gridEntity.attach(node);
-				
 				/*
 				 * PARSE FIELD!
 				 */
-				
+
 				// Create and add tile
 				RenderedImage tile = new RenderedImage(groundImage);
 				tile.centered(false).position().set(x, y);
@@ -215,9 +157,18 @@ public final class GridLoader implements GridConstants {
 					solid.centered(false);
 					solids.attach(solid);
 
-				} else if (map[y][x] >= BREAKABLE_OFFSET) {
-					// Not solid ? Well, maybe a breakable component ?
-					gridEntity.childAt(grid.index(x, y)).attach(new RenderedImage(breakable).centered(true));
+				} else {
+					// Get the field entity
+					Entity fieldNode = gridEntity.childAt(grid.index(x, y));
+
+					// Add speed float prop
+					fieldNode.addTypeProp(3f);
+
+					if (map[y][x] >= BREAKABLE_OFFSET) {
+						// Not solid ? Well, maybe a breakable component ?
+						fieldNode.attach(new RenderedImage(breakable)
+								.centered(true));
+					}
 				}
 			}
 		}
@@ -226,13 +177,13 @@ public final class GridLoader implements GridConstants {
 		GraphicsEntity staticRoot = new GraphicsEntity();
 		staticRoot.attach(ground);
 		staticRoot.attach(solids);
-		staticRoot.scale().set(gridEntity.scale());
+		staticRoot.scale().set(gridHolder.scale());
 
 		// Merge to rendered entity
 		scene.attach(scene.renderedOpaqueEntity(Color.white, staticRoot));
 
-		// Attach the grid
-		scene.attach(gridEntity);
+		// Attach the grid holder
+		scene.attach(gridHolder);
 
 		return gridEntity;
 	}

@@ -137,7 +137,7 @@ public class Entity implements Comparable<Entity>, Iterable<Entity>,
 	/*
 	 * The properties of this entity.
 	 */
-	private final Map<String, Object> props = new HashMap<String, Object>();
+	private final Map<Object, Object> props = new HashMap<Object, Object>();
 
 	/*
 	 * Used to cache children iterations.
@@ -774,19 +774,46 @@ public class Entity implements Comparable<Entity>, Iterable<Entity>,
 	}
 
 	/**
-	 * @param key
-	 *            The key of the value you want to lookup.
-	 * @return the value of the given key or null.
+	 * @param typeClass
+	 *            The type of the property.
+	 * @return the property with the given type.
 	 */
-	public Object prop(String key) {
-		return props.get(key);
+	@SuppressWarnings("unchecked")
+	public <T> T typeProp(Class<T> typeClass) {
+		if (typeClass == null) {
+			throw new NullPointerException("typeClass");
+		}
+		return (T) props.get(typeClass);
 	}
 
 	/**
-	 * @return the properties of this entity.
+	 * Puts the given property. The class of the property is used as key.
+	 * 
+	 * @param value
+	 *            The value you want to put.
+	 * @return this for chaining.
 	 */
-	public Map<String, Object> props() {
-		return props;
+	public Entity addTypeProp(Object value) {
+		if (value == null) {
+			throw new NullPointerException("value");
+		}
+		props.put(value.getClass(), value);
+		return this;
+	}
+
+	/**
+	 * Removes the given property type.
+	 * 
+	 * @param typeClass
+	 *            The type of the property.
+	 * @return this for chaining.
+	 */
+	public Entity removeTypeProp(Class<?> typeClass) {
+		if (typeClass == null) {
+			throw new NullPointerException("typeClass");
+		}
+		props.remove(typeClass);
+		return this;
 	}
 
 	/**
@@ -799,7 +826,7 @@ public class Entity implements Comparable<Entity>, Iterable<Entity>,
 	 *            The prop value.
 	 * @return this for chaining.
 	 */
-	public Entity addProp(String key, Object value) {
+	public Entity addProp(Object key, Object value) {
 		props.put(key, value);
 		return this;
 	}
@@ -811,9 +838,25 @@ public class Entity implements Comparable<Entity>, Iterable<Entity>,
 	 *            The prop key.
 	 * @return this for chaining.
 	 */
-	public Entity removeProp(String key) {
+	public Entity removeProp(Object key) {
 		props.remove(key);
 		return this;
+	}
+
+	/**
+	 * @param key
+	 *            The key of the value you want to lookup.
+	 * @return the value of the given key or null.
+	 */
+	public Object prop(Object key) {
+		return props.get(key);
+	}
+
+	/**
+	 * @return the properties of this entity.
+	 */
+	public Map<Object, Object> props() {
+		return props;
 	}
 
 	/**
@@ -824,7 +867,7 @@ public class Entity implements Comparable<Entity>, Iterable<Entity>,
 	 *            The tag.
 	 * @return this for chaining.
 	 */
-	public Entity tag(String tag) {
+	public Entity tag(Object tag) {
 		return addProp(tag, TAG_OBJECT);
 	}
 
@@ -835,7 +878,7 @@ public class Entity implements Comparable<Entity>, Iterable<Entity>,
 	 *            The tag.
 	 * @return this for chaining.
 	 */
-	public Entity untag(String tag) {
+	public Entity untag(Object tag) {
 		return removeProp(tag);
 	}
 
@@ -846,7 +889,7 @@ public class Entity implements Comparable<Entity>, Iterable<Entity>,
 	 *            The tag you want to check.
 	 * @return true if the tag exists, otherwise false.
 	 */
-	public boolean tagged(String tag) {
+	public boolean tagged(Object tag) {
 		return props.get(tag) == TAG_OBJECT;
 	}
 

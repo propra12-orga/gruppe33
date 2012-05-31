@@ -1,7 +1,5 @@
 package propra2012.gruppe33.bomberman.graphics.sprite;
 
-import java.util.concurrent.TimeUnit;
-
 import propra2012.gruppe33.bomberman.graphics.rendering.scenegraph.grid.GridController;
 import propra2012.gruppe33.bomberman.graphics.rendering.scenegraph.grid.GridController.GridControllerEvent;
 import propra2012.gruppe33.engine.graphics.rendering.scenegraph.Entity;

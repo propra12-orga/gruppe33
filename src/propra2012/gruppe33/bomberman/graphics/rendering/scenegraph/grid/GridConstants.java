@@ -10,6 +10,8 @@ package propra2012.gruppe33.bomberman.graphics.rendering.scenegraph.grid;
  */
 public interface GridConstants {
 
+	Object FREE_TAG = new Object();
+
 	char UP_BARRIER = 'u';
 	char DOWN_BARRIER = 'd';
 	char LEFT_BARRIER = 'l';

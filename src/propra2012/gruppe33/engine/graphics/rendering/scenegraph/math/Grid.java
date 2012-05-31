@@ -55,11 +55,25 @@ public final class Grid {
 	}
 
 	public boolean inside(Vector2f vector) {
+		if (vector == null) {
+			throw new NullPointerException("vector");
+		}
 		return inside(vector.round().point());
 	}
 
 	public boolean inside(Point point) {
+		if (point == null) {
+			throw new NullPointerException("point");
+		}
 		return inside(point.x, point.y);
+	}
+
+	public boolean inside(Point point, int dx, int dy) {
+		if (point == null) {
+			throw new NullPointerException("point");
+		}
+		point.translate(dx, dy);
+		return inside(point);
 	}
 
 	public boolean inside(int x, int y) {
@@ -71,10 +85,16 @@ public final class Grid {
 	}
 
 	public int index(Vector2f vector) {
+		if (vector == null) {
+			throw new NullPointerException("vector");
+		}
 		return index(vector.round().point());
 	}
 
 	public int index(Point point) {
+		if (point == null) {
+			throw new NullPointerException("point");
+		}
 		return index(point.x, point.y);
 	}
 

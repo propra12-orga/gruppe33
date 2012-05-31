@@ -2,14 +2,16 @@ package propra2012.gruppe33.bomberman.graphics.rendering.scenegraph.grid;
 
 import java.awt.Point;
 import java.awt.event.KeyEvent;
+import java.util.Iterator;
 
-import propra2012.gruppe33.bomberman.graphics.rendering.scenegraph.grid.Grid.Direction;
 import propra2012.gruppe33.engine.graphics.rendering.scenegraph.Entity;
-import propra2012.gruppe33.engine.graphics.rendering.scenegraph.EntityFilter;
 import propra2012.gruppe33.engine.graphics.rendering.scenegraph.GraphicsEntity;
 import propra2012.gruppe33.engine.graphics.rendering.scenegraph.Scene;
+import propra2012.gruppe33.engine.graphics.rendering.scenegraph.math.Grid;
 import propra2012.gruppe33.engine.graphics.rendering.scenegraph.math.Mathf;
 import propra2012.gruppe33.engine.graphics.rendering.scenegraph.math.Vector2f;
+import propra2012.gruppe33.engine.graphics.rendering.scenegraph.math.Vector2f.Direction;
+import propra2012.gruppe33.engine.util.FilteredIterator;
 
 /**
  * This class manages the grid movement. If you attach this entity to an entity
@@ -96,63 +98,41 @@ public final class GridController extends Entity {
 		this.velocityMultiplier = velocityMultiplier;
 	}
 
-	/**
-	 * Processes the given input to calculate the next move.
-	 * 
-	 * @param negative
-	 *            The direction.
-	 * @param vertical
-	 *            The axis.
-	 * @param graphicsEntity
-	 *            The entity.
-	 * @param grid
-	 *            The grid.
-	 * @param nearest
-	 *            The nearest field.
-	 * @param maxSpeed
-	 *            The max speed on this field.
-	 * @param dest
-	 *            The vector in which the results are written.
-	 * @param tpf
-	 *            The time passed since last frame.
-	 */
 	private void processMovement(boolean negative, boolean vertical,
-			GraphicsEntity graphicsEntity, Grid grid, Point nearest,
-			float maxSpeed, Vector2f dest, float tpf) {
+			GraphicsEntity gridEntity, GraphicsEntity node,
+			GraphicsEntity graphicsEntity, Vector2f pos, float maxSpeed,
+			Vector2f dest, float tpf) {
 
 		// Get center vector
-		Vector2f center = new Vector2f(nearest);
+		Vector2f center = pos.round();
+
+		// Get point
+		Point nearest = center.point();
 
 		// Calc dominant site
-		boolean negativeDominant = (vertical ? center.x
-				- graphicsEntity.position().x : center.y
-				- graphicsEntity.position().y) > 0;
+		boolean negativeDominant = (vertical ? center.x - pos.x : center.y
+				- pos.y) > 0;
+
+		// Get the grid
+		Grid grid = gridEntity.typeProp(Grid.class);
 
 		// Calc direction
 		int dir = negative ? -1 : 1;
-
-		EntityFilter freeFilter = new EntityFilter() {
-
-			@Override
-			public boolean accept(Entity element) {
-				return element.tagged("free");
-			}
-		};
 
 		// Calc the max velocity using tpf, maxSpeed and the local multiplier
 		float maxMovement = tpf * maxSpeed * velocityMultiplier,
 
 		// Calc the movement based on the grid
 		movement = dir
-				* grid.lineOfSight(graphicsEntity.position(), maxMovement,
+				* GridRoutines.lineOfSight(gridEntity,
+						GridRoutines.VELOCITY_NODE_FILTER, pos, maxMovement,
 						vertical ? (negative ? Direction.North
 								: Direction.South) : (negative ? Direction.West
-								: Direction.East), freeFilter);
+								: Direction.East));
 
 		// Is the entity already centered ?
-		boolean isCentered = vertical ? graphicsEntity.position().xThreshold(
-				center.x, THRESHOLD) : graphicsEntity.position().yThreshold(
-				center.y, THRESHOLD);
+		boolean isCentered = vertical ? pos.xThreshold(center.x, THRESHOLD)
+				: pos.yThreshold(center.y, THRESHOLD);
 
 		if (isCentered) {
 
@@ -168,20 +148,23 @@ public final class GridController extends Entity {
 			int offset = 0;
 
 			/*
-			 * Test the upper, left-upper, right-upper field to be free.
+			 * Test the border-fields to be free.
 			 */
+			Point a = new Point(nearest.x + (vertical ? offset : dir),
+					nearest.y + (vertical ? dir : offset));
 
-			if (!grid.filterAt(freeFilter, new Point(nearest.x
-					+ (vertical ? offset : dir), nearest.y
-					+ (vertical ? dir : offset)))) {
+			if (!GridRoutines.VELOCITY_NODE_FILTER.accept(gridEntity
+					.childAt(grid.index(a)))) {
 
 				// Recalc the offset
 				offset += negativeDominant ? -1 : 1;
 
+				a = new Point(nearest.x + (vertical ? offset : dir), nearest.y
+						+ (vertical ? dir : offset));
+
 				// Still no luck =(
-				if (!grid.filterAt(freeFilter, new Point(nearest.x
-						+ (vertical ? offset : dir), nearest.y
-						+ (vertical ? dir : offset)))) {
+				if (!GridRoutines.VELOCITY_NODE_FILTER.accept(gridEntity
+						.childAt(grid.index(a)))) {
 					return;
 				}
 			}
@@ -192,9 +175,8 @@ public final class GridController extends Entity {
 					+ (vertical ? 0 : offset));
 
 			// Recalc the distance
-			float centerDistance = vertical ? fieldOfInterest.x
-					- graphicsEntity.position().x : fieldOfInterest.y
-					- graphicsEntity.position().y;
+			float centerDistance = vertical ? fieldOfInterest.x - pos.x
+					: fieldOfInterest.y - pos.y;
 
 			// Calc the orthogonal movement
 			float orthogonalMovement = (centerDistance >= 0 ? 1f : -1f)
@@ -224,49 +206,57 @@ public final class GridController extends Entity {
 	@Override
 	protected void onUpdate(float tpf) {
 
-		// Nothing to process...
-		if (!(parent() instanceof GraphicsEntity)) {
+		/*
+		 * LOOKUP THE CONTROLLED PARENT, THE NODE AND THE GRID ENTITY!
+		 */
+
+		// Get and filter parents...
+		Iterator<Entity> parents = new FilteredIterator<Entity>(
+				GraphicsEntity.TYPE_FILTER, parentIterator(false));
+
+		if (!parents.hasNext()) {
 			return;
 		}
 
 		// Convert parent
-		GraphicsEntity controlledParent = (GraphicsEntity) parent();
+		GraphicsEntity controlledParent = (GraphicsEntity) parents.next();
 
-		// The parent of the controlled parent must be a grid
-		if (!(controlledParent.parent() instanceof Grid)) {
+		if (!parents.hasNext()) {
 			return;
 		}
 
-		// Get grid
-		Grid grid = (Grid) controlledParent.parent();
+		// Convert node
+		GraphicsEntity node = (GraphicsEntity) parents.next();
+
+		if (!parents.hasNext()) {
+			return;
+		}
+
+		// Convert grid entity
+		GraphicsEntity gridEntity = (GraphicsEntity) parents.next();
 
 		// Find the scene instance
-		Scene scene = grid.findScene();
+		Scene scene = gridEntity.findScene();
 
-		// Find nearest grid
-		Point nearest = grid.validate(controlledParent.position().round()
-				.point());
+		/*
+		 * PROCESS THE MOVEMENT!
+		 */
 
-		// Are we inside the grid ?
-		if (nearest == null) {
-			throw new IllegalStateException("Entity grid position invalid: "
-					+ "Entity position out of grid.");
-		}
+		// The node position
+		Vector2f offset = node.position();
 
-		// Tmp
-		Float maxSpeedObj = null;
+		// The position of the controlled parent
+		Vector2f position = controlledParent.position();
 
-		// Lookup the max speed on this field
-		for (Entity entity : grid.entitiesAt(nearest)) {
-			if ((maxSpeedObj = (Float) entity.props().get("speed")) != null) {
-				break;
-			}
-		}
+		// The absolute position
+		Vector2f absolutePosition = offset.add(position);
 
-		// Check
+		// Look up the speed on the given field
+		Float maxSpeedObj = node.typeProp(Float.class);
+
+		// Check for speed property
 		if (maxSpeedObj == null) {
-			throw new IllegalStateException("Entity grid position invalid: "
-					+ nearest + ". Field " + nearest
+			throw new IllegalStateException("The node " + node
 					+ " does not have a speed property.");
 		}
 
@@ -292,13 +282,14 @@ public final class GridController extends Entity {
 
 			if (vertical) {
 				// Calc vertical movement
-				processMovement(north, true, controlledParent, grid, nearest,
-						maxSpeed, movement, tpf);
+				processMovement(north, true, gridEntity, node,
+						controlledParent, absolutePosition, maxSpeed, movement,
+						tpf);
 			} else {
-
 				// Calc horizontal movement
-				processMovement(west, false, controlledParent, grid, nearest,
-						maxSpeed, movement, tpf);
+				processMovement(west, false, gridEntity, node,
+						controlledParent, absolutePosition, maxSpeed, movement,
+						tpf);
 			}
 		} else if (vertical) {
 
@@ -317,12 +308,14 @@ public final class GridController extends Entity {
 				if (lv >= 1.0f) {
 
 					// Calc horizontal movement
-					processMovement(west, false, controlledParent, grid,
-							nearest, maxSpeed, movement, tpf);
+					processMovement(west, false, gridEntity, node,
+							controlledParent, absolutePosition, maxSpeed,
+							movement, tpf);
 				} else {
 					// Calc vertical movement
-					processMovement(north, true, controlledParent, grid,
-							nearest, maxSpeed, movement, tpf);
+					processMovement(north, true, gridEntity, node,
+							controlledParent, absolutePosition, maxSpeed,
+							movement, tpf);
 				}
 
 				break;
@@ -333,13 +326,15 @@ public final class GridController extends Entity {
 				if (lh >= 1.0f) {
 
 					// Calc vertical movement
-					processMovement(north, true, controlledParent, grid,
-							nearest, maxSpeed, movement, tpf);
+					processMovement(north, true, gridEntity, node,
+							controlledParent, absolutePosition, maxSpeed,
+							movement, tpf);
 
 				} else {
 					// Calc horizontal movement
-					processMovement(west, false, controlledParent, grid,
-							nearest, maxSpeed, movement, tpf);
+					processMovement(west, false, gridEntity, node,
+							controlledParent, absolutePosition, maxSpeed,
+							movement, tpf);
 				}
 
 				break;
