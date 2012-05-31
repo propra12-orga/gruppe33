@@ -9,11 +9,13 @@ import propra2012.gruppe33.bomberman.graphics.rendering.scenegraph.grid.GridCont
 import propra2012.gruppe33.bomberman.graphics.rendering.scenegraph.grid.GridLoader;
 import propra2012.gruppe33.bomberman.graphics.rendering.scenegraph.grid.GridRoutines;
 import propra2012.gruppe33.bomberman.graphics.sprite.AnimationRoutines;
+import propra2012.gruppe33.engine.graphics.rendering.scenegraph.Entity;
 import propra2012.gruppe33.engine.graphics.rendering.scenegraph.GraphicsEntity;
 import propra2012.gruppe33.engine.graphics.rendering.scenegraph.Scene;
 import propra2012.gruppe33.engine.graphics.rendering.scenegraph.SceneProcessor;
 import propra2012.gruppe33.engine.graphics.rendering.scenegraph.animation.RenderedAnimation;
 import propra2012.gruppe33.engine.graphics.rendering.scenegraph.math.Grid;
+import propra2012.gruppe33.engine.graphics.sprite.Sprite;
 import propra2012.gruppe33.engine.resources.assets.AssetManager;
 
 /**
@@ -71,13 +73,44 @@ public class PreMilestoneApp {
 		char[][] map = assets.loadAsset("assets/maps/smallmap.txt",
 				GridLoader.LOADER).get();
 
-		// GridLoader.generate(map, 5678);
+		// Generate the map randomally
+		GridLoader.generate(map, System.nanoTime());
+
+		// Load boom
+		final Sprite boom = new Sprite(assets.loadImage(
+				"assets/images/animated/boom.png", true), 5, 5);
 
 		// Parse and setup map
-		GraphicsEntity grid = GridLoader.parse(map, scene);
+		final GraphicsEntity grid = GridLoader.parse(map, scene);
 
 		// Create new player as knight
 		GraphicsEntity player = GridRoutines.createLocalKnight(assets, "Kr0e");
+
+		player.attach(new Entity() {
+
+			@Override
+			protected void onUpdate(float tpf) {
+				super.onUpdate(tpf);
+
+				// Get scene
+				Scene scene = ((GraphicsEntity) parent()).findScene();
+
+				GraphicsEntity node = ((GraphicsEntity) parent().parent());
+
+				if (scene.isPressed(KeyEvent.VK_SPACE)
+						&& !GridRoutines.hasFieldExplosion(node)) {
+
+					GraphicsEntity bomb = GridRoutines
+							.createExplosion(boom, 33);
+
+					// Attach the bomb
+					grid.childAt(
+							grid.typeProp(Grid.class).index(node.position()))
+							.attach(bomb);
+
+				}
+			}
+		});
 
 		// Place to spawn
 		grid.childAt(grid.typeProp(Grid.class).index(1, 1)).attach(player);

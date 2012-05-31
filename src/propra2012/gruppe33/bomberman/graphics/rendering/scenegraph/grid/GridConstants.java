@@ -10,7 +10,10 @@ package propra2012.gruppe33.bomberman.graphics.rendering.scenegraph.grid;
  */
 public interface GridConstants {
 
+	int EXPLOSION_ORDER = 100000;
+	
 	Object FREE_TAG = new Object();
+	Object EXPLOSION_TAG = new Object();
 
 	char UP_BARRIER = 'u';
 	char DOWN_BARRIER = 'd';

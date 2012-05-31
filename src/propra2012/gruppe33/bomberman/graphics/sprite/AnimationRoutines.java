@@ -20,6 +20,13 @@ public final class AnimationRoutines {
 
 	public static final String RUN_PREFIX = "run_", DIE_PREFIX = "die_";
 
+	/**
+	 * Creates a grid movement animation handler to switch animations during
+	 * running.
+	 * 
+	 * @param renderedAnimation
+	 * @return
+	 */
 	public static Entity createGridControllerAnimationHandler(
 			final RenderedAnimation renderedAnimation) {
 		if (renderedAnimation == null) {

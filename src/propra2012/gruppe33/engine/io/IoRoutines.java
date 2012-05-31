@@ -38,7 +38,7 @@ public final class IoRoutines {
 		while ((read = inputStream.read(buffer)) != -1) {
 			array.write(buffer, 0, read);
 		}
-		return buffer;
+		return array.toByteArray();
 	}
 
 	/**

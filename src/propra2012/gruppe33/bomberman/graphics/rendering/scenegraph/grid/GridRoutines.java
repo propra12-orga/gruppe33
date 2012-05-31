@@ -7,10 +7,13 @@ import propra2012.gruppe33.engine.graphics.rendering.scenegraph.Entity;
 import propra2012.gruppe33.engine.graphics.rendering.scenegraph.EntityFilter;
 import propra2012.gruppe33.engine.graphics.rendering.scenegraph.GraphicsEntity;
 import propra2012.gruppe33.engine.graphics.rendering.scenegraph.animation.RenderedAnimation;
+import propra2012.gruppe33.engine.graphics.rendering.scenegraph.animation.RenderedAnimation.AnimationEvent;
 import propra2012.gruppe33.engine.graphics.rendering.scenegraph.math.Grid;
 import propra2012.gruppe33.engine.graphics.rendering.scenegraph.math.Vector2f;
 import propra2012.gruppe33.engine.graphics.rendering.scenegraph.math.Vector2f.Direction;
+import propra2012.gruppe33.engine.graphics.sprite.Animation;
 import propra2012.gruppe33.engine.graphics.sprite.AnimationBundle;
+import propra2012.gruppe33.engine.graphics.sprite.Sprite;
 import propra2012.gruppe33.engine.resources.assets.AssetManager;
 
 /**
@@ -140,6 +143,49 @@ public final class GridRoutines implements GridConstants {
 		return distance;
 	}
 
+	public static GraphicsEntity createExplosion(Sprite explosion,
+			long timePerImage) {
+
+		// Create new explosion entity
+		Animation animation = explosion
+				.newAnimationFromRange("explosion", timePerImage, 0, 0, 25)
+				.loop(false).paused(false);
+
+		// Create an entity using the animation
+		RenderedAnimation renderedAnimation = new RenderedAnimation();
+		renderedAnimation.tag(FREE_TAG).tag(EXPLOSION_TAG)
+				.index(EXPLOSION_ORDER);
+		renderedAnimation.animationBundle().add(animation);
+		renderedAnimation.animationName("explosion");
+
+		// Delete this entity when the animation is finished
+		renderedAnimation.attach(new Entity() {
+			/**
+			 * 
+			 */
+			private static final long serialVersionUID = 1L;
+
+			@Override
+			protected void onEvent(Entity source, Object event,
+					Object... params) {
+				super.onEvent(source, event, params);
+
+				if (event instanceof AnimationEvent) {
+					switch ((AnimationEvent) event) {
+					case AnimationFinished:
+
+						// Detach the rendered animation
+						source.detach();
+
+						break;
+					}
+				}
+			}
+		});
+
+		return renderedAnimation;
+	}
+
 	/**
 	 * Creates a new local knight player.
 	 * 
@@ -192,6 +238,18 @@ public final class GridRoutines implements GridConstants {
 		return player;
 	}
 
+	public static boolean hasFieldExplosion(Entity nodeEntity) {
+		if (nodeEntity == null) {
+			throw new NullPointerException("nodeEntity");
+		}
+		for (Entity child : nodeEntity) {
+			if (child.tagged(EXPLOSION_TAG)) {
+				return true;
+			}
+		}
+		return false;
+	}
+
 	/**
 	 * Checks the child node of the grid entity at the given point to be free.
 	 * 
@@ -203,7 +261,7 @@ public final class GridRoutines implements GridConstants {
 	 */
 	public static boolean isFieldFree(Entity gridEntity, Point point) {
 		if (gridEntity == null) {
-			throw new NullPointerException("entity");
+			throw new NullPointerException("gridEntity");
 		} else if (point == null) {
 			throw new NullPointerException("point");
 		}
@@ -228,7 +286,7 @@ public final class GridRoutines implements GridConstants {
 	 */
 	public static boolean isFieldFree(Entity nodeEntity) {
 		if (nodeEntity == null) {
-			throw new NullPointerException("entity");
+			throw new NullPointerException("nodeEntity");
 		}
 		for (Entity child : nodeEntity) {
 			if (!child.tagged(FREE_TAG)) {

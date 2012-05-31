@@ -286,7 +286,7 @@ public final class GraphicsRoutines {
 		return frame;
 	}
 
-	// Should not be instantiated
+	// Should not be instantiated...
 	private GraphicsRoutines() {
 	}
 }
