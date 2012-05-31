@@ -9,7 +9,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 import propra2012.gruppe33.engine.graphics.GraphicsRoutines;
-import propra2012.gruppe33.engine.graphics.rendering.scenegraph.Mathf;
+import propra2012.gruppe33.engine.graphics.rendering.scenegraph.math.Mathf;
 import propra2012.gruppe33.engine.resources.Resource;
 
 /**

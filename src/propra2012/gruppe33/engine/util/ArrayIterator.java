@@ -12,7 +12,7 @@ import java.util.NoSuchElementException;
  * @param <E>
  *            The iteration type.
  */
-public final class ArrayIterator<E> implements Iterator<E> {
+public final class ArrayIterator<E> implements Iterator<E>, Iterable<E> {
 
 	// The internal array
 	private final Object[] elements;
@@ -52,6 +52,17 @@ public final class ArrayIterator<E> implements Iterator<E> {
 		// Evaluate the flag and setup the index
 		index = elements != null && elements.length > 0 ? (ascending ? 0
 				: elements.length - 1) : -1;
+	}
+
+	/*
+	 * (non-Javadoc)
+	 * 
+	 * @see java.lang.Iterable#iterator()
+	 */
+	@SuppressWarnings("unchecked")
+	@Override
+	public Iterator<E> iterator() {
+		return new ArrayIterator<E>(ascending, (E[]) elements);
 	}
 
 	/*

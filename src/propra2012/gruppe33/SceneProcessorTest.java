@@ -2,7 +2,8 @@ package propra2012.gruppe33;
 
 import java.awt.Frame;
 
-import propra2012.gruppe33.bomberman.graphics.rendering.scenegraph.grid.Grid;
+import javax.sound.sampled.Clip;
+
 import propra2012.gruppe33.engine.graphics.GraphicsRoutines;
 import propra2012.gruppe33.engine.graphics.rendering.scenegraph.SceneProcessor;
 
@@ -21,10 +22,6 @@ public class SceneProcessorTest {
 		// Create peer
 		Frame frame = GraphicsRoutines.createFrame(sceneProcessor, "Bomberman",
 				800, 600);
-
-		// Create the grid
-
-		// grid = (Grid) IoRoutines.deserialize(IoRoutines.serialize(grid));
 
 		// Set root
 		sceneProcessor.root(PreMilestoneApp.createGUI());

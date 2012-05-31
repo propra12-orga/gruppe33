@@ -26,6 +26,11 @@ public class RenderedImage extends GraphicsEntity {
 	private Resource<? extends Image> imageResource;
 
 	/*
+	 * Is the image centered ?
+	 */
+	private boolean centered = false;
+
+	/*
 	 * (non-Javadoc)
 	 * 
 	 * @see
@@ -38,8 +43,11 @@ public class RenderedImage extends GraphicsEntity {
 		// Does the image exist ?
 		if (imageResource != null) {
 
-			// Center the image
-			transformed.translate(-0.5, -0.5);
+			// Is the image centered ?
+			if (centered) {
+				// Center the image
+				transformed.translate(-0.5, -0.5);
+			}
 
 			// Try to get image
 			Image image = imageResource.get();
@@ -74,6 +82,25 @@ public class RenderedImage extends GraphicsEntity {
 	}
 
 	/**
+	 * @return the centered flag.
+	 */
+	public boolean isCentered() {
+		return centered;
+	}
+
+	/**
+	 * Sets the centered flag.
+	 * 
+	 * @param centered
+	 *            True if you want to center the image, otherwise false.
+	 * @return this for chaining.
+	 */
+	public RenderedImage centered(boolean centered) {
+		this.centered = centered;
+		return this;
+	}
+
+	/**
 	 * @return the image resource.
 	 */
 	public Resource<? extends Image> imageResource() {
@@ -85,8 +112,10 @@ public class RenderedImage extends GraphicsEntity {
 	 * 
 	 * @param imageResource
 	 *            The image resource you want to set.
+	 * @return this for chaining.
 	 */
-	public void imageResource(Resource<? extends Image> imageResource) {
+	public RenderedImage imageResource(Resource<? extends Image> imageResource) {
 		this.imageResource = imageResource;
+		return this;
 	}
 }

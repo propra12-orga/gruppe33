@@ -1,6 +1,9 @@
-package propra2012.gruppe33.engine.graphics.rendering.scenegraph;
+package propra2012.gruppe33.engine.graphics.rendering.scenegraph.math;
 
+import java.awt.Point;
 import java.io.Serializable;
+
+import propra2012.gruppe33.engine.graphics.rendering.scenegraph.Entity;
 
 /**
  * This is a simple 2d vector implementation. It contains the most basic
@@ -10,6 +13,33 @@ import java.io.Serializable;
  * @see Entity
  */
 public final class Vector2f implements Serializable {
+
+	/**
+	 * 
+	 * @author Christopher Probst
+	 * 
+	 */
+	public enum Direction {
+		North, South, East, West, Undefined;
+
+		public Vector2f vector() {
+			switch (this) {
+			case North:
+				return Vector2f.up();
+			case South:
+				return Vector2f.down();
+			case West:
+				return Vector2f.left();
+			case East:
+				return Vector2f.right();
+			case Undefined:
+				return Vector2f.zero();
+			default:
+				throw new UnsupportedOperationException(this
+						+ " not implemented");
+			}
+		}
+	}
 
 	/**
 	 * 
@@ -82,7 +112,7 @@ public final class Vector2f implements Serializable {
 	/**
 	 * @return a new vector initialized with 0,1
 	 */
-	public static Vector2f forward() {
+	public static Vector2f down() {
 		return new Vector2f(0, 1);
 	}
 
@@ -103,7 +133,7 @@ public final class Vector2f implements Serializable {
 	/**
 	 * @return a new vector initialized with 0,-1
 	 */
-	public static Vector2f back() {
+	public static Vector2f up() {
 		return new Vector2f(0, -1);
 	}
 
@@ -113,10 +143,20 @@ public final class Vector2f implements Serializable {
 	public float x, y;
 
 	/**
-	 * Creates a copy of a given vector.
+	 * Creates a copy of the given point.
+	 * 
+	 * @param point
+	 *            The point you want to copy.
+	 */
+	public Vector2f(Point point) {
+		this(point.x, point.y);
+	}
+
+	/**
+	 * Creates a copy of the given vector.
 	 * 
 	 * @param other
-	 *            The vector you want to clone.
+	 *            The vector you want to copy.
 	 */
 	public Vector2f(Vector2f other) {
 		this(other.x, other.y);
@@ -149,7 +189,7 @@ public final class Vector2f implements Serializable {
 	 *            The x component of this vector.
 	 * @param y
 	 *            The y component of this vector.
-	 * @return this.
+	 * @return this for chaining.
 	 */
 	public Vector2f set(float x, float y) {
 		this.x = x;
@@ -162,7 +202,7 @@ public final class Vector2f implements Serializable {
 	 * 
 	 * @param other
 	 *            The vector which you want to copy.
-	 * @return this.
+	 * @return this for chaining.
 	 */
 	public Vector2f set(Vector2f other) {
 		if (other == null) {
@@ -183,7 +223,7 @@ public final class Vector2f implements Serializable {
 	/**
 	 * Sets this vector to 0,0.
 	 * 
-	 * @return this.
+	 * @return this for chaining.
 	 */
 	public Vector2f setZero() {
 		x = y = 0;
@@ -195,7 +235,7 @@ public final class Vector2f implements Serializable {
 	 * 
 	 * @param other
 	 *            The vector you want to add to this.
-	 * @return this.
+	 * @return this for chaining.
 	 */
 	public Vector2f addLocal(Vector2f other) {
 		if (other == null) {
@@ -212,7 +252,7 @@ public final class Vector2f implements Serializable {
 	 * 
 	 * @param other
 	 *            The vector you want to subtract.
-	 * @return this.
+	 * @return this for chaining.
 	 */
 	public Vector2f subLocal(Vector2f other) {
 		if (other == null) {
@@ -229,7 +269,7 @@ public final class Vector2f implements Serializable {
 	 * 
 	 * @param scalar
 	 *            The scale factor.
-	 * @return this.
+	 * @return this for chaining.
 	 */
 	public Vector2f scaleLocal(float scalar) {
 		x *= scalar;
@@ -247,6 +287,36 @@ public final class Vector2f implements Serializable {
 	 */
 	public Vector2f scale(float scalar) {
 		return new Vector2f(this).scaleLocal(scalar);
+	}
+
+	/**
+	 * Scales this vector by multiplying each component with each other
+	 * component of the other vector.
+	 * 
+	 * @param other
+	 *            The scale vector.
+	 * @return this for chaining.
+	 */
+	public Vector2f scaleLocal(Vector2f other) {
+		if (other == null) {
+			throw new NullPointerException("other");
+		}
+
+		x *= other.x;
+		y *= other.y;
+		return this;
+	}
+
+	/**
+	 * Multiplies each component of this vector with each component of the other
+	 * vector and returns a new vector which contains the result.
+	 * 
+	 * @param other
+	 *            The scale vector.
+	 * @return the new result vector.
+	 */
+	public Vector2f scale(Vector2f other) {
+		return new Vector2f(this).scaleLocal(other);
 	}
 
 	/**
@@ -281,6 +351,24 @@ public final class Vector2f implements Serializable {
 		return new Vector2f(this).subLocal(other);
 	}
 
+	/**
+	 * Inverts this vector.
+	 * 
+	 * @return this for chaining.
+	 */
+	public Vector2f invertLocal() {
+		x = 1f / x;
+		y = 1f / y;
+		return this;
+	}
+
+	/**
+	 * @return a new vector which contains the inverse of this vector.
+	 */
+	public Vector2f invert() {
+		return new Vector2f(this).invert();
+	}
+
 	/*
 	 * (non-Javadoc)
 	 * 
@@ -296,25 +384,87 @@ public final class Vector2f implements Serializable {
 	}
 
 	/**
+	 * Rounds this entity.
+	 * 
+	 * @return this for chaining.
+	 */
+	public Vector2f roundLocal() {
+		x = Math.round(x);
+		y = Math.round(y);
+		return this;
+	}
+
+	/**
+	 * @return a new rounded vector.
+	 */
+	public Vector2f round() {
+		return new Vector2f(this).roundLocal();
+	}
+
+	/**
+	 * @return the vector as point. The float components will not be rounded but
+	 *         converted to integers.
+	 */
+	public Point point() {
+		return new Point((int) x, (int) y);
+	}
+
+	/**
+	 * @return the nearest direction of this vector.
+	 */
+	public Direction nearestDirection() {
+
+		if (equals(Vector2f.zero())) {
+			return Direction.Undefined;
+		} else if (Math.max(Math.abs(x), Math.abs(y)) == x) {
+			return x > 0.0f ? Direction.East : Direction.West;
+		} else {
+			return y > 0.0f ? Direction.South : Direction.North;
+		}
+	}
+
+	/**
+	 * Check whether or not this vector is inside the given rectangle.
+	 * 
+	 * @param leftUp
+	 *            The left-up corner.
+	 * @param rightDown
+	 *            The right-down corner.
+	 * @return true if this vector is inside the rectangle, otherwise false.
+	 */
+	public boolean inside(Vector2f leftUp, Vector2f rightDown) {
+		if (leftUp == null) {
+			throw new NullPointerException("leftUp");
+		} else if (rightDown == null) {
+			throw new NullPointerException("rightDown");
+		}
+
+		return x >= leftUp.x && x <= rightDown.x && y >= leftUp.y
+				&& y <= rightDown.y;
+	}
+
+	/**
 	 * @param v
 	 *            The value you want to compare with the x component.
 	 * @param threshold
+	 *            The threshold.
 	 * @return true if |x-v| is smaller than the given threshold, otherwise
 	 *         false.
 	 */
 	public boolean xThreshold(float v, float threshold) {
-		return Math.abs(x - v) < Math.abs(threshold);
+		return Mathf.threshold(x, v, threshold);
 	}
 
 	/**
 	 * @param v
 	 *            The value you want to compare with the y component.
 	 * @param threshold
+	 *            The threshold.
 	 * @return true if |y-v| is smaller than the given threshold, otherwise
 	 *         false.
 	 */
 	public boolean yThreshold(float v, float threshold) {
-		return Math.abs(y - v) < Math.abs(threshold);
+		return Mathf.threshold(y, v, threshold);
 	}
 
 	/**

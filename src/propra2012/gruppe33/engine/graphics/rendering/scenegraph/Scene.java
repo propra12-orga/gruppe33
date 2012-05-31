@@ -2,6 +2,7 @@ package propra2012.gruppe33.engine.graphics.rendering.scenegraph;
 
 import java.awt.Color;
 import java.awt.Component;
+import java.awt.Dimension;
 import java.awt.Graphics;
 import java.awt.Graphics2D;
 import java.awt.Image;
@@ -13,6 +14,7 @@ import java.awt.event.KeyListener;
 import java.util.HashMap;
 import java.util.Map;
 
+import propra2012.gruppe33.engine.graphics.rendering.scenegraph.math.Vector2f;
 import propra2012.gruppe33.engine.resources.TransientRenderedEntity;
 import propra2012.gruppe33.engine.resources.assets.AssetManager;
 
@@ -252,6 +254,20 @@ public class Scene extends GraphicsEntity implements KeyListener, FocusListener 
 	}
 
 	/**
+	 * @return the size as vector.
+	 */
+	public Vector2f sizeAsVector() {
+		return new Vector2f(width, height);
+	}
+
+	/**
+	 * @return the size as dimension.
+	 */
+	public Dimension size() {
+		return new Dimension(width, height);
+	}
+
+	/**
 	 * Creates a rendered opaque image using the given graphics entity.
 	 * 
 	 * @param bgColor
@@ -285,6 +301,9 @@ public class Scene extends GraphicsEntity implements KeyListener, FocusListener 
 
 		// Create a new entity
 		RenderedImage root = new RenderedImage(renderedEntity);
+
+		// This image is centered
+		root.centered(true);
 
 		// Set position
 		root.position().set(width * 0.5f, height * 0.5f);
@@ -434,7 +453,7 @@ public class Scene extends GraphicsEntity implements KeyListener, FocusListener 
 				copy.clearRect(0, 0, this.width, this.height);
 
 				// Finally render
-				render(copy, copy);
+				render(copy);
 			} finally {
 				copy.dispose();
 			}

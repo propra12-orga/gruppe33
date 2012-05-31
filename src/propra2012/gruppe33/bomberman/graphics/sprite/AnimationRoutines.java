@@ -20,6 +20,13 @@ public final class AnimationRoutines {
 
 	public static final String RUN_PREFIX = "run_", DIE_PREFIX = "die_";
 
+	/**
+	 * Creates a grid movement animation handler to switch animations during
+	 * running.
+	 * 
+	 * @param renderedAnimation
+	 * @return
+	 */
 	public static Entity createGridControllerAnimationHandler(
 			final RenderedAnimation renderedAnimation) {
 		if (renderedAnimation == null) {
@@ -34,15 +41,16 @@ public final class AnimationRoutines {
 			private static final long serialVersionUID = 1L;
 
 			@Override
-			protected void onEvent(Object event, Object... params) {
-				super.onEvent(event, params);
+			protected void onEvent(Entity source, Object event,
+					Object... params) {
+				super.onEvent(source, event, params);
 
 				if (event instanceof GridControllerEvent) {
 
 					switch ((GridControllerEvent) event) {
 					case DirectionChanged:
 
-						GridController gc = (GridController) params[0];
+						GridController gc = (GridController) source;
 
 						// Set active animation
 						renderedAnimation.animationName(RUN_PREFIX
@@ -59,7 +67,7 @@ public final class AnimationRoutines {
 
 					case MovingChanged:
 
-						gc = (GridController) params[0];
+						gc = (GridController) source;
 
 						// Lookup the animation
 						running = renderedAnimation.animation();
@@ -102,26 +110,34 @@ public final class AnimationRoutines {
 		/*
 		 * Load the die animation.
 		 */
-		knight.add(knightSprite.newAnimationFromRange(DIE_PREFIX + "north",
-				dieSpeed, 5, 4, 9));
-		knight.add(knightSprite.newAnimationFromRange(DIE_PREFIX + "south",
-				dieSpeed, 5, 5, 9));
-		knight.add(knightSprite.newAnimationFromRange(DIE_PREFIX + "west",
-				dieSpeed, 5, 6, 9));
-		knight.add(knightSprite.newAnimationFromRange(DIE_PREFIX + "east",
-				dieSpeed, 5, 3, 9));
+		knight.add(
+				knightSprite.newAnimationFromRange(DIE_PREFIX + "north",
+						dieSpeed, 5, 4, 9)).loop(true).paused(true);
+		knight.add(
+				knightSprite.newAnimationFromRange(DIE_PREFIX + "south",
+						dieSpeed, 5, 5, 9)).loop(true).paused(true);
+		knight.add(
+				knightSprite.newAnimationFromRange(DIE_PREFIX + "west",
+						dieSpeed, 5, 6, 9)).loop(true).paused(true);
+		knight.add(
+				knightSprite.newAnimationFromRange(DIE_PREFIX + "east",
+						dieSpeed, 5, 3, 9)).loop(true).paused(true);
 
 		/*
 		 * Load the run animation.
 		 */
-		knight.add(knightSprite.newAnimationFromRange(RUN_PREFIX + "north",
-				moveSpeed, 8, 0, 8));
-		knight.add(knightSprite.newAnimationFromRange(RUN_PREFIX + "south",
-				moveSpeed, 7, 1, 8));
-		knight.add(knightSprite.newAnimationFromRange(RUN_PREFIX + "west",
-				moveSpeed, 6, 2, 8));
-		knight.add(knightSprite.newAnimationFromRange(RUN_PREFIX + "east",
-				moveSpeed, 0, 0, 8));
+		knight.add(
+				knightSprite.newAnimationFromRange(RUN_PREFIX + "north",
+						moveSpeed, 8, 0, 8)).loop(true).paused(true);
+		knight.add(
+				knightSprite.newAnimationFromRange(RUN_PREFIX + "south",
+						moveSpeed, 7, 1, 8)).loop(true).paused(true);
+		knight.add(
+				knightSprite.newAnimationFromRange(RUN_PREFIX + "west",
+						moveSpeed, 6, 2, 8)).loop(true).paused(true);
+		knight.add(
+				knightSprite.newAnimationFromRange(RUN_PREFIX + "east",
+						moveSpeed, 0, 0, 8)).loop(true).paused(true);
 
 		return knight;
 	}

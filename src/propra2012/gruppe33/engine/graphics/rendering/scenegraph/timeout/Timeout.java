@@ -23,13 +23,13 @@ public class Timeout extends Entity {
 	private float timeout;
 
 	@Override
-	protected void onEvent(Object event, Object... params) {
-		super.onEvent(event, params);
+	protected void onEvent(Entity source, Object event, Object... params) {
+		super.onEvent(source, event, params);
 
 		if (event instanceof TimeoutEvent) {
 			switch ((TimeoutEvent) event) {
 			case Timeout:
-				onTimeout((Timeout) params[0]);
+				onTimeout((Timeout) source);
 				break;
 			}
 		}
@@ -44,6 +44,7 @@ public class Timeout extends Entity {
 	 */
 	@Override
 	protected void onUpdate(float tpf) {
+		super.onUpdate(tpf);
 
 		// Reduce the timeout
 		timeout -= tpf;
@@ -51,11 +52,23 @@ public class Timeout extends Entity {
 		// Timeout happend
 		if (timeout <= 0) {
 			// Fire event
-			fireEvent(siblingIterator(true), TimeoutEvent.Timeout, this);
+			fireEvent(TimeoutEvent.Timeout);
 		}
 	}
 
+	/**
+	 * OVERRIDE FOR CUSTOM RENDER BEHAVIOUR.
+	 * 
+	 * This method gets called when the timeout has reached.
+	 * 
+	 * @param timeout
+	 *            The timeout entity.
+	 */
 	protected void onTimeout(Timeout timeout) {
+	}
+
+	public Timeout() {
+		events().put(TimeoutEvent.Timeout, iterableChildren(true, true));
 	}
 
 	/**
@@ -65,7 +78,7 @@ public class Timeout extends Entity {
 	 *            The timeout in seconds.
 	 */
 	public Timeout(float timeout) {
-		setTimeout(timeout);
+		timeout(timeout);
 	}
 
 	/**
@@ -73,18 +86,20 @@ public class Timeout extends Entity {
 	 * 
 	 * @param timeout
 	 *            The new timeout in seconds.
+	 * @return this for chaining.
 	 */
-	public void setTimeout(float timeout) {
+	public Timeout timeout(float timeout) {
 		if (timeout < 0) {
 			throw new IllegalArgumentException("Timeout must be >= 0");
 		}
 		this.timeout = timeout;
+		return this;
 	}
 
 	/**
 	 * @return the specified timeout in seconds.
 	 */
-	public float getTimeout() {
+	public float timeout() {
 		return timeout;
 	}
 }

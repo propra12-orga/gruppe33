@@ -13,7 +13,8 @@ import propra2012.gruppe33.engine.graphics.rendering.scenegraph.Scene;
  * This class represents a "rendered entity". This means that you provide a
  * graphics entity which is rendered into an image. But to reduce serialization
  * overhead this class only serializes the entity hierarchy instead of the
- * image.
+ * image. This means you serialize the "construction" of the image instead of
+ * the image.
  * 
  * @author Christopher Probst
  * @see Resource

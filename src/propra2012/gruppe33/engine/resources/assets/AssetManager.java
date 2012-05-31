@@ -24,7 +24,10 @@ import propra2012.gruppe33.engine.graphics.GraphicsRoutines;
  * represent data from an archive.
  * 
  * An asset manager and all its components are serializable to heavily simplify
- * the networking part.
+ * the networking part. When you serialize assets you really just serialize its
+ * paths. The deserializing component must have the same asset bundles to
+ * restore the native assets. This concept is the best attempt to simplify the
+ * exchange while maintaining consistency.
  * 
  * @author Christopher Probst
  * @author Matthias Hesse

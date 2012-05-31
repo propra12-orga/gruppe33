@@ -2,6 +2,7 @@ package propra2012.gruppe33.engine.graphics.rendering.scenegraph.animation;
 
 import java.awt.Graphics2D;
 
+import propra2012.gruppe33.engine.graphics.rendering.scenegraph.Entity;
 import propra2012.gruppe33.engine.graphics.rendering.scenegraph.GraphicsEntity;
 import propra2012.gruppe33.engine.graphics.sprite.Animation;
 import propra2012.gruppe33.engine.graphics.sprite.AnimationBundle;
@@ -24,15 +25,37 @@ public class RenderedAnimation extends GraphicsEntity {
 	 */
 	private static final long serialVersionUID = 1L;
 
-	public enum RenderedAnimationEvent {
-		LastImage
+	public enum AnimationEvent {
+		AnimationFinished
 	}
 
 	// The map which stores all animations
-	public final AnimationBundle animationBundle;
+	private final AnimationBundle animationBundle;
 
 	// The active animation name
 	private String animationName;
+
+	/*
+	 * (non-Javadoc)
+	 * 
+	 * @see
+	 * propra2012.gruppe33.engine.graphics.rendering.scenegraph.GraphicsEntity
+	 * #onEvent(propra2012.gruppe33.engine.graphics.rendering.scenegraph.Entity,
+	 * java.lang.Object, java.lang.Object[])
+	 */
+	@Override
+	protected void onEvent(Entity source, Object event, Object... params) {
+		super.onEvent(source, event, params);
+
+		if (event instanceof AnimationEvent) {
+			switch ((AnimationEvent) event) {
+			case AnimationFinished:
+				onAnimationFinished((RenderedAnimation) source,
+						(Animation) params[0]);
+				break;
+			}
+		}
+	}
 
 	/*
 	 * (non-Javadoc)
@@ -43,17 +66,15 @@ public class RenderedAnimation extends GraphicsEntity {
 	 */
 	@Override
 	protected void onUpdate(float tpf) {
+		super.onUpdate(tpf);
 
 		// At first update
 		Animation animation = animation();
 
 		// Check for last
-		if (animation != null && animation.update().isLast()) {
+		if (animation != null && !animation.update().isValid()) {
 			// Fire event
-			fireEvent(siblingIterator(true), RenderedAnimationEvent.LastImage,
-					this, animation);
-			fireEvent(childIterator(false, false),
-					RenderedAnimationEvent.LastImage, this, animation);
+			fireEvent(AnimationEvent.AnimationFinished, animation);
 		}
 	}
 
@@ -66,15 +87,29 @@ public class RenderedAnimation extends GraphicsEntity {
 	 */
 	@Override
 	protected void onRender(Graphics2D original, Graphics2D transformed) {
+		super.onRender(original, transformed);
 
 		// Get animation
 		Animation animation = animation();
 
-		if (animation != null) {
+		if (animation != null && animation.isValid()) {
 			// Draw centered
 			transformed.translate(-0.5, -0.5);
 			transformed.drawImage(animation.image(), 0, 0, 1, 1, null);
 		}
+	}
+
+	/**
+	 * OVERRIDE FOR CUSTOM RENDER BEHAVIOUR.
+	 * 
+	 * This method gets called every time when the animation gets invalid
+	 * (reached the end).
+	 * 
+	 * @param renderedAnimation
+	 * @param animation
+	 */
+	protected void onAnimationFinished(RenderedAnimation renderedAnimation,
+			Animation animation) {
 	}
 
 	/**
@@ -97,6 +132,9 @@ public class RenderedAnimation extends GraphicsEntity {
 		}
 		this.animationBundle = animationBundle;
 		animationName(animationName);
+
+		events().put(AnimationEvent.AnimationFinished,
+				iterableChildren(true, true));
 	}
 
 	/**
