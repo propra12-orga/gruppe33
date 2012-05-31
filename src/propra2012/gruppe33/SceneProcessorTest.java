@@ -26,6 +26,8 @@ public class SceneProcessorTest {
 		// Set root
 		sceneProcessor.root(PreMilestoneApp.createGUI());
 
+		
+		
 		while (!sceneProcessor.isShutdownRequested()) {
 
 			// Process the world (the main game-loop)

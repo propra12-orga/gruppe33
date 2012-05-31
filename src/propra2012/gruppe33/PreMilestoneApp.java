@@ -5,18 +5,16 @@ import java.awt.Graphics2D;
 import java.awt.event.KeyEvent;
 import java.io.File;
 
-import propra2012.gruppe33.bomberman.graphics.rendering.scenegraph.grid.GridController;
 import propra2012.gruppe33.bomberman.graphics.rendering.scenegraph.grid.GridLoader;
 import propra2012.gruppe33.bomberman.graphics.rendering.scenegraph.grid.GridRoutines;
-import propra2012.gruppe33.bomberman.graphics.sprite.AnimationRoutines;
 import propra2012.gruppe33.engine.graphics.rendering.scenegraph.Entity;
 import propra2012.gruppe33.engine.graphics.rendering.scenegraph.GraphicsEntity;
 import propra2012.gruppe33.engine.graphics.rendering.scenegraph.Scene;
 import propra2012.gruppe33.engine.graphics.rendering.scenegraph.SceneProcessor;
-import propra2012.gruppe33.engine.graphics.rendering.scenegraph.animation.RenderedAnimation;
 import propra2012.gruppe33.engine.graphics.rendering.scenegraph.math.Grid;
 import propra2012.gruppe33.engine.graphics.sprite.Sprite;
 import propra2012.gruppe33.engine.resources.assets.AssetManager;
+import propra2012.gruppe33.engine.sound.SoundManager;
 
 /**
  * 
@@ -68,7 +66,7 @@ public class PreMilestoneApp {
 
 		// Create new scene with the given assets
 		Scene scene = new Scene(assets, 1024, 1024);
-
+		
 		// Load the char array
 		char[][] map = assets.loadAsset("assets/maps/smallmap.txt",
 				GridLoader.LOADER).get();

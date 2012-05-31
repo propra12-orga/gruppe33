@@ -49,7 +49,7 @@ public class Scene extends GraphicsEntity implements KeyListener, FocusListener 
 
 	// The asset manager of this scene
 	private final AssetManager assetManager;
-
+	
 	// The width and height of the scene
 	private final int width, height;
 
