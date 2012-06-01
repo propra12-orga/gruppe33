@@ -4,6 +4,10 @@ import java.awt.Color;
 import java.awt.Graphics2D;
 import java.awt.event.KeyEvent;
 import java.io.File;
+import java.io.IOException;
+
+import javax.sound.sampled.LineUnavailableException;
+import javax.sound.sampled.UnsupportedAudioFileException;
 
 import com.indyforge.twod.engine.graphics.rendering.scenegraph.Entity;
 import com.indyforge.twod.engine.graphics.rendering.scenegraph.GraphicsEntity;
@@ -67,13 +71,16 @@ public class PreMilestoneApp {
 
 		// Create new scene with the given assets
 		Scene scene = new Scene(assets, 1024, 1024);
-		
+
 		// Load the char array
 		char[][] map = assets.loadAsset("assets/maps/smallmap.txt",
 				GridLoader.LOADER).get();
 
 		// Generate the map randomally
 		GridLoader.generate(map, System.nanoTime());
+
+		// Put the new sound
+		scene.soundManager().putSound("exp", "assets/sounds/exp.wav");
 
 		// Load boom
 		final Sprite boom = new Sprite(assets.loadImage(
@@ -101,6 +108,8 @@ public class PreMilestoneApp {
 
 					GraphicsEntity bomb = GridRoutines
 							.createExplosion(boom, 33);
+
+					scene.soundManager().playSound("exp", true);
 
 					// Attach the bomb
 					grid.childAt(

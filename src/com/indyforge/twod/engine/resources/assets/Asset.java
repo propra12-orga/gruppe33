@@ -113,21 +113,21 @@ public final class Asset<T> implements Resource<T> {
 	/**
 	 * @return the asset manager.
 	 */
-	public AssetManager getAssetManager() {
+	public AssetManager assetManager() {
 		return assetManager;
 	}
 
 	/**
 	 * @return the asset path.
 	 */
-	public String getAssetPath() {
+	public String assetPath() {
 		return assetPath;
 	}
 
 	/**
 	 * @return the asset loader.
 	 */
-	public AssetLoader<T> getAssetLoader() {
+	public AssetLoader<T> assetLoader() {
 		return assetLoader;
 	}
 

@@ -17,7 +17,7 @@ import java.util.Map;
 import com.indyforge.twod.engine.graphics.rendering.scenegraph.math.Vector2f;
 import com.indyforge.twod.engine.resources.TransientRenderedEntity;
 import com.indyforge.twod.engine.resources.assets.AssetManager;
-
+import com.indyforge.twod.engine.sound.SoundManager;
 
 /**
  * A scene is a special entity which has some more features:
@@ -50,7 +50,10 @@ public class Scene extends GraphicsEntity implements KeyListener, FocusListener 
 
 	// The asset manager of this scene
 	private final AssetManager assetManager;
-	
+
+	// The sound manager of this scene
+	private final SoundManager soundManager;
+
 	// The width and height of the scene
 	private final int width, height;
 
@@ -110,6 +113,9 @@ public class Scene extends GraphicsEntity implements KeyListener, FocusListener 
 		// Save the asset manager
 		this.assetManager = assetManager;
 
+		// Create and save the new sound manager
+		soundManager = new SoundManager(assetManager);
+
 		// Init
 		this.width = width;
 		this.height = height;
@@ -123,6 +129,13 @@ public class Scene extends GraphicsEntity implements KeyListener, FocusListener 
 	 */
 	public AssetManager assetManager() {
 		return assetManager;
+	}
+
+	/**
+	 * @return the sound manager of this scene.
+	 */
+	public SoundManager soundManager() {
+		return soundManager;
 	}
 
 	/**

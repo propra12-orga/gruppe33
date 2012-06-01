@@ -17,7 +17,7 @@ import java.util.zip.ZipFile;
 import javax.imageio.ImageIO;
 
 import com.indyforge.twod.engine.graphics.GraphicsRoutines;
-
+import com.indyforge.twod.engine.io.IoRoutines;
 
 /**
  * This class simplifies the handling of resources. Let it be images, maps,
@@ -39,9 +39,9 @@ import com.indyforge.twod.engine.graphics.GraphicsRoutines;
 public final class AssetManager implements Serializable {
 
 	/*
-	 * The stream loader.
+	 * The byte array loader.
 	 */
-	private static final AssetLoader<InputStream> STREAM_LOADER = new AssetLoader<InputStream>() {
+	private static final AssetLoader<byte[]> BYTE_ARRAY_LOADER = new AssetLoader<byte[]>() {
 
 		/**
 		 * 
@@ -49,9 +49,9 @@ public final class AssetManager implements Serializable {
 		private static final long serialVersionUID = 1L;
 
 		@Override
-		public InputStream loadAsset(AssetManager assetManager, String assetPath)
+		public byte[] loadAsset(AssetManager assetManager, String assetPath)
 				throws Exception {
-			return assetManager.open(assetPath);
+			return IoRoutines.readFully(assetManager.open(assetPath));
 		}
 	};
 
@@ -226,16 +226,16 @@ public final class AssetManager implements Serializable {
 	}
 
 	/**
-	 * Loads the stream.
+	 * Loads a byte array.
 	 * 
 	 * @param assetPath
-	 *            The asset path of the stream.
-	 * @return an asset containing the stream.
+	 *            The asset path of the asset.
+	 * @return an asset containing the byte array.
 	 * @throws Exception
 	 *             If an exception occurs.
 	 */
-	public Asset<InputStream> loadStream(String assetPath) throws Exception {
-		return loadAsset(assetPath, STREAM_LOADER);
+	public Asset<byte[]> loadBytes(String assetPath) throws Exception {
+		return loadAsset(assetPath, BYTE_ARRAY_LOADER);
 	}
 
 	/**
