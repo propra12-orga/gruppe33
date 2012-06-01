@@ -124,6 +124,7 @@ public final class AssetManager implements Serializable {
 
 			// Open new zip file
 			tmp.add(new ZipFile(assetBundle.getArchive()));
+
 		}
 		return tmp;
 	}

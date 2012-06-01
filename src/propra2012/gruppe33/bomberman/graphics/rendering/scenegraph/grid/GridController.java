@@ -1,18 +1,17 @@
 package propra2012.gruppe33.bomberman.graphics.rendering.scenegraph.grid;
 
 import java.awt.Point;
-import java.awt.event.KeyEvent;
+import java.util.EnumMap;
 import java.util.Iterator;
+import java.util.Map;
 
 import com.indyforge.twod.engine.graphics.rendering.scenegraph.Entity;
 import com.indyforge.twod.engine.graphics.rendering.scenegraph.GraphicsEntity;
-import com.indyforge.twod.engine.graphics.rendering.scenegraph.Scene;
 import com.indyforge.twod.engine.graphics.rendering.scenegraph.math.Grid;
 import com.indyforge.twod.engine.graphics.rendering.scenegraph.math.Mathf;
 import com.indyforge.twod.engine.graphics.rendering.scenegraph.math.Vector2f;
 import com.indyforge.twod.engine.graphics.rendering.scenegraph.math.Vector2f.Direction;
 import com.indyforge.twod.engine.util.FilteredIterator;
-
 
 /**
  * This class manages the grid movement. If you attach this entity to an entity
@@ -61,11 +60,33 @@ public final class GridController extends Entity {
 	// Stores the last direction of the grid controller
 	private Direction lastDirection = null;
 
+	// The input map
+	private final Map<Direction, Boolean> inputMap = new EnumMap<Direction, Boolean>(
+			Direction.class);
+
 	public GridController() {
 		events().put(GridControllerEvent.DirectionChanged,
 				iterableChildren(true, true));
 		events().put(GridControllerEvent.MovingChanged,
 				iterableChildren(true, true));
+	}
+
+	/**
+	 * @return the input map of this controller.
+	 */
+	public Map<Direction, Boolean> inputMap() {
+		return inputMap;
+	}
+
+	/**
+	 * @param dir
+	 *            The direction.
+	 * @return true if the input map is set for the given direction, otherwise
+	 *         false.
+	 */
+	public boolean hasInputFor(Direction dir) {
+		Boolean value = inputMap.get(dir);
+		return value != null ? value : false;
 	}
 
 	/**
@@ -236,9 +257,6 @@ public final class GridController extends Entity {
 		// Convert grid entity
 		GraphicsEntity gridEntity = (GraphicsEntity) parents.next();
 
-		// Find the scene instance
-		Scene scene = gridEntity.findScene();
-
 		/*
 		 * PROCESS THE MOVEMENT!
 		 */
@@ -265,10 +283,7 @@ public final class GridController extends Entity {
 		float maxSpeed = maxSpeedObj.floatValue();
 
 		// Init the input flags
-		boolean north = scene.isPressed(KeyEvent.VK_UP), south = scene
-				.isPressed(KeyEvent.VK_DOWN), west = scene
-				.isPressed(KeyEvent.VK_LEFT), east = scene
-				.isPressed(KeyEvent.VK_RIGHT);
+		boolean north = hasInputFor(Direction.North), south = hasInputFor(Direction.South), west = hasInputFor(Direction.West), east = hasInputFor(Direction.East);
 
 		// Set zero
 		movement.setZero();

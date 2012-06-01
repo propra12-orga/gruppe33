@@ -77,7 +77,7 @@ public class PreMilestoneApp {
 				GridLoader.LOADER).get();
 
 		// Generate the map randomally
-		GridLoader.generate(map, System.nanoTime());
+		// GridLoader.generate(map, System.nanoTime());
 
 		// Put the new sound
 		scene.soundManager().putSound("exp", "assets/sounds/exp.wav");
