@@ -33,7 +33,7 @@ public class ServerApp implements ServerInterface, Remote {
 
 		Invoker invoker = client.lookupInvoker("void-stuff");
 
-		((ServerInterface) invoker.lookup("void-stuff"))
+		((ServerInterface) invoker.manager().lookupProxy("void-stuff"))
 				.dieLiefertNichtsZurueck();
 	}
 }

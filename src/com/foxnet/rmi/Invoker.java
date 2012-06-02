@@ -36,16 +36,12 @@ import java.lang.reflect.Method;
 import java.lang.reflect.Proxy;
 
 import com.foxnet.rmi.binding.RemoteBinding;
-import com.foxnet.rmi.binding.registry.DynamicRegistry;
-import com.foxnet.rmi.binding.registry.StaticRegistry;
-import com.foxnet.rmi.util.Future;
 
 /**
  * 
  * @author Christopher Probst
- * 
  */
-public abstract class Invoker implements InvokerManager, InvocationHandler {
+public abstract class Invoker implements InvocationHandler {
 
 	public static Invoker getInvokerOf(Object proxy) {
 		// Check to be a proxy class
@@ -60,10 +56,6 @@ public abstract class Invoker implements InvokerManager, InvocationHandler {
 		}
 	}
 
-	protected Invocation newInvocation(int methodId, Object... arguments) {
-		return new Invocation(this, methodId, arguments);
-	}
-
 	// The invoker manager which created this invoker
 	private final InvokerManager invokerManager;
 
@@ -75,6 +67,8 @@ public abstract class Invoker implements InvokerManager, InvocationHandler {
 
 	// The lazy proxy object which is created when needed
 	private volatile Object lazyProxy;
+
+	protected abstract void writeInvocation(Invocation invocation);
 
 	protected Invoker(InvokerManager invokerFactory, RemoteBinding remoteBinding) {
 		if (invokerFactory == null) {
@@ -103,71 +97,34 @@ public abstract class Invoker implements InvokerManager, InvocationHandler {
 		return remoteBinding;
 	}
 
-	@Override
-	public Invoker invoker(RemoteBinding remoteBinding) {
-		return invokerManager.invoker(remoteBinding);
+	public Invocation invoke(int methodId, Object... args) {
+		// Convert
+		invokerManager.localsToRemotes(args);
+
+		// Create invocation
+		Invocation invocation = new Invocation(this, methodId, args);
+
+		// Write the invocation
+		writeInvocation(invocation);
+
+		return invocation;
 	}
 
-	@Override
-	public StaticRegistry statical() {
-		return invokerManager.statical();
-	}
-
-	@Override
-	public DynamicRegistry dynamical() {
-		return invokerManager.dynamical();
-	}
-
-	@Override
-	public Invoker lookupInvoker(String target) throws LookupException {
-		return invokerManager.lookupInvoker(target);
-	}
-
-	@Override
-	public String[] lookupNames() throws LookupException {
-		return invokerManager.lookupNames();
-	}
-
-	@Override
-	public Object localToRemote(Object argument) {
-		return invokerManager.localToRemote(argument);
-	}
-
-	@Override
-	public Object remoteToLocal(Object argument) {
-		return invokerManager.remoteToLocal(argument);
-	}
-
-	@Override
-	public Future closeFuture() {
-		return invokerManager.closeFuture();
-	}
-
-	@Override
-	public Object[] localsToRemotes(Object... localArguments) {
-		return invokerManager.localsToRemotes(localArguments);
-	}
-
-	@Override
-	public Object[] remotesToLocals(Object... remoteArguments) {
-		return invokerManager.remotesToLocals(remoteArguments);
-	}
-
-	@Override
-	public Object lookup(String target) throws LookupException {
-		return invokerManager.lookup(target);
-	}
-
-	@Override
-	public Future close() {
-		return invokerManager.close();
-	}
-
-	public abstract Invocation invoke(int methodId, Object... args);
-
+	/*
+	 * (non-Javadoc)
+	 * 
+	 * @see java.lang.reflect.InvocationHandler#invoke(java.lang.Object,
+	 * java.lang.reflect.Method, java.lang.Object[])
+	 */
 	@Override
 	public Object invoke(Object proxy, Method method, Object[] args)
 			throws Throwable {
+
+		// Check the proxy class
+		if (lazyProxy == null || lazyProxy != proxy) {
+			throw new IllegalArgumentException("The given proxy is not "
+					+ "the valid proxy of this invoker");
+		}
 
 		// Invoke the method remotely
 		Invocation invocation = invoke(method, args);

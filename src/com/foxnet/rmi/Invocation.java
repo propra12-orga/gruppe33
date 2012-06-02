@@ -45,24 +45,40 @@ public final class Invocation extends Future {
 	// The invoker of this invocation
 	private final Invoker invoker;
 
-	// The method id of the invoked method
-	private final int methodId;
-
-	// The arguments of the invocation
-	private final Object[] arguments;
+	// The invocation message of this invocation
+	private final InvocationMessage invocationMessage;
 
 	@Override
 	protected Object modifyAttachment(Object attachment) {
-		return invoker.remoteToLocal(attachment);
+		return invoker.manager().remoteToLocal(attachment);
 	}
 
 	Invocation(Invoker invoker, int methodId, Object... arguments) {
 		if (invoker == null) {
 			throw new NullPointerException("invoker");
 		}
-		this.methodId = methodId;
-		this.arguments = arguments;
+
+		// Create the new invocation message
+		invocationMessage = new InvocationMessage(
+				invoker.binding().isDynamic(), invoker.binding().id(),
+				methodId, arguments);
+
+		// Save the invoker
 		this.invoker = invoker;
+	}
+
+	public boolean isAsyncVoid() {
+		// Annotation
+		AsyncVoid av;
+
+		// Get method...
+		Method method = method();
+
+		// Check for async void method
+		return method.getReturnType() == void.class
+				&& method.getExceptionTypes().length == 0
+				&& ((av = method.getAnnotation(AsyncVoid.class)) != null && av
+						.value());
 	}
 
 	public Invoker invoker() {
@@ -70,18 +86,14 @@ public final class Invocation extends Future {
 	}
 
 	public Method method() {
-		return invoker.binding().methods().get(methodId);
+		return invoker.binding().methods().get(invocationMessage.methodId());
 	}
 
 	public String methodName() {
 		return method().getName();
 	}
 
-	public int methodId() {
-		return methodId;
-	}
-
-	public Object[] arguments() {
-		return arguments;
+	public InvocationMessage message() {
+		return invocationMessage;
 	}
 }

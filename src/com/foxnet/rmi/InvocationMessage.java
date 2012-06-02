@@ -1,4 +1,4 @@
-package com.foxnet.rmi.transport.network.handler.invocation;
+package com.foxnet.rmi;
 
 import java.io.Serializable;
 
@@ -7,7 +7,7 @@ import java.io.Serializable;
  * @author Christopher Probst
  * 
  */
-public class InvocationMessage implements Serializable {
+public final class InvocationMessage implements Serializable {
 
 	/**
 	 * 
@@ -18,7 +18,7 @@ public class InvocationMessage implements Serializable {
 	private final int methodId;
 	private final Object[] arguments;
 
-	public InvocationMessage(boolean dynamic, long bindingId, int methodId,
+	InvocationMessage(boolean dynamic, long bindingId, int methodId,
 			Object... arguments) {
 		this.dynamic = dynamic;
 		this.bindingId = bindingId;
@@ -30,15 +30,15 @@ public class InvocationMessage implements Serializable {
 		return dynamic;
 	}
 
-	public long getBindingId() {
+	public long bindingId() {
 		return bindingId;
 	}
 
-	public int getMethodId() {
+	public int methodId() {
 		return methodId;
 	}
 
-	public Object[] getArguments() {
+	public Object[] arguments() {
 		return arguments;
 	}
 }

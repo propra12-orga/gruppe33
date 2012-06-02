@@ -24,13 +24,14 @@ public class BroadcastServerProvider implements BroadcastServerService {
 		final long id = counter.getAndIncrement();
 		clients.put(id, client);
 
-		Invoker.getInvokerOf(client).closeFuture().add(new FutureCallback() {
+		Invoker.getInvokerOf(client).manager().closeFuture()
+				.add(new FutureCallback() {
 
-			@Override
-			public void completed(Future future) throws Exception {
-				clients.remove(id);
-			}
-		});
+					@Override
+					public void completed(Future future) throws Exception {
+						clients.remove(id);
+					}
+				});
 		return id;
 	}
 
@@ -63,7 +64,7 @@ public class BroadcastServerProvider implements BroadcastServerService {
 
 	public void closeAll() {
 		for (BroadcastClientService client : clients.values()) {
-			Invoker.getInvokerOf(client).close();
+			Invoker.getInvokerOf(client).manager().close();
 		}
 	}
 }

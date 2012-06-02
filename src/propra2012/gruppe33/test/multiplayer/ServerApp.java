@@ -1,5 +1,7 @@
 package propra2012.gruppe33.test.multiplayer;
 
+import java.lang.reflect.UndeclaredThrowableException;
+import java.nio.channels.ClosedChannelException;
 import java.util.Iterator;
 
 import com.foxnet.rmi.InvokerManager;
@@ -35,7 +37,7 @@ public class ServerApp {
 
 		InvokerManager im = clients.openClient("localhost", 1337);
 		BroadcastServerService server = (BroadcastServerService) im
-				.lookup("files");
+				.lookupProxy("files");
 
 		server.register(new ChatClient() {
 			@Override
@@ -49,7 +51,15 @@ public class ServerApp {
 		im.close().synchronize();
 
 		while (chats.hasNext()) {
-			chats.next().send("hello");
+			try {
+				chats.next().send("hello");
+			} catch (UndeclaredThrowableException e) {
+				if (e.getCause() instanceof ClosedChannelException) {
+					System.err.println("Verbinding getrennt: " + e.getCause());
+				} else {
+					e.printStackTrace();
+				}
+			}
 		}
 	}
 }
