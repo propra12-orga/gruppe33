@@ -38,7 +38,10 @@ import com.foxnet.rmi.Remote;
 import com.foxnet.rmi.binding.StaticBinding;
 
 /**
+ * A static registry is used to store statically created bindings.
+ * 
  * @author Christopher Probst
+ * @see StaticBinding
  */
 public final class StaticRegistry extends Registry<StaticBinding> {
 
@@ -56,10 +59,10 @@ public final class StaticRegistry extends Registry<StaticBinding> {
 	/*
 	 * (non-Javadoc)
 	 * 
-	 * @see com.foxnet.rmi.binding.registry.AbstractRegistry#idBindings()
+	 * @see com.foxnet.rmi.binding.registry.AbstractRegistry#bindingMap()
 	 */
 	@Override
-	protected Map<Long, StaticBinding> idBindings() {
+	protected Map<Long, StaticBinding> bindingMap() {
 		return ids;
 	}
 
@@ -79,7 +82,7 @@ public final class StaticRegistry extends Registry<StaticBinding> {
 			names.remove(sb.name());
 
 			// Notify
-			notifyTargetUnboundFrom(sb.target());
+			fireUnboundFrom(sb.target());
 		}
 
 		return sb;
@@ -99,7 +102,7 @@ public final class StaticRegistry extends Registry<StaticBinding> {
 		// Check life cycle objects
 		for (StaticBinding sb : names.values()) {
 			// Notify
-			notifyTargetUnboundFrom(sb.target());
+			fireUnboundFrom(sb.target());
 		}
 
 		// Clear the names
@@ -108,10 +111,22 @@ public final class StaticRegistry extends Registry<StaticBinding> {
 		return this;
 	}
 
+	/**
+	 * @param name
+	 *            The name of the static binding.
+	 * @return the static binding with the given name or null.
+	 */
 	public synchronized StaticBinding get(String name) {
 		return names.get(name);
 	}
 
+	/**
+	 * Removes the binding with the given name.
+	 * 
+	 * @param name
+	 *            The name of the binding.
+	 * @return the old binding or null.
+	 */
 	public synchronized StaticBinding unbind(String name) {
 		// Remove from name map
 		StaticBinding sb = names.remove(name);
@@ -121,12 +136,15 @@ public final class StaticRegistry extends Registry<StaticBinding> {
 			ids.remove(sb.id());
 
 			// Notify
-			notifyTargetUnboundFrom(sb.target());
+			fireUnboundFrom(sb.target());
 		}
 
 		return sb;
 	}
 
+	/**
+	 * @return an array which contains all names.
+	 */
 	public synchronized String[] names() {
 
 		// Create array
@@ -141,6 +159,16 @@ public final class StaticRegistry extends Registry<StaticBinding> {
 		return names;
 	}
 
+	/**
+	 * Binds the given target to this registry using the given name if it is not
+	 * already bound yet.
+	 * 
+	 * @param name
+	 *            The name of the binding.
+	 * @param target
+	 *            The target you want to bind.
+	 * @return a new static binding or the old one.
+	 */
 	public synchronized StaticBinding bindIfAbsent(String name, Remote target) {
 		if (name == null) {
 			throw new NullPointerException("name");
@@ -152,22 +180,31 @@ public final class StaticRegistry extends Registry<StaticBinding> {
 		// Get old binding...
 		StaticBinding binding = names.get(name);
 
-		// Is there an old binding ?
-		if (binding != null) {
-			return binding;
+		// Is there not an old binding ?
+		if (binding == null) {
+
+			// Create new binding
+			binding = new StaticBinding(getNextId(), name, (Remote) target);
+
+			// Put into maps
+			ids.put(binding.id(), binding);
+			names.put(binding.name(), binding);
+			fireBoundTo(binding.target());
 		}
 
-		// Create new binding
-		binding = new StaticBinding(getNextId(), name, (Remote) target);
-
-		// Put into maps
-		ids.put(binding.id(), binding);
-		names.put(binding.name(), binding);
-		notifyTargetBoundTo(binding.target());
-
-		return null;
+		return binding;
 	}
 
+	/**
+	 * Binds the given target to this registry using the given name. If there is
+	 * already a binding with the same name the old binding will be removed.
+	 * 
+	 * @param name
+	 *            The name of the binding.
+	 * @param target
+	 *            The target you want to bind.
+	 * @return the old binding or null.
+	 */
 	public synchronized StaticBinding bind(String name, Object target) {
 		if (name == null) {
 			throw new NullPointerException("name");
@@ -204,7 +241,7 @@ public final class StaticRegistry extends Registry<StaticBinding> {
 		// Put into maps
 		ids.put(newBinding.id(), newBinding);
 		names.put(newBinding.name(), newBinding);
-		notifyTargetBoundTo(newBinding.target());
+		fireBoundTo(newBinding.target());
 
 		return binding;
 	}

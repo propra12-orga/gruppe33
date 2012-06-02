@@ -40,7 +40,10 @@ import com.foxnet.rmi.binding.DynamicBinding;
 import com.foxnet.rmi.binding.RemoteObject;
 
 /**
+ * A dynamic registry is used to store dynamically created bindings.
+ * 
  * @author Christopher Probst
+ * @see DynamicBinding
  */
 public final class DynamicRegistry extends Registry<DynamicBinding> {
 
@@ -58,10 +61,10 @@ public final class DynamicRegistry extends Registry<DynamicBinding> {
 	/*
 	 * (non-Javadoc)
 	 * 
-	 * @see com.foxnet.rmi.binding.registry.AbstractRegistry#idBindings()
+	 * @see com.foxnet.rmi.binding.registry.AbstractRegistry#bindingMap()
 	 */
 	@Override
-	protected Map<Long, DynamicBinding> idBindings() {
+	protected Map<Long, DynamicBinding> bindingMap() {
 		return ids;
 	}
 
@@ -74,7 +77,7 @@ public final class DynamicRegistry extends Registry<DynamicBinding> {
 	public synchronized DynamicRegistry unbindAll() {
 		// Unbound all
 		for (Remote target : objects.keySet()) {
-			notifyTargetUnboundFrom(target);
+			fireUnboundFrom(target);
 		}
 
 		// Clear the remaining maps
@@ -99,11 +102,18 @@ public final class DynamicRegistry extends Registry<DynamicBinding> {
 			objects.remove(db.target());
 
 			// Notify
-			notifyTargetUnboundFrom(db.target());
+			fireUnboundFrom(db.target());
 		}
 		return db;
 	}
 
+	/**
+	 * Removes the binding with the given target.
+	 * 
+	 * @param target
+	 *            The target of the binding.
+	 * @return the old binding or null.
+	 */
 	public synchronized DynamicBinding unbind(Object target) {
 		// Remove from object map
 		DynamicBinding db = objects.remove(target);
@@ -113,15 +123,29 @@ public final class DynamicRegistry extends Registry<DynamicBinding> {
 			ids.remove(db.id());
 
 			// Notify
-			notifyTargetUnboundFrom(db.target());
+			fireUnboundFrom(db.target());
 		}
 		return db;
 	}
 
+	/**
+	 * @param target
+	 *            The target of the binding.
+	 * @return the binding with the given target or null.
+	 */
 	public synchronized DynamicBinding get(Remote target) {
 		return objects.get(target);
 	}
 
+	/**
+	 * Replaces {@link Remote} objects and stores them dynamically. If the given
+	 * target is not a {@link Remote} object nothing happens.
+	 * 
+	 * @param target
+	 *            The target object.
+	 * @return the given target or a {@link RemoteObject} reference if the given
+	 *         target was a {@link Remote} object.
+	 */
 	public Object replaceRemote(Object target) {
 		if (!(target instanceof Remote)) {
 			return target;
@@ -131,6 +155,9 @@ public final class DynamicRegistry extends Registry<DynamicBinding> {
 		return new RemoteObject(bindIfAbsent((Remote) target));
 	}
 
+	/**
+	 * @see DynamicRegistry#replaceRemote(Object)
+	 */
 	public synchronized Object[] replaceRemotes(Object[] arguments) {
 		if (arguments != null) {
 			for (int i = 0; i < arguments.length; i++) {
@@ -142,6 +169,13 @@ public final class DynamicRegistry extends Registry<DynamicBinding> {
 		return arguments;
 	}
 
+	/**
+	 * Binds the given target to this registry if it is not already bound yet.
+	 * 
+	 * @param target
+	 *            The target you want to bind.
+	 * @return a new dynamic binding or the old one.
+	 */
 	public synchronized DynamicBinding bindIfAbsent(Remote target) {
 		if (target == null) {
 			throw new NullPointerException("target");
@@ -150,20 +184,19 @@ public final class DynamicRegistry extends Registry<DynamicBinding> {
 		// Get old binding...
 		DynamicBinding binding = objects.get(target);
 
-		// Is there an old binding ?
-		if (binding != null) {
-			return binding;
+		// Is there not an old binding ?
+		if (binding == null) {
+
+			// Create new temp object binding
+			binding = new DynamicBinding(getNextId(), (Remote) target);
+
+			// Put into maps
+			objects.put(target, binding);
+			ids.put(binding.id(), binding);
+
+			// Notify the target
+			fireBoundTo(target);
 		}
-
-		// Create new temp object binding
-		binding = new DynamicBinding(getNextId(), (Remote) target);
-
-		// Put into maps
-		objects.put(target, binding);
-		ids.put(binding.id(), binding);
-
-		// Notify the target
-		notifyTargetBoundTo(target);
 
 		return binding;
 	}

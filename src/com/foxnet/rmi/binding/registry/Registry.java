@@ -32,12 +32,10 @@
 package com.foxnet.rmi.binding.registry;
 
 import java.io.Serializable;
-import java.util.AbstractSet;
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
-import java.util.Set;
 import java.util.logging.Logger;
 
 import com.foxnet.rmi.Remote;
@@ -62,7 +60,16 @@ public abstract class Registry<B extends LocalBinding> implements Iterable<B>,
 	// Used to log infos, warnings or messages
 	protected final Logger logger = Logger.getLogger(getClass().getName());
 
-	protected boolean notifyTargetBoundTo(Remote target) {
+	/**
+	 * Fires the bound-to event if the given target implements the
+	 * {@link RegistryListener} interface.
+	 * 
+	 * @param target
+	 *            The remote target.
+	 * @return true if the given target implements the {@link RegistryListener}
+	 *         interface, otherwise false.
+	 */
+	protected boolean fireBoundTo(Remote target) {
 		if (target instanceof RegistryListener) {
 			try {
 				((RegistryListener) target).boundTo(this);
@@ -75,7 +82,16 @@ public abstract class Registry<B extends LocalBinding> implements Iterable<B>,
 		return false;
 	}
 
-	protected boolean notifyTargetUnboundFrom(Remote target) {
+	/**
+	 * Fires the unbound-from event if the given target implements the
+	 * {@link RegistryListener} interface.
+	 * 
+	 * @param target
+	 *            The remote target.
+	 * @return true if the given target implements the {@link RegistryListener}
+	 *         interface, otherwise false.
+	 */
+	protected boolean fireUnboundFrom(Remote target) {
 		if (target instanceof RegistryListener) {
 			try {
 				((RegistryListener) target).unboundFrom(this);
@@ -88,37 +104,49 @@ public abstract class Registry<B extends LocalBinding> implements Iterable<B>,
 		return false;
 	}
 
+	/**
+	 * @return the next free id. Please note that we use increasing long ids.
+	 *         This is quite safe because a long can hold very large values.
+	 */
 	protected long getNextId() {
 		return nextId++;
 	}
 
-	protected abstract Map<Long, B> idBindings();
+	/**
+	 * @return the id-2-binding map.
+	 */
+	protected abstract Map<Long, B> bindingMap();
 
+	/**
+	 * Removes the binding with the given id.
+	 * 
+	 * @param id
+	 *            The id of the binding you want to remove.
+	 * @return the old binding or null.
+	 */
 	public abstract B unbind(long id);
 
+	/**
+	 * Removes all bindings.
+	 * 
+	 * @return this for chaining.
+	 */
 	public abstract Registry<B> unbindAll();
 
+	/**
+	 * @param id
+	 *            The id of the binding you want to get.
+	 * @return the binding with the given id or null.
+	 */
 	public synchronized B get(long id) {
-		return idBindings().get(id);
+		return bindingMap().get(id);
 	}
 
-	public synchronized Set<B> bindings() {
-		return new AbstractSet<B>() {
-
-			// Copy to array list
-			private final List<B> bindings = new ArrayList<B>(idBindings()
-					.values());
-
-			@Override
-			public Iterator<B> iterator() {
-				return bindings.iterator();
-			}
-
-			@Override
-			public int size() {
-				return bindings.size();
-			}
-		};
+	/**
+	 * @return a snapshot of all bindings as list with random access.
+	 */
+	public synchronized List<B> bindings() {
+		return new ArrayList<B>(bindingMap().values());
 	}
 
 	/*
@@ -131,7 +159,10 @@ public abstract class Registry<B extends LocalBinding> implements Iterable<B>,
 		return bindings().iterator();
 	}
 
+	/**
+	 * @return the size of the registry.
+	 */
 	public synchronized int size() {
-		return idBindings().size();
+		return bindingMap().size();
 	}
 }

@@ -34,11 +34,31 @@ package com.foxnet.rmi.binding.registry;
 import com.foxnet.rmi.LocalInterface;
 
 /**
+ * Used to intercept bound/unbound events.
+ * 
  * @author Christopher Probst
  */
 public interface RegistryListener extends LocalInterface {
 
+	/**
+	 * This method is called when the target which implements this interface is
+	 * bound to the given registry.
+	 * 
+	 * @param registry
+	 *            The registry which bound the target.
+	 * @throws Exception
+	 *             If an exception occurs.
+	 */
 	void boundTo(Registry<?> registry) throws Exception;
 
+	/**
+	 * This method is called when the target which implements this interface is
+	 * unbound from the given registry.
+	 * 
+	 * @param registry
+	 *            The registry which unbound the target.
+	 * @throws Exception
+	 *             If an exception occurs.
+	 */
 	void unboundFrom(Registry<?> registry) throws Exception;
 }
