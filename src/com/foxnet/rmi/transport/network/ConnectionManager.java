@@ -113,7 +113,7 @@ public final class ConnectionManager implements ChannelPipelineFactory {
 			ctx.setAttachment(ConnectionManager.this);
 
 			// Add server channel!
-			getChannels().add(e.getChannel());
+			channels.add(e.getChannel());
 
 			super.channelOpen(ctx, e);
 		}
@@ -213,8 +213,8 @@ public final class ConnectionManager implements ChannelPipelineFactory {
 
 	public InvokerManager openClient(String host, int port) throws IOException {
 		return InvokerHandler.of(openClientAsync(
-				new InetSocketAddress(host, port))
-				.awaitUninterruptibly().getChannel());
+				new InetSocketAddress(host, port)).awaitUninterruptibly()
+				.getChannel());
 	}
 
 	public Future openClientAsync(String host, int port) {
@@ -294,29 +294,29 @@ public final class ConnectionManager implements ChannelPipelineFactory {
 		return clientBootstrap != null && clientChannelFactory != null;
 	}
 
-	public ThreadUsage getThreadUsage() {
+	public ThreadUsage threadUsage() {
 		return threadUsage;
 	}
 
-	public Executor getNetworkExecutor() {
+	public Executor networkExecutor() {
 		return networkExecutor;
 	}
 
-	public Executor getMethodInvocator() {
+	public Executor methodInvocator() {
 		return methodInvocator;
 	}
 
-	public ChannelGroup getChannels() {
+	public ChannelGroup channels() {
 		return channels;
 	}
 
-	public StaticRegistry getStaticRegistry() {
+	public StaticRegistry statical() {
 		return staticRegistry;
 	}
 
-	public void shudown() {
+	public ConnectionManager shudown() {
 		// Close all channels and wait uninterruptibly
-		getChannels().close().awaitUninterruptibly();
+		channels.close().awaitUninterruptibly();
 
 		// Release resources
 		ExecutorUtil.terminate(methodInvocator);
@@ -327,5 +327,6 @@ public final class ConnectionManager implements ChannelPipelineFactory {
 		if (isSupportingClients()) {
 			clientBootstrap.releaseExternalResources();
 		}
+		return this;
 	}
 }

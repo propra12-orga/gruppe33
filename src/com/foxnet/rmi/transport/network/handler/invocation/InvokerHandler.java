@@ -1,7 +1,5 @@
 package com.foxnet.rmi.transport.network.handler.invocation;
 
-import java.io.IOException;
-
 import org.jboss.netty.channel.Channel;
 import org.jboss.netty.channel.ChannelFuture;
 import org.jboss.netty.channel.ChannelFutureListener;
@@ -11,12 +9,13 @@ import org.jboss.netty.channel.ChannelStateEvent;
 import org.jboss.netty.channel.MessageEvent;
 import org.jboss.netty.channel.SimpleChannelHandler;
 
+import com.foxnet.rmi.AbstractInvokerManager;
 import com.foxnet.rmi.Invocation;
 import com.foxnet.rmi.Invoker;
 import com.foxnet.rmi.InvokerManager;
+import com.foxnet.rmi.LookupException;
 import com.foxnet.rmi.binding.RemoteBinding;
 import com.foxnet.rmi.binding.RemoteObject;
-import com.foxnet.rmi.binding.registry.DynamicRegistry;
 import com.foxnet.rmi.binding.registry.StaticRegistry;
 import com.foxnet.rmi.transport.network.ConnectionManager;
 import com.foxnet.rmi.transport.network.handler.lookup.LookupHandler;
@@ -88,9 +87,18 @@ public class InvokerHandler extends SimpleChannelHandler {
 	public void channelOpen(ChannelHandlerContext ctx, ChannelStateEvent e)
 			throws Exception {
 		final Channel c = ctx.getChannel();
-		ctx.setAttachment(new InvokerManager() {
+		ctx.setAttachment(new AbstractInvokerManager() {
 
-			private final DynamicRegistry dr = new DynamicRegistry();
+			{
+				c.getCloseFuture().addListener(new ChannelFutureListener() {
+
+					@Override
+					public void operationComplete(ChannelFuture future)
+							throws Exception {
+						closeFuture().complete(null, future.getCause());
+					}
+				});
+			}
 
 			@Override
 			public Object remoteToLocal(Object argument) {
@@ -108,17 +116,23 @@ public class InvokerHandler extends SimpleChannelHandler {
 			}
 
 			@Override
-			public StaticRegistry statically() {
-				return ConnectionManager.of(c).getStaticRegistry();
+			public StaticRegistry statical() {
+				return ConnectionManager.of(c).statical();
 			}
 
 			@Override
-			public DynamicRegistry dynamically() {
-				return dr;
+			public String[] lookupNames() throws LookupException {
+				Request req = LookupHandler.newLookupAll();
+				c.write(req);
+				if (req.synchronize()) {
+					return (String[]) req.attachment();
+				} else {
+					throw new LookupException(req.cause());
+				}
 			}
 
 			@Override
-			public Invoker lookupInvoker(String target) throws IOException {
+			public Invoker lookupInvoker(String target) throws LookupException {
 
 				Request req = LookupHandler.newLookup(target);
 				c.write(req);
@@ -130,11 +144,15 @@ public class InvokerHandler extends SimpleChannelHandler {
 					return invoker(rb);
 
 				} else {
-					throw new IOException(req.cause());
+					throw new LookupException(req.cause());
 				}
-
 			}
 
+			@Override
+			public Future close() {
+				c.close();
+				return closeFuture();
+			}
 		});
 
 		super.channelOpen(ctx, e);
@@ -172,7 +190,7 @@ public class InvokerHandler extends SimpleChannelHandler {
 
 				// Do invocation
 				RmiRoutines.invoke(im.isDynamic(), im.getBindingId(),
-						cm.getMethodInvocator(), fac, fut, im.getMethodId(),
+						cm.methodInvocator(), fac, fut, im.getMethodId(),
 						im.getArguments());
 
 			}

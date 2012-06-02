@@ -31,10 +31,82 @@
  */
 package com.foxnet.rmi;
 
+import com.foxnet.rmi.binding.registry.DynamicRegistry;
+import com.foxnet.rmi.util.Future;
+
 /**
  * 
  * @author Christopher Probst
  * 
  */
-public interface LocalInterface {
+public abstract class AbstractInvokerManager implements InvokerManager {
+	/*
+	 * The close future of this invoker manager.
+	 */
+	private final Future closeFuture = new Future();
+
+	/*
+	 * The dynamic registry of this invoker manager.
+	 */
+	private final DynamicRegistry dynamicRegistry = new DynamicRegistry();
+
+	/*
+	 * (non-Javadoc)
+	 * 
+	 * @see com.foxnet.rmi.InvokerManager#closeFuture()
+	 */
+	@Override
+	public Future closeFuture() {
+		return closeFuture;
+	}
+
+	/*
+	 * (non-Javadoc)
+	 * 
+	 * @see com.foxnet.rmi.InvokerManager#dynamical()
+	 */
+	@Override
+	public DynamicRegistry dynamical() {
+		return dynamicRegistry;
+	}
+
+	/*
+	 * (non-Javadoc)
+	 * 
+	 * @see com.foxnet.rmi.InvokerManager#localsToRemotes(java.lang.Object[])
+	 */
+	@Override
+	public Object[] localsToRemotes(Object... localArguments) {
+		if (localArguments != null) {
+			for (int i = 0; i < localArguments.length; i++) {
+				localArguments[i] = localToRemote(localArguments[i]);
+			}
+		}
+		return localArguments;
+	}
+
+	/*
+	 * (non-Javadoc)
+	 * 
+	 * @see com.foxnet.rmi.InvokerManager#remotesToLocals(java.lang.Object[])
+	 */
+	@Override
+	public Object[] remotesToLocals(Object... remoteArguments) {
+		if (remoteArguments != null) {
+			for (int i = 0; i < remoteArguments.length; i++) {
+				remoteArguments[i] = remoteToLocal(remoteArguments[i]);
+			}
+		}
+		return remoteArguments;
+	}
+
+	/*
+	 * (non-Javadoc)
+	 * 
+	 * @see com.foxnet.rmi.InvokerManager#lookup(java.lang.String)
+	 */
+	@Override
+	public Object lookup(String target) throws LookupException {
+		return lookupInvoker(target).proxy();
+	}
 }

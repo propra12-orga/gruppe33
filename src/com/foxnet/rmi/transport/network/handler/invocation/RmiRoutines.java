@@ -87,7 +87,7 @@ public class RmiRoutines {
 	public static Object localToRemote(InvokerManager owner,
 			Object localArgument) {
 		// Do we send back a remote OR a known proxy ?
-		return owner.dynamically().replaceRemote(
+		return owner.dynamical().replaceRemote(
 				replaceProxyWithLocalObject(owner, localArgument));
 	}
 
@@ -105,9 +105,9 @@ public class RmiRoutines {
 		// Lookup the target
 		LocalBinding target;
 		if (tmp.isDynamic()) {
-			target = invokerFactory.dynamically().get(tmp.id());
+			target = invokerFactory.dynamical().get(tmp.id());
 		} else {
-			target = invokerFactory.statically().get(tmp.id());
+			target = invokerFactory.statical().get(tmp.id());
 		}
 
 		// Check the target
@@ -133,9 +133,9 @@ public class RmiRoutines {
 		// Helper var
 		LocalBinding binding;
 		if (dynamic) {
-			binding = invokerFactory.dynamically().get(bindingId);
+			binding = invokerFactory.dynamical().get(bindingId);
 		} else {
-			binding = invokerFactory.statically().get(bindingId);
+			binding = invokerFactory.statical().get(bindingId);
 		}
 
 		// Check the binding

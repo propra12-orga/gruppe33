@@ -18,13 +18,13 @@ public class ServerApp implements ServerInterface, Remote {
 	 * @param args
 	 * @throws IOException
 	 */
-	public static void main(String[] args) throws IOException {
+	public static void main(String[] args) throws Exception {
 
 		// SERVER
 		ConnectionManager cm = new ConnectionManager(true);
 
 		cm.openServer(1337);
-		cm.getStaticRegistry().bind("void-stuff", new ServerApp());
+		cm.statical().bind("void-stuff", new ServerApp());
 
 		// CLIENT
 		ConnectionManager ccm = new ConnectionManager(false);
@@ -33,7 +33,7 @@ public class ServerApp implements ServerInterface, Remote {
 
 		Invoker invoker = client.lookupInvoker("void-stuff");
 
-		((ServerInterface) invoker.lookupProxy("void-stuff"))
+		((ServerInterface) invoker.lookup("void-stuff"))
 				.dieLiefertNichtsZurueck();
 	}
 }

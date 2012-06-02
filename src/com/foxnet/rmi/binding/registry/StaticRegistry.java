@@ -104,7 +104,7 @@ public final class StaticRegistry extends Registry<StaticBinding> {
 
 		// Clear the names
 		names.clear();
-		
+
 		return this;
 	}
 
@@ -127,7 +127,7 @@ public final class StaticRegistry extends Registry<StaticBinding> {
 		return sb;
 	}
 
-	public synchronized String[] getNames() {
+	public synchronized String[] names() {
 
 		// Create array
 		String[] names = new String[ids.size()];

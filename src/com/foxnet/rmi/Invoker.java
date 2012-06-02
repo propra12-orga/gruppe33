@@ -31,7 +31,6 @@
  */
 package com.foxnet.rmi;
 
-import java.io.IOException;
 import java.lang.reflect.InvocationHandler;
 import java.lang.reflect.Method;
 import java.lang.reflect.Proxy;
@@ -39,14 +38,14 @@ import java.lang.reflect.Proxy;
 import com.foxnet.rmi.binding.RemoteBinding;
 import com.foxnet.rmi.binding.registry.DynamicRegistry;
 import com.foxnet.rmi.binding.registry.StaticRegistry;
+import com.foxnet.rmi.util.Future;
 
 /**
  * 
  * @author Christopher Probst
  * 
  */
-public abstract class Invoker extends InvokerManager implements
-		InvocationHandler {
+public abstract class Invoker implements InvokerManager, InvocationHandler {
 
 	public static Invoker getInvokerOf(Object proxy) {
 		// Check to be a proxy class
@@ -110,18 +109,23 @@ public abstract class Invoker extends InvokerManager implements
 	}
 
 	@Override
-	public StaticRegistry statically() {
-		return invokerManager.statically();
+	public StaticRegistry statical() {
+		return invokerManager.statical();
 	}
 
 	@Override
-	public DynamicRegistry dynamically() {
-		return invokerManager.dynamically();
+	public DynamicRegistry dynamical() {
+		return invokerManager.dynamical();
 	}
 
 	@Override
-	public Invoker lookupInvoker(String target) throws IOException {
+	public Invoker lookupInvoker(String target) throws LookupException {
 		return invokerManager.lookupInvoker(target);
+	}
+
+	@Override
+	public String[] lookupNames() throws LookupException {
+		return invokerManager.lookupNames();
 	}
 
 	@Override
@@ -132,6 +136,31 @@ public abstract class Invoker extends InvokerManager implements
 	@Override
 	public Object remoteToLocal(Object argument) {
 		return invokerManager.remoteToLocal(argument);
+	}
+
+	@Override
+	public Future closeFuture() {
+		return invokerManager.closeFuture();
+	}
+
+	@Override
+	public Object[] localsToRemotes(Object... localArguments) {
+		return invokerManager.localsToRemotes(localArguments);
+	}
+
+	@Override
+	public Object[] remotesToLocals(Object... remoteArguments) {
+		return invokerManager.remotesToLocals(remoteArguments);
+	}
+
+	@Override
+	public Object lookup(String target) throws LookupException {
+		return invokerManager.lookup(target);
+	}
+
+	@Override
+	public Future close() {
+		return invokerManager.close();
 	}
 
 	public abstract Invocation invoke(int methodId, Object... args);
