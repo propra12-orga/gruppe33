@@ -32,8 +32,13 @@
 package com.foxnet.rmi;
 
 /**
+ * This interface is a marker interface to mark classes as remote. Only classes
+ * which implements this interfaces are able to be invoked remotely.
+ * <p>
+ * Whether a class implements this interface directly or indirectly (through an
+ * other interface) does not matter.
+ * 
  * @author Christopher Probst
  */
 public interface Remote {
-
 }

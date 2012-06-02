@@ -32,9 +32,9 @@
 package com.foxnet.rmi;
 
 /**
+ * A lookup exception is thrown when a lookup attempt failed.
  * 
  * @author Christopher Probst
- * 
  */
 public class LookupException extends Exception {
 

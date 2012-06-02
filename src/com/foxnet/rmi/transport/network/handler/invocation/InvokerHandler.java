@@ -50,8 +50,8 @@ public class InvokerHandler extends SimpleChannelHandler {
 			// Convert to request
 			Request request = (Request) e.getMessage();
 
-			if (request.getData() instanceof InvocationMessage) {
-				im = (InvocationMessage) request.getData();
+			if (request.data() instanceof InvocationMessage) {
+				im = (InvocationMessage) request.data();
 				fut = request;
 			}
 		} else if (e.getMessage() instanceof InvocationMessage) {

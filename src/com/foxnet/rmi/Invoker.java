@@ -38,11 +38,18 @@ import java.lang.reflect.Proxy;
 import com.foxnet.rmi.binding.RemoteBinding;
 
 /**
+ * An invoker can invoke methods synchronously/asynchronously or via a proxy
+ * object.
  * 
  * @author Christopher Probst
  */
-public abstract class Invoker implements InvocationHandler {
+public final class Invoker implements InvocationHandler {
 
+	/**
+	 * @param proxy
+	 *            The proxy.
+	 * @return the invoker instance of the given proxy or null.
+	 */
 	public static Invoker getInvokerOf(Object proxy) {
 		// Check to be a proxy class
 		if (proxy == null || !Proxy.isProxyClass(proxy.getClass())) {
@@ -68,44 +75,77 @@ public abstract class Invoker implements InvocationHandler {
 	// The lazy proxy object which is created when needed
 	private volatile Object lazyProxy;
 
-	protected abstract void writeInvocation(Invocation invocation);
-
-	protected Invoker(InvokerManager invokerFactory, RemoteBinding remoteBinding) {
-		if (invokerFactory == null) {
-			throw new NullPointerException("invokerFactory");
+	/**
+	 * Creates a new invoker using the given arguments.
+	 * 
+	 * @param invokerManager
+	 *            The invoker manager.
+	 * @param remoteBinding
+	 *            The remote binding.
+	 */
+	public Invoker(InvokerManager invokerManager, RemoteBinding remoteBinding) {
+		if (invokerManager == null) {
+			throw new NullPointerException("invokerManager");
 		} else if (remoteBinding == null) {
 			throw new NullPointerException("remoteBinding");
 		}
-		this.invokerManager = invokerFactory;
+		this.invokerManager = invokerManager;
 		this.remoteBinding = remoteBinding;
 	}
 
+	/**
+	 * @return the proxy timeout which is used when invoking proxy methods.
+	 */
 	public long proxyTimeout() {
 		return proxyTimeout;
 	}
 
+	/**
+	 * Sets the proxy timeout which is used when invoking proxy methods.
+	 * 
+	 * @param proxyTimeout
+	 *            The new proxy timeout. A value <= 0 means waiting without a
+	 *            limit.
+	 * @return this for chaining.
+	 */
 	public Invoker proxyTimeout(long proxyTimeout) {
 		this.proxyTimeout = proxyTimeout;
 		return this;
 	}
 
+	/**
+	 * @return the invoker manager of this invoker.
+	 */
 	public InvokerManager manager() {
 		return invokerManager;
 	}
 
+	/**
+	 * @return the remote binding of this invoker.
+	 */
 	public RemoteBinding binding() {
 		return remoteBinding;
 	}
 
-	public Invocation invoke(int methodId, Object... args) {
+	/**
+	 * Invokes the method with the given method id and arguments. This method
+	 * should not be called directly.
+	 * 
+	 * @param methodId
+	 *            The methodId.
+	 * @param arguments
+	 *            The arguments.
+	 * @return an invocation.
+	 */
+	public Invocation invoke(int methodId, Object... arguments) {
 		// Convert
-		invokerManager.localsToRemotes(args);
+		invokerManager.localsToRemotes(arguments);
 
 		// Create invocation
-		Invocation invocation = new Invocation(this, methodId, args);
+		Invocation invocation = new Invocation(this, methodId, arguments);
 
-		// Write the invocation
-		writeInvocation(invocation);
+		// Send the invocation
+		invokerManager.sendInvocation(invocation);
 
 		return invocation;
 	}
@@ -137,23 +177,47 @@ public abstract class Invoker implements InvocationHandler {
 		}
 	}
 
-	public Invocation invoke(Method method, Object... args) {
+	/**
+	 * Invokes the given method with the given arguments.
+	 * 
+	 * @param method
+	 *            The method.
+	 * @param arguments
+	 *            The arguments.
+	 * @return an invocation.
+	 */
+	public Invocation invoke(Method method, Object... arguments) {
 		Integer methodId = remoteBinding.methodIds().get(method);
 		if (methodId == null) {
 			throw new IllegalArgumentException("Unknown method");
 		}
-		return invoke(methodId, args);
+		return invoke(methodId, arguments);
 	}
 
-	public Invocation invoke(String method, Object... args) {
-		Integer methodId = remoteBinding.nameIds().get(method);
+	/**
+	 * Invokes the method with the given name and arguments.
+	 * 
+	 * @param methodName
+	 *            The method name.
+	 * @param arguments
+	 *            The arguments.
+	 * @return an invocation.
+	 */
+	public Invocation invoke(String methodName, Object... arguments) {
+		Integer methodId = remoteBinding.nameIds().get(methodName);
 		if (methodId == null) {
 			throw new IllegalArgumentException("Unknown method name");
 		}
-		return invoke(methodId, args);
+		return invoke(methodId, arguments);
 	}
 
+	/**
+	 * @return the proxy object for this invoker.
+	 */
 	public Object proxy() {
+		/*
+		 * Use double-check idiom here.
+		 */
 		Object tmpProxy = lazyProxy;
 		if (tmpProxy == null) {
 			synchronized (this) {

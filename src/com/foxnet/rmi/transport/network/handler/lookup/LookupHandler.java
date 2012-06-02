@@ -73,9 +73,9 @@ public final class LookupHandler extends SimpleChannelUpstreamHandler {
 		if (e.getMessage() instanceof Request) {
 			Request request = (Request) e.getMessage();
 
-			if (request.getData() instanceof LookupMessage) {
+			if (request.data() instanceof LookupMessage) {
 
-				LookupMessage lm = (LookupMessage) request.getData();
+				LookupMessage lm = (LookupMessage) request.data();
 
 				if (lm.getTarget() != null) {
 

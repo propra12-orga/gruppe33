@@ -36,9 +36,9 @@ import java.lang.reflect.Method;
 import com.foxnet.rmi.util.Future;
 
 /**
+ * An invocation is basically a future with some further information.
  * 
  * @author Christopher Probst
- * 
  */
 public final class Invocation extends Future {
 
@@ -48,11 +48,26 @@ public final class Invocation extends Future {
 	// The invocation message of this invocation
 	private final InvocationMessage invocationMessage;
 
+	/*
+	 * (non-Javadoc)
+	 * 
+	 * @see com.foxnet.rmi.util.Future#modifyAttachment(java.lang.Object)
+	 */
 	@Override
 	protected Object modifyAttachment(Object attachment) {
 		return invoker.manager().remoteToLocal(attachment);
 	}
 
+	/**
+	 * Creates a new invocation with the given arguments.
+	 * 
+	 * @param invoker
+	 *            The invoker.
+	 * @param methodId
+	 *            The method id.
+	 * @param arguments
+	 *            The arguments.
+	 */
 	Invocation(Invoker invoker, int methodId, Object... arguments) {
 		if (invoker == null) {
 			throw new NullPointerException("invoker");
@@ -67,6 +82,10 @@ public final class Invocation extends Future {
 		this.invoker = invoker;
 	}
 
+	/**
+	 * @return true if and only if the invoked method is marked as asynchronous
+	 *         and return void.
+	 */
 	public boolean isAsyncVoid() {
 		// Annotation
 		AsyncVoid av;
@@ -81,18 +100,30 @@ public final class Invocation extends Future {
 						.value());
 	}
 
+	/**
+	 * @return the invoker.
+	 */
 	public Invoker invoker() {
 		return invoker;
 	}
 
+	/**
+	 * @return the method.
+	 */
 	public Method method() {
 		return invoker.binding().methods().get(invocationMessage.methodId());
 	}
 
+	/**
+	 * @return the method name.
+	 */
 	public String methodName() {
 		return method().getName();
 	}
 
+	/**
+	 * @return the message of this invocation which can be transferred.
+	 */
 	public InvocationMessage message() {
 		return invocationMessage;
 	}

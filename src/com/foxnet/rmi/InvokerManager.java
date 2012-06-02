@@ -43,9 +43,10 @@ import com.foxnet.rmi.binding.registry.StaticRegistry;
 import com.foxnet.rmi.util.Future;
 
 /**
+ * An invoker manager represents a connection. It can lookup invokers and
+ * manages bindings.
  * 
  * @author Christopher Probst
- * 
  */
 public abstract class InvokerManager {
 
@@ -65,10 +66,17 @@ public abstract class InvokerManager {
 	private final StaticRegistry staticRegistry;
 
 	/*
-	 * The dynamical proxy timeout.
+	 * The dynamic proxy timeout.
 	 */
-	private volatile long dynamicalProxyTimeout;
+	private volatile long dynamicProxyTimeout;
 
+	/**
+	 * Replaces the given remote object with a proxy if necessary.
+	 * 
+	 * @param remoteObject
+	 *            The remote object you want to check.
+	 * @return the given object or a proxy.
+	 */
 	private Object replaceRemoteObjectWithProxy(Object remoteObject) {
 
 		if (!(remoteObject instanceof RemoteObject)) {
@@ -76,10 +84,18 @@ public abstract class InvokerManager {
 		}
 
 		// Create a new invoker
-		return invoker(new RemoteBinding((RemoteObject) remoteObject, true))
-				.proxyTimeout(dynamicalProxyTimeout).proxy();
+		return new Invoker(this, new RemoteBinding((RemoteObject) remoteObject,
+				true)).proxyTimeout(dynamicProxyTimeout).proxy();
 	}
 
+	/**
+	 * Replaces the given proxy with a local object. The remote side will know
+	 * which "real"-object belongs to the given local object.
+	 * 
+	 * @param proxy
+	 *            The proxy you want to check.
+	 * @return the given object or a local object.
+	 */
 	private Object replaceProxyWithLocalObject(Object proxy) {
 
 		// Try to get proxy invoker
@@ -98,6 +114,13 @@ public abstract class InvokerManager {
 		}
 	}
 
+	/**
+	 * Replaces the given local object with the "real"-object.
+	 * 
+	 * @param localObject
+	 *            The local object you want to check.
+	 * @return the given object or the "real"-object.
+	 */
 	private Object replaceLocalObject(Object localObject) {
 
 		// Not for us...
@@ -111,9 +134,9 @@ public abstract class InvokerManager {
 		// Lookup the target
 		LocalBinding target;
 		if (tmp.isDynamic()) {
-			target = dynamical().get(tmp.id());
+			target = dynamicRegistry.get(tmp.id());
 		} else {
-			target = statical().get(tmp.id());
+			target = staticRegistry.get(tmp.id());
 		}
 
 		// Check the target
@@ -126,6 +149,20 @@ public abstract class InvokerManager {
 		}
 	}
 
+	/**
+	 * Sends the invocation to the remote side.
+	 * 
+	 * @param invocation
+	 *            The invocation you want to send.
+	 */
+	protected abstract void sendInvocation(Invocation invocation);
+
+	/**
+	 * Creates a new invoker manager using the given argument.
+	 * 
+	 * @param staticRegistry
+	 *            The static registry of this invoker manager.
+	 */
 	public InvokerManager(StaticRegistry staticRegistry) {
 		if (staticRegistry == null) {
 			throw new NullPointerException("staticRegistry");
@@ -134,20 +171,89 @@ public abstract class InvokerManager {
 		this.staticRegistry = staticRegistry;
 	}
 
+	/**
+	 * Converts a remote argument to a local argument.
+	 * 
+	 * @param remoteArgument
+	 *            The remote argument.
+	 * @return the local argument.
+	 */
 	public Object remoteToLocal(Object remoteArgument) {
 		// Replace remote OR local object
 		return replaceLocalObject(replaceRemoteObjectWithProxy(remoteArgument));
 	}
 
-	public long dynamicalProxyTimeout() {
-		return dynamicalProxyTimeout;
+	/**
+	 * Converts a local argument to a remote argument.
+	 * 
+	 * @param localArgument
+	 *            The local argument.
+	 * @return the remote argument.
+	 */
+	public Object localToRemote(Object localArgument) {
+		// Do we send back a remote OR a known proxy ?
+		return dynamicRegistry
+				.replaceRemote(replaceProxyWithLocalObject(localArgument));
 	}
 
-	public InvokerManager dynamicalProxyTimeout(long dynamicalProxyTimeout) {
-		this.dynamicalProxyTimeout = dynamicalProxyTimeout;
+	/**
+	 * @see InvokerManager#localToRemote(Object)
+	 */
+	public Object[] localsToRemotes(Object... localArguments) {
+		if (localArguments != null) {
+			for (int i = 0; i < localArguments.length; i++) {
+				localArguments[i] = localToRemote(localArguments[i]);
+			}
+		}
+		return localArguments;
+	}
+
+	/**
+	 * @see InvokerManager#remoteToLocal(Object)
+	 */
+	public Object[] remotesToLocals(Object... remoteArguments) {
+		if (remoteArguments != null) {
+			for (int i = 0; i < remoteArguments.length; i++) {
+				remoteArguments[i] = remoteToLocal(remoteArguments[i]);
+			}
+		}
+		return remoteArguments;
+	}
+
+	/**
+	 * @return the dynamic proxy timeout which is used when creating dynamic
+	 *         proxy objects.
+	 */
+	public long dynamicProxyTimeout() {
+		return dynamicProxyTimeout;
+	}
+
+	/**
+	 * Sets the dynamic proxy timeout which is used when creating dynamic proxy
+	 * objects.
+	 * 
+	 * @param dynamicProxyTimeout
+	 *            The new dynamic proxy timeout. A value <= 0 means waiting
+	 *            without a limit.
+	 * @return this for chaining.
+	 */
+	public InvokerManager dynamicProxyTimeout(long dynamicProxyTimeout) {
+		this.dynamicProxyTimeout = dynamicProxyTimeout;
 		return this;
 	}
 
+	/**
+	 * This method will handle the invocation request using the given executor.
+	 * If the invocation is finished the future will be notified (If the future
+	 * was not null).
+	 * 
+	 * @param message
+	 *            The invocation message.
+	 * @param executor
+	 *            The executor.
+	 * @param future
+	 *            The future or null.
+	 */
 	public void handleInvocation(final InvocationMessage message,
 			Executor executor, final Future future) {
 
@@ -226,51 +332,65 @@ public abstract class InvokerManager {
 		}
 	}
 
-	public Object localToRemote(Object localArgument) {
-		// Do we send back a remote OR a known proxy ?
-		return dynamical().replaceRemote(
-				replaceProxyWithLocalObject(localArgument));
-	}
-
+	/**
+	 * @return the close future which is notifies when the invoker manager is
+	 *         closed.
+	 */
 	public Future closeFuture() {
 		return closeFuture;
 	}
 
-	public DynamicRegistry dynamical() {
+	/**
+	 * @return the dynamic registry.
+	 */
+	public DynamicRegistry dynamicReg() {
 		return dynamicRegistry;
 	}
 
-	public StaticRegistry statical() {
+	/**
+	 * @return the static registry.
+	 */
+	public StaticRegistry staticReg() {
 		return staticRegistry;
 	}
 
-	public Object[] localsToRemotes(Object... localArguments) {
-		if (localArguments != null) {
-			for (int i = 0; i < localArguments.length; i++) {
-				localArguments[i] = localToRemote(localArguments[i]);
-			}
-		}
-		return localArguments;
+	/**
+	 * Gets the proxy with the given name.
+	 * 
+	 * @param name
+	 *            The name of the target you want to lookup.
+	 * @return the proxy.
+	 * @throws LookupException
+	 *             If the lookup failed.
+	 */
+	public Object lookupProxy(String name) throws LookupException {
+		return lookupInvoker(name).proxy();
 	}
 
-	public Object[] remotesToLocals(Object... remoteArguments) {
-		if (remoteArguments != null) {
-			for (int i = 0; i < remoteArguments.length; i++) {
-				remoteArguments[i] = remoteToLocal(remoteArguments[i]);
-			}
-		}
-		return remoteArguments;
-	}
+	/**
+	 * Gets the invoker with the given name.
+	 * 
+	 * @param name
+	 *            The name of the target you want to lookup.
+	 * @return the invoker.
+	 * @throws LookupException
+	 *             If the lookup failed.
+	 */
+	public abstract Invoker lookupInvoker(String name) throws LookupException;
 
-	public Object lookupProxy(String target) throws LookupException {
-		return lookupInvoker(target).proxy();
-	}
-
-	public abstract Invoker invoker(RemoteBinding remoteBinding);
-
-	public abstract Invoker lookupInvoker(String target) throws LookupException;
-
+	/**
+	 * Gets the names of all remote bindings.
+	 * 
+	 * @return an array which contains the names.
+	 * @throws LookupException
+	 *             If the lookup failed.
+	 */
 	public abstract String[] lookupNames() throws LookupException;
 
+	/**
+	 * Closes this invoker manager.
+	 * 
+	 * @return the close future.
+	 */
 	public abstract Future close();
 }

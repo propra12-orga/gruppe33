@@ -53,7 +53,7 @@ final class ReqResMessage implements Serializable {
 	private final boolean request;
 
 	public ReqResMessage(Request request) {
-		this(request.getData(), null, request.getId(), true);
+		this(request.data(), null, request.id(), true);
 	}
 
 	public ReqResMessage(Object data, Throwable cause, long id, boolean request) {

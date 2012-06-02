@@ -7,10 +7,10 @@ import com.foxnet.rmi.InvokerManager;
 import com.foxnet.rmi.Remote;
 import com.foxnet.rmi.transport.network.ConnectionManager;
 
-public class ServerApp implements ServerInterface, Remote {
+public class ServerApp implements Runnable, Remote {
 
 	@Override
-	public void dieLiefertNichtsZurueck() {
+	public void run() {
 		System.out.println("void  methode");
 	}
 
@@ -33,7 +33,6 @@ public class ServerApp implements ServerInterface, Remote {
 
 		Invoker invoker = client.lookupInvoker("void-stuff");
 
-		((ServerInterface) invoker.manager().lookupProxy("void-stuff"))
-				.dieLiefertNichtsZurueck();
+		((Runnable) invoker.manager().lookupProxy("void-stuff")).run();
 	}
 }

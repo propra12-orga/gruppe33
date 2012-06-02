@@ -37,6 +37,9 @@ import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
 
 /**
+ * Used to specify the remote interfaces. This way you can limit the export
+ * interfaces.
+ * 
  * @author Christopher Probst
  */
 @Retention(RetentionPolicy.RUNTIME)

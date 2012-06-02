@@ -40,8 +40,10 @@ import java.util.concurrent.atomic.AtomicLong;
  */
 public final class Request extends Future {
 
+	// The INVALID id
 	public static final long INVALID_ID = 0;
 
+	// Used to create ids
 	public static final AtomicLong ID_GENERATOR = new AtomicLong(INVALID_ID + 1);
 
 	// Used to identify the request
@@ -50,10 +52,24 @@ public final class Request extends Future {
 	// Used to store the initial data
 	private final Object data;
 
-	public Request(Object request) {
-		this(request, ID_GENERATOR.getAndIncrement());
+	/**
+	 * Creates a new request using the given data and a generated unique id.
+	 * 
+	 * @param data
+	 *            The data of this request.
+	 */
+	public Request(Object data) {
+		this(data, ID_GENERATOR.getAndIncrement());
 	}
 
+	/**
+	 * Creates a new request using the given arguments.
+	 * 
+	 * @param data
+	 *            The data of this request.
+	 * @param id
+	 *            The id of this request.
+	 */
 	public Request(Object data, long id) {
 
 		if (id == INVALID_ID) {
@@ -67,11 +83,17 @@ public final class Request extends Future {
 		this.data = data;
 	}
 
-	public Object getData() {
+	/**
+	 * @return the data of this request.
+	 */
+	public Object data() {
 		return data;
 	}
 
-	public long getId() {
+	/**
+	 * @return the id of this request.
+	 */
+	public long id() {
 		return id;
 	}
 }

@@ -32,11 +32,20 @@
 package com.foxnet.rmi.util;
 
 /**
+ * The future callback.
  * 
  * @author Christopher Probst
  * @see Future
  */
 public interface FutureCallback {
 
+	/**
+	 * This method is invoked when the given future is completed.
+	 * 
+	 * @param future
+	 *            The future.
+	 * @throws Exception
+	 *             If an exception occured.
+	 */
 	void completed(Future future) throws Exception;
 }

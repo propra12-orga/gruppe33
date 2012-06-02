@@ -37,6 +37,9 @@ import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
 
 /**
+ * Used to mark methods as ordered-executed. This means these methods are never
+ * executed at the same time. This can be useful for asynchronous-void methods.
+ * 
  * @author Christopher Probst
  */
 @Retention(RetentionPolicy.RUNTIME)

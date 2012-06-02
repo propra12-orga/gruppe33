@@ -32,9 +32,10 @@
 package com.foxnet.rmi;
 
 /**
+ * Used to mark specific interfaces as local. This means that if an interface
+ * extends this interface it will not be recognized during the remote export.
  * 
  * @author Christopher Probst
- * 
  */
 public interface LocalInterface {
 }

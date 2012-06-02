@@ -102,7 +102,7 @@ public final class ReqResHandler extends SimpleChannelHandler {
 
 						// Just write the response
 						channel.write(new ReqResMessage(request.attachment(),
-								request.cause(), request.getId(), false));
+								request.cause(), request.id(), false));
 					}
 				});
 
@@ -147,7 +147,7 @@ public final class ReqResHandler extends SimpleChannelHandler {
 					.getAttachment();
 
 			// Try to save the request or fail it
-			if (requests.putIfAbsent(request.getId(), request) != null) {
+			if (requests.putIfAbsent(request.id(), request) != null) {
 				request.fail(new IllegalStateException("The request "
 						+ "id is already used"));
 			} else {
@@ -156,7 +156,7 @@ public final class ReqResHandler extends SimpleChannelHandler {
 
 					@Override
 					public void completed(Future future) throws Exception {
-						requests.remove(((Request) future).getId());
+						requests.remove(((Request) future).id());
 					}
 				});
 
