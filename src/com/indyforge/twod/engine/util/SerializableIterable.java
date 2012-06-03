@@ -1,4 +1,4 @@
-package com.indyforge.twod.engine.graphics.rendering.scenegraph.util;
+package com.indyforge.twod.engine.util;
 
 import java.io.Serializable;
 

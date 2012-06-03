@@ -10,6 +10,11 @@ import com.indyforge.twod.engine.graphics.rendering.scenegraph.EntityFilter;
  */
 public final class NameFilter implements EntityFilter {
 
+	/**
+	 * 
+	 */
+	private static final long serialVersionUID = 1L;
+
 	// The name you are looking for
 	private final String name;
 

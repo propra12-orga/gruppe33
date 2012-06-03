@@ -11,6 +11,11 @@ import com.indyforge.twod.engine.graphics.rendering.scenegraph.EntityFilter;
 public final class RootFilter implements EntityFilter {
 
 	/**
+	 * 
+	 */
+	private static final long serialVersionUID = 1L;
+
+	/**
 	 * Public instance for more performance.
 	 */
 	public static final RootFilter INSTANCE = new RootFilter();

@@ -31,6 +31,11 @@ public final class GridRoutines implements GridConstants {
 	 */
 	public static final EntityFilter VELOCITY_NODE_FILTER = new EntityFilter() {
 
+		/**
+		 * 
+		 */
+		private static final long serialVersionUID = 1L;
+
 		/*
 		 * 
 		 */

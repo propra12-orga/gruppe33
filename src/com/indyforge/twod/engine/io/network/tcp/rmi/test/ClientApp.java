@@ -31,7 +31,7 @@ public class ClientApp {
 
 					@Override
 					public void run() {
-						change.change(scene);
+						change.apply(scene);
 					}
 				});
 			}

@@ -55,12 +55,12 @@ public class ServerApp {
 		Change change = new Change() {
 
 			@Override
-			public void change(Entity root) {
+			public void apply(Entity root) {
 				((GraphicsEntity) root.registry().get(regKey)).position().x += 3;
 			}
 		};
 
-		change.change(sceneProcessor.root());
+		change.apply(sceneProcessor.root());
 		si.broadcastChange(change);
 
 		while (!sceneProcessor.isShutdownRequested()) {

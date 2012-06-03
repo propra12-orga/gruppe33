@@ -1,6 +1,8 @@
 package com.indyforge.twod.engine.sound;
 
 import java.io.ByteArrayInputStream;
+import java.io.IOException;
+import java.io.ObjectInputStream;
 import java.io.Serializable;
 import java.util.Collections;
 import java.util.HashMap;
@@ -46,9 +48,25 @@ public final class SoundManager implements Serializable {
 	 * This set must be synchroniced because the clips usually are played and
 	 * stopped in different threads.
 	 */
-	private transient final Set<Clip> currentSounds = Collections
-			.synchronizedSet(new LinkedHashSet<Clip>()),
-			readOnlyCurrentSounds = Collections.unmodifiableSet(currentSounds);
+	private transient Set<Clip> currentSounds, readOnlyCurrentSounds;
+
+	/**
+	 * Creates the current sounds.
+	 */
+	private void createCurrentSounds() {
+		currentSounds = Collections.synchronizedSet(new LinkedHashSet<Clip>());
+		readOnlyCurrentSounds = Collections.unmodifiableSet(currentSounds);
+	}
+
+	private void readObject(ObjectInputStream in) throws IOException,
+			ClassNotFoundException {
+
+		// Restore all vars
+		in.defaultReadObject();
+
+		// Create current sounds
+		createCurrentSounds();
+	}
 
 	public SoundManager(AssetManager assetManager) {
 		if (assetManager == null) {
@@ -56,6 +74,9 @@ public final class SoundManager implements Serializable {
 		}
 
 		this.assetManager = assetManager;
+
+		// Create current sounds
+		createCurrentSounds();
 	}
 
 	/**

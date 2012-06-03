@@ -17,11 +17,11 @@ import com.indyforge.twod.engine.graphics.rendering.scenegraph.util.ChildIterato
 import com.indyforge.twod.engine.graphics.rendering.scenegraph.util.ParentIterator;
 import com.indyforge.twod.engine.graphics.rendering.scenegraph.util.RecursiveChildIterator;
 import com.indyforge.twod.engine.graphics.rendering.scenegraph.util.RootFilter;
-import com.indyforge.twod.engine.graphics.rendering.scenegraph.util.SerializableIterable;
 import com.indyforge.twod.engine.graphics.rendering.scenegraph.util.SiblingIterator;
 import com.indyforge.twod.engine.util.ArrayIterator;
 import com.indyforge.twod.engine.util.FilteredIterator;
 import com.indyforge.twod.engine.util.IterationRoutines;
+import com.indyforge.twod.engine.util.SerializableIterable;
 
 /**
  * 

@@ -9,5 +9,5 @@ import java.io.Serializable;
  */
 public interface Change extends Serializable {
 
-	void change(Entity root);
+	void apply(Entity root);
 }
