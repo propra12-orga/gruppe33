@@ -228,6 +228,10 @@ public final class GridRoutines implements GridConstants {
 		// Create animation
 		RenderedAnimation charAni = new RenderedAnimation(charAniBundle);
 
+		// Look north by default
+		charAni.animationName(AnimationRoutines.RUN_PREFIX
+				+ Direction.North.toString().toLowerCase());
+
 		// Attach char ani
 		player.attach(charAni).attach(
 				new GridController().attach(AnimationRoutines

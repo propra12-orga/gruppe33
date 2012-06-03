@@ -1,13 +1,19 @@
 package com.indyforge.twod.engine.graphics.rendering.scenegraph.math;
 
 import java.awt.Point;
+import java.io.Serializable;
 
 /**
  * 
  * @author Christopher Probst
  * 
  */
-public final class Grid {
+public final class Grid implements Serializable {
+
+	/**
+	 * 
+	 */
+	private static final long serialVersionUID = 1L;
 
 	// The width, height and size of the raster
 	private final int width, height, size;

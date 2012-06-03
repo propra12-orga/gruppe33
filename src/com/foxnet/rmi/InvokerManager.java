@@ -129,23 +129,19 @@ public abstract class InvokerManager {
 		}
 
 		// Convert
-		LocalObject tmp = (LocalObject) localObject;
+		LocalObject local = (LocalObject) localObject;
 
-		// Lookup the target
-		LocalBinding target;
-		if (tmp.isDynamic()) {
-			target = dynamicRegistry.get(tmp.id());
-		} else {
-			target = staticRegistry.get(tmp.id());
-		}
+		// Lookup the binding
+		LocalBinding binding = local.isDynamic() ? dynamicRegistry.get(local
+				.id()) : staticRegistry.get(local.id());
 
-		// Check the target
-		if (target == null) {
+		// Check the binding
+		if (binding == null) {
 			throw new IllegalArgumentException("The local argument object "
 					+ "is not part of the given registries");
 		} else {
 			// Otherwise replace with real target
-			return target.target();
+			return binding.target();
 		}
 	}
 
@@ -304,31 +300,31 @@ public abstract class InvokerManager {
 			 * context.
 			 */
 			binding.executeInMethodContext(executor, message.methodId(),
+					new Runnable() {
 
-			new Runnable() {
+						@Override
+						public void run() {
+							try {
+								/*
+								 * Resolve all remote and local objects and
+								 * invoke method.
+								 */
+								Object result = method.invoke(binding.target(),
+										remotesToLocals(message.arguments()));
 
-				@Override
-				public void run() {
-					try {
-						/*
-						 * Resolve all remote and local objects and invoke
-						 * method.
-						 */
-						Object result = method.invoke(binding.target(),
-								remotesToLocals(message.arguments()));
-
-						if (future != null) {
-							// Succeed the future with the filtered result
-							future.succeed(localToRemote(result));
+								if (future != null) {
+									// Succeed the future with the filtered
+									// result
+									future.succeed(localToRemote(result));
+								}
+							} catch (Throwable e) {
+								if (future != null) {
+									// Fail
+									future.fail(e);
+								}
+							}
 						}
-					} catch (Throwable e) {
-						if (future != null) {
-							// Fail
-							future.fail(e);
-						}
-					}
-				}
-			});
+					});
 		}
 	}
 

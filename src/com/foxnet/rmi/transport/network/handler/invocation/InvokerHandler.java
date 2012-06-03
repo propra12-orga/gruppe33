@@ -22,7 +22,7 @@ public class InvokerHandler extends SimpleChannelHandler {
 			throws Exception {
 		final Channel c = ctx.getChannel();
 		ctx.setAttachment(new NetworkInvokerManager(ConnectionManager.of(c)
-				.statical(), c));
+				.staticReg(), c));
 
 		super.channelOpen(ctx, e);
 	}

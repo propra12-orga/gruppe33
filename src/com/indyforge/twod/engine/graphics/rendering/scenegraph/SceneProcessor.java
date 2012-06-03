@@ -14,7 +14,6 @@ import java.util.concurrent.LinkedBlockingDeque;
 
 import com.indyforge.twod.engine.graphics.GraphicsRoutines;
 
-
 /**
  * This class supports active rendering which is the most performant way to
  * render if you use java2d.
@@ -55,7 +54,12 @@ public final class SceneProcessor extends Canvas {
 	/*
 	 * The shutdown requested flag.
 	 */
-	private boolean shutdownRequested = false;
+	private boolean shutdownRequested = false,
+
+	/*
+	 * The only render with focus flag.
+	 */
+	onlyRenderWithFocus = true;
 
 	/*
 	 * The scene which we want to render.
@@ -158,10 +162,27 @@ public final class SceneProcessor extends Canvas {
 	 * Sets the shutdown-requested flag.
 	 * 
 	 * @param shutdownRequested
-	 *            The boolean value.
+	 *            If true the shutdown will be initiated.
 	 */
 	public void shutdownRequest(boolean shutdownRequested) {
 		this.shutdownRequested = shutdownRequested;
+	}
+
+	/**
+	 * @return the only-render-with-focus flag.
+	 */
+	public boolean isOnlyRenderWithFocus() {
+		return onlyRenderWithFocus;
+	}
+
+	/**
+	 * Sets the only-render-with-focus flag.
+	 * 
+	 * @param onlyRenderWithFocus
+	 *            If true the processor will stop rendering without focus.
+	 */
+	public void onlyRenderWithFocus(boolean onlyRenderWithFocus) {
+		this.onlyRenderWithFocus = onlyRenderWithFocus;
 	}
 
 	/*
@@ -222,7 +243,8 @@ public final class SceneProcessor extends Canvas {
 		}
 
 		// Check size!
-		if (w > 0 && h > 0 && ptr != null) {
+		if (w > 0 && h > 0 && ptr != null
+				&& (!onlyRenderWithFocus || isFocusOwner())) {
 			/*
 			 * Advanced image rendering.
 			 */

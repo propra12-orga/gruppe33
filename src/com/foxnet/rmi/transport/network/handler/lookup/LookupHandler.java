@@ -79,7 +79,7 @@ public final class LookupHandler extends SimpleChannelUpstreamHandler {
 
 				if (lm.getTarget() != null) {
 
-					StaticBinding sb = cm.statical().get(lm.getTarget());
+					StaticBinding sb = cm.staticReg().get(lm.getTarget());
 
 					if (sb == null) {
 
@@ -91,7 +91,7 @@ public final class LookupHandler extends SimpleChannelUpstreamHandler {
 						request.succeed(new RemoteObject(sb));
 					}
 				} else {
-					request.succeed(cm.statical().names());
+					request.succeed(cm.staticReg().names());
 				}
 
 				return;

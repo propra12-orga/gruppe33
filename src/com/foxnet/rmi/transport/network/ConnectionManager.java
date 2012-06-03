@@ -310,7 +310,7 @@ public final class ConnectionManager implements ChannelPipelineFactory {
 		return channels;
 	}
 
-	public StaticRegistry statical() {
+	public StaticRegistry staticReg() {
 		return staticRegistry;
 	}
 

@@ -39,7 +39,8 @@ import com.foxnet.rmi.binding.RemoteBinding;
 
 /**
  * An invoker can invoke methods synchronously/asynchronously or via a proxy
- * object.
+ * object. Every invoker has an {@link InvokerManager} which is used to send
+ * Invocations.
  * 
  * @author Christopher Probst
  */

@@ -33,10 +33,6 @@ public final class GridController extends Entity {
 	 */
 	public static final float THRESHOLD = 0.01f;
 
-	public enum GridControllerEvent {
-		DirectionChanged, MovingChanged
-	}
-
 	/*
 	 * Important state variables. Used to decide when to change the key
 	 * priority.
@@ -52,24 +48,14 @@ public final class GridController extends Entity {
 	private final Vector2f movement = Vector2f.zero();
 
 	// Stores the moving state of this entity
-	private boolean moving = false, lastMoving = false;
+	private boolean moving = false;
 
 	// Stores the last direction (useful for sprite animation)
 	private Direction direction = Direction.North;
 
-	// Stores the last direction of the grid controller
-	private Direction lastDirection = null;
-
 	// The input map
 	private final Map<Direction, Boolean> inputMap = new EnumMap<Direction, Boolean>(
 			Direction.class);
-
-	public GridController() {
-		events().put(GridControllerEvent.DirectionChanged,
-				iterableChildren(true, true));
-		events().put(GridControllerEvent.MovingChanged,
-				iterableChildren(true, true));
-	}
 
 	/**
 	 * @return the input map of this controller.
@@ -400,25 +386,6 @@ public final class GridController extends Entity {
 
 			// Finally add the new movement component
 			controlledParent.position().addLocal(movement);
-		}
-
-		// Does the direction changed ?
-		if (lastDirection != direction) {
-
-			// Save the change
-			lastDirection = direction;
-
-			// Fire event
-			fireEvent(GridControllerEvent.DirectionChanged);
-		}
-
-		// Does the moving changed
-		if (lastMoving != moving) {
-			// Save the change
-			lastMoving = moving;
-
-			// Fire event
-			fireEvent(GridControllerEvent.MovingChanged);
 		}
 	}
 }

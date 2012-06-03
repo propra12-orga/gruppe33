@@ -1,14 +1,15 @@
 package propra2012.gruppe33.bomberman.graphics.sprite;
 
+import java.awt.geom.AffineTransform;
+
 import com.indyforge.twod.engine.graphics.rendering.scenegraph.Entity;
 import com.indyforge.twod.engine.graphics.rendering.scenegraph.animation.RenderedAnimation;
+import com.indyforge.twod.engine.graphics.rendering.scenegraph.math.Vector2f;
+import com.indyforge.twod.engine.graphics.rendering.scenegraph.math.Vector2f.Direction;
 import com.indyforge.twod.engine.graphics.sprite.Animation;
 import com.indyforge.twod.engine.graphics.sprite.AnimationBundle;
 import com.indyforge.twod.engine.graphics.sprite.Sprite;
 import com.indyforge.twod.engine.resources.assets.AssetManager;
-
-import propra2012.gruppe33.bomberman.graphics.rendering.scenegraph.grid.GridController;
-import propra2012.gruppe33.bomberman.graphics.rendering.scenegraph.grid.GridController.GridControllerEvent;
 
 /**
  * Utility class to bundle some default animation routines.
@@ -41,47 +42,54 @@ public final class AnimationRoutines {
 			 */
 			private static final long serialVersionUID = 1L;
 
+			private Vector2f lastAbsolutePosition = null;
+			private Direction lastDirection = Direction.Undefined;
+
 			@Override
-			protected void onEvent(Entity source, Object event,
-					Object... params) {
-				super.onEvent(source, event, params);
+			protected void onUpdate(float tpf) {
+				super.onUpdate(tpf);
 
-				if (event instanceof GridControllerEvent) {
+				// Get new transform
+				AffineTransform at = renderedAnimation.lastWorldTransform();
+				Vector2f newAbsolutePosition = new Vector2f(
+						(float) at.getTranslateX(), (float) at.getTranslateY());
 
-					switch ((GridControllerEvent) event) {
-					case DirectionChanged:
+				// Does the player has moved ?
+				boolean moved = lastAbsolutePosition != null ? !newAbsolutePosition
+						.equals(lastAbsolutePosition) : false;
 
-						GridController gc = (GridController) source;
+				// Get new direction
+				Direction newDirection = moved ? (newAbsolutePosition
+						.sub(lastAbsolutePosition)).nearestDirection()
+						: Direction.Undefined;
 
-						// Set active animation
-						renderedAnimation.animationName(RUN_PREFIX
-								+ gc.direction().toString().toLowerCase());
+				// Save the change
+				boolean dirChanged = newDirection != Direction.Undefined ? newDirection != lastDirection
+						: false;
 
-						// Lookup the animation
-						Animation running = renderedAnimation.animation();
+				// Set
+				if (dirChanged && moved) {
+					// Set active animation
+					renderedAnimation.animationName(RUN_PREFIX
+							+ newDirection.toString().toLowerCase());
 
-						if (running != null) {
-							running.reset().loop(true).paused(!gc.isMoving());
-						}
+					// Save
+					lastDirection = newDirection;
+				}
 
-						break;
+				// Lookup the animation
+				Animation running = renderedAnimation.animation();
 
-					case MovingChanged:
-
-						gc = (GridController) source;
-
-						// Lookup the animation
-						running = renderedAnimation.animation();
-
-						if (running != null) {
-							// Update running state
-							running.paused(!gc.isMoving());
-						}
-
-						break;
+				if (running != null) {
+					if (dirChanged) {
+						running.reset();
 					}
 
+					running.loop(true).paused(!moved);
 				}
+
+				// Store
+				lastAbsolutePosition = newAbsolutePosition;
 			}
 		};
 	}

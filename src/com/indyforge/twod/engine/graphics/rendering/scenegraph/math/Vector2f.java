@@ -5,7 +5,6 @@ import java.io.Serializable;
 
 import com.indyforge.twod.engine.graphics.rendering.scenegraph.Entity;
 
-
 /**
  * This is a simple 2d vector implementation. It contains the most basic
  * features.
@@ -415,9 +414,9 @@ public final class Vector2f implements Serializable {
 	 */
 	public Direction nearestDirection() {
 
-		if (equals(Vector2f.zero())) {
+		if (Mathf.threshold(x, y)) {
 			return Direction.Undefined;
-		} else if (Math.max(Math.abs(x), Math.abs(y)) == x) {
+		} else if (Math.abs(x) > Math.abs(y)) {
 			return x > 0.0f ? Direction.East : Direction.West;
 		} else {
 			return y > 0.0f ? Direction.South : Direction.North;

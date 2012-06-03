@@ -11,16 +11,17 @@ import java.util.Map;
 import java.util.NavigableMap;
 import java.util.Set;
 import java.util.TreeMap;
+import java.util.UUID;
 
 import com.indyforge.twod.engine.graphics.rendering.scenegraph.util.ChildIterator;
 import com.indyforge.twod.engine.graphics.rendering.scenegraph.util.ParentIterator;
 import com.indyforge.twod.engine.graphics.rendering.scenegraph.util.RecursiveChildIterator;
 import com.indyforge.twod.engine.graphics.rendering.scenegraph.util.RootFilter;
+import com.indyforge.twod.engine.graphics.rendering.scenegraph.util.SerializableIterable;
 import com.indyforge.twod.engine.graphics.rendering.scenegraph.util.SiblingIterator;
 import com.indyforge.twod.engine.util.ArrayIterator;
 import com.indyforge.twod.engine.util.FilteredIterator;
 import com.indyforge.twod.engine.util.IterationRoutines;
-
 
 /**
  * 
@@ -109,6 +110,12 @@ public class Entity implements Comparable<Entity>, Iterable<Entity>,
 	private String name = super.toString();
 
 	/*
+	 * The uuid of this entity which is the registry key. Used to identify
+	 * entities on multiple platforms.
+	 */
+	private final UUID registryKey = UUID.randomUUID();
+
+	/*
 	 * The ordering index of this entity.
 	 */
 	private int index = 0,
@@ -129,6 +136,14 @@ public class Entity implements Comparable<Entity>, Iterable<Entity>,
 	 * which are mapped to their indeces.
 	 */
 	private final NavigableMap<Integer, Set<Entity>> children = new TreeMap<Integer, Set<Entity>>();
+
+	/*
+	 * This map is used to map the uuids of all (sub-) children. The concept of
+	 * a registry is very important to identify single entities in a probably
+	 * complex hierarchy.
+	 */
+	private final Map<UUID, Entity> registry = new HashMap<UUID, Entity>(),
+			readOnlyRegistry = Collections.unmodifiableMap(registry);
 
 	/*
 	 * Used to create event iterators.
@@ -365,6 +380,18 @@ public class Entity implements Comparable<Entity>, Iterable<Entity>,
 		events().put(EntityEvent.Attached, iterableChildren(true, true));
 		events().put(EntityEvent.Detached, iterableChildren(true, true));
 		events().put(EntityEvent.Update, iterableChildren(true, true));
+
+		/*
+		 * Very important! Put this entity into the own map!
+		 */
+		registry.put(registryKey, this);
+	}
+
+	/**
+	 * @return the registry of the root entity.
+	 */
+	public Map<UUID, Entity> registry() {
+		return root().readOnlyRegistry;
 	}
 
 	/**
@@ -508,9 +535,14 @@ public class Entity implements Comparable<Entity>, Iterable<Entity>,
 	 * 
 	 * @return iterable children.
 	 */
-	public Iterable<Entity> iterableChildren(final boolean includeThis,
-			final boolean recursive) {
-		return new Iterable<Entity>() {
+	public SerializableIterable<Entity> iterableChildren(
+			final boolean includeThis, final boolean recursive) {
+		return new SerializableIterable<Entity>() {
+
+			/**
+			 * 
+			 */
+			private static final long serialVersionUID = 1L;
 
 			/*
 			 * (non-Javadoc)
@@ -756,6 +788,18 @@ public class Entity implements Comparable<Entity>, Iterable<Entity>,
 
 		if (entities.add(child)) {
 
+			// Lookup root
+			Entity root = root();
+
+			/*
+			 * Very important! When we attach a child we have to copy its
+			 * registry to OUR root entity.
+			 */
+			root.registry.putAll(child.registry);
+
+			// Clear the registry of the child
+			child.registry.clear();
+
 			// Set parent
 			child.parent = this;
 
@@ -772,6 +816,13 @@ public class Entity implements Comparable<Entity>, Iterable<Entity>,
 			throw new IllegalStateException("This entity could not add the "
 					+ "given child to its set. Please check your code.");
 		}
+	}
+
+	/**
+	 * @return the uuid of this entity which is the registry key.
+	 */
+	public UUID registryKey() {
+		return registryKey;
 	}
 
 	/**
@@ -990,6 +1041,19 @@ public class Entity implements Comparable<Entity>, Iterable<Entity>,
 			throw new IllegalStateException("The entity set of the given "
 					+ "child order does not exist. Please check your code.");
 		} else if (entities.remove(child)) {
+
+			// Lookup root
+			Entity root = root();
+
+			/*
+			 * Very important! When we detach a child we have to remove all
+			 * (sub-) children of this child from the root registry and copy
+			 * them to the child registry.
+			 */
+			for (Entity subChild : child.iterableChildren(true, true)) {
+				root.registry.remove(subChild.registryKey);
+				child.registry.put(subChild.registryKey, subChild);
+			}
 
 			// Clean up
 			removeSetIfEmpty(child.index(), entities);
