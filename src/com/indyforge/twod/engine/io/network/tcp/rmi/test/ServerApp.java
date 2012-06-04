@@ -31,6 +31,8 @@ public class ServerApp {
 		servers.staticReg().bind("server", si);
 		servers.openServer(1337);
 
+		
+		
 		// Create a new scene
 		SceneProcessor sceneProcessor = new SceneProcessor();
 
@@ -52,7 +54,7 @@ public class ServerApp {
 		Thread.sleep(1000);
 		System.out.println("Send change");
 
-		Change change = new Change() {
+		Change movePlayer3 = new Change() {
 
 			@Override
 			public void apply(Entity root) {
@@ -60,8 +62,8 @@ public class ServerApp {
 			}
 		};
 
-		change.apply(sceneProcessor.root());
-		si.broadcastChange(change);
+		movePlayer3.apply(sceneProcessor.root());
+		si.broadcastChange(movePlayer3);
 
 		while (!sceneProcessor.isShutdownRequested()) {
 
