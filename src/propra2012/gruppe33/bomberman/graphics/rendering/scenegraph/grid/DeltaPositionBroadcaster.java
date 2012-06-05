@@ -39,8 +39,8 @@ public class DeltaPositionBroadcaster extends Entity {
 			Vector2f delta = pos.sub(oldPosition);
 			oldPosition.set(pos);
 
-			PosChange pc = new PosChange(delta, observed.registryKey());
-			scene.processor().adminSessionServer().broadcastChange(pc);
+			PosChange pc = new PosChange(delta, observed.registrationKey());
+			scene.processor().adminSessionServer().broadcast().applyChange(pc);
 
 			timePassed = 0;
 		} else {

@@ -110,10 +110,10 @@ public class Entity implements Comparable<Entity>, Iterable<Entity>,
 	private String name = super.toString();
 
 	/*
-	 * The uuid of this entity which is the registry key. Used to identify
+	 * The uuid of this entity which is the registration key. Used to identify
 	 * entities on multiple platforms.
 	 */
-	private final UUID registryKey = UUID.randomUUID();
+	private final UUID registrationKey = UUID.randomUUID();
 
 	/*
 	 * The ordering index of this entity.
@@ -384,7 +384,7 @@ public class Entity implements Comparable<Entity>, Iterable<Entity>,
 		/*
 		 * Very important! Put this entity into the own map!
 		 */
-		registry.put(registryKey, this);
+		registry.put(registrationKey, this);
 	}
 
 	/**
@@ -819,10 +819,10 @@ public class Entity implements Comparable<Entity>, Iterable<Entity>,
 	}
 
 	/**
-	 * @return the uuid of this entity which is the registry key.
+	 * @return the uuid of this entity which is the registration key.
 	 */
-	public UUID registryKey() {
-		return registryKey;
+	public UUID registrationKey() {
+		return registrationKey;
 	}
 
 	/**
@@ -1051,8 +1051,8 @@ public class Entity implements Comparable<Entity>, Iterable<Entity>,
 			 * them to the child registry.
 			 */
 			for (Entity subChild : child.iterableChildren(true, true)) {
-				root.registry.remove(subChild.registryKey);
-				child.registry.put(subChild.registryKey, subChild);
+				root.registry.remove(subChild.registrationKey);
+				child.registry.put(subChild.registrationKey, subChild);
 			}
 
 			// Clean up

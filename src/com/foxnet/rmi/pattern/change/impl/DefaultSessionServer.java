@@ -1,12 +1,8 @@
 package com.foxnet.rmi.pattern.change.impl;
 
-import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
-import java.util.concurrent.ConcurrentMap;
 import java.util.concurrent.atomic.AtomicLong;
-
-import org.jboss.netty.util.internal.ConcurrentHashMap;
 
 import com.foxnet.rmi.Invoker;
 import com.foxnet.rmi.RemoteInterfaces;
@@ -19,74 +15,155 @@ import com.foxnet.rmi.util.Future;
 import com.foxnet.rmi.util.FutureCallback;
 
 @RemoteInterfaces(SessionServer.class)
-public class DefaultSessionServer<T> implements AdminSessionServer<T> {
+public final class DefaultSessionServer<T> implements AdminSessionServer<T> {
 
+	// Used to count the ids
 	private final AtomicLong counter = new AtomicLong(0);
-	final ConcurrentMap<Long, Session<T>> sessions = new ConcurrentHashMap<Long, Session<T>>();
-	private final Map<Long, Session<T>> readOnly = Collections
-			.unmodifiableMap(sessions);
 
-	private final Changeable<T> peer;
+	// The network lock
+	private final Object netLock = new Object();
 
-	public DefaultSessionServer(Changeable<T> peer) {
-		this.peer = peer;
+	// The maps which store the sessions
+	private final Map<Long, Session<T>> sessions = new HashMap<Long, Session<T>>();
+
+	// The changeable local and broadcast
+	private final Changeable<T> local, broadcast = new Changeable<T>() {
+		@Override
+		public void applyChange(Change<T> change) {
+			for (Session<T> session : sessions.values()) {
+				try {
+					((DefaultSession<T>) session).changeable
+							.applyChange(change);
+				} catch (Exception e) {
+					e.printStackTrace();
+				}
+			}
+		}
+	}, combined = new Changeable<T>() {
+		@Override
+		public void applyChange(Change<T> change) {
+			local.applyChange(change);
+			broadcast.applyChange(change);
+		}
+	};
+
+	/**
+	 * Creates a new session server using the changeable local.
+	 * 
+	 * @param local
+	 *            The local.
+	 */
+	public DefaultSessionServer(Changeable<T> local) {
+		if (local == null) {
+			throw new NullPointerException("local");
+		}
+		this.local = local;
 	}
 
-	@Override
-	public void applyChange(Change<T> change) {
-		peer.applyChange(change);
-	}
-
-	@Override
+	/*
+	 * @Override(non-Javadoc)
+	 * 
+	 * @see
+	 * com.foxnet.rmi.pattern.change.SessionServer#openSession(com.foxnet.rmi
+	 * .pattern.change.Changeable, java.lang.String)
+	 */
 	public Session<T> openSession(Changeable<T> changeable, String name) {
 
+		if (changeable == null) {
+			throw new NullPointerException("changeable");
+		}
+		// Calc new id
 		final long id = counter.getAndIncrement();
 
 		// Create new session
 		Session<T> s = new DefaultSession<T>(this, changeable, id, name);
 
-		sessions.put(id, s);
+		// Put into map
+		synchronized (netLock) {
 
-		Invoker.getInvokerOf(changeable).manager().closeFuture()
-				.add(new FutureCallback() {
+			// Put into map
+			sessions.put(id, s);
+			Invoker.getInvokerOf(changeable).manager().closeFuture()
+					.add(new FutureCallback() {
 
-					@Override
-					public void completed(Future future) throws Exception {
-						sessions.remove(id);
-					}
-				});
+						@Override
+						public void completed(Future future) throws Exception {
+							// Remove after disconnect
+							sessions.remove(id);
+						}
+					});
+		}
 		return s;
 	}
 
 	@Override
-	public void broadcastChange(Change<T> change) {
-		for (Session<T> session : sessions.values()) {
-			try {
-				session.changeable().applyChange(change);
-			} catch (Exception e) {
-				e.printStackTrace();
+	public Changeable<T> local() {
+		return local;
+	}
+
+	/*
+	 * (non-Javadoc)
+	 * 
+	 * @see com.foxnet.rmi.pattern.change.AdminSessionServer#broadcast()
+	 */
+	@Override
+	public Changeable<T> broadcast() {
+		return broadcast;
+	}
+
+	/*
+	 * (non-Javadoc)
+	 * 
+	 * @see com.foxnet.rmi.pattern.change.AdminSessionServer#combined()
+	 */
+	@Override
+	public Changeable<T> combined() {
+		return combined;
+	}
+
+	/*
+	 * (non-Javadoc)
+	 * 
+	 * @see com.foxnet.rmi.pattern.change.AdminSessionServer#names()
+	 */
+	@Override
+	public Map<Long, String> names() {
+		Map<Long, String> ptr = new HashMap<Long, String>();
+		synchronized (netLock) {
+			for (Session<T> session : sessions.values()) {
+				ptr.put(session.id(), session.name());
 			}
 		}
+		return ptr;
 	}
 
-	@Override
-	public Map<Long, String> users() {
-		Map<Long, String> names = new HashMap<Long, String>();
-		for (Session<T> session : sessions.values()) {
-			names.put(session.sessionId(), session.name());
-		}
-		return names;
-	}
-
+	/*
+	 * (non-Javadoc)
+	 * 
+	 * @see com.foxnet.rmi.pattern.change.AdminSessionServer#sessions()
+	 */
 	@Override
 	public Map<Long, Session<T>> sessions() {
-		return readOnly;
+		Map<Long, Session<T>> ptr = new HashMap<Long, Session<T>>();
+		synchronized (netLock) {
+			ptr.putAll(sessions);
+		}
+		return ptr;
 	}
 
+	/*
+	 * (non-Javadoc)
+	 * 
+	 * @see com.foxnet.rmi.pattern.change.AdminSessionServer#closeAll()
+	 */
+	@SuppressWarnings("unchecked")
 	@Override
 	public void closeAll() {
-		for (Session<T> session : sessions.values()) {
-			Invoker.getInvokerOf(session.changeable()).manager().close();
+		synchronized (netLock) {
+			for (Object session : sessions.values().toArray()) {
+				Invoker.getInvokerOf(((DefaultSession<T>) session).changeable)
+						.manager().close();
+			}
 		}
 	}
 }

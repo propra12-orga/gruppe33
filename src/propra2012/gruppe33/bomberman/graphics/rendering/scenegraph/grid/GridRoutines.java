@@ -243,7 +243,7 @@ public final class GridRoutines implements GridConstants {
 
 		// Attach char ani
 		player.attach(charAni).attach(gridController)
-				.attach(new InputUploader(gridController.registryKey()))
+				.attach(new InputUploader(gridController.registrationKey()))
 				.attach(new DeltaPositionBroadcaster(player));
 
 		// Set scale

@@ -9,13 +9,14 @@ import javax.swing.JOptionPane;
 import propra2012.gruppe33.PreMilestoneApp;
 
 import com.foxnet.rmi.pattern.change.AdminSessionServer;
-import com.foxnet.rmi.pattern.change.Change;
 import com.indyforge.twod.engine.graphics.GraphicsRoutines;
 import com.indyforge.twod.engine.graphics.rendering.scenegraph.Entity;
 import com.indyforge.twod.engine.graphics.rendering.scenegraph.GraphicsEntity;
 import com.indyforge.twod.engine.graphics.rendering.scenegraph.Scene;
 import com.indyforge.twod.engine.graphics.rendering.scenegraph.SceneProcessor;
 import com.indyforge.twod.engine.graphics.rendering.scenegraph.SceneProcessor.NetworkMode;
+import com.indyforge.twod.engine.graphics.rendering.scenegraph.network.AbstractEntityChange;
+import com.indyforge.twod.engine.graphics.rendering.scenegraph.network.SceneChange;
 import com.indyforge.twod.engine.graphics.rendering.scenegraph.util.NameFilter;
 import com.indyforge.twod.engine.util.FilteredIterator;
 
@@ -29,7 +30,7 @@ public class ServerApp {
 		// Create a new scene as server
 		SceneProcessor serverProcessor = new SceneProcessor(NetworkMode.Server);
 		serverProcessor.onlyRenderWithFocus(false);
-		
+
 		// Open the server on 1337
 		serverProcessor.openServer(1337);
 
@@ -37,42 +38,36 @@ public class ServerApp {
 		Frame frame = GraphicsRoutines.createFrame(serverProcessor,
 				"Bomberman SERVER", 800, 600);
 
-		// Set root
-		serverProcessor.root(PreMilestoneApp.createDemoGame());
-
+		Scene scene = PreMilestoneApp.createDemoGame();
 		Iterator<Entity> filter = new FilteredIterator<Entity>(new NameFilter(
-				"Kr0e"), serverProcessor.root().childIterator(true, true));
-		final UUID regKey = filter.next().registryKey();
+				"Kr0e"), scene.childIterator(true, true));
+		final UUID regKey = filter.next().registrationKey();
 
 		JOptionPane.showMessageDialog(frame, "Wollen Sie das Spiel starten ?");
 
 		AdminSessionServer<SceneProcessor> server = serverProcessor
 				.adminSessionServer();
 
-		final Scene ss = serverProcessor.root();
-
-		server.broadcastChange(new Change<SceneProcessor>() {
-
-			@Override
-			public void apply(SceneProcessor ctx) {
-				ctx.root(ss);
-			}
-		});
-
-		Thread.sleep(1000);
+		// Apply the scene change
+		server.combined().applyChange(new SceneChange(scene));
 		System.out.println("Send change");
 
-		Change<SceneProcessor> movePlayer3 = new Change<SceneProcessor>() {
+		Thread.sleep(1000);
+
+		AbstractEntityChange<GraphicsEntity> movePlayer3 = new AbstractEntityChange<GraphicsEntity>(
+				regKey) {
+			/**
+			 * 
+			 */
+			private static final long serialVersionUID = 1L;
 
 			@Override
-			public void apply(SceneProcessor sceneProcessor) {
-				((GraphicsEntity) sceneProcessor.root().registry().get(regKey))
-						.position().x += 3;
+			protected void apply(GraphicsEntity entity) {
+				entity.position().x += 3;
 			}
 		};
 
-		server.applyChange(movePlayer3);
-		server.broadcastChange(movePlayer3);
+		server.combined().applyChange(movePlayer3);
 
 		while (!serverProcessor.isShutdownRequested()) {
 

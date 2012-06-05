@@ -2,28 +2,44 @@ package com.foxnet.rmi.pattern.change;
 
 import java.util.Map;
 
-import com.foxnet.rmi.AsyncVoid;
-import com.foxnet.rmi.OrderedExecution;
-
 /**
+ * A session is the basic interface between client and server.
  * 
  * @author Christopher Probst
- * 
+ * @param <T>
+ *            The context type.
  */
 public interface Session<T> extends Changeable<T> {
 
-	long sessionId();
+	/**
+	 * @return the session id.
+	 */
+	long id();
 
+	/**
+	 * @return the name of this session.
+	 */
 	String name();
 
+	/**
+	 * Sets the name of this session.
+	 * 
+	 * @param name
+	 *            The new name of this session.
+	 */
 	void name(String name);
 
-	Map<Long, String> users();
+	/**
+	 * @return all active session ids mapped to the names.
+	 */
+	Map<Long, String> names();
 
-	Changeable<T> changeable();
-
-	@OrderedExecution
-	@AsyncVoid
+	/**
+	 * Applies the given change locally to the remote.
+	 * 
+	 * @param change
+	 *            The {@link Change} you want to apply.
+	 */
 	@Override
-	public void applyChange(Change<T> change);
+	void applyChange(Change<T> change);
 }
