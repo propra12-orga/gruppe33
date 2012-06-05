@@ -53,7 +53,7 @@ public class ServerApp {
 		Thread.sleep(1000);
 		System.out.println("Send change");
 
-		Change change = new Change() {
+		Change movePlayer3 = new Change() {
 
 			@Override
 			public void apply(SceneProcessor sceneProcessor) {
@@ -62,8 +62,8 @@ public class ServerApp {
 			}
 		};
 
-		change.apply(serverProcessor);
-		server.broadcastChange(change);
+		movePlayer3.apply(serverProcessor);
+		server.broadcastChange(movePlayer3);
 
 		while (!serverProcessor.isShutdownRequested()) {
 
