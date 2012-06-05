@@ -9,5 +9,5 @@ import java.io.Serializable;
  */
 public interface Change extends Serializable {
 
-	void apply(Entity root);
+	void apply(SceneProcessor sceneProcessor);
 }

@@ -628,6 +628,13 @@ public class Entity implements Comparable<Entity>, Iterable<Entity>,
 						throw new IllegalStateException("This entity could "
 								+ "not be removed from the old parent set. "
 								+ "Please check your code.");
+					} else if (!parent.lazyEntities(index).add(this)) {
+						throw new IllegalStateException("This entity could "
+								+ "not be added to the new parent set. "
+								+ "Please check your code.");
+					} else {
+						// Clear the client cache!
+						parent.clearCachedChildren();
 					}
 
 					// Clean up
@@ -635,13 +642,6 @@ public class Entity implements Comparable<Entity>, Iterable<Entity>,
 				} else {
 					throw new IllegalStateException("The parent set of this "
 							+ "entity is null. Please check your code.");
-				}
-
-				// Try to add
-				if (!parent.lazyEntities(index).add(this)) {
-					throw new IllegalStateException("This entity could not be "
-							+ "added to the new parent set. "
-							+ "Please check your code.");
 				}
 			}
 

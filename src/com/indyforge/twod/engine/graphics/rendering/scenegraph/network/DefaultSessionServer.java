@@ -1,4 +1,4 @@
-package com.indyforge.twod.engine.io.network.tcp.rmi.impl;
+package com.indyforge.twod.engine.graphics.rendering.scenegraph.network;
 
 import java.lang.reflect.UndeclaredThrowableException;
 import java.nio.channels.ClosedChannelException;
@@ -11,15 +11,16 @@ import java.util.concurrent.atomic.AtomicLong;
 import org.jboss.netty.util.internal.ConcurrentHashMap;
 
 import com.foxnet.rmi.Invoker;
+import com.foxnet.rmi.RemoteInterfaces;
 import com.foxnet.rmi.util.Future;
 import com.foxnet.rmi.util.FutureCallback;
 import com.indyforge.twod.engine.graphics.rendering.scenegraph.Change;
+import com.indyforge.twod.engine.graphics.rendering.scenegraph.EntityFilter;
+import com.indyforge.twod.engine.graphics.rendering.scenegraph.RemoteProcessor;
 import com.indyforge.twod.engine.graphics.rendering.scenegraph.Scene;
-import com.indyforge.twod.engine.io.network.tcp.rmi.Server;
-import com.indyforge.twod.engine.io.network.tcp.rmi.Session;
-import com.indyforge.twod.engine.io.network.tcp.rmi.SessionCallback;
 
-public class ServerImpl implements Server {
+@RemoteInterfaces(SessionServer.class)
+public class DefaultSessionServer implements AdminSessionServer {
 
 	private final AtomicLong counter = new AtomicLong(0);
 	final ConcurrentMap<Long, Session> sessions = new ConcurrentHashMap<Long, Session>();
@@ -27,16 +28,16 @@ public class ServerImpl implements Server {
 			.unmodifiableMap(sessions);
 
 	@Override
-	public Session openSession(SessionCallback sessionCallback, String name) {
+	public Session openSession(RemoteProcessor remoteProcessor, String name) {
 
 		final long id = counter.getAndIncrement();
 
 		// Create new session
-		Session s = new SessionImpl(this, sessionCallback, id, name);
+		Session s = new DefaultSession(this, remoteProcessor, id, name);
 
 		sessions.put(id, s);
 
-		Invoker.getInvokerOf(sessionCallback).manager().closeFuture()
+		Invoker.getInvokerOf(remoteProcessor).manager().closeFuture()
 				.add(new FutureCallback() {
 
 					@Override
@@ -50,7 +51,7 @@ public class ServerImpl implements Server {
 	public void broadcastChange(Change change) {
 		for (Session session : sessions.values()) {
 			try {
-				session.callback().processChange(change);
+				session.processor().addChange(change);
 			} catch (Exception e) {
 				e.printStackTrace();
 			}
@@ -60,7 +61,7 @@ public class ServerImpl implements Server {
 	public void broadcastRoot(Scene root) {
 		for (Session session : sessions.values()) {
 			try {
-				session.callback().root(root);
+				session.processor().root(root);
 			} catch (Exception e) {
 				e.printStackTrace();
 			}
@@ -75,10 +76,13 @@ public class ServerImpl implements Server {
 		return names;
 	}
 
-	public void broadcastMessage(Session origin, Object message) {
+	@Override
+	public void broadcastSceneEvent(EntityFilter entityFilter, Object event,
+			Object... params) {
+
 		for (Session session : sessions.values()) {
 			try {
-				session.callback().onMessage(origin.name(), message);
+				session.processor().fireSceneEvent(entityFilter, event, params);
 			} catch (UndeclaredThrowableException e) {
 				if (!(e.getCause() instanceof ClosedChannelException)) {
 					e.printStackTrace();
@@ -90,13 +94,18 @@ public class ServerImpl implements Server {
 		}
 	}
 
+	@Override
+	public void broadcastSceneEvent(Object event, Object... params) {
+		broadcastSceneEvent(null, event, params);
+	}
+
 	public Map<Long, Session> sessions() {
 		return readOnly;
 	}
 
 	public void closeAll() {
 		for (Session session : sessions.values()) {
-			Invoker.getInvokerOf(session.callback()).manager().close();
+			Invoker.getInvokerOf(session.processor()).manager().close();
 		}
 	}
 }

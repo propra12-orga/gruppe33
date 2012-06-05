@@ -9,10 +9,17 @@ import java.awt.event.ComponentAdapter;
 import java.awt.event.ComponentEvent;
 import java.awt.image.BufferStrategy;
 import java.awt.image.BufferedImage;
+import java.io.IOException;
 import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.LinkedBlockingDeque;
 
+import com.foxnet.rmi.InvokerManager;
+import com.foxnet.rmi.LookupException;
+import com.foxnet.rmi.RemoteInterfaces;
+import com.foxnet.rmi.transport.network.ConnectionManager;
 import com.indyforge.twod.engine.graphics.GraphicsRoutines;
+import com.indyforge.twod.engine.graphics.rendering.scenegraph.network.Session;
+import com.indyforge.twod.engine.graphics.rendering.scenegraph.network.SessionServer;
 
 /**
  * This class supports active rendering which is the most performant way to
@@ -26,7 +33,8 @@ import com.indyforge.twod.engine.graphics.GraphicsRoutines;
  * @author Christopher Probst
  * @see Scene
  */
-public final class SceneProcessor extends Canvas {
+@RemoteInterfaces(RemoteProcessor.class)
+public final class SceneProcessor extends Canvas implements RemoteProcessor {
 
 	/**
 	 * 
@@ -44,6 +52,21 @@ public final class SceneProcessor extends Canvas {
 	 * VOLATILE: The var is set in the EDT.
 	 */
 	private volatile BufferStrategy bufferStrategy;
+
+	/*
+	 * The connection manager of this scene processor.
+	 */
+	private final ConnectionManager connectionManager;
+
+	/*
+	 * The invoker manager of this scene processor.
+	 */
+	private volatile InvokerManager invokerManager;
+
+	/*
+	 * Here we can store a session instance.
+	 */
+	private volatile Session session;
 
 	/*
 	 * The fast offscreen image. Ultimate hardware performance. There is no
@@ -79,9 +102,15 @@ public final class SceneProcessor extends Canvas {
 	private volatile int peerWidth, peerHeight;
 
 	/**
-	 * Creates a new scene processor.
+	 * Creates a new scene processor using the given connection manager.
+	 * 
+	 * @param connectionManager
+	 *            The connection manager.
 	 */
-	public SceneProcessor() {
+	public SceneProcessor(ConnectionManager connectionManager) {
+
+		// Save the connection manager
+		this.connectionManager = connectionManager;
 
 		// The canvas is rendered by us!
 		setIgnoreRepaint(true);
@@ -102,37 +131,231 @@ public final class SceneProcessor extends Canvas {
 	}
 
 	/**
+	 * Disconnects this scene processor from the server.
+	 */
+	public synchronized void disconnect() {
+		if (invokerManager != null) {
+			invokerManager.close();
+			invokerManager = null;
+			session = null;
+		}
+	}
+
+	/**
+	 * Connects to the given server. If the scene processor is already
+	 * connected, the old connection will be cancelled first.
+	 * 
+	 * @param host
+	 *            The host address.
+	 * @param port
+	 *            The port.
+	 * @return this for chaining;
+	 * @throws IOException
+	 *             If the connection attempt failed.
+	 */
+	public synchronized SceneProcessor connect(String host, int port)
+			throws IOException {
+		if (connectionManager == null) {
+			throw new IllegalStateException("No connection manager");
+		} else if (invokerManager != null) {
+			disconnect();
+		}
+		// Try to open the connection
+		invokerManager = connectionManager.openClient(host, port);
+		return this;
+	}
+
+	/**
+	 * Links this scene processor with a session server.
+	 * 
+	 * @param remoteName
+	 *            The remote name of the server binding.
+	 * @param name
+	 *            The user name of this scenep processor.
+	 * @return a {@link Session} implementation.
+	 * @throws LookupException
+	 *             If the lookup failed.
+	 */
+	public synchronized Session link(String remoteName, String name)
+			throws LookupException {
+		if (invokerManager == null) {
+			throw new IllegalStateException("No invoker manager");
+		} else if (session != null) {
+			return session;
+		}
+
+		// Try to lookup the server
+		SessionServer server = (SessionServer) invokerManager
+				.lookupProxy(remoteName);
+
+		/*
+		 * Open a session for this scene processor and save it.
+		 */
+		return session = server.openSession(this, name);
+	}
+
+	/**
+	 * @return true if this scene processor has a invoker manager, otherwise
+	 *         false.
+	 */
+	public boolean hasInvokerManager() {
+		return invokerManager != null;
+	}
+
+	/**
+	 * @return the invoker manager.
+	 */
+	public InvokerManager invokerManager() {
+		return invokerManager;
+	}
+
+	/**
+	 * @return true if this scene processor has a connection manager, otherwise
+	 *         false.
+	 */
+	public boolean hasConnectionManager() {
+		return connectionManager != null;
+	}
+
+	/**
+	 * @return the connection manager.
+	 */
+	public ConnectionManager connectionManager() {
+		return connectionManager;
+	}
+
+	/**
+	 * Should be called when the scene processor is terminated.
+	 */
+	public void releaseNetworkResources() {
+		if (connectionManager != null) {
+			connectionManager.shudown();
+		}
+	}
+
+	/**
+	 * @return true if this scene processor has a session, otherwise false.
+	 */
+	public boolean hasSession() {
+		return session != null;
+	}
+
+	/**
+	 * @return the session.
+	 */
+	public Session session() {
+		return session;
+	}
+
+	/**
 	 * @return the scene root.
 	 */
 	public Scene root() {
 		return root;
 	}
 
-	/**
-	 * Sets the root of this processor and resets the time.
+	/*
+	 * (non-Javadoc)
 	 * 
-	 * @param root
-	 *            The root you want to set.
+	 * @see
+	 * com.indyforge.twod.engine.graphics.rendering.scenegraph.RemoteProcessor
+	 * #fireSceneEvent
+	 * (com.indyforge.twod.engine.graphics.rendering.scenegraph.EntityFilter,
+	 * java.lang.Object, java.lang.Object[])
 	 */
-	public void root(Scene root) {
+	@Override
+	public void fireSceneEvent(final EntityFilter entityFilter,
+			final Object event, final Object... params) {
+		tasks().offer(new Runnable() {
 
-		// Remove old link
-		if (this.root != null) {
-			this.root.disconnectFrom(this);
-			this.root.processor = null;
-		}
+			@Override
+			public void run() {
+				if (root != null) {
+					root.fireEvent(entityFilter, event, params);
+				}
+			}
+		});
+	}
 
-		// Save the root
-		this.root = root;
+	/*
+	 * (non-Javadoc)
+	 * 
+	 * @see
+	 * com.indyforge.twod.engine.graphics.rendering.scenegraph.RemoteProcessor
+	 * #fireSceneEvent(java.lang.Object, java.lang.Object[])
+	 */
+	@Override
+	public void fireSceneEvent(final Object event, final Object... params) {
+		tasks().offer(new Runnable() {
 
-		// Connect the input
-		root.connectTo(this);
+			@Override
+			public void run() {
+				if (root != null) {
+					root.fireEvent(event, params);
+				}
+			}
+		});
+	}
 
-		// Set processor
-		root.processor = this;
+	/*
+	 * (non-Javadoc)
+	 * 
+	 * @see
+	 * com.indyforge.twod.engine.graphics.rendering.scenegraph.RemoteProcessor
+	 * #addChange
+	 * (com.indyforge.twod.engine.graphics.rendering.scenegraph.Change)
+	 */
+	@Override
+	public void addChange(final Change change) {
+		tasks().offer(new Runnable() {
 
-		// The time must be resetted.
-		resetTime();
+			@Override
+			public void run() {
+				change.apply(SceneProcessor.this);
+			}
+		});
+	}
+
+	/*
+	 * (non-Javadoc)
+	 * 
+	 * @see
+	 * com.indyforge.twod.engine.graphics.rendering.scenegraph.RemoteProcessor
+	 * #root(com.indyforge.twod.engine.graphics.rendering.scenegraph.Scene)
+	 */
+	@Override
+	public void root(final Scene root) {
+		/*
+		 * Set the root in the game thread!
+		 */
+		tasks().offer(new Runnable() {
+
+			@Override
+			public void run() {
+
+				// Remove old link
+				if (SceneProcessor.this.root != null) {
+					SceneProcessor.this.root
+							.disconnectFrom(SceneProcessor.this);
+					SceneProcessor.this.root.processor = null;
+				}
+
+				// Save the root
+				SceneProcessor.this.root = root;
+
+				// Connect if not null...
+				if (root != null) {
+					// Connect the input
+					root.connectTo(SceneProcessor.this);
+
+					// Set processor
+					root.processor = SceneProcessor.this;
+
+					// The time must be resetted.
+					resetTime();
+				}
+			}
+		});
 	}
 
 	/**
@@ -202,6 +425,21 @@ public final class SceneProcessor extends Canvas {
 	}
 
 	/**
+	 * Processes all pending tasks. BE VERY CAREFUL with this method. It should
+	 * only be called in the game thread. Otherwise you will loose
+	 * thread-safety.
+	 */
+	public void processTasks() {
+		// Tmp var
+		Runnable task;
+
+		// Process all tasks
+		while ((task = tasks.poll()) != null) {
+			task.run();
+		}
+	}
+
+	/**
 	 * Process the whole scene.
 	 * 
 	 * @param maxFPS
@@ -210,6 +448,15 @@ public final class SceneProcessor extends Canvas {
 	 *             If some kind of error occurs.
 	 */
 	public void process(int maxFPS) throws Exception {
+
+		// Process all pending tasks
+		processTasks();
+
+		// Do the time stuff...
+		lastTime = lastTime == -1 ? System.currentTimeMillis() : curTime;
+
+		// Get active time
+		curTime = System.currentTimeMillis();
 
 		// If root is null we cannot process...
 		if (root == null) {
@@ -222,25 +469,11 @@ public final class SceneProcessor extends Canvas {
 			return;
 		}
 
-		// Do the time stuff...
-		lastTime = lastTime == -1 ? System.currentTimeMillis() : curTime;
-
-		// Get active time
-		curTime = System.currentTimeMillis();
-
 		// Read into local cache
 		int w = peerWidth, h = peerHeight;
 
 		// Load from cache
 		BufferStrategy ptr = bufferStrategy;
-
-		// Tmp var
-		Runnable task;
-
-		// Process all tasks
-		while ((task = tasks.poll()) != null) {
-			task.run();
-		}
 
 		// Check size!
 		if (w > 0 && h > 0 && ptr != null
