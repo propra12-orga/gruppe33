@@ -1,148 +1,72 @@
 package com.indyforge.twod.engine.graphics.rendering.gui;
 
-import java.awt.Color;
-import java.awt.Graphics2D;
 import java.awt.event.KeyEvent;
 import java.awt.image.BufferedImage;
 import java.io.File;
 
-import com.indyforge.twod.engine.graphics.rendering.scenegraph.GraphicsEntity;
+import com.indyforge.twod.engine.graphics.rendering.scenegraph.Entity;
 import com.indyforge.twod.engine.graphics.rendering.scenegraph.RenderedImage;
 import com.indyforge.twod.engine.graphics.rendering.scenegraph.Scene;
+import com.indyforge.twod.engine.graphics.rendering.scenegraph.math.Vector2f;
 import com.indyforge.twod.engine.resources.assets.Asset;
 import com.indyforge.twod.engine.resources.assets.AssetManager;
 
 public class GuiCreator {
 
-
-	public static Scene createGuiScene2() throws Exception {
-
-		final Scene gui = new Scene(new AssetManager(new File(
-				"scenes/default.zip")), 1024, 1024);
-		gui.scale().set(gui.sizeAsVector());
-
-		Asset<BufferedImage> img = gui.assetManager().loadImage(
-				"assets/images/solid.png", true);
-
-		RenderedImage a = new RenderedImage(img).centered(true);
-		RenderedImage b = new RenderedImage(img).centered(true);
-
-		a.position().set(0.5f, 0.25f);
-		a.scale().set(0.25f, 0.25f);
-
-		
-		b.position().set(0.5f, 0.75f);
-		b.scale().set(0.25f, 0.25f);
-
-		
-		GraphicsEntity border = new GraphicsEntity() {
-			
-			boolean up = true;
-			
-			@Override
-			protected void onRender(Graphics2D original, Graphics2D transformed) {
-				super.onRender(original, transformed);
-
-				
-				transformed.setColor(Color.blue);
-				transformed.translate(-0.5, -0.5);
-				transformed.fillRect(0, 0, 1, 1);
-			}
-			
-			@Override
-			protected void onUpdate(float tpf) {
-				super.onUpdate(tpf);
-				
-				if(findScene().isPressed(KeyEvent.VK_DOWN) && up) {
-					position().y = 0.75f;
-					up = false;
-				} else if(findScene().isPressed(KeyEvent.VK_UP) && !up) {
-					position().y = 0.25f;
-					up = true;
-				} else if(findScene().isPressed(KeyEvent.VK_ENTER) && !up) {
-					try {
-						findScene().processor().root(createGuiScene());
-					} catch (Exception e) {
-						System.out.println("Could load gui 2: ");
-					}
-				}
-			}
-		};
-
-		border.scale().set(0.25f, 0.25f);
-		border.position().set(0.5f, 0.25f);
-		
-		gui.attach(border);
-		gui.attach(a);
-		gui.attach(b);
-		
-
-		return gui;
-
-	}
-	
-	
 	public static Scene createGuiScene() throws Exception {
 
 		final Scene gui = new Scene(new AssetManager(new File(
 				"scenes/default.zip")), 1024, 1024);
 		gui.scale().set(gui.sizeAsVector());
 
-		Asset<BufferedImage> img = gui.assetManager().loadImage(
-				"assets/images/solid.png", true);
+		Asset<BufferedImage> back = gui.assetManager().loadImage(
+				"assets/images/gui/main.jpg", true);
 
-		RenderedImage a = new RenderedImage(img).centered(true);
-		RenderedImage b = new RenderedImage(img).centered(true);
+		Asset<BufferedImage> bomb = gui.assetManager().loadImage(
+				"assets/images/bomb.png", true);
 
-		a.position().set(0.5f, 0.25f);
-		a.scale().set(0.25f, 0.25f);
+		RenderedImage backRI = new RenderedImage(back).centered(true);
+		final RenderedImage bombRI = new RenderedImage(bomb).centered(true);
 
-		
-		b.position().set(0.5f, 0.75f);
-		b.scale().set(0.25f, 0.25f);
+		backRI.position().set(0.5f, 0.5f);
 
-		
-		GraphicsEntity border = new GraphicsEntity() {
-			
-			boolean up = true;
-			
-			@Override
-			protected void onRender(Graphics2D original, Graphics2D transformed) {
-				super.onRender(original, transformed);
+		bombRI.position().set(157 / 1024f, 415 / 1024f);
+		bombRI.scale().set(0.08f, 0.08f);
 
-				
-				transformed.setColor(Color.red);
-				transformed.translate(-0.5, -0.5);
-				transformed.fillRect(0, 0, 1, 1);
-			}
-			
+		final Vector2f[] fields = new Vector2f[] { new Vector2f(157 / 1024f, 415 / 1024f), new Vector2f(548 / 1024f, 495 / 1024f),new Vector2f(457 / 1024f, 759 / 1024f),new Vector2f(772 / 1024f, 973 / 1024f) };
+
+		Entity border = new Entity() {
+
+			int pos = 0;
+			boolean pressed = false;
+
 			@Override
 			protected void onUpdate(float tpf) {
 				super.onUpdate(tpf);
-				
-				if(findScene().isPressed(KeyEvent.VK_DOWN) && up) {
-					position().y = 0.75f;
-					up = false;
-				} else if(findScene().isPressed(KeyEvent.VK_UP) && !up) {
-					position().y = 0.25f;
-					up = true;
-				} else if(findScene().isPressed(KeyEvent.VK_ENTER) && up) {
-					try {
-						findScene().processor().root(createGuiScene2());
-					} catch (Exception e) {
-						System.out.println("Could load gui 2: ");
+
+				if(gui.isPressed(KeyEvent.VK_DOWN) && !pressed) {
+					bombRI.position().set(fields[pos++]);
+					if(pos >= fields.length) {
+						pos = 0;
 					}
+					pressed = true;
+				}else if(gui.isPressed(KeyEvent.VK_UP) && !pressed){
+					bombRI.position().set(fields[pos--]);
+					if(pos <= 0) {
+						pos = 0;
+					}
+					pressed = true;
+				}else if(!gui.isPressed(KeyEvent.VK_UP) && pressed){
+					pressed = false;
+				}else if(!gui.isPressed(KeyEvent.VK_DOWN) && pressed){
+					pressed = false;
 				}
 			}
 		};
 
-		border.scale().set(0.25f, 0.25f);
-		border.position().set(0.5f, 0.25f);
-		
 		gui.attach(border);
-		gui.attach(a);
-		gui.attach(b);
-		
+		gui.attach(backRI);
+		gui.attach(bombRI);
 
 		return gui;
 
