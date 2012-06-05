@@ -1,9 +1,6 @@
 package com.foxnet.rmi.test;
 
 import java.io.IOException;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
-import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicInteger;
 
 import com.foxnet.rmi.InvokerManager;
@@ -17,7 +14,7 @@ public class ServerApp implements Runnable, Remote {
 	@Override
 	public void run() {
 		i.getAndIncrement();
-		 System.out.println("void methode -> " + i.get());
+		System.out.println("void methode -> " + i.get());
 	}
 
 	/**
