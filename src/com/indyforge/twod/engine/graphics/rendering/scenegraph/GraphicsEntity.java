@@ -10,7 +10,6 @@ import com.indyforge.twod.engine.util.FilteredIterator;
 import com.indyforge.twod.engine.util.IterationRoutines;
 import com.indyforge.twod.engine.util.TypeFilter;
 
-
 /**
  * 
  * @author Christopher Probst
@@ -149,6 +148,14 @@ public class GraphicsEntity extends Entity {
 	public Scene findScene() {
 		return (Scene) IterationRoutines.next(new FilteredIterator<Entity>(
 				new TypeFilter(Scene.class, true), parentIterator(true)));
+	}
+
+	/**
+	 * @return the scene processor or null.
+	 */
+	public SceneProcessor findSceneProcessor() {
+		Scene scene = findScene();
+		return scene != null ? scene.processor : null;
 	}
 
 	/**

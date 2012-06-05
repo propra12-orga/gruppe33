@@ -237,10 +237,14 @@ public final class GridRoutines implements GridConstants {
 		charAni.animationName(AnimationRoutines.RUN_PREFIX
 				+ Direction.North.toString().toLowerCase());
 
+		// Create local grid controller
+		Entity gridController = new GridController().attach(AnimationRoutines
+				.createGridControllerAnimationHandler(charAni));
+
 		// Attach char ani
-		player.attach(charAni).attach(
-				new GridController().attach(AnimationRoutines
-						.createGridControllerAnimationHandler(charAni)));
+		player.attach(charAni).attach(gridController)
+				.attach(new InputUploader(gridController.registryKey()))
+				.attach(new DeltaPositionBroadcaster(player));
 
 		// Set scale
 		player.scale().scaleLocal(1.5f);

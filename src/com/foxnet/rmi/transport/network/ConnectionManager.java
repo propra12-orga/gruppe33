@@ -36,6 +36,7 @@ import java.net.InetSocketAddress;
 import java.net.SocketAddress;
 import java.util.concurrent.Executor;
 import java.util.concurrent.Executors;
+import java.util.concurrent.atomic.AtomicBoolean;
 
 import org.jboss.netty.bootstrap.ClientBootstrap;
 import org.jboss.netty.bootstrap.ServerBootstrap;
@@ -143,6 +144,9 @@ public final class ConnectionManager implements ChannelPipelineFactory {
 
 	// Create a channel group to store connections
 	private final ChannelGroup channels = new DefaultChannelGroup();
+
+	// The disposed flag
+	private final AtomicBoolean disposed = new AtomicBoolean(false);
 
 	public ConnectionManager(boolean serversOnly) {
 		this(null, serversOnly, !serversOnly);
@@ -314,18 +318,28 @@ public final class ConnectionManager implements ChannelPipelineFactory {
 		return staticRegistry;
 	}
 
-	public ConnectionManager shudown() {
-		// Close all channels and wait uninterruptibly
-		channels.close().awaitUninterruptibly();
+	public boolean isDisposed() {
+		return disposed.get();
+	}
 
-		// Release resources
-		ExecutorUtil.terminate(methodInvocator);
+	public ConnectionManager dispose() {
+		/*
+		 * Only dispose once.
+		 */
+		if (!disposed.getAndSet(true)) {
 
-		if (isSupportingServers()) {
-			serverBootstrap.releaseExternalResources();
-		}
-		if (isSupportingClients()) {
-			clientBootstrap.releaseExternalResources();
+			// Close all channels and wait uninterruptibly
+			channels.close().awaitUninterruptibly();
+
+			// Release resources
+			ExecutorUtil.terminate(methodInvocator);
+
+			if (isSupportingServers()) {
+				serverBootstrap.releaseExternalResources();
+			}
+			if (isSupportingClients()) {
+				clientBootstrap.releaseExternalResources();
+			}
 		}
 		return this;
 	}

@@ -4,10 +4,9 @@ import java.awt.Color;
 import java.awt.Graphics2D;
 import java.awt.event.KeyEvent;
 import java.io.File;
-import java.io.IOException;
 
-import javax.sound.sampled.LineUnavailableException;
-import javax.sound.sampled.UnsupportedAudioFileException;
+import propra2012.gruppe33.bomberman.graphics.rendering.scenegraph.grid.GridLoader;
+import propra2012.gruppe33.bomberman.graphics.rendering.scenegraph.grid.GridRoutines;
 
 import com.indyforge.twod.engine.graphics.rendering.scenegraph.Entity;
 import com.indyforge.twod.engine.graphics.rendering.scenegraph.GraphicsEntity;
@@ -16,10 +15,6 @@ import com.indyforge.twod.engine.graphics.rendering.scenegraph.SceneProcessor;
 import com.indyforge.twod.engine.graphics.rendering.scenegraph.math.Grid;
 import com.indyforge.twod.engine.graphics.sprite.Sprite;
 import com.indyforge.twod.engine.resources.assets.AssetManager;
-import com.indyforge.twod.engine.sound.SoundManager;
-
-import propra2012.gruppe33.bomberman.graphics.rendering.scenegraph.grid.GridLoader;
-import propra2012.gruppe33.bomberman.graphics.rendering.scenegraph.grid.GridRoutines;
 
 /**
  * 

@@ -16,10 +16,14 @@ import java.util.concurrent.LinkedBlockingDeque;
 import com.foxnet.rmi.InvokerManager;
 import com.foxnet.rmi.LookupException;
 import com.foxnet.rmi.RemoteInterfaces;
+import com.foxnet.rmi.pattern.change.AdminSessionServer;
+import com.foxnet.rmi.pattern.change.Change;
+import com.foxnet.rmi.pattern.change.Changeable;
+import com.foxnet.rmi.pattern.change.Session;
+import com.foxnet.rmi.pattern.change.SessionServer;
+import com.foxnet.rmi.pattern.change.impl.DefaultSessionServer;
 import com.foxnet.rmi.transport.network.ConnectionManager;
 import com.indyforge.twod.engine.graphics.GraphicsRoutines;
-import com.indyforge.twod.engine.graphics.rendering.scenegraph.network.Session;
-import com.indyforge.twod.engine.graphics.rendering.scenegraph.network.SessionServer;
 
 /**
  * This class supports active rendering which is the most performant way to
@@ -33,8 +37,11 @@ import com.indyforge.twod.engine.graphics.rendering.scenegraph.network.SessionSe
  * @author Christopher Probst
  * @see Scene
  */
-@RemoteInterfaces(RemoteProcessor.class)
-public final class SceneProcessor extends Canvas implements RemoteProcessor {
+@RemoteInterfaces(Changeable.class)
+public final class SceneProcessor extends Canvas implements
+		Changeable<SceneProcessor> {
+
+	public static final String REMOTE_NAME = "session_server";
 
 	/**
 	 * 
@@ -54,19 +61,58 @@ public final class SceneProcessor extends Canvas implements RemoteProcessor {
 	private volatile BufferStrategy bufferStrategy;
 
 	/*
+	 * ************************************************************************
+	 * NETWORK PART BEGINS ****************************************************
+	 * ************************************************************************
+	 */
+
+	/*
+	 * Used to lock the access.
+	 */
+	private final Object netLock = new Object();
+
+	/*
 	 * The connection manager of this scene processor.
 	 */
-	private final ConnectionManager connectionManager;
+	private ConnectionManager connectionManager;
 
 	/*
-	 * The invoker manager of this scene processor.
+	 * The network mode of this processor.
 	 */
-	private volatile InvokerManager invokerManager;
+	private NetworkMode networkMode;
 
 	/*
-	 * Here we can store a session instance.
+	 * ************************************************************************
+	 * NETWORK CLIENT PART ****************************************************
+	 * ************************************************************************
 	 */
-	private volatile Session session;
+
+	/*
+	 * Here we can store the invoker manager of this scene processor.
+	 */
+	private InvokerManager invokerManager;
+
+	/*
+	 * Here we can store the session of this scene processor.
+	 */
+	private Session<SceneProcessor> session;
+
+	/*
+	 * ************************************************************************
+	 * NETWORK SERVER PART ****************************************************
+	 * ************************************************************************
+	 */
+
+	/*
+	 * Here we can store the admin session server of this scene processor.
+	 */
+	private AdminSessionServer<SceneProcessor> adminSessionServer;
+
+	/*
+	 * ************************************************************************
+	 * NETWORK PART ENDS ******************************************************
+	 * ************************************************************************
+	 */
 
 	/*
 	 * The fast offscreen image. Ultimate hardware performance. There is no
@@ -102,15 +148,31 @@ public final class SceneProcessor extends Canvas implements RemoteProcessor {
 	private volatile int peerWidth, peerHeight;
 
 	/**
-	 * Creates a new scene processor using the given connection manager.
 	 * 
-	 * @param connectionManager
-	 *            The connection manager.
+	 * @author Christopher Probst
+	 * 
 	 */
-	public SceneProcessor(ConnectionManager connectionManager) {
+	public enum NetworkMode {
+		Server, Client, Offline
+	}
 
-		// Save the connection manager
-		this.connectionManager = connectionManager;
+	/**
+	 * Creates a new offline scene processor.
+	 */
+	public SceneProcessor() {
+		this(NetworkMode.Offline);
+	}
+
+	/**
+	 * Creates a new scene processor using the given network mode.
+	 * 
+	 * @param networkMode
+	 *            The network mode of this processor.
+	 */
+	public SceneProcessor(NetworkMode networkMode) {
+
+		// Set the network mode
+		networkMode(networkMode);
 
 		// The canvas is rendered by us!
 		setIgnoreRepaint(true);
@@ -131,13 +193,92 @@ public final class SceneProcessor extends Canvas implements RemoteProcessor {
 	}
 
 	/**
-	 * Disconnects this scene processor from the server.
+	 * @return the network mode of this processor.
 	 */
-	public synchronized void disconnect() {
-		if (invokerManager != null) {
-			invokerManager.close();
-			invokerManager = null;
-			session = null;
+	public NetworkMode networkMode() {
+		synchronized (netLock) {
+			return networkMode;
+		}
+	}
+
+	/**
+	 * Sets the network mode and releases old resources.
+	 * 
+	 * @param networkMode
+	 *            The new network mode.
+	 * @return
+	 */
+	public SceneProcessor networkMode(NetworkMode networkMode) {
+		synchronized (netLock) {
+			if (networkMode == null) {
+				throw new NullPointerException("networkMode");
+			} else if (hasNetworkResources()) {
+				releaseNetworkResources();
+			}
+			// Init the connection manager
+			connectionManager = (this.networkMode = networkMode) != NetworkMode.Offline ? new ConnectionManager(
+					networkMode == NetworkMode.Server ? true : false) : null;
+
+			return this;
+		}
+	}
+
+	/**
+	 * @return true if this processor has any active network resources,
+	 *         otherwise false.
+	 */
+	public boolean hasNetworkResources() {
+		synchronized (netLock) {
+			return connectionManager != null ? !connectionManager.isDisposed()
+					: false;
+		}
+	}
+
+	/**
+	 * Resets the network. All active connections will be terminated and
+	 * internal bindings will be removed. Please note that the network is still
+	 * able to work after this method.
+	 * <p>
+	 * If you want to DESTROY the active network please use
+	 * {@link SceneProcessor#releaseNetworkResources()}.
+	 */
+	public void resetNetwork() {
+		synchronized (netLock) {
+			if (networkMode != NetworkMode.Offline) {
+				// Shutdown all connections
+				connectionManager.channels().close().awaitUninterruptibly();
+
+				// Unbind all bindings
+				connectionManager.staticReg().unbindAll();
+
+				// Reset server stuff
+				adminSessionServer = null;
+
+				// Reset client stuff
+				invokerManager = null;
+				session = null;
+			}
+		}
+	}
+
+	/**
+	 * Releases all active network resources and sets the network mode to
+	 * offline.
+	 */
+	public void releaseNetworkResources() {
+		synchronized (netLock) {
+			if (connectionManager != null) {
+				connectionManager.dispose();
+				connectionManager = null;
+				networkMode = NetworkMode.Offline;
+
+				// Delete server stuff
+				adminSessionServer = null;
+
+				// Delete client stuff
+				invokerManager = null;
+				session = null;
+			}
 		}
 	}
 
@@ -153,83 +294,97 @@ public final class SceneProcessor extends Canvas implements RemoteProcessor {
 	 * @throws IOException
 	 *             If the connection attempt failed.
 	 */
-	public synchronized SceneProcessor connect(String host, int port)
-			throws IOException {
-		if (connectionManager == null) {
-			throw new IllegalStateException("No connection manager");
-		} else if (invokerManager != null) {
-			disconnect();
+	public SceneProcessor openClient(String host, int port) throws IOException {
+		synchronized (netLock) {
+			if (networkMode != NetworkMode.Client) {
+				throw new IllegalStateException("Wrong network mode");
+			} else if (invokerManager != null) {
+				// Reset the network
+				resetNetwork();
+			}
+			// Try to open the connection
+			invokerManager = connectionManager.openClient(host, port);
+			return this;
 		}
-		// Try to open the connection
-		invokerManager = connectionManager.openClient(host, port);
-		return this;
+	}
+
+	/**
+	 * Opens a server with the given port. If the scene processor has already an
+	 * open server the old one will be disposed.
+	 * 
+	 * @param port
+	 *            The port.
+	 * @return this for chaining.
+	 */
+	public SceneProcessor openServer(int port) {
+		synchronized (netLock) {
+			if (networkMode != NetworkMode.Server) {
+				throw new IllegalStateException("Wrong network mode");
+			} else if (adminSessionServer != null) {
+				// Reset network
+				resetNetwork();
+			}
+
+			// Create a new instance
+			adminSessionServer = new DefaultSessionServer<SceneProcessor>(this);
+
+			// Bind the server instance
+			connectionManager.staticReg().bind(REMOTE_NAME, adminSessionServer);
+
+			// Open the server channel
+			connectionManager.openServer(port);
+
+			return this;
+		}
 	}
 
 	/**
 	 * Links this scene processor with a session server.
 	 * 
-	 * @param remoteName
-	 *            The remote name of the server binding.
 	 * @param name
-	 *            The user name of this scenep processor.
+	 *            The user name of this scene processor.
 	 * @return a {@link Session} implementation.
 	 * @throws LookupException
 	 *             If the lookup failed.
 	 */
-	public synchronized Session link(String remoteName, String name)
+	@SuppressWarnings("unchecked")
+	public Session<SceneProcessor> linkClient(String name)
 			throws LookupException {
-		if (invokerManager == null) {
-			throw new IllegalStateException("No invoker manager");
-		} else if (session != null) {
-			return session;
+		synchronized (netLock) {
+			if (invokerManager == null) {
+				throw new IllegalStateException("No invoker manager. "
+						+ "Please open the client first.");
+			} else if (session != null) {
+				return session;
+			}
+
+			// Try to lookup the server
+			SessionServer<SceneProcessor> server = (SessionServer<SceneProcessor>) invokerManager
+					.lookupProxy(REMOTE_NAME);
+
+			/*
+			 * Open a session for this scene processor and save it.
+			 */
+			return session = server.openSession(this, name);
 		}
-
-		// Try to lookup the server
-		SessionServer server = (SessionServer) invokerManager
-				.lookupProxy(remoteName);
-
-		/*
-		 * Open a session for this scene processor and save it.
-		 */
-		return session = server.openSession(this, name);
 	}
 
 	/**
-	 * @return true if this scene processor has a invoker manager, otherwise
-	 *         false.
+	 * @return true if this scene processor has an admin session server,
+	 *         otherwise false.
 	 */
-	public boolean hasInvokerManager() {
-		return invokerManager != null;
+	public boolean hasAdminSessionServer() {
+		synchronized (netLock) {
+			return adminSessionServer != null;
+		}
 	}
 
 	/**
-	 * @return the invoker manager.
+	 * @return the admin session server.
 	 */
-	public InvokerManager invokerManager() {
-		return invokerManager;
-	}
-
-	/**
-	 * @return true if this scene processor has a connection manager, otherwise
-	 *         false.
-	 */
-	public boolean hasConnectionManager() {
-		return connectionManager != null;
-	}
-
-	/**
-	 * @return the connection manager.
-	 */
-	public ConnectionManager connectionManager() {
-		return connectionManager;
-	}
-
-	/**
-	 * Should be called when the scene processor is terminated.
-	 */
-	public void releaseNetworkResources() {
-		if (connectionManager != null) {
-			connectionManager.shudown();
+	public AdminSessionServer<SceneProcessor> adminSessionServer() {
+		synchronized (netLock) {
+			return adminSessionServer;
 		}
 	}
 
@@ -237,14 +392,18 @@ public final class SceneProcessor extends Canvas implements RemoteProcessor {
 	 * @return true if this scene processor has a session, otherwise false.
 	 */
 	public boolean hasSession() {
-		return session != null;
+		synchronized (netLock) {
+			return session != null;
+		}
 	}
 
 	/**
 	 * @return the session.
 	 */
-	public Session session() {
-		return session;
+	public Session<SceneProcessor> session() {
+		synchronized (netLock) {
+			return session;
+		}
 	}
 
 	/**
@@ -257,56 +416,12 @@ public final class SceneProcessor extends Canvas implements RemoteProcessor {
 	/*
 	 * (non-Javadoc)
 	 * 
-	 * @see
-	 * com.indyforge.twod.engine.graphics.rendering.scenegraph.RemoteProcessor
-	 * #fireSceneEvent
-	 * (com.indyforge.twod.engine.graphics.rendering.scenegraph.EntityFilter,
-	 * java.lang.Object, java.lang.Object[])
-	 */
-	@Override
-	public void fireSceneEvent(final EntityFilter entityFilter,
-			final Object event, final Object... params) {
-		tasks().offer(new Runnable() {
-
-			@Override
-			public void run() {
-				if (root != null) {
-					root.fireEvent(entityFilter, event, params);
-				}
-			}
-		});
-	}
-
-	/*
-	 * (non-Javadoc)
-	 * 
-	 * @see
-	 * com.indyforge.twod.engine.graphics.rendering.scenegraph.RemoteProcessor
-	 * #fireSceneEvent(java.lang.Object, java.lang.Object[])
-	 */
-	@Override
-	public void fireSceneEvent(final Object event, final Object... params) {
-		tasks().offer(new Runnable() {
-
-			@Override
-			public void run() {
-				if (root != null) {
-					root.fireEvent(event, params);
-				}
-			}
-		});
-	}
-
-	/*
-	 * (non-Javadoc)
-	 * 
-	 * @see
-	 * com.indyforge.twod.engine.graphics.rendering.scenegraph.RemoteProcessor
-	 * #addChange
+	 * @see com.indyforge.twod.engine.graphics.rendering.scenegraph.Changeable#
+	 * applyChange
 	 * (com.indyforge.twod.engine.graphics.rendering.scenegraph.Change)
 	 */
 	@Override
-	public void addChange(final Change change) {
+	public void applyChange(final Change<SceneProcessor> change) {
 		tasks().offer(new Runnable() {
 
 			@Override
@@ -316,46 +431,33 @@ public final class SceneProcessor extends Canvas implements RemoteProcessor {
 		});
 	}
 
-	/*
-	 * (non-Javadoc)
+	/**
+	 * Sets the given root scene.
 	 * 
-	 * @see
-	 * com.indyforge.twod.engine.graphics.rendering.scenegraph.RemoteProcessor
-	 * #root(com.indyforge.twod.engine.graphics.rendering.scenegraph.Scene)
+	 * @param root
+	 *            The root scene.
 	 */
-	@Override
-	public void root(final Scene root) {
-		/*
-		 * Set the root in the game thread!
-		 */
-		tasks().offer(new Runnable() {
+	public void root(Scene root) {
+		// Remove old link
+		if (this.root != null) {
+			this.root.disconnectFrom(this);
+			this.root.processor = null;
+		}
 
-			@Override
-			public void run() {
+		// Save the root
+		this.root = root;
 
-				// Remove old link
-				if (SceneProcessor.this.root != null) {
-					SceneProcessor.this.root
-							.disconnectFrom(SceneProcessor.this);
-					SceneProcessor.this.root.processor = null;
-				}
+		// Connect if not null...
+		if (root != null) {
+			// Connect the input
+			root.connectTo(this);
 
-				// Save the root
-				SceneProcessor.this.root = root;
+			// Set processor
+			root.processor = this;
 
-				// Connect if not null...
-				if (root != null) {
-					// Connect the input
-					root.connectTo(SceneProcessor.this);
-
-					// Set processor
-					root.processor = SceneProcessor.this;
-
-					// The time must be resetted.
-					resetTime();
-				}
-			}
-		});
+			// The time must be resetted.
+			resetTime();
+		}
 	}
 
 	/**

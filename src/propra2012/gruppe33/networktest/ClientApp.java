@@ -2,20 +2,20 @@ package propra2012.gruppe33.networktest;
 
 import java.awt.Frame;
 
-import com.foxnet.rmi.transport.network.ConnectionManager;
 import com.indyforge.twod.engine.graphics.GraphicsRoutines;
 import com.indyforge.twod.engine.graphics.rendering.scenegraph.SceneProcessor;
+import com.indyforge.twod.engine.graphics.rendering.scenegraph.SceneProcessor.NetworkMode;
 
 public class ClientApp {
 
 	public static void main(String[] args) throws Exception {
 
 		// Create a new scene
-		SceneProcessor sceneProcessor = new SceneProcessor(
-				new ConnectionManager(false));
+		SceneProcessor sceneProcessor = new SceneProcessor(NetworkMode.Client);
+		sceneProcessor.onlyRenderWithFocus(false);
 
 		// Connect the scene
-		sceneProcessor.connect("localhost", 1337).link("server", "Kr0e");
+		sceneProcessor.openClient("localhost", 1337).linkClient("Kr0e");
 
 		// Create peer
 		Frame frame = GraphicsRoutines.createFrame(sceneProcessor, "Bomberman",

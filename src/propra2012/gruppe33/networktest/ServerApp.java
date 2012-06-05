@@ -8,13 +8,14 @@ import javax.swing.JOptionPane;
 
 import propra2012.gruppe33.PreMilestoneApp;
 
-import com.foxnet.rmi.transport.network.ConnectionManager;
+import com.foxnet.rmi.pattern.change.AdminSessionServer;
+import com.foxnet.rmi.pattern.change.Change;
 import com.indyforge.twod.engine.graphics.GraphicsRoutines;
-import com.indyforge.twod.engine.graphics.rendering.scenegraph.Change;
 import com.indyforge.twod.engine.graphics.rendering.scenegraph.Entity;
 import com.indyforge.twod.engine.graphics.rendering.scenegraph.GraphicsEntity;
+import com.indyforge.twod.engine.graphics.rendering.scenegraph.Scene;
 import com.indyforge.twod.engine.graphics.rendering.scenegraph.SceneProcessor;
-import com.indyforge.twod.engine.graphics.rendering.scenegraph.network.DefaultSessionServer;
+import com.indyforge.twod.engine.graphics.rendering.scenegraph.SceneProcessor.NetworkMode;
 import com.indyforge.twod.engine.graphics.rendering.scenegraph.util.NameFilter;
 import com.indyforge.twod.engine.util.FilteredIterator;
 
@@ -25,14 +26,12 @@ public class ServerApp {
 	 */
 	public static void main(String[] args) throws Exception {
 
-		ConnectionManager servers = new ConnectionManager(true);
-
-		DefaultSessionServer server = new DefaultSessionServer();
-		servers.staticReg().bind("server", server);
-		servers.openServer(1337);
-
 		// Create a new scene as server
-		SceneProcessor serverProcessor = new SceneProcessor(servers);
+		SceneProcessor serverProcessor = new SceneProcessor(NetworkMode.Server);
+		serverProcessor.onlyRenderWithFocus(false);
+		
+		// Open the server on 1337
+		serverProcessor.openServer(1337);
 
 		// Create peer
 		Frame frame = GraphicsRoutines.createFrame(serverProcessor,
@@ -40,7 +39,6 @@ public class ServerApp {
 
 		// Set root
 		serverProcessor.root(PreMilestoneApp.createDemoGame());
-		serverProcessor.processTasks();
 
 		Iterator<Entity> filter = new FilteredIterator<Entity>(new NameFilter(
 				"Kr0e"), serverProcessor.root().childIterator(true, true));
@@ -48,12 +46,23 @@ public class ServerApp {
 
 		JOptionPane.showMessageDialog(frame, "Wollen Sie das Spiel starten ?");
 
-		server.broadcastRoot(serverProcessor.root());
+		AdminSessionServer<SceneProcessor> server = serverProcessor
+				.adminSessionServer();
+
+		final Scene ss = serverProcessor.root();
+
+		server.broadcastChange(new Change<SceneProcessor>() {
+
+			@Override
+			public void apply(SceneProcessor ctx) {
+				ctx.root(ss);
+			}
+		});
 
 		Thread.sleep(1000);
 		System.out.println("Send change");
 
-		Change movePlayer3 = new Change() {
+		Change<SceneProcessor> movePlayer3 = new Change<SceneProcessor>() {
 
 			@Override
 			public void apply(SceneProcessor sceneProcessor) {
@@ -62,7 +71,7 @@ public class ServerApp {
 			}
 		};
 
-		movePlayer3.apply(serverProcessor);
+		server.applyChange(movePlayer3);
 		server.broadcastChange(movePlayer3);
 
 		while (!serverProcessor.isShutdownRequested()) {
@@ -75,6 +84,6 @@ public class ServerApp {
 		frame.dispose();
 
 		// Shutdown complete servers
-		servers.shudown();
+		serverProcessor.releaseNetworkResources();
 	}
 }

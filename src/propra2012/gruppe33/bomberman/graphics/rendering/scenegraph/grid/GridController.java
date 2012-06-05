@@ -268,11 +268,6 @@ public final class GridController extends Entity {
 		// Reduce boxing...
 		float maxSpeed = maxSpeedObj.floatValue();
 
-//		inputMap.put(Direction.North, gridEntity.findScene().isPressed(KeyEvent.VK_UP));
-//		inputMap.put(Direction.South, gridEntity.findScene().isPressed(KeyEvent.VK_DOWN));
-//		inputMap.put(Direction.West, gridEntity.findScene().isPressed(KeyEvent.VK_LEFT));
-//		inputMap.put(Direction.East, gridEntity.findScene().isPressed(KeyEvent.VK_RIGHT));
-
 		// Init the input flags
 		boolean north = hasInputFor(Direction.North), south = hasInputFor(Direction.South), west = hasInputFor(Direction.West), east = hasInputFor(Direction.East);
 
