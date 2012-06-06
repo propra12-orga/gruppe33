@@ -9,6 +9,11 @@ import java.util.HashMap;
 import java.util.LinkedHashSet;
 import java.util.Map;
 import java.util.Set;
+import java.util.concurrent.Callable;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+import java.util.concurrent.Future;
+import java.util.concurrent.ThreadFactory;
 
 import javax.sound.sampled.AudioInputStream;
 import javax.sound.sampled.AudioSystem;
@@ -50,10 +55,31 @@ public final class SoundManager implements Serializable {
 	 */
 	private transient Set<Clip> currentSounds, readOnlyCurrentSounds;
 
-	/**
-	 * Creates the current sounds.
+	/*
+	 * Used to create / start the clips.
 	 */
-	private void createCurrentSounds() {
+	private transient ExecutorService soundExecutor;
+
+	/**
+	 * Creates the current sounds other stuff.
+	 */
+	private void initSoundManager() {
+
+		/*
+		 * Use deamon threads.
+		 */
+		soundExecutor = Executors.newSingleThreadExecutor(new ThreadFactory() {
+
+			private final ThreadFactory defaultThreadFactory = Executors
+					.defaultThreadFactory();
+
+			@Override
+			public Thread newThread(Runnable r) {
+				Thread thread = defaultThreadFactory.newThread(r);
+				thread.setDaemon(true);
+				return thread;
+			}
+		});
 		currentSounds = Collections.synchronizedSet(new LinkedHashSet<Clip>());
 		readOnlyCurrentSounds = Collections.unmodifiableSet(currentSounds);
 	}
@@ -64,8 +90,8 @@ public final class SoundManager implements Serializable {
 		// Restore all vars
 		in.defaultReadObject();
 
-		// Create current sounds
-		createCurrentSounds();
+		// Init
+		initSoundManager();
 	}
 
 	public SoundManager(AssetManager assetManager) {
@@ -75,8 +101,8 @@ public final class SoundManager implements Serializable {
 
 		this.assetManager = assetManager;
 
-		// Create current sounds
-		createCurrentSounds();
+		// Init
+		initSoundManager();
 	}
 
 	/**
@@ -125,64 +151,78 @@ public final class SoundManager implements Serializable {
 	 *            The name of the sound.
 	 * @param start
 	 *            If true the clip will be started directly.
-	 * @return the new clip or null.
+	 * @return the future which will retrieve the new clip or null.
 	 */
-	public Clip playSound(String name, boolean start) {
+	public Future<Clip> playSound(final String name, final boolean start) {
 
-		// Get the sound data
-		Asset<byte[]> soundAsset = soundMap.get(name);
-
-		// Check for null
-		if (soundAsset == null) {
-			return null;
-		}
-
-		try {
-			// Create new audio input stream
-			AudioInputStream ais = AudioSystem
-					.getAudioInputStream(new ByteArrayInputStream(soundAsset
-							.get()));
-
-			// Create a new clip
-			final Clip clip = AudioSystem.getClip();
-
-			// Open with binary data
-			clip.open(ais);
-
-			// Add into set
-			currentSounds.add(clip);
-
+		/*
+		 * Start the new sound in a thread pool.
+		 */
+		return soundExecutor.submit(new Callable<Clip>() {
 			/*
-			 * Very important:
+			 * (non-Javadoc)
 			 * 
-			 * This listener stops/removes the created clip.
+			 * @see java.util.concurrent.Callable#call()
 			 */
-			clip.addLineListener(new LineListener() {
+			@Override
+			public Clip call() throws Exception {
+				// Get the sound data
+				Asset<byte[]> soundAsset = soundMap.get(name);
 
-				@Override
-				public void update(LineEvent event) {
-					if (event.getType() == Type.STOP) {
-						// If the line is stopped -> close it!
-						event.getLine().close();
-					} else if (event.getType() == Type.CLOSE) {
-						// If the line is closed -> remove it!
-						currentSounds.remove(clip);
-					}
+				// Check for null
+				if (soundAsset == null) {
+					return null;
 				}
-			});
 
-			// Start the clip ?
-			if (start) {
-				clip.start();
+				try {
+					// Create new audio input stream
+					AudioInputStream ais = AudioSystem
+							.getAudioInputStream(new ByteArrayInputStream(
+									soundAsset.get()));
+
+					// Create a new clip
+					final Clip clip = AudioSystem.getClip();
+
+					// Open with binary data
+					clip.open(ais);
+
+					// Add into set
+					currentSounds.add(clip);
+
+					/*
+					 * Very important:
+					 * 
+					 * This listener stops/removes the created clip.
+					 */
+					clip.addLineListener(new LineListener() {
+
+						@Override
+						public void update(LineEvent event) {
+							if (event.getType() == Type.STOP) {
+								// If the line is stopped -> close it!
+								event.getLine().close();
+							} else if (event.getType() == Type.CLOSE) {
+								// If the line is closed -> remove it!
+								currentSounds.remove(clip);
+							}
+						}
+					});
+
+					// Start the clip ?
+					if (start) {
+						clip.start();
+					}
+
+					return clip;
+
+				} catch (Exception e) {
+					System.err
+							.println("Failed to create & start sound. Reason: "
+									+ e.getMessage());
+					return null;
+				}
 			}
-
-			return clip;
-
-		} catch (Exception e) {
-			System.err.println("Failed to create & start sound. Reason: "
-					+ e.getMessage());
-			return null;
-		}
+		});
 	}
 
 	/**

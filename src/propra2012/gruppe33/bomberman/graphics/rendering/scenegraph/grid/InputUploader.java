@@ -5,10 +5,8 @@ import java.util.EnumMap;
 import java.util.Map;
 import java.util.UUID;
 
-import com.foxnet.rmi.pattern.change.Session;
 import com.indyforge.twod.engine.graphics.rendering.scenegraph.GraphicsEntity;
 import com.indyforge.twod.engine.graphics.rendering.scenegraph.Scene;
-import com.indyforge.twod.engine.graphics.rendering.scenegraph.SceneProcessor;
 import com.indyforge.twod.engine.graphics.rendering.scenegraph.math.Vector2f.Direction;
 
 public class InputUploader extends GraphicsEntity {
@@ -25,8 +23,6 @@ public class InputUploader extends GraphicsEntity {
 		this.peerKey = peerKey;
 	}
 
-	private float timePassed = 0;
-
 	@Override
 	protected void onUpdate(float tpf) {
 		super.onUpdate(tpf);
@@ -40,19 +36,10 @@ public class InputUploader extends GraphicsEntity {
 		tmp.put(Direction.West, scene.isPressed(KeyEvent.VK_LEFT));
 		tmp.put(Direction.East, scene.isPressed(KeyEvent.VK_RIGHT));
 
-		if (scene.processor().hasSession() && timePassed >= 0.04f
-				&& !tmp.equals(inputMap)) {
-			Session<SceneProcessor> s = scene.processor().session();
-
+		if (scene.processor().hasSession() && !tmp.equals(inputMap)) {
 			inputMap.putAll(tmp);
-
-			GridChange o = new GridChange(tmp, peerKey);
-
-			s.applyChange(o);
-
-			timePassed = 0;
-		} else {
-			timePassed += tpf;
+			scene.processor().session()
+					.applyChange(new GridChange(tmp, peerKey));
 		}
 	}
 }

@@ -82,6 +82,12 @@ public final class SceneProcessor extends Canvas implements
 	private NetworkMode networkMode;
 
 	/*
+	 * Will be set by the server to "reset" the network time. The user can
+	 * calculate the active network time using this timestamp.
+	 */
+	private long networkInitTimestamp = -1;
+
+	/*
 	 * ************************************************************************
 	 * NETWORK CLIENT PART ****************************************************
 	 * ************************************************************************
@@ -247,6 +253,7 @@ public final class SceneProcessor extends Canvas implements
 			if (networkMode != NetworkMode.Offline) {
 				// Shutdown all connections
 				connectionManager.channels().close().awaitUninterruptibly();
+				networkInitTimestamp = -1;
 
 				// Unbind all bindings
 				connectionManager.staticReg().unbindAll();
@@ -271,6 +278,7 @@ public final class SceneProcessor extends Canvas implements
 				connectionManager.dispose();
 				connectionManager = null;
 				networkMode = NetworkMode.Offline;
+				networkInitTimestamp = -1;
 
 				// Delete server stuff
 				adminSessionServer = null;
@@ -305,6 +313,34 @@ public final class SceneProcessor extends Canvas implements
 			// Try to open the connection
 			invokerManager = connectionManager.openClient(host, port);
 			return this;
+		}
+	}
+
+	/**
+	 * Resets the network time.
+	 */
+	public void resetNetworkTime() {
+		synchronized (netLock) {
+			if (networkMode == NetworkMode.Offline) {
+				throw new IllegalStateException("Wrong network mode");
+			}
+			// Init the local network time
+			networkInitTimestamp = System.currentTimeMillis();
+		}
+	}
+
+	/**
+	 * @return the network time.
+	 */
+	public float networkTime() {
+		synchronized (netLock) {
+			if (networkMode == NetworkMode.Offline) {
+				throw new IllegalStateException("Wrong network mode");
+			} else if (networkInitTimestamp < 0) {
+				return -1f;
+			} else {
+				return (System.currentTimeMillis() - networkInitTimestamp) * 0.001f;
+			}
 		}
 	}
 

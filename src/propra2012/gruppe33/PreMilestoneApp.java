@@ -65,7 +65,7 @@ public class PreMilestoneApp {
 		AssetManager assets = new AssetManager(new File("scenes/default.zip"));
 
 		// Create new scene with the given assets
-		Scene scene = new Scene(assets, 1024, 1024);
+		Scene scene = new Scene(assets, 256, 256);
 
 		// Load the char array
 		char[][] map = assets.loadAsset("assets/maps/smallmap.txt",

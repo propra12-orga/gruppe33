@@ -16,6 +16,7 @@ import com.indyforge.twod.engine.graphics.rendering.scenegraph.Scene;
 import com.indyforge.twod.engine.graphics.rendering.scenegraph.SceneProcessor;
 import com.indyforge.twod.engine.graphics.rendering.scenegraph.SceneProcessor.NetworkMode;
 import com.indyforge.twod.engine.graphics.rendering.scenegraph.network.AbstractEntityChange;
+import com.indyforge.twod.engine.graphics.rendering.scenegraph.network.ResetNetworkTimeChange;
 import com.indyforge.twod.engine.graphics.rendering.scenegraph.network.SceneChange;
 import com.indyforge.twod.engine.graphics.rendering.scenegraph.util.NameFilter;
 import com.indyforge.twod.engine.util.FilteredIterator;
@@ -68,6 +69,9 @@ public class ServerApp {
 		};
 
 		server.combined().applyChange(movePlayer3);
+
+		// Reset the network time every where
+		server.combined().applyChange(new ResetNetworkTimeChange());
 
 		while (!serverProcessor.isShutdownRequested()) {
 
