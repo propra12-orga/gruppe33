@@ -16,24 +16,23 @@ import com.indyforge.twod.engine.graphics.sprite.Sprite;
 import com.indyforge.twod.engine.resources.assets.Asset;
 import com.indyforge.twod.engine.resources.assets.AssetManager;
 
-public class GuiCreator {
+public class GuiManager {
 
-	private Gui aktiveGui;
+	private Gui activeGui;
 
 	private List<Gui> guiList;
+	
+	private Scene scene;
+	
+	private Entity testE;
 
-	public GuiCreator() {
+	public GuiManager() throws Exception {
 
 		// A List of all needed Guis
 		List<Gui> guiList = new ArrayList<Gui>();
-	}
-
-	public static Scene createGuiScene() throws Exception {
-
-		final Scene scene = new Scene(new AssetManager(new File(
+		
+		scene = new Scene(new AssetManager(new File(
 				"scenes/default.zip")), 1024, 1024);
-
-		scene.scale().set(scene.sizeAsVector());
 
 		Asset<BufferedImage> back = scene.assetManager().loadImage(
 				"assets/images/gui/main.jpg", true);
@@ -50,13 +49,13 @@ public class GuiCreator {
 				.newAnimationFromRange("explosion", 33, 0, 0, 25).loop(false)
 				.paused(false);
 
-		final RenderedImage backRI = new RenderedImage(back).centered(true);
-		final RenderedImage bombRI = new RenderedImage(cursor).centered(true);
+		RenderedImage backRI = new RenderedImage(back).centered(true);
+		RenderedImage cursorRI = new RenderedImage(cursor).centered(true);
 
 		backRI.position().set(0.5f, 0.5f);
 
-		bombRI.position().set(157 / 1024f, 415 / 1024f);
-		bombRI.scale().set(0.08f, 0.08f);
+		cursorRI.position().set(157 / 1024f, 415 / 1024f);
+		cursorRI.scale().set(0.08f, 0.08f);
 
 		final Vector2f[] fields = new Vector2f[] {
 				new Vector2f(157 / 1024f, 415 / 1024f),
@@ -64,13 +63,15 @@ public class GuiCreator {
 				new Vector2f(457 / 1024f, 759 / 1024f),
 				new Vector2f(772 / 1024f, 973 / 1024f) };
 
-		final Gui test = new Gui(backRI, bombRI ,fields);
-		
-		
-		
+		final Gui test = new Gui(backRI, cursorRI, fields);
 
-		Entity border = new Entity() {
-
+		guiList.add(test);
+		
+		activeGui = test;
+		
+		
+		testE = new Entity() {
+			
 			boolean pressedUP = false, pressedDOWN = false,
 					pressedENTER = false;
 
@@ -80,8 +81,8 @@ public class GuiCreator {
 
 				if (!pressedUP && scene.isPressed(KeyEvent.VK_UP)) {
 
-					test.updatePos(false);
-					bombRI.position().set(test.getMenuVector());
+					activeGui.updatePos(false);
+					cursorRI = activeGui.updateCursor();
 
 					pressedUP = true;
 
@@ -92,8 +93,9 @@ public class GuiCreator {
 
 				if (!pressedDOWN && scene.isPressed(KeyEvent.VK_DOWN)) {
 
-					test.updatePos(true);
-					bombRI.position().set(test.getMenuVector());
+					activeGui.updatePos(true);
+					
+					cursorRI.position().set(activeGui.getMenuVector());
 
 					pressedDOWN = true;
 
@@ -121,7 +123,7 @@ public class GuiCreator {
 					renderedAnimation.animationBundle().add(animation).reset();
 					renderedAnimation.animationName("explosion");
 
-					renderedAnimation.position().set(test.getMenuVector());
+					renderedAnimation.position().set(activeGui.getMenuVector());
 					scene.attach(renderedAnimation);
 					pressedENTER = true;
 				}
@@ -131,18 +133,16 @@ public class GuiCreator {
 				}
 
 			}
+			
 		};
-
-		scene.attach(border);
-		scene.attach(backRI);
-		scene.attach(bombRI);
-
-		return scene;
-
 	}
+	
+	
+	
 
-	public void showGuiExplosion() {
-
+	public Scene getScene(){
+		
+		return scene;
 	}
 
 }
