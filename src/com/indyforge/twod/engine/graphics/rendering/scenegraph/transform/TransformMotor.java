@@ -1,5 +1,7 @@
-package com.indyforge.twod.engine.graphics.rendering.scenegraph;
+package com.indyforge.twod.engine.graphics.rendering.scenegraph.transform;
 
+import com.indyforge.twod.engine.graphics.rendering.scenegraph.Entity;
+import com.indyforge.twod.engine.graphics.rendering.scenegraph.GraphicsEntity;
 import com.indyforge.twod.engine.graphics.rendering.scenegraph.math.Vector2f;
 
 /**

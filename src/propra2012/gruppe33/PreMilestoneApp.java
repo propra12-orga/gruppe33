@@ -13,6 +13,9 @@ import com.indyforge.twod.engine.graphics.rendering.scenegraph.GraphicsEntity;
 import com.indyforge.twod.engine.graphics.rendering.scenegraph.Scene;
 import com.indyforge.twod.engine.graphics.rendering.scenegraph.SceneProcessor;
 import com.indyforge.twod.engine.graphics.rendering.scenegraph.math.Grid;
+import com.indyforge.twod.engine.graphics.rendering.scenegraph.math.Vector2f;
+import com.indyforge.twod.engine.graphics.rendering.scenegraph.transform.PositionTarget;
+import com.indyforge.twod.engine.graphics.rendering.scenegraph.transform.TransformMotor;
 import com.indyforge.twod.engine.graphics.sprite.Sprite;
 import com.indyforge.twod.engine.resources.assets.AssetManager;
 
@@ -65,7 +68,7 @@ public class PreMilestoneApp {
 		AssetManager assets = new AssetManager(new File("scenes/default.zip"));
 
 		// Create new scene with the given assets
-		Scene scene = new Scene(assets, 256, 256);
+		Scene scene = new Scene(assets, 1024, 1024);
 
 		// Load the char array
 		char[][] map = assets.loadAsset("assets/maps/smallmap.txt",
@@ -85,35 +88,57 @@ public class PreMilestoneApp {
 		final GraphicsEntity grid = GridLoader.parse(map, scene);
 
 		// Create new player as knight
-		GraphicsEntity player = GridRoutines.createLocalKnight(assets, "Kr0e");
+		final GraphicsEntity player = GridRoutines.createLocalKnight(assets,
+				"Kr0e");
 
-		player.attach(new Entity() {
+		player.attach(new TransformMotor()).attach(new Entity() {
+
+			PositionTarget vt = new PositionTarget(player, new Vector2f(6.331f,
+					1), 2.179f) {
+
+				@Override
+				public Vector2f state() {
+					return ((GraphicsEntity) controlled().parent()).position()
+							.add(controlled().position());
+				}
+			};
 
 			@Override
 			protected void onUpdate(float tpf) {
 				super.onUpdate(tpf);
 
-				// Get scene
-				Scene scene = ((GraphicsEntity) parent()).findScene();
-
-				GraphicsEntity node = ((GraphicsEntity) parent().parent());
-
-				if (scene.isPressed(KeyEvent.VK_SPACE)
-						&& !GridRoutines.hasFieldExplosion(node)) {
-
-					GraphicsEntity bomb = GridRoutines
-							.createExplosion(boom, 33);
-
-					scene.soundManager().playSound("exp", true);
-
-					// Attach the bomb
-					grid.childAt(
-							grid.typeProp(Grid.class).index(node.position()))
-							.attach(bomb);
-
+				if (vt.reachTarget(tpf)) {
 				}
 			}
 		});
+
+		// player.attach(new Entity() {
+		//
+		// @Override
+		// protected void onUpdate(float tpf) {
+		// super.onUpdate(tpf);
+		//
+		// // Get scene
+		// Scene scene = ((GraphicsEntity) parent()).findScene();
+		//
+		// GraphicsEntity node = ((GraphicsEntity) parent().parent());
+		//
+		// if (scene.isPressed(KeyEvent.VK_SPACE)
+		// && !GridRoutines.hasFieldExplosion(node)) {
+		//
+		// GraphicsEntity bomb = GridRoutines
+		// .createExplosion(boom, 33);
+		//
+		// scene.soundManager().playSound("exp", true);
+		//
+		// // Attach the bomb
+		// grid.childAt(
+		// grid.typeProp(Grid.class).index(node.position()))
+		// .attach(bomb);
+		//
+		// }
+		// }
+		// });
 
 		// Place to spawn
 		grid.childAt(grid.typeProp(Grid.class).index(1, 1)).attach(player);

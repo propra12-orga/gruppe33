@@ -2,10 +2,9 @@ package propra2012.gruppe33;
 
 import java.awt.Frame;
 
-import javax.sound.sampled.Clip;
-
 import com.indyforge.twod.engine.graphics.GraphicsRoutines;
 import com.indyforge.twod.engine.graphics.rendering.scenegraph.SceneProcessor;
+import com.indyforge.twod.engine.graphics.rendering.scenegraph.SceneProcessor.NetworkMode;
 
 /**
  * 
@@ -17,7 +16,7 @@ public class SceneProcessorTest {
 	public static void main(String[] args) throws Exception {
 
 		// Create a new scene
-		SceneProcessor sceneProcessor = new SceneProcessor(null);
+		SceneProcessor sceneProcessor = new SceneProcessor(NetworkMode.Offline);
 
 		// Create peer
 		Frame frame = GraphicsRoutines.createFrame(sceneProcessor, "Bomberman",

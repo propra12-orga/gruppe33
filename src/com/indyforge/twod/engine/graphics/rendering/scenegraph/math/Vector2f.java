@@ -60,7 +60,7 @@ public final class Vector2f implements Serializable {
 	 *            A float value between 0 and 1.
 	 * @return a vector which is lerped between start and end.
 	 */
-	public Vector2f lerp(Vector2f start, Vector2f end, float time) {
+	public static Vector2f lerp(Vector2f start, Vector2f end, float time) {
 		if (start == null) {
 			throw new NullPointerException("start");
 		} else if (end == null) {
@@ -367,6 +367,25 @@ public final class Vector2f implements Serializable {
 	 */
 	public Vector2f invert() {
 		return new Vector2f(this).invert();
+	}
+
+	/**
+	 * Normalizes this vector.
+	 * 
+	 * @return this for chaining.
+	 */
+	public Vector2f normalizeLocal() {
+		float length = length();
+		x /= length;
+		y /= length;
+		return this;
+	}
+
+	/**
+	 * @return a new vector which contains normalized components.
+	 */
+	public Vector2f normalize() {
+		return new Vector2f(this).normalizeLocal();
 	}
 
 	/*
