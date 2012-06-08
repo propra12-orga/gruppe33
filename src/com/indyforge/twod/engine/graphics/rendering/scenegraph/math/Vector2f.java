@@ -25,13 +25,13 @@ public final class Vector2f implements Serializable {
 		public Vector2f vector() {
 			switch (this) {
 			case North:
-				return Vector2f.up();
+				return Vector2f.north();
 			case South:
-				return Vector2f.down();
+				return Vector2f.south();
 			case West:
-				return Vector2f.left();
+				return Vector2f.west();
 			case East:
-				return Vector2f.right();
+				return Vector2f.east();
 			case Undefined:
 				return Vector2f.zero();
 			default:
@@ -112,28 +112,28 @@ public final class Vector2f implements Serializable {
 	/**
 	 * @return a new vector initialized with 0,1
 	 */
-	public static Vector2f down() {
+	public static Vector2f south() {
 		return new Vector2f(0, 1);
 	}
 
 	/**
 	 * @return a new vector initialized with 1,0
 	 */
-	public static Vector2f right() {
+	public static Vector2f east() {
 		return new Vector2f(1, 0);
 	}
 
 	/**
 	 * @return a new vector initialized with -1,0
 	 */
-	public static Vector2f left() {
+	public static Vector2f west() {
 		return new Vector2f(-1, 0);
 	}
 
 	/**
 	 * @return a new vector initialized with 0,-1
 	 */
-	public static Vector2f up() {
+	public static Vector2f north() {
 		return new Vector2f(0, -1);
 	}
 

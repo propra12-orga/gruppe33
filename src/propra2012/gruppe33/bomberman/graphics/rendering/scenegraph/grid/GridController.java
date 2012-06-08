@@ -15,7 +15,7 @@ import com.indyforge.twod.engine.util.FilteredIterator;
 
 /**
  * This class manages the grid movement. If you attach this entity to an entity
- * the entity will react (process movement) when the given keys are pressed.
+ * the entity will react (process movement) using the given input map.
  * 
  * @author Christopher Probst
  * @author Malte Schmidt
@@ -106,6 +106,18 @@ public final class GridController extends Entity {
 		this.velocityMultiplier = velocityMultiplier;
 	}
 
+	/**
+	 * 
+	 * @param negative
+	 * @param vertical
+	 * @param gridEntity
+	 * @param node
+	 * @param graphicsEntity
+	 * @param pos
+	 * @param maxSpeed
+	 * @param dest
+	 * @param tpf
+	 */
 	private void processMovement(boolean negative, boolean vertical,
 			GraphicsEntity gridEntity, GraphicsEntity node,
 			GraphicsEntity graphicsEntity, Vector2f pos, float maxSpeed,
@@ -119,7 +131,7 @@ public final class GridController extends Entity {
 
 		// Calc dominant site
 		boolean negativeDominant = (vertical ? center.x - pos.x : center.y
-				- pos.y) > 0;
+				- pos.y) > 0f;
 
 		// Get the grid
 		Grid grid = gridEntity.typeProp(Grid.class);
@@ -142,7 +154,10 @@ public final class GridController extends Entity {
 		boolean isCentered = vertical ? pos.xThreshold(center.x, THRESHOLD)
 				: pos.yThreshold(center.y, THRESHOLD);
 
-		if (isCentered) {
+		/*
+		 * If centered and able to move!
+		 */
+		if (isCentered && !Mathf.threshold(movement, 0)) {
 
 			// Simply apply the movement
 			if (vertical) {
@@ -152,32 +167,66 @@ public final class GridController extends Entity {
 			}
 		} else {
 
-			// The offset
-			int offset = 0;
+			/*
+			 * The offset: This value is calculated using the isCentered &
+			 * negativeDominant flag.
+			 * 
+			 * If the entity is centered we have to check:
+			 * 
+			 * B = blocked!
+			 * 
+			 * |1|B|2| |
+			 * 
+			 * | |X| | |
+			 * 
+			 * 
+			 * If the entity is centered we have to check:
+			 * 
+			 * B = blocked!
+			 * 
+			 * |1|2| | |
+			 * 
+			 * | X | | |
+			 */
+			int offset = !isCentered ? 0 : (negativeDominant ? -1 : 1);
 
 			/*
-			 * Test the border-fields to be free.
+			 * Create a point which will point to first field which depends on
+			 * the negativeDominant flag.
 			 */
 			Point a = new Point(nearest.x + (vertical ? offset : dir),
 					nearest.y + (vertical ? dir : offset));
 
+			/*
+			 * Check whether or not the given field is free.
+			 */
 			if (!GridRoutines.VELOCITY_NODE_FILTER.accept(gridEntity
 					.childAt(grid.index(a)))) {
 
-				// Recalc the offset
-				offset += negativeDominant ? -1 : 1;
+				/*
+				 * We mave to recalculate the offset.
+				 */
+				offset += (negativeDominant ? -1 : 1) * (!isCentered ? 1f : 2f);
 
+				/*
+				 * Create a point which will point to second field which depends
+				 * on the negativeDominant flag.
+				 */
 				a = new Point(nearest.x + (vertical ? offset : dir), nearest.y
 						+ (vertical ? dir : offset));
 
-				// Still no luck =(
+				/*
+				 * If we have still no luck, we stop the calculation.
+				 */
 				if (!GridRoutines.VELOCITY_NODE_FILTER.accept(gridEntity
 						.childAt(grid.index(a)))) {
 					return;
 				}
 			}
 
-			// Calc the field of interest
+			/*
+			 * We have calculated the field of interest successfully.
+			 */
 			Vector2f fieldOfInterest = new Vector2f(nearest.x
 					+ (vertical ? offset : 0), nearest.y
 					+ (vertical ? 0 : offset));
@@ -268,6 +317,15 @@ public final class GridController extends Entity {
 		// Reduce boxing...
 		float maxSpeed = maxSpeedObj.floatValue();
 
+		// inputMap.put(Direction.North,
+		// gridEntity.findScene().isPressed(KeyEvent.VK_UP));
+		// inputMap.put(Direction.South,
+		// gridEntity.findScene().isPressed(KeyEvent.VK_DOWN));
+		// inputMap.put(Direction.West,
+		// gridEntity.findScene().isPressed(KeyEvent.VK_LEFT));
+		// inputMap.put(Direction.East,
+		// gridEntity.findScene().isPressed(KeyEvent.VK_RIGHT));
+
 		// Init the input flags
 		boolean north = hasInputFor(Direction.North), south = hasInputFor(Direction.South), west = hasInputFor(Direction.West), east = hasInputFor(Direction.East);
 
@@ -307,7 +365,7 @@ public final class GridController extends Entity {
 			case North:
 			case South:
 
-				if (lv >= 1.0f) {
+				if (lv > 1.1f) {
 
 					// Calc horizontal movement
 					processMovement(west, false, gridEntity, node,
@@ -325,7 +383,7 @@ public final class GridController extends Entity {
 			case West:
 			case East:
 
-				if (lh >= 1.0f) {
+				if (lh > 1.1f) {
 
 					// Calc vertical movement
 					processMovement(north, true, gridEntity, node,
@@ -360,7 +418,7 @@ public final class GridController extends Entity {
 			moving = true;
 
 			if (!xT) {
-				if (movement.x >= 0) {
+				if (movement.x > 0) {
 					direction = Direction.East;
 				} else {
 					direction = Direction.West;
@@ -370,7 +428,7 @@ public final class GridController extends Entity {
 				lv = 0;
 				lh += Math.abs(movement.x);
 			} else if (!yT) {
-				if (movement.y >= 0) {
+				if (movement.y > 0) {
 					direction = Direction.South;
 				} else {
 					direction = Direction.North;

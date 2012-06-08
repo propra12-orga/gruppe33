@@ -22,31 +22,20 @@ public abstract class Vector2fTarget extends Target<Vector2f> {
 	 * AbstractTarget#state()
 	 */
 	protected Vector2f state() {
-		return controlled().position();
+		return includesParentState()
+				&& controlled().parent() instanceof GraphicsEntity ? ((GraphicsEntity) controlled()
+				.parent()).position().add(controlled().position())
+				: controlled().position();
 	}
 
 	/*
 	 * (non-Javadoc)
 	 * 
-	 * @see com.indyforge.twod.engine.graphics.rendering.scenegraph.transform.
-	 * AbstractTarget#addToState(java.lang.Object)
+	 * @see
+	 * com.indyforge.twod.engine.graphics.rendering.scenegraph.transform.Target
+	 * #reachTarget(float)
 	 */
-	protected void addToState(Vector2f dist) {
-		controlled().position().addLocal(dist);
-	}
-
-	public Vector2fTarget(GraphicsEntity controlled, Vector2f target,
-			float velocity) {
-		super(controlled, target, velocity);
-	}
-
-	/*
-	 * (non-Javadoc)
-	 * 
-	 * @see com.indyforge.twod.engine.graphics.rendering.scenegraph.transform.
-	 * AbstractTarget#reachTarget(float)
-	 */
-	public boolean reachTarget(float tpf) {
+	protected boolean reachTarget(float tpf) {
 
 		// Get the position and the target
 		Vector2f position = state(), target = target();
@@ -80,5 +69,32 @@ public abstract class Vector2fTarget extends Target<Vector2f> {
 			// Target not reached...
 			return false;
 		}
+	}
+
+	/*
+	 * (non-Javadoc)
+	 * 
+	 * @see com.indyforge.twod.engine.graphics.rendering.scenegraph.transform.
+	 * AbstractTarget#addToState(java.lang.Object)
+	 */
+	protected void addToState(Vector2f state) {
+		controlled().position().addLocal(state);
+	}
+
+	public Vector2fTarget(GraphicsEntity controlled, Vector2f target,
+			float velocity, boolean includeParentState) {
+		super(controlled, target, velocity, includeParentState);
+	}
+
+	/*
+	 * (non-Javadoc)
+	 * 
+	 * @see
+	 * com.indyforge.twod.engine.graphics.rendering.scenegraph.transform.Target
+	 * #diff()
+	 */
+	@Override
+	public Vector2f diff() {
+		return target().sub(state());
 	}
 }

@@ -1,7 +1,5 @@
 package com.indyforge.twod.engine.graphics.rendering.scenegraph.transform;
 
-import java.io.Serializable;
-
 import com.indyforge.twod.engine.graphics.rendering.scenegraph.Entity;
 import com.indyforge.twod.engine.graphics.rendering.scenegraph.GraphicsEntity;
 import com.indyforge.twod.engine.util.FilteredIterator;
@@ -18,7 +16,7 @@ import com.indyforge.twod.engine.util.TypeFilter;
  * @param <T>
  *            The target type.
  */
-public abstract class Target<T> implements Serializable {
+public abstract class Target<T> implements Reachable {
 
 	/**
 	 * 
@@ -45,6 +43,16 @@ public abstract class Target<T> implements Serializable {
 	 */
 	private final float veloctiy;
 
+	/*
+	 * Should target include the parent state ?
+	 */
+	private final boolean includeParentState;
+
+	/*
+	 * The reached flag.
+	 */
+	private boolean reached = false;
+
 	/**
 	 * @return the state of the controlled graphics entity.
 	 */
@@ -68,6 +76,11 @@ public abstract class Target<T> implements Serializable {
 	protected abstract void transform(T state);
 
 	/**
+	 * @see Target#reach(float)
+	 */
+	protected abstract boolean reachTarget(float tpf);
+
+	/**
 	 * Create a new abstract target.
 	 * 
 	 * @param controlled
@@ -76,8 +89,11 @@ public abstract class Target<T> implements Serializable {
 	 *            The target you want to reach.
 	 * @param velocity
 	 *            The velocity to reach the target.
+	 * @param includeParentState
+	 *            The include-parent-state flag.
 	 */
-	public Target(GraphicsEntity controlled, T target, float velocity) {
+	public Target(GraphicsEntity controlled, T target, float velocity,
+			boolean includeParentState) {
 		if (controlled == null) {
 			throw new NullPointerException("controlled");
 		} else if (target == null) {
@@ -99,8 +115,14 @@ public abstract class Target<T> implements Serializable {
 			transformMotor = ptr;
 			this.target = target;
 			this.veloctiy = Math.abs(velocity);
+			this.includeParentState = includeParentState;
 		}
 	}
+
+	/**
+	 * @return the difference between the target and the state.
+	 */
+	public abstract T diff();
 
 	/**
 	 * @return the controlled entity.
@@ -131,11 +153,35 @@ public abstract class Target<T> implements Serializable {
 	}
 
 	/**
-	 * Tries to reaches the target.
-	 * 
-	 * @param tpf
-	 *            The time-per-frame.
-	 * @return true if the target is reached now, otherwise false.
+	 * @return the include-parent-state flag.
 	 */
-	public abstract boolean reachTarget(float tpf);
+	public boolean includesParentState() {
+		return includeParentState;
+	}
+
+	/**
+	 * @return the true if the target is reached, otherwise false.
+	 */
+	public boolean isReached() {
+		return reached;
+	}
+
+	/**
+	 * Stops the transform.
+	 */
+	public void stop() {
+		transform(null);
+	}
+
+	/*
+	 * (non-Javadoc)
+	 * 
+	 * @see
+	 * com.indyforge.twod.engine.graphics.rendering.scenegraph.transform.Reachable
+	 * #reach(float)
+	 */
+	@Override
+	public boolean reach(float tpf) {
+		return reached = reachTarget(tpf);
+	}
 }

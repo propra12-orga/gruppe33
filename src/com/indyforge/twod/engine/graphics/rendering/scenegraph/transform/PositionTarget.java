@@ -24,11 +24,15 @@ public class PositionTarget extends Vector2fTarget {
 	 */
 	@Override
 	protected void transform(Vector2f state) {
+		if (state == null) {
+			state = Vector2f.zero();
+		}
+
 		transformMotor().linearVelocity(state);
 	}
 
 	public PositionTarget(GraphicsEntity controlled, Vector2f target,
-			float velocity) {
-		super(controlled, target, velocity);
+			float velocity, boolean includeParentState) {
+		super(controlled, target, velocity, includeParentState);
 	}
 }

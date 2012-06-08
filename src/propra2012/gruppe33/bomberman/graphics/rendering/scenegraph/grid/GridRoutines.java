@@ -2,6 +2,8 @@ package propra2012.gruppe33.bomberman.graphics.rendering.scenegraph.grid;
 
 import java.awt.Point;
 
+import propra2012.gruppe33.bomberman.graphics.sprite.AnimationRoutines;
+
 import com.indyforge.twod.engine.graphics.rendering.scenegraph.Entity;
 import com.indyforge.twod.engine.graphics.rendering.scenegraph.EntityFilter;
 import com.indyforge.twod.engine.graphics.rendering.scenegraph.GraphicsEntity;
@@ -14,8 +16,6 @@ import com.indyforge.twod.engine.graphics.sprite.Animation;
 import com.indyforge.twod.engine.graphics.sprite.AnimationBundle;
 import com.indyforge.twod.engine.graphics.sprite.Sprite;
 import com.indyforge.twod.engine.resources.assets.AssetManager;
-
-import propra2012.gruppe33.bomberman.graphics.sprite.AnimationRoutines;
 
 /**
  * 
@@ -238,13 +238,13 @@ public final class GridRoutines implements GridConstants {
 				+ Direction.North.toString().toLowerCase());
 
 		// Create local grid controller
-		Entity gridController = new GridController().attach(AnimationRoutines
+		Entity movement = new GridController().attach(AnimationRoutines
 				.createGridControllerAnimationHandler(charAni));
 
-		// Attach char ani
-		player.attach(charAni).attach(gridController)
-				.attach(new InputUploader(gridController.registrationKey()))
-				.attach(new DeltaPositionBroadcaster(player));
+		// Attach remaining stuff
+		player.attach(charAni, movement,
+				new InputUploader(movement.registrationKey()),
+				new DeltaPositionBroadcaster(player));
 
 		// Set scale
 		player.scale().scaleLocal(1.5f);

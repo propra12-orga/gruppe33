@@ -15,6 +15,7 @@ import com.indyforge.twod.engine.graphics.rendering.scenegraph.SceneProcessor;
 import com.indyforge.twod.engine.graphics.rendering.scenegraph.math.Grid;
 import com.indyforge.twod.engine.graphics.rendering.scenegraph.math.Vector2f;
 import com.indyforge.twod.engine.graphics.rendering.scenegraph.transform.PositionTarget;
+import com.indyforge.twod.engine.graphics.rendering.scenegraph.transform.ReachableQueue;
 import com.indyforge.twod.engine.graphics.rendering.scenegraph.transform.TransformMotor;
 import com.indyforge.twod.engine.graphics.sprite.Sprite;
 import com.indyforge.twod.engine.resources.assets.AssetManager;
@@ -88,29 +89,7 @@ public class PreMilestoneApp {
 		final GraphicsEntity grid = GridLoader.parse(map, scene);
 
 		// Create new player as knight
-		final GraphicsEntity player = GridRoutines.createLocalKnight(assets,
-				"Kr0e");
-
-		player.attach(new TransformMotor()).attach(new Entity() {
-
-			PositionTarget vt = new PositionTarget(player, new Vector2f(6.331f,
-					1), 2.179f) {
-
-				@Override
-				public Vector2f state() {
-					return ((GraphicsEntity) controlled().parent()).position()
-							.add(controlled().position());
-				}
-			};
-
-			@Override
-			protected void onUpdate(float tpf) {
-				super.onUpdate(tpf);
-
-				if (vt.reachTarget(tpf)) {
-				}
-			}
-		});
+		GraphicsEntity player = GridRoutines.createLocalKnight(assets, "Kr0e");
 
 		// player.attach(new Entity() {
 		//
