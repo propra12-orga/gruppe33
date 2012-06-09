@@ -153,9 +153,11 @@ public class Scene extends GraphicsEntity implements KeyListener, FocusListener 
 	 * @return this scene for chaining.
 	 */
 	public Scene connectTo(Component component) {
-		// Add listener
-		component.addKeyListener(this);
-		component.addFocusListener(this);
+		if (component != null) {
+			// Add listener
+			component.addKeyListener(this);
+			component.addFocusListener(this);
+		}
 		return this;
 	}
 
@@ -167,8 +169,10 @@ public class Scene extends GraphicsEntity implements KeyListener, FocusListener 
 	 * @return this scene for chaining.
 	 */
 	public Scene disconnectFrom(Component component) {
-		component.removeKeyListener(this);
-		component.removeFocusListener(this);
+		if (component != null) {
+			component.removeKeyListener(this);
+			component.removeFocusListener(this);
+		}
 		return this;
 	}
 
@@ -416,7 +420,7 @@ public class Scene extends GraphicsEntity implements KeyListener, FocusListener 
 	 *            The height of the destination frame. If < 1 the scene is only
 	 *            update.
 	 * @param tpf
-	 *            The time-per-frame to update the children states.
+	 *            The time-per-frame (ms) to update the children states.
 	 * @return this scene for chaining.
 	 */
 	public final Scene simulate(Graphics2D graphics, int width, int height,

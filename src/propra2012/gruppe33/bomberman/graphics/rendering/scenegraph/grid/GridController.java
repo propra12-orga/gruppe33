@@ -1,6 +1,7 @@
 package propra2012.gruppe33.bomberman.graphics.rendering.scenegraph.grid;
 
 import java.awt.Point;
+import java.awt.event.KeyEvent;
 import java.util.EnumMap;
 import java.util.Iterator;
 import java.util.Map;
@@ -27,11 +28,6 @@ public final class GridController extends Entity {
 	 * 
 	 */
 	private static final long serialVersionUID = 1L;
-
-	/**
-	 * The "equals"-threshold.
-	 */
-	public static final float THRESHOLD = 0.01f;
 
 	/*
 	 * Important state variables. Used to decide when to change the key
@@ -106,18 +102,6 @@ public final class GridController extends Entity {
 		this.velocityMultiplier = velocityMultiplier;
 	}
 
-	/**
-	 * 
-	 * @param negative
-	 * @param vertical
-	 * @param gridEntity
-	 * @param node
-	 * @param graphicsEntity
-	 * @param pos
-	 * @param maxSpeed
-	 * @param dest
-	 * @param tpf
-	 */
 	private void processMovement(boolean negative, boolean vertical,
 			GraphicsEntity gridEntity, GraphicsEntity node,
 			GraphicsEntity graphicsEntity, Vector2f pos, float maxSpeed,
@@ -151,13 +135,13 @@ public final class GridController extends Entity {
 								: Direction.East));
 
 		// Is the entity already centered ?
-		boolean isCentered = vertical ? pos.xThreshold(center.x, THRESHOLD)
-				: pos.yThreshold(center.y, THRESHOLD);
+		boolean isCentered = vertical ? Mathf.equals(pos.x, center.x) : Mathf
+				.equals(pos.y, center.y);
 
 		/*
 		 * If centered and able to move!
 		 */
-		if (isCentered && !Mathf.threshold(movement, 0)) {
+		if (isCentered && !Mathf.equals(movement, 0)) {
 
 			// Simply apply the movement
 			if (vertical) {
@@ -177,7 +161,7 @@ public final class GridController extends Entity {
 			 * 
 			 * |1|B|2| |
 			 * 
-			 * | |X| | |
+			 * |?|X|?| |
 			 * 
 			 * 
 			 * If the entity is centered we have to check:
@@ -317,14 +301,14 @@ public final class GridController extends Entity {
 		// Reduce boxing...
 		float maxSpeed = maxSpeedObj.floatValue();
 
-		// inputMap.put(Direction.North,
-		// gridEntity.findScene().isPressed(KeyEvent.VK_UP));
-		// inputMap.put(Direction.South,
-		// gridEntity.findScene().isPressed(KeyEvent.VK_DOWN));
-		// inputMap.put(Direction.West,
-		// gridEntity.findScene().isPressed(KeyEvent.VK_LEFT));
-		// inputMap.put(Direction.East,
-		// gridEntity.findScene().isPressed(KeyEvent.VK_RIGHT));
+		inputMap.put(Direction.North,
+				gridEntity.findScene().isPressed(KeyEvent.VK_UP));
+		inputMap.put(Direction.South,
+				gridEntity.findScene().isPressed(KeyEvent.VK_DOWN));
+		inputMap.put(Direction.West,
+				gridEntity.findScene().isPressed(KeyEvent.VK_LEFT));
+		inputMap.put(Direction.East,
+				gridEntity.findScene().isPressed(KeyEvent.VK_RIGHT));
 
 		// Init the input flags
 		boolean north = hasInputFor(Direction.North), south = hasInputFor(Direction.South), west = hasInputFor(Direction.West), east = hasInputFor(Direction.East);
@@ -408,8 +392,8 @@ public final class GridController extends Entity {
 		movement.y = Mathf.absClamp(movement.y, 0f, maxSpeed * tpf);
 
 		// Calc thresholds
-		boolean xT = movement.xThreshold(0, THRESHOLD), yT = movement
-				.yThreshold(0, THRESHOLD);
+		boolean xT = Mathf.equals(movement.x, 0), yT = Mathf.equals(movement.y,
+				0);
 
 		// Look if at least one component is 0
 		if (xT || yT) {

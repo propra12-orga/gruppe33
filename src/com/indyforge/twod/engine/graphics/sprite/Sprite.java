@@ -1,5 +1,6 @@
 package com.indyforge.twod.engine.graphics.sprite;
 
+import java.awt.HeadlessException;
 import java.awt.Point;
 import java.awt.image.BufferedImage;
 import java.io.IOException;
@@ -11,7 +12,7 @@ import java.util.List;
 import com.indyforge.twod.engine.graphics.GraphicsRoutines;
 import com.indyforge.twod.engine.graphics.rendering.scenegraph.math.Mathf;
 import com.indyforge.twod.engine.resources.Resource;
-
+import com.indyforge.twod.engine.resources.assets.AssetManager;
 
 /**
  * 
@@ -47,11 +48,14 @@ public final class Sprite implements Serializable {
 		// Read the default stuff
 		in.defaultReadObject();
 
-		try {
-			// Try to load the images
-			loadSubImages();
-		} catch (Exception e) {
-			throw new IOException("Failed to load sub images", e);
+		// If not headless...
+		if (!AssetManager.isHeadless()) {
+			try {
+				// Try to load the images
+				loadSubImages();
+			} catch (Exception e) {
+				throw new IOException("Failed to load sub images", e);
+			}
 		}
 	}
 
@@ -102,8 +106,11 @@ public final class Sprite implements Serializable {
 		this.rasterX = rasterX;
 		this.rasterY = rasterY;
 
-		// Load the sub images
-		loadSubImages();
+		// If not headless...
+		if (!AssetManager.isHeadless()) {
+			// Load the sub images
+			loadSubImages();
+		}
 	}
 
 	public Resource<BufferedImage> getImageResource() {
@@ -114,6 +121,9 @@ public final class Sprite implements Serializable {
 	 * @return the sub images.
 	 */
 	public BufferedImage[][] getSubImages() {
+		if (AssetManager.isHeadless()) {
+			throw new HeadlessException();
+		}
 		return subImages;
 	}
 

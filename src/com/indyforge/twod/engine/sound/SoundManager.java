@@ -90,8 +90,10 @@ public final class SoundManager implements Serializable {
 		// Restore all vars
 		in.defaultReadObject();
 
-		// Init
-		initSoundManager();
+		if (!AssetManager.isHeadless()) {
+			// Init
+			initSoundManager();
+		}
 	}
 
 	public SoundManager(AssetManager assetManager) {
@@ -101,8 +103,10 @@ public final class SoundManager implements Serializable {
 
 		this.assetManager = assetManager;
 
-		// Init
-		initSoundManager();
+		if (!AssetManager.isHeadless()) {
+			// Init
+			initSoundManager();
+		}
 	}
 
 	/**
@@ -134,7 +138,7 @@ public final class SoundManager implements Serializable {
 		}
 
 		// Reads the complete stream and puts it into the map
-		return soundMap.put(name, assetManager.loadBytes(assetPath));
+		return soundMap.put(name, assetManager.loadBytes(assetPath, false));
 	}
 
 	/**
@@ -151,9 +155,15 @@ public final class SoundManager implements Serializable {
 	 *            The name of the sound.
 	 * @param start
 	 *            If true the clip will be started directly.
-	 * @return the future which will retrieve the new clip or null.
+	 * @return the future which will retrieve the new clip or null (If sound
+	 *         does not exist, or headless mode, or...)
 	 */
 	public Future<Clip> playSound(final String name, final boolean start) {
+
+		// No executor ?
+		if (soundExecutor == null) {
+			return null;
+		}
 
 		/*
 		 * Start the new sound in a thread pool.

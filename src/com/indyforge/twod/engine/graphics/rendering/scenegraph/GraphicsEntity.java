@@ -6,6 +6,7 @@ import java.awt.Image;
 import java.awt.geom.AffineTransform;
 
 import com.indyforge.twod.engine.graphics.rendering.scenegraph.math.Vector2f;
+import com.indyforge.twod.engine.resources.assets.AssetManager;
 import com.indyforge.twod.engine.util.FilteredIterator;
 import com.indyforge.twod.engine.util.IterationRoutines;
 import com.indyforge.twod.engine.util.TypeFilter;
@@ -316,26 +317,28 @@ public class GraphicsEntity extends Entity {
 	public final Image renderTo(Image destination) {
 		if (destination == null) {
 			throw new NullPointerException("destination");
-		}
+		} else if (!AssetManager.isHeadless()) {
 
-		// Get the graphics context
-		Graphics graphics = destination.getGraphics();
+			// Get the graphics context
+			Graphics graphics = destination.getGraphics();
 
-		try {
-			if (graphics instanceof Graphics2D) {
+			try {
+				if (graphics instanceof Graphics2D) {
 
-				// Just render to image
-				render((Graphics2D) graphics);
-			} else {
-				throw new IllegalArgumentException("The image must return a "
-						+ "Graphics2D object when calling getGraphics().");
+					// Just render to image
+					render((Graphics2D) graphics);
+				} else {
+					throw new IllegalArgumentException(
+							"The image must return a "
+									+ "Graphics2D object when calling getGraphics().");
+				}
+			} finally {
+				// Dispose
+				graphics.dispose();
 			}
-
-			return destination;
-		} finally {
-			// Dispose
-			graphics.dispose();
 		}
+
+		return destination;
 	}
 
 	/**
@@ -360,8 +363,11 @@ public class GraphicsEntity extends Entity {
 	 */
 	public GraphicsEntity render(EntityFilter entityFilter, Graphics2D original) {
 
-		// Fire event for all children
-		fireEvent(entityFilter, GraphicsEvent.Render, original);
+		// Not headless ?
+		if (!AssetManager.isHeadless()) {
+			// Fire event for all children
+			fireEvent(entityFilter, GraphicsEvent.Render, original);
+		}
 		return this;
 	}
 }

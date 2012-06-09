@@ -1,25 +1,13 @@
 package propra2012.gruppe33.networktest;
 
-import java.awt.Frame;
-import java.util.Iterator;
-import java.util.UUID;
-
-import javax.swing.JOptionPane;
-
 import propra2012.gruppe33.PreMilestoneApp;
 
 import com.foxnet.rmi.pattern.change.AdminSessionServer;
-import com.indyforge.twod.engine.graphics.GraphicsRoutines;
-import com.indyforge.twod.engine.graphics.rendering.scenegraph.Entity;
-import com.indyforge.twod.engine.graphics.rendering.scenegraph.GraphicsEntity;
 import com.indyforge.twod.engine.graphics.rendering.scenegraph.Scene;
 import com.indyforge.twod.engine.graphics.rendering.scenegraph.SceneProcessor;
 import com.indyforge.twod.engine.graphics.rendering.scenegraph.SceneProcessor.NetworkMode;
-import com.indyforge.twod.engine.graphics.rendering.scenegraph.network.AbstractEntityChange;
 import com.indyforge.twod.engine.graphics.rendering.scenegraph.network.ResetNetworkTimeChange;
 import com.indyforge.twod.engine.graphics.rendering.scenegraph.network.SceneChange;
-import com.indyforge.twod.engine.graphics.rendering.scenegraph.util.NameFilter;
-import com.indyforge.twod.engine.util.FilteredIterator;
 
 public class ServerApp {
 
@@ -30,21 +18,43 @@ public class ServerApp {
 
 		// Create a new scene as server
 		SceneProcessor serverProcessor = new SceneProcessor(NetworkMode.Server);
-		serverProcessor.onlyRenderWithFocus(false);
 
 		// Open the server on 1337
 		serverProcessor.openServer(1337);
 
-		// Create peer
-		Frame frame = GraphicsRoutines.createFrame(serverProcessor,
-				"Bomberman SERVER", 800, 600);
+		while (true) {
+			System.out.println("Started ?");
+			System.in.read();
+			break;
+			//
+			// synchronized (serverProcessor.adminSessionServer()) {
+			// if (serverProcessor.adminSessionServer().sessionCount() != 2) {
+			// System.out.println("Session count != 2");
+			//
+			// } else {
+			// serverProcessor.adminSessionServer().acceptingSessions(
+			// false);
+			// break;
+			// }
+			// }
+		}
 
-		Scene scene = PreMilestoneApp.createDemoGame();
-		Iterator<Entity> filter = new FilteredIterator<Entity>(new NameFilter(
-				"Kr0e"), scene.childIterator(true, true));
-		final UUID regKey = filter.next().registrationKey();
+		// // Create peer
+		// Frame frame = GraphicsRoutines.createFrame(serverProcessor,
+		// "Bomberman SERVER", 800, 600);
 
-		JOptionPane.showMessageDialog(frame, "Wollen Sie das Spiel starten ?");
+		Scene scene = PreMilestoneApp.createDemoGame(1, 2);
+		// Iterator<Entity> filter = new FilteredIterator<Entity>(new
+		// NameFilter(
+		// "Kr0e"), scene.childIterator(true, true));
+		// final UUID regKey = filter.next().registrationKey();
+		//
+		//
+		//
+		//
+		//
+		//
+		//
 
 		AdminSessionServer<SceneProcessor> server = serverProcessor
 				.adminSessionServer();
@@ -54,21 +64,6 @@ public class ServerApp {
 		System.out.println("Send change");
 
 		Thread.sleep(1000);
-
-		AbstractEntityChange<GraphicsEntity> movePlayer3 = new AbstractEntityChange<GraphicsEntity>(
-				regKey) {
-			/**
-			 * 
-			 */
-			private static final long serialVersionUID = 1L;
-
-			@Override
-			protected void apply(GraphicsEntity entity) {
-				entity.position().x += 3;
-			}
-		};
-
-		server.combined().applyChange(movePlayer3);
 
 		// Reset the network time every where
 		server.combined().applyChange(new ResetNetworkTimeChange());
@@ -80,7 +75,7 @@ public class ServerApp {
 		}
 
 		// Destroy
-		frame.dispose();
+		// frame.dispose();
 
 		// Shutdown complete servers
 		serverProcessor.releaseNetworkResources();

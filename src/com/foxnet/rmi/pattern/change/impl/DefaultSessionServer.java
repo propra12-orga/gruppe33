@@ -20,11 +20,11 @@ public final class DefaultSessionServer<T> implements AdminSessionServer<T> {
 	// Used to count the ids
 	private final AtomicLong counter = new AtomicLong(0);
 
-	// The network lock
-	private final Object netLock = new Object();
-
 	// The maps which store the sessions
 	private final Map<Long, Session<T>> sessions = new HashMap<Long, Session<T>>();
+
+	// The accepting sessions flag
+	private boolean acceptingSessions = true;
 
 	// The changeable local and broadcast
 	private final Changeable<T> local, broadcast = new Changeable<T>() {
@@ -61,17 +61,48 @@ public final class DefaultSessionServer<T> implements AdminSessionServer<T> {
 	}
 
 	/*
+	 * (non-Javadoc)
+	 * 
+	 * @see
+	 * com.foxnet.rmi.pattern.change.AdminSessionServer#isAcceptingSessions()
+	 */
+	@Override
+	public synchronized boolean isAcceptingSessions() {
+		return acceptingSessions;
+	}
+
+	/*
+	 * (non-Javadoc)
+	 * 
+	 * @see com.foxnet.rmi.pattern.change.AdminSessionServer#acceptingSessions
+	 * (boolean)
+	 */
+	@Override
+	public synchronized void acceptingSessions(boolean acceptingSessions) {
+		this.acceptingSessions = acceptingSessions;
+	}
+
+	/*
 	 * @Override(non-Javadoc)
 	 * 
 	 * @see
 	 * com.foxnet.rmi.pattern.change.SessionServer#openSession(com.foxnet.rmi
 	 * .pattern.change.Changeable, java.lang.String)
 	 */
-	public Session<T> openSession(Changeable<T> changeable, String name) {
+	public synchronized Session<T> openSession(Changeable<T> changeable,
+			String name) {
 
 		if (changeable == null) {
 			throw new NullPointerException("changeable");
 		}
+
+		/*
+		 * If this server does not accept sessions, just return null.
+		 */
+		if (!acceptingSessions) {
+			return null;
+		}
+
 		// Calc new id
 		final long id = counter.getAndIncrement();
 
@@ -79,23 +110,34 @@ public final class DefaultSessionServer<T> implements AdminSessionServer<T> {
 		Session<T> s = new DefaultSession<T>(this, changeable, id, name);
 
 		// Put into map
-		synchronized (netLock) {
+		sessions.put(id, s);
+		Invoker.getInvokerOf(changeable).manager().closeFuture()
+				.add(new FutureCallback() {
 
-			// Put into map
-			sessions.put(id, s);
-			Invoker.getInvokerOf(changeable).manager().closeFuture()
-					.add(new FutureCallback() {
-
-						@Override
-						public void completed(Future future) throws Exception {
-							// Remove after disconnect
-							sessions.remove(id);
-						}
-					});
-		}
+					@Override
+					public void completed(Future future) throws Exception {
+						// Remove after disconnect
+						sessions.remove(id);
+					}
+				});
 		return s;
 	}
 
+	/*
+	 * (non-Javadoc)
+	 * 
+	 * @see com.foxnet.rmi.pattern.change.AdminSessionServer#sessionCount()
+	 */
+	@Override
+	public synchronized int sessionCount() {
+		return sessions.size();
+	}
+
+	/*
+	 * (non-Javadoc)
+	 * 
+	 * @see com.foxnet.rmi.pattern.change.AdminSessionServer#local()
+	 */
 	@Override
 	public Changeable<T> local() {
 		return local;
@@ -127,12 +169,10 @@ public final class DefaultSessionServer<T> implements AdminSessionServer<T> {
 	 * @see com.foxnet.rmi.pattern.change.AdminSessionServer#names()
 	 */
 	@Override
-	public Map<Long, String> names() {
+	public synchronized Map<Long, String> names() {
 		Map<Long, String> ptr = new HashMap<Long, String>();
-		synchronized (netLock) {
-			for (Session<T> session : sessions.values()) {
-				ptr.put(session.id(), session.name());
-			}
+		for (Session<T> session : sessions.values()) {
+			ptr.put(session.id(), session.name());
 		}
 		return ptr;
 	}
@@ -143,12 +183,8 @@ public final class DefaultSessionServer<T> implements AdminSessionServer<T> {
 	 * @see com.foxnet.rmi.pattern.change.AdminSessionServer#sessions()
 	 */
 	@Override
-	public Map<Long, Session<T>> sessions() {
-		Map<Long, Session<T>> ptr = new HashMap<Long, Session<T>>();
-		synchronized (netLock) {
-			ptr.putAll(sessions);
-		}
-		return ptr;
+	public synchronized Map<Long, Session<T>> sessions() {
+		return new HashMap<Long, Session<T>>(sessions);
 	}
 
 	/*
@@ -158,12 +194,10 @@ public final class DefaultSessionServer<T> implements AdminSessionServer<T> {
 	 */
 	@SuppressWarnings("unchecked")
 	@Override
-	public void closeAll() {
-		synchronized (netLock) {
-			for (Object session : sessions.values().toArray()) {
-				Invoker.getInvokerOf(((DefaultSession<T>) session).changeable)
-						.manager().close();
-			}
+	public synchronized void closeAll() {
+		for (Object session : sessions.values().toArray()) {
+			Invoker.getInvokerOf(((DefaultSession<T>) session).changeable)
+					.manager().close();
 		}
 	}
 }

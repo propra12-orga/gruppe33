@@ -23,9 +23,15 @@ public class InputUploader extends GraphicsEntity {
 		this.peerKey = peerKey;
 	}
 
+	public boolean active = true;
+
 	@Override
 	protected void onUpdate(float tpf) {
 		super.onUpdate(tpf);
+
+		if (!active) {
+			return;
+		}
 
 		Scene scene = findScene();
 

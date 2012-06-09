@@ -1,10 +1,10 @@
 package com.indyforge.twod.engine.resources.assets;
 
+import java.awt.HeadlessException;
 import java.io.IOException;
 import java.io.ObjectInputStream;
 
 import com.indyforge.twod.engine.resources.Resource;
-
 
 /**
  * The class represents an asset resource. It must be created by an asset
@@ -44,6 +44,11 @@ public final class Asset<T> implements Resource<T> {
 	private final AssetLoader<T> assetLoader;
 
 	/*
+	 * If true, the asset will be loaded in headless mode, too.
+	 */
+	private final boolean ignoreHeadless;
+
+	/*
 	 * The transient asset. This must be reloaded after deserialization.
 	 */
 	private transient T asset;
@@ -57,11 +62,13 @@ public final class Asset<T> implements Resource<T> {
 		// Restore all vars
 		in.defaultReadObject();
 
-		try {
-			// Try to load the asset
-			asset = load();
-		} catch (Exception e) {
-			throw new IOException("Failed to load asset", e);
+		if (ignoreHeadless || !AssetManager.isHeadless()) {
+			try {
+				// Try to load the asset
+				asset = load();
+			} catch (Exception e) {
+				throw new IOException("Failed to load asset", e);
+			}
 		}
 	}
 
@@ -90,9 +97,12 @@ public final class Asset<T> implements Resource<T> {
 	 *            The asset path of the asset.
 	 * @param assetLoader
 	 *            The asset loader which loads the asset.
+	 * @param ignoreHeadless
+	 *            The ignore-headless flag.
 	 */
 	Asset(AssetManager assetManager, String assetPath,
-			AssetLoader<T> assetLoader) throws Exception {
+			AssetLoader<T> assetLoader, boolean ignoreHeadless)
+			throws Exception {
 		if (assetManager == null) {
 			throw new NullPointerException("assetManager");
 		} else if (assetPath == null) {
@@ -105,9 +115,19 @@ public final class Asset<T> implements Resource<T> {
 		this.assetManager = assetManager;
 		this.assetPath = assetPath;
 		this.assetLoader = assetLoader;
+		this.ignoreHeadless = ignoreHeadless;
 
-		// Try to load the asset
-		asset = load();
+		if (ignoreHeadless || !AssetManager.isHeadless()) {
+			// Try to load the asset
+			asset = load();
+		}
+	}
+
+	/**
+	 * @return the ignore-headless flag.
+	 */
+	public boolean isIgnoreHeadless() {
+		return ignoreHeadless;
 	}
 
 	/**
@@ -138,6 +158,9 @@ public final class Asset<T> implements Resource<T> {
 	 */
 	@Override
 	public T get() {
+		if (!ignoreHeadless && AssetManager.isHeadless()) {
+			throw new HeadlessException();
+		}
 		return asset;
 	}
 }

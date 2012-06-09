@@ -23,7 +23,7 @@ public class SceneProcessorTest {
 				800, 600);
 
 		// Set root
-		sceneProcessor.root(PreMilestoneApp.createGUI());
+		sceneProcessor.root(PreMilestoneApp.createDemoGame(1));
 
 		while (!sceneProcessor.isShutdownRequested()) {
 

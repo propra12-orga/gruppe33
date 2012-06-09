@@ -63,7 +63,7 @@ public class PreMilestoneApp {
 		return gui;
 	}
 
-	public static Scene createDemoGame() throws Exception {
+	public static Scene createDemoGame(long... ids) throws Exception {
 
 		// Create new asset manager using the given zip file
 		AssetManager assets = new AssetManager(new File("scenes/default.zip"));
@@ -73,7 +73,7 @@ public class PreMilestoneApp {
 
 		// Load the char array
 		char[][] map = assets.loadAsset("assets/maps/smallmap.txt",
-				GridLoader.LOADER).get();
+				GridLoader.LOADER, true).get();
 
 		// Generate the map randomally
 		// GridLoader.generate(map, System.nanoTime());
@@ -88,8 +88,17 @@ public class PreMilestoneApp {
 		// Parse and setup map
 		final GraphicsEntity grid = GridLoader.parse(map, scene);
 
-		// Create new player as knight
-		GraphicsEntity player = GridRoutines.createLocalKnight(assets, "Kr0e");
+		int i = 0;
+		for (long id : ids) {
+			// Create new player as knight
+			GraphicsEntity player = GridRoutines.createLocalKnight(assets,
+					"Player-" + id);
+
+			// Place to spawn
+			grid.childAt(grid.typeProp(Grid.class).index(1 + i++, 1)).attach(
+					player);
+
+		}
 
 		// player.attach(new Entity() {
 		//
@@ -118,9 +127,6 @@ public class PreMilestoneApp {
 		// }
 		// }
 		// });
-
-		// Place to spawn
-		grid.childAt(grid.typeProp(Grid.class).index(1, 1)).attach(player);
 
 		return scene;
 	}

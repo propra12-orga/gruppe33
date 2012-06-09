@@ -28,9 +28,27 @@ public interface AdminSessionServer<T> extends SessionServer<T> {
 	Changeable<T> combined();
 
 	/**
+	 * @return the accepting-sessions flag.
+	 */
+	boolean isAcceptingSessions();
+
+	/**
+	 * Sets the accepting-sessions flag.
+	 * 
+	 * @param acceptingSessions
+	 *            If true, this server can accept sesssion.
+	 */
+	void acceptingSessions(boolean acceptingSessions);
+
+	/**
 	 * @return the names.
 	 */
 	Map<Long, String> names();
+
+	/**
+	 * @return the number of sessions.
+	 */
+	int sessionCount();
 
 	/**
 	 * @return the sessions.

@@ -433,7 +433,7 @@ public final class Vector2f implements Serializable {
 	 */
 	public Direction nearestDirection() {
 
-		if (Mathf.threshold(x, y)) {
+		if (Mathf.equals(x, y)) {
 			return Direction.Undefined;
 		} else if (Math.abs(x) > Math.abs(y)) {
 			return x > 0.0f ? Direction.East : Direction.West;
@@ -463,44 +463,22 @@ public final class Vector2f implements Serializable {
 	}
 
 	/**
-	 * @param v
-	 *            The value you want to compare with the x component.
-	 * @param threshold
-	 *            The threshold.
-	 * @return true if |x-v| is smaller than the given threshold, otherwise
-	 *         false.
-	 */
-	public boolean xThreshold(float v, float threshold) {
-		return Mathf.threshold(x, v, threshold);
-	}
-
-	/**
-	 * @param v
-	 *            The value you want to compare with the y component.
-	 * @param threshold
-	 *            The threshold.
-	 * @return true if |y-v| is smaller than the given threshold, otherwise
-	 *         false.
-	 */
-	public boolean yThreshold(float v, float threshold) {
-		return Mathf.threshold(y, v, threshold);
-	}
-
-	/**
 	 * @param other
 	 *            The vector you want to compare with this vector.
 	 * @param threshold
-	 * @return true if xThreshold and yThreshold succeeds, otherwise false.
+	 *            The threshold.
+	 * @return true if this vector equals the other vector (using the
+	 *         threshold), otherwise false.
 	 */
-	public boolean threshold(Vector2f other, Vector2f threshold) {
+	public boolean equals(Vector2f other, Vector2f threshold) {
 		if (other == null) {
 			throw new NullPointerException("other");
 		} else if (threshold == null) {
 			throw new NullPointerException("threshold");
 		}
 
-		return xThreshold(other.x, threshold.x)
-				&& yThreshold(other.y, threshold.y);
+		return Mathf.equals(x, other.x, threshold.x)
+				&& Mathf.equals(y, other.y, threshold.y);
 	}
 
 	/*
@@ -521,11 +499,11 @@ public final class Vector2f implements Serializable {
 		}
 		Vector2f other = (Vector2f) obj;
 
-		if (!xThreshold(other.x, Mathf.kEpsilon)) {
+		if (!Mathf.equals(x, other.x)) {
 			return false;
 		}
 
-		if (!yThreshold(other.y, Mathf.kEpsilon)) {
+		if (!Mathf.equals(y, other.y)) {
 			return false;
 		}
 

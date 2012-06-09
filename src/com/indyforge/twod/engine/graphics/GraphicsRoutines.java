@@ -2,7 +2,6 @@ package com.indyforge.twod.engine.graphics;
 
 import java.awt.BorderLayout;
 import java.awt.Color;
-import java.awt.Component;
 import java.awt.EventQueue;
 import java.awt.Frame;
 import java.awt.Graphics2D;
@@ -16,7 +15,6 @@ import java.awt.image.VolatileImage;
 import com.indyforge.twod.engine.graphics.rendering.scenegraph.SceneProcessor;
 import com.indyforge.twod.engine.graphics.rendering.scenegraph.math.Mathf;
 import com.indyforge.twod.engine.graphics.sprite.Sprite;
-
 
 /**
  * Utility class to bundle some default graphics routines like creating frames.
@@ -251,14 +249,8 @@ public final class GraphicsRoutines {
 				// Disable the repaint events
 				frame.setIgnoreRepaint(true);
 
-				// Is this a component ?
-				if (processor instanceof Component) {
-					// Add to frame
-					frame.add((Component) processor, BorderLayout.CENTER);
-				} else {
-					throw new IllegalArgumentException(
-							"The given processor is not a component.");
-				}
+				// Add to frame
+				frame.add(processor.canvas(), BorderLayout.CENTER);
 
 				// Set size
 				frame.setSize(width, height);

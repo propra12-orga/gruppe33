@@ -19,7 +19,6 @@ import com.indyforge.twod.engine.resources.assets.Asset;
 import com.indyforge.twod.engine.resources.assets.AssetLoader;
 import com.indyforge.twod.engine.resources.assets.AssetManager;
 
-
 /**
  * This class loads the map for the Game and generates randomly destructible
  * blocks on it. Is able to throw IOExceptions.
