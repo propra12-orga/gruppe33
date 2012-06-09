@@ -681,7 +681,9 @@ public final class SceneProcessor implements Changeable<SceneProcessor> {
 	}
 
 	/**
-	 * Starts the game loop. This method blocks until shutdown is requested.
+	 * Starts the game loop. This method blocks until shutdown is requested or
+	 * an exception is thrown. This method {@link SceneProcessor#dispose()
+	 * disposes} this scene processor when returning.
 	 * 
 	 * @param maxFPS
 	 *            The maximum frames per second. A value < 1 means no max.

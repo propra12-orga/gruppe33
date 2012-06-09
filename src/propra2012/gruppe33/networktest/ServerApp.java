@@ -17,10 +17,8 @@ public class ServerApp {
 	public static void main(String[] args) throws Exception {
 
 		// Create a new scene as server
-		SceneProcessor serverProcessor = new SceneProcessor(NetworkMode.Server);
-
-		// Open the server on 1337
-		serverProcessor.openServer(1337);
+		SceneProcessor serverProcessor = new SceneProcessor(NetworkMode.Server)
+				.openServer(1337);
 
 		while (true) {
 			System.out.println("Started ?");

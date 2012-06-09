@@ -10,6 +10,8 @@ public class ClientApp {
 		// Create a new scene
 		SceneProcessor sceneProcessor = new SceneProcessor(NetworkMode.Client,
 				"Bomberman", 1024, 768);
+
+		// Stop rendering if hidden...
 		sceneProcessor.onlyRenderWithFocus(false);
 
 		// Connect the scene
