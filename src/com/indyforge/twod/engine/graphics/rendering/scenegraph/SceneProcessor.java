@@ -2,6 +2,7 @@ package com.indyforge.twod.engine.graphics.rendering.scenegraph;
 
 import java.awt.Canvas;
 import java.awt.Color;
+import java.awt.Frame;
 import java.awt.Graphics;
 import java.awt.Graphics2D;
 import java.awt.Toolkit;
@@ -10,6 +11,7 @@ import java.awt.event.ComponentEvent;
 import java.awt.image.BufferStrategy;
 import java.awt.image.BufferedImage;
 import java.io.IOException;
+import java.lang.reflect.InvocationTargetException;
 import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.LinkedBlockingDeque;
 
@@ -107,6 +109,11 @@ public final class SceneProcessor implements Changeable<SceneProcessor> {
 	 */
 
 	/*
+	 * The frame of this scene processor or null (If headless).
+	 */
+	private final Frame frame;
+
+	/*
 	 * The canvas of this scene processor or null (If headless).
 	 */
 	private final Canvas canvas;
@@ -161,10 +168,37 @@ public final class SceneProcessor implements Changeable<SceneProcessor> {
 	}
 
 	/**
-	 * Creates a new offline scene processor.
+	 * Creates a new offline scene processor (Use only in headless mode).
+	 * 
 	 */
 	public SceneProcessor() {
-		this(NetworkMode.Offline);
+		this(NetworkMode.Offline, null, -1, -1);
+	}
+
+	/**
+	 * Creates a new offline scene processor.
+	 * 
+	 * @param title
+	 *            The title of the frame. (Ignored if headless mode)
+	 * @param width
+	 *            The width of the frame. (Ignored if headless mode)
+	 * @param height
+	 *            The height of the frame. (Ignored if headless mode)
+	 */
+	public SceneProcessor(String title, int width, int height)
+			throws InterruptedException, InvocationTargetException {
+		this(NetworkMode.Offline, title, width, height);
+	}
+
+	/**
+	 * Creates a new scene processor using the given network mode (Use only in
+	 * headless mode).
+	 * 
+	 * @param networkMode
+	 *            The network mode of this processor.
+	 */
+	public SceneProcessor(NetworkMode networkMode) {
+		this(networkMode, null, -1, -1);
 	}
 
 	/**
@@ -172,12 +206,25 @@ public final class SceneProcessor implements Changeable<SceneProcessor> {
 	 * 
 	 * @param networkMode
 	 *            The network mode of this processor.
+	 * @param title
+	 *            The title of the frame. (Ignored if headless mode)
+	 * @param width
+	 *            The width of the frame. (Ignored if headless mode)
+	 * @param height
+	 *            The height of the frame. (Ignored if headless mode)
 	 */
-	public SceneProcessor(NetworkMode networkMode) {
+	public SceneProcessor(NetworkMode networkMode, String title, int width,
+			int height) {
 
 		// Set the network mode
 		networkMode(networkMode);
 
+		/*
+		 * Very important! The twod-engine decides between headless and
+		 * not-headless mode. This is very useful for server systems. In
+		 * headless mode no resources like images, sound, etc. are really
+		 * loaded. Only the references to these resources are used.
+		 */
 		if (!AssetManager.isHeadless()) {
 
 			/*
@@ -222,14 +269,34 @@ public final class SceneProcessor implements Changeable<SceneProcessor> {
 					peerHeight = canvas.getHeight();
 				}
 			});
+
+			/*
+			 * Create a new frame using this scene processor.
+			 */
+			try {
+				frame = GraphicsRoutines
+						.createFrame(this, title, width, height);
+			} catch (Exception e1) {
+				throw new RuntimeException("Failed to create scene processor "
+						+ "frame. Reason: " + e1.getMessage(), e1);
+			}
 		} else {
-			// Headless = no canvas!
+			// Headless...
+			frame = null;
 			canvas = null;
 			bufferStrategy = null;
 			offscreen = null;
 			peerWidth = -1;
 			peerHeight = -1;
 		}
+	}
+
+	/**
+	 * @return the frame (which contains the canvas) of this scene processor or
+	 *         null in headless mode.
+	 */
+	public Frame frame() {
+		return frame;
 	}
 
 	/**
@@ -328,6 +395,17 @@ public final class SceneProcessor implements Changeable<SceneProcessor> {
 				invokerManager = null;
 				session = null;
 			}
+		}
+	}
+
+	/**
+	 * Disposes this scene processor which is not able to work after calling
+	 * this method.
+	 */
+	public void dispose() {
+		releaseNetworkResources();
+		if (frame != null) {
+			frame.dispose();
 		}
 	}
 
@@ -599,6 +677,26 @@ public final class SceneProcessor implements Changeable<SceneProcessor> {
 		// Process all tasks
 		while ((task = tasks.poll()) != null) {
 			task.run();
+		}
+	}
+
+	/**
+	 * Starts the game loop. This method blocks until shutdown is requested.
+	 * 
+	 * @param maxFPS
+	 *            The maximum frames per second. A value < 1 means no max.
+	 * @throws Exception
+	 *             If some kind of error occurs.
+	 */
+	public void start(int maxFps) throws Exception {
+		try {
+			while (!isShutdownRequested()) {
+				process(maxFps);
+			}
+		} finally {
+
+			// Dispose the scene processor
+			dispose();
 		}
 	}
 

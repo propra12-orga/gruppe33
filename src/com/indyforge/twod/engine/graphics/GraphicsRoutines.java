@@ -11,6 +11,7 @@ import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
 import java.awt.image.BufferedImage;
 import java.awt.image.VolatileImage;
+import java.lang.reflect.InvocationTargetException;
 
 import com.indyforge.twod.engine.graphics.rendering.scenegraph.SceneProcessor;
 import com.indyforge.twod.engine.graphics.rendering.scenegraph.math.Mathf;
@@ -196,11 +197,12 @@ public final class GraphicsRoutines {
 	 * @param height
 	 *            The height of the frame.
 	 * @return a new visible frame.
-	 * @throws Exception
-	 *             If init fails.
+	 * @throws InvocationTargetException
+	 * @throws InterruptedException
 	 */
 	public static Frame createFrame(SceneProcessor processor, String title,
-			int width, int height) throws Exception {
+			int width, int height) throws InterruptedException,
+			InvocationTargetException {
 		return createFrame(processor, title, width, height, true);
 	}
 
@@ -218,12 +220,13 @@ public final class GraphicsRoutines {
 	 * @param visible
 	 *            The visible flag of the frame.
 	 * @return a new frame.
-	 * @throws Exception
-	 *             If init fails.
+	 * @throws InvocationTargetException
+	 * @throws InterruptedException
 	 */
 	public static Frame createFrame(final SceneProcessor processor,
 			final String title, final int width, final int height,
-			final boolean visible) throws Exception {
+			final boolean visible) throws InterruptedException,
+			InvocationTargetException {
 
 		if (processor == null) {
 			throw new NullPointerException("processor");

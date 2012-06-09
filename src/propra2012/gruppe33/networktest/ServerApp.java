@@ -68,16 +68,7 @@ public class ServerApp {
 		// Reset the network time every where
 		server.combined().applyChange(new ResetNetworkTimeChange());
 
-		while (!serverProcessor.isShutdownRequested()) {
-
-			// Process the world (the main game-loop)
-			serverProcessor.process(60);
-		}
-
-		// Destroy
-		// frame.dispose();
-
-		// Shutdown complete servers
-		serverProcessor.releaseNetworkResources();
+		// Start the processor
+		serverProcessor.start(60);
 	}
 }
