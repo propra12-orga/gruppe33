@@ -48,8 +48,8 @@ public class PreMilestoneApp {
 		int i = 0;
 		for (long id : ids) {
 			// Create new player as knight
-			GraphicsEntity player = GridRoutines.createLocalKnight(assets, ""
-					+ id);
+			GraphicsEntity player = GridRoutines.createLocalKnight(assets,
+					boom, "Session-" + id);
 
 			refs.add(player.registrationKey());
 
@@ -58,34 +58,6 @@ public class PreMilestoneApp {
 					player);
 
 		}
-
-		// player.attach(new Entity() {
-		//
-		// @Override
-		// protected void onUpdate(float tpf) {
-		// super.onUpdate(tpf);
-		//
-		// // Get scene
-		// Scene scene = ((GraphicsEntity) parent()).findScene();
-		//
-		// GraphicsEntity node = ((GraphicsEntity) parent().parent());
-		//
-		// if (scene.isPressed(KeyEvent.VK_SPACE)
-		// && !GridRoutines.hasFieldExplosion(node)) {
-		//
-		// GraphicsEntity bomb = GridRoutines
-		// .createExplosion(boom, 33);
-		//
-		// scene.soundManager().playSound("exp", true);
-		//
-		// // Attach the bomb
-		// grid.childAt(
-		// grid.typeProp(Grid.class).index(node.position()))
-		// .attach(bomb);
-		//
-		// }
-		// }
-		// });
 
 		return scene;
 	}

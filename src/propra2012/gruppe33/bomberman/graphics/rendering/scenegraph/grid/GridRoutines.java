@@ -204,8 +204,8 @@ public final class GridRoutines implements GridConstants {
 	 *             If an error occurs.
 	 */
 	public static GraphicsEntity createLocalKnight(AssetManager assetManager,
-			String name) throws Exception {
-		return createLocalGridPlayer(name,
+			Sprite sprite, String name) throws Exception {
+		return createLocalGridPlayer(name, sprite,
 				AnimationRoutines.createKnight(assetManager, 35, 35));
 	}
 
@@ -219,7 +219,7 @@ public final class GridRoutines implements GridConstants {
 	 * @return the created player entity.
 	 */
 	public static GraphicsEntity createLocalGridPlayer(String name,
-			AnimationBundle charAniBundle) {
+			Sprite sprite, AnimationBundle charAniBundle) {
 		if (name == null) {
 			throw new NullPointerException("name");
 		}
@@ -242,9 +242,8 @@ public final class GridRoutines implements GridConstants {
 				.createGridControllerAnimationHandler(charAni));
 
 		// Attach remaining stuff
-		player.attach(charAni, movement,
-				new InputUploader(movement.registrationKey()),
-				new DeltaPositionBroadcaster(player));
+		player.attach(charAni, movement, new DeltaPositionBroadcaster(player),
+				new BombSpawner(sprite));
 
 		// Set scale
 		player.scale().scaleLocal(1.5f);

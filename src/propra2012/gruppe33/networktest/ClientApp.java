@@ -15,7 +15,7 @@ public class ClientApp {
 		sceneProcessor.onlyRenderWithFocus(false);
 
 		// Connect the scene
-		sceneProcessor.openClient("kr0e.no-ip.info", 1337).linkClient("Kr0e");
+		sceneProcessor.openClient("localhost", 1337).linkClient("Kr0e");
 
 		// Start the processor (In this thread!)
 		sceneProcessor.start(60);

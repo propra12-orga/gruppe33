@@ -5,11 +5,18 @@ import java.util.EnumMap;
 import java.util.Map;
 import java.util.UUID;
 
+import chn.GridChange;
+
 import com.indyforge.twod.engine.graphics.rendering.scenegraph.GraphicsEntity;
 import com.indyforge.twod.engine.graphics.rendering.scenegraph.Scene;
 import com.indyforge.twod.engine.graphics.rendering.scenegraph.math.Vector2f.Direction;
 
-public class InputUploader extends GraphicsEntity {
+/**
+ * 
+ * @author Christopher Probst
+ * 
+ */
+public final class GridRemoteController extends GraphicsEntity {
 
 	/**
 	 * 
@@ -19,19 +26,13 @@ public class InputUploader extends GraphicsEntity {
 	private final Map<Direction, Boolean> inputMap = new EnumMap<Direction, Boolean>(
 			Direction.class);
 
-	public InputUploader(UUID peerKey) {
+	public GridRemoteController(UUID peerKey) {
 		this.peerKey = peerKey;
 	}
-
-	public boolean active = false;
 
 	@Override
 	protected void onUpdate(float tpf) {
 		super.onUpdate(tpf);
-
-		if (!active) {
-			return;
-		}
 
 		Scene scene = findScene();
 
