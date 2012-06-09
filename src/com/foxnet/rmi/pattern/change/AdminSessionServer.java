@@ -56,6 +56,13 @@ public interface AdminSessionServer<T> extends SessionServer<T> {
 	Map<Long, Session<T>> sessions();
 
 	/**
+	 * @param id
+	 *            The session id.
+	 * @return the session with the given id or null.
+	 */
+	Session<T> session(long id);
+
+	/**
 	 * Closes all sessions.
 	 */
 	void closeAll();

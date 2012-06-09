@@ -71,6 +71,14 @@ public final class DefaultSessionServer<T> implements AdminSessionServer<T> {
 	}
 
 	/*
+	 * 
+	 */
+	@Override
+	public synchronized Session<T> session(long id) {
+		return sessions.get(id);
+	}
+
+	/*
 	 * (non-Javadoc)
 	 * 
 	 * @see com.foxnet.rmi.pattern.change.AdminSessionServer#acceptingSessions
