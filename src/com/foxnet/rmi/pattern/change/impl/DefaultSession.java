@@ -3,7 +3,6 @@ package com.foxnet.rmi.pattern.change.impl;
 import java.util.Map;
 
 import com.foxnet.rmi.pattern.change.AdminSessionServer;
-import com.foxnet.rmi.pattern.change.Change;
 import com.foxnet.rmi.pattern.change.Changeable;
 import com.foxnet.rmi.pattern.change.Session;
 
@@ -21,7 +20,7 @@ final class DefaultSession<T> implements Session<T> {
 	private final AdminSessionServer<T> server;
 
 	// The changeable implementation of the session
-	final Changeable<T> changeable;
+	private final Changeable<T> changeable;
 
 	// The session id
 	private final long id;
@@ -92,13 +91,21 @@ final class DefaultSession<T> implements Session<T> {
 	/*
 	 * (non-Javadoc)
 	 * 
-	 * @see
-	 * com.foxnet.rmi.pattern.change.Session#applyChange(com.foxnet.rmi.pattern
-	 * .change.Change)
+	 * @see com.foxnet.rmi.pattern.change.Session#client()
 	 */
 	@Override
-	public void applyChange(Change<T> change) {
+	public Changeable<T> client() {
+		return changeable;
+	}
+
+	/*
+	 * (non-Javadoc)
+	 * 
+	 * @see com.foxnet.rmi.pattern.change.Session#server()
+	 */
+	@Override
+	public Changeable<T> server() {
 		// Proceed to server
-		server.local().applyChange(change);
+		return server.local();
 	}
 }

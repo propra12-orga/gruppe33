@@ -1,7 +1,6 @@
 package propra2012.gruppe33.bomberman.graphics.rendering.scenegraph.grid;
 
 import java.awt.Point;
-import java.awt.event.KeyEvent;
 import java.util.EnumMap;
 import java.util.Iterator;
 import java.util.Map;
@@ -154,37 +153,52 @@ public final class GridController extends Entity {
 			}
 		} else {
 
+			// The offset
 			int offset = 0;
 
+			/*
+			 * Very important. If we can not move (into the default direction)
+			 * we have to check the nearest corner. This applies to centered /
+			 * non-centered positions.
+			 */
 			if (!canMove) {
+				// The valid flag!
+				boolean valid = false;
 
 				/*
-				 * ?-----?
-				 * 
-				 * <- X ->
+				 * This is a very tricky for-loop: We want to loop while i < max
+				 * and valid == false. The max value depends on the isCentered
+				 * flag.
 				 */
+				for (int i = 0, max = isCentered ? 2 : 1; i < max && !valid; i++) {
 
-				int domDir = negativeDominant ? -1 : 1;
+					// Calc the dominant direction (offest)
+					offset = negativeDominant ? -1 : 1;
 
-				Point o1 = new Point(nearest.x + (vertical ? domDir : 0),
-						nearest.y + (vertical ? 0 : domDir));
+					// Calc dom a
+					Point a = new Point(nearest.x + (vertical ? offset : 0),
+							nearest.y + (vertical ? 0 : offset));
 
-				// <- NOT VALID!
-				if (!GridRoutines.VELOCITY_NODE_FILTER.accept(gridEntity
-						.childAt(grid.index(o1)))) {
-					return;
+					// Calc dom b
+					Point b = new Point(nearest.x + (vertical ? offset : dir),
+							nearest.y + (vertical ? dir : offset));
+
+					// Is the dom path valid ?
+					valid = GridRoutines.VELOCITY_NODE_FILTER.accept(gridEntity
+							.childAt(grid.index(a)))
+							&& GridRoutines.VELOCITY_NODE_FILTER
+									.accept(gridEntity.childAt(grid.index(b)));
+
+					// Swap
+					negativeDominant = !negativeDominant;
 				}
 
-				o1 = new Point(nearest.x + (vertical ? domDir : dir), nearest.y
-						+ (vertical ? dir : domDir));
-
-				// ? NOT VALID!
-				if (!GridRoutines.VELOCITY_NODE_FILTER.accept(gridEntity
-						.childAt(grid.index(o1)))) {
+				/*
+				 * If the movement is not valid, exit here!
+				 */
+				if (!valid) {
 					return;
 				}
-
-				offset = domDir;
 			}
 
 			/*
@@ -280,14 +294,14 @@ public final class GridController extends Entity {
 		// Reduce boxing...
 		float maxSpeed = maxSpeedObj.floatValue();
 
-		inputMap.put(Direction.North,
-				gridEntity.findScene().isPressed(KeyEvent.VK_UP));
-		inputMap.put(Direction.South,
-				gridEntity.findScene().isPressed(KeyEvent.VK_DOWN));
-		inputMap.put(Direction.West,
-				gridEntity.findScene().isPressed(KeyEvent.VK_LEFT));
-		inputMap.put(Direction.East,
-				gridEntity.findScene().isPressed(KeyEvent.VK_RIGHT));
+		// inputMap.put(Direction.North,
+		// gridEntity.findScene().isPressed(KeyEvent.VK_UP));
+		// inputMap.put(Direction.South,
+		// gridEntity.findScene().isPressed(KeyEvent.VK_DOWN));
+		// inputMap.put(Direction.West,
+		// gridEntity.findScene().isPressed(KeyEvent.VK_LEFT));
+		// inputMap.put(Direction.East,
+		// gridEntity.findScene().isPressed(KeyEvent.VK_RIGHT));
 
 		// Init the input flags
 		boolean north = hasInputFor(Direction.North), south = hasInputFor(Direction.South), west = hasInputFor(Direction.West), east = hasInputFor(Direction.East);
@@ -407,6 +421,13 @@ public final class GridController extends Entity {
 
 			// Finally add the new movement component
 			controlledParent.position().addLocal(movement);
+
+			/*
+			 * Very important! This method rearranges the node because the
+			 * change of the controller will not be visible yet. Other
+			 * controllers could cause collisions.
+			 */
+			GridRoutines.rearrangeGridNode(node);
 		}
 	}
 }

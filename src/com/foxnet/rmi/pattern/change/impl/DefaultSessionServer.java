@@ -32,8 +32,7 @@ public final class DefaultSessionServer<T> implements AdminSessionServer<T> {
 		public void applyChange(Change<T> change) {
 			for (Session<T> session : sessions.values()) {
 				try {
-					((DefaultSession<T>) session).changeable
-							.applyChange(change);
+					session.client().applyChange(change);
 				} catch (Exception e) {
 					e.printStackTrace();
 				}
@@ -120,6 +119,7 @@ public final class DefaultSessionServer<T> implements AdminSessionServer<T> {
 						sessions.remove(id);
 					}
 				});
+
 		return s;
 	}
 
@@ -196,8 +196,8 @@ public final class DefaultSessionServer<T> implements AdminSessionServer<T> {
 	@Override
 	public synchronized void closeAll() {
 		for (Object session : sessions.values().toArray()) {
-			Invoker.getInvokerOf(((DefaultSession<T>) session).changeable)
-					.manager().close();
+			Invoker.getInvokerOf(((Session<T>) session).client()).manager()
+					.close();
 		}
 	}
 }

@@ -9,7 +9,7 @@ public class ClientApp {
 
 		// Create a new scene
 		SceneProcessor sceneProcessor = new SceneProcessor(NetworkMode.Client,
-				"Bomberman", 1024, 768);
+				"Bomberman", 640, 1024);
 
 		// Stop rendering if hidden...
 		sceneProcessor.onlyRenderWithFocus(false);
@@ -19,5 +19,6 @@ public class ClientApp {
 
 		// Start the processor (In this thread!)
 		sceneProcessor.start(60);
+
 	}
 }

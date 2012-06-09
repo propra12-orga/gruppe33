@@ -19,6 +19,15 @@ public final class IterationRoutines {
 				: null;
 	}
 
+	public static <E> E filterNext(Filter<? super E> filter, Iterator<E> peer) {
+		return next(filter(filter, peer));
+	}
+
+	public static <E> Iterator<E> filter(Filter<? super E> filter,
+			Iterator<E> peer) {
+		return new FilteredIterator<E>(filter, peer);
+	}
+
 	// Should be instantiated...
 	private IterationRoutines() {
 	}

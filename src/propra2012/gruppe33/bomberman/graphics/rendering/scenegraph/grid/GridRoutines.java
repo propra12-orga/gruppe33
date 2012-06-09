@@ -242,9 +242,9 @@ public final class GridRoutines implements GridConstants {
 				.createGridControllerAnimationHandler(charAni));
 
 		// Attach remaining stuff
-		player.attach(charAni, movement);
-//				new InputUploader(movement.registrationKey()),
-//				new DeltaPositionBroadcaster(player));
+		player.attach(charAni, movement,
+				new InputUploader(movement.registrationKey()),
+				new DeltaPositionBroadcaster(player));
 
 		// Set scale
 		player.scale().scaleLocal(1.5f);
@@ -311,6 +311,80 @@ public final class GridRoutines implements GridConstants {
 	}
 
 	/**
+	 * Rearranges the children of the given node entity.
+	 * <p>
+	 * Please note that this method is NOT called automatically so you should
+	 * call this method when the position of the node-children have been
+	 * changed.
+	 * 
+	 * @param node
+	 *            The node entity.
+	 * @return the node for chaining.
+	 */
+	public static GraphicsEntity rearrangeGridNode(GraphicsEntity node) {
+		if (node == null) {
+			throw new NullPointerException("node");
+		} else if (!(node.parent() instanceof GraphicsEntity)) {
+			throw new IllegalArgumentException("node does not have "
+					+ "a graphics entity parent");
+		}
+
+		// Lookup parent
+		GraphicsEntity graphicsParent = (GraphicsEntity) node.parent();
+
+		// Lookup grip
+		Grid grid = graphicsParent.typeProp(Grid.class);
+
+		// Check the grid
+		if (grid == null) {
+			throw new IllegalStateException("Parent does not have a "
+					+ "grid property");
+		}
+
+		/*
+		 * The following code is very important. It reattaches children when
+		 * they leave the nodes.
+		 */
+
+		// Iterate over all children
+		for (Entity child : node) {
+
+			if (child instanceof GraphicsEntity) {
+				// Convert
+				GraphicsEntity graphicsChild = (GraphicsEntity) child;
+
+				// Get points
+				Point absolute = node.position().point(), relative = graphicsChild
+						.position().round().point(), newAbsolute = new Point(
+						relative);
+
+				// Translate the new absolute point
+				newAbsolute.translate(absolute.x, absolute.y);
+
+				// Check coords
+				if (!absolute.equals(newAbsolute)) {
+
+					// New point valid ??
+					if (grid.inside(newAbsolute)) {
+						// Lookup other child
+						Entity otherChild = graphicsParent.childAt(grid
+								.index(newAbsolute));
+
+						// Attach to it
+						otherChild.attach(child);
+
+						// Change position
+						graphicsChild.position().x -= relative.x;
+						graphicsChild.position().y -= relative.y;
+					}
+				}
+			}
+		}
+
+		return node;
+	}
+
+	/**
 	 * Creates a new grid entity which contains all nodes.
 	 * 
 	 * @param gridWidth
@@ -335,65 +409,7 @@ public final class GridRoutines implements GridConstants {
 			for (int x = 0; x < gridWidth; x++) {
 
 				// Create a new node
-				GraphicsEntity node = new GraphicsEntity() {
-
-					/**
-					 * 
-					 */
-					private static final long serialVersionUID = 1L;
-
-					/*
-					 * (non-Javadoc)
-					 * 
-					 * @see
-					 * com.indyforge.twod.engine.graphics.rendering.scenegraph
-					 * .Entity#onUpdate(float)
-					 */
-					@Override
-					protected void onUpdate(float tpf) {
-						super.onUpdate(tpf);
-
-						/*
-						 * The following code is very important. It reattaches
-						 * children when they leave the nodes.
-						 */
-
-						// Iterate over all children
-						for (Entity child : this) {
-
-							if (child instanceof GraphicsEntity) {
-								// Convert
-								GraphicsEntity graphicsChild = (GraphicsEntity) child;
-
-								// Get points
-								Point absolute = position().point(), relative = graphicsChild
-										.position().round().point(), newAbsolute = new Point(
-										relative);
-
-								// Translate the new absolute point
-								newAbsolute.translate(absolute.x, absolute.y);
-
-								// Check coords
-								if (!absolute.equals(newAbsolute)) {
-
-									// New point valid ??
-									if (grid.inside(newAbsolute)) {
-										// Lookup other child
-										Entity otherChild = parent().childAt(
-												grid.index(newAbsolute));
-
-										// Attach to it
-										otherChild.attach(child);
-
-										// Change position
-										graphicsChild.position().x -= relative.x;
-										graphicsChild.position().y -= relative.y;
-									}
-								}
-							}
-						}
-					}
-				};
+				GraphicsEntity node = new GraphicsEntity();
 
 				// Set position on grid
 				node.position().set(x, y);

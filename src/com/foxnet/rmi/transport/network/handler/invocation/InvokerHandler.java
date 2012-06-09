@@ -35,7 +35,7 @@ public class InvokerHandler extends SimpleChannelHandler {
 	@Override
 	public void exceptionCaught(ChannelHandlerContext ctx, ExceptionEvent e)
 			throws Exception {
-
+		System.out.println(e.getCause());
 		ctx.sendUpstream(e);
 	}
 

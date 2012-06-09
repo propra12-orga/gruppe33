@@ -1,22 +1,15 @@
 package propra2012.gruppe33;
 
-import java.awt.Color;
-import java.awt.Graphics2D;
-import java.awt.event.KeyEvent;
 import java.io.File;
+import java.util.List;
+import java.util.UUID;
 
 import propra2012.gruppe33.bomberman.graphics.rendering.scenegraph.grid.GridLoader;
 import propra2012.gruppe33.bomberman.graphics.rendering.scenegraph.grid.GridRoutines;
 
-import com.indyforge.twod.engine.graphics.rendering.scenegraph.Entity;
 import com.indyforge.twod.engine.graphics.rendering.scenegraph.GraphicsEntity;
 import com.indyforge.twod.engine.graphics.rendering.scenegraph.Scene;
-import com.indyforge.twod.engine.graphics.rendering.scenegraph.SceneProcessor;
 import com.indyforge.twod.engine.graphics.rendering.scenegraph.math.Grid;
-import com.indyforge.twod.engine.graphics.rendering.scenegraph.math.Vector2f;
-import com.indyforge.twod.engine.graphics.rendering.scenegraph.transform.PositionTarget;
-import com.indyforge.twod.engine.graphics.rendering.scenegraph.transform.ReachableQueue;
-import com.indyforge.twod.engine.graphics.rendering.scenegraph.transform.TransformMotor;
 import com.indyforge.twod.engine.graphics.sprite.Sprite;
 import com.indyforge.twod.engine.resources.assets.AssetManager;
 
@@ -26,44 +19,8 @@ import com.indyforge.twod.engine.resources.assets.AssetManager;
  */
 public class PreMilestoneApp {
 
-	public static Scene createGUI() throws Exception {
-
-		final Scene gui = new Scene(new AssetManager(new File(
-				"scenes/default.zip")), 1024, 1024);
-
-		gui.attach(new GraphicsEntity() {
-
-			@Override
-			protected void onRender(Graphics2D original, Graphics2D transformed) {
-				super.onRender(original, transformed);
-
-				transformed.setColor(Color.black);
-				transformed.drawString("START DEMO", 0, 0);
-				transformed.drawString("PRESS ENTER", -3, 10);
-			}
-
-			@Override
-			protected void onUpdate(float tpf) {
-				super.onUpdate(tpf);
-
-				if (gui.isPressed(KeyEvent.VK_ENTER)) {
-					SceneProcessor sp = gui.processor();
-					try {
-						sp.root(createDemoGame());
-					} catch (Exception e) {
-						e.printStackTrace();
-					}
-				}
-			}
-		});
-
-		gui.scale().set(10, 10);
-		gui.position().set(120, 512);
-
-		return gui;
-	}
-
-	public static Scene createDemoGame(long... ids) throws Exception {
+	public static Scene createDemoGame(List<UUID> refs, long... ids)
+			throws Exception {
 
 		// Create new asset manager using the given zip file
 		AssetManager assets = new AssetManager(new File("scenes/default.zip"));
@@ -91,8 +48,10 @@ public class PreMilestoneApp {
 		int i = 0;
 		for (long id : ids) {
 			// Create new player as knight
-			GraphicsEntity player = GridRoutines.createLocalKnight(assets,
-					"Player-" + id);
+			GraphicsEntity player = GridRoutines.createLocalKnight(assets, ""
+					+ id);
+
+			refs.add(player.registrationKey());
 
 			// Place to spawn
 			grid.childAt(grid.typeProp(Grid.class).index(1 + i++, 1)).attach(

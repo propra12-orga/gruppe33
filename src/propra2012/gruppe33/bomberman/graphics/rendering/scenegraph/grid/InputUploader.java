@@ -23,7 +23,7 @@ public class InputUploader extends GraphicsEntity {
 		this.peerKey = peerKey;
 	}
 
-	public boolean active = true;
+	public boolean active = false;
 
 	@Override
 	protected void onUpdate(float tpf) {
@@ -44,7 +44,7 @@ public class InputUploader extends GraphicsEntity {
 
 		if (scene.processor().hasSession() && !tmp.equals(inputMap)) {
 			inputMap.putAll(tmp);
-			scene.processor().session()
+			scene.processor().session().server()
 					.applyChange(new GridChange(tmp, peerKey));
 		}
 	}

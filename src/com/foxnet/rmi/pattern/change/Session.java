@@ -2,6 +2,8 @@ package com.foxnet.rmi.pattern.change;
 
 import java.util.Map;
 
+import com.foxnet.rmi.Remote;
+
 /**
  * A session is the basic interface between client and server.
  * 
@@ -9,7 +11,7 @@ import java.util.Map;
  * @param <T>
  *            The context type.
  */
-public interface Session<T> extends Changeable<T> {
+public interface Session<T> extends Remote {
 
 	/**
 	 * @return the session id.
@@ -35,11 +37,12 @@ public interface Session<T> extends Changeable<T> {
 	Map<Long, String> names();
 
 	/**
-	 * Applies the given change locally to the remote.
-	 * 
-	 * @param change
-	 *            The {@link Change} you want to apply.
+	 * @return the {@link Changeable} client.
 	 */
-	@Override
-	void applyChange(Change<T> change);
+	Changeable<T> client();
+
+	/**
+	 * @return the {@link Changeable} server.
+	 */
+	Changeable<T> server();
 }
