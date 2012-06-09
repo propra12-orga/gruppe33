@@ -117,6 +117,10 @@ public final class GridController extends Entity {
 		boolean negativeDominant = (vertical ? center.x - pos.x : center.y
 				- pos.y) > 0f;
 
+		// Is the entity already centered ?
+		boolean isCentered = vertical ? Mathf.equals(pos.x, center.x) : Mathf
+				.equals(pos.y, center.y);
+
 		// Get the grid
 		Grid grid = gridEntity.typeProp(Grid.class);
 
@@ -134,14 +138,13 @@ public final class GridController extends Entity {
 								: Direction.South) : (negative ? Direction.West
 								: Direction.East));
 
-		// Is the entity already centered ?
-		boolean isCentered = vertical ? Mathf.equals(pos.x, center.x) : Mathf
-				.equals(pos.y, center.y);
+		// If movement != 0 -> We can move!
+		boolean canMove = !Mathf.equals(movement, 0);
 
 		/*
 		 * If centered and able to move!
 		 */
-		if (isCentered && !Mathf.equals(movement, 0)) {
+		if (isCentered && canMove) {
 
 			// Simply apply the movement
 			if (vertical) {
@@ -151,61 +154,37 @@ public final class GridController extends Entity {
 			}
 		} else {
 
-			/*
-			 * The offset: This value is calculated using the isCentered &
-			 * negativeDominant flag.
-			 * 
-			 * If the entity is centered we have to check:
-			 * 
-			 * B = blocked!
-			 * 
-			 * |1|B|2| |
-			 * 
-			 * |?|X|?| |
-			 * 
-			 * 
-			 * If the entity is centered we have to check:
-			 * 
-			 * B = blocked!
-			 * 
-			 * |1|2| | |
-			 * 
-			 * | X | | |
-			 */
-			int offset = !isCentered ? 0 : (negativeDominant ? -1 : 1);
+			int offset = 0;
 
-			/*
-			 * Create a point which will point to first field which depends on
-			 * the negativeDominant flag.
-			 */
-			Point a = new Point(nearest.x + (vertical ? offset : dir),
-					nearest.y + (vertical ? dir : offset));
-
-			/*
-			 * Check whether or not the given field is free.
-			 */
-			if (!GridRoutines.VELOCITY_NODE_FILTER.accept(gridEntity
-					.childAt(grid.index(a)))) {
+			if (!canMove) {
 
 				/*
-				 * We mave to recalculate the offset.
+				 * ?-----?
+				 * 
+				 * <- X ->
 				 */
-				offset += (negativeDominant ? -1 : 1) * (!isCentered ? 1f : 2f);
 
-				/*
-				 * Create a point which will point to second field which depends
-				 * on the negativeDominant flag.
-				 */
-				a = new Point(nearest.x + (vertical ? offset : dir), nearest.y
-						+ (vertical ? dir : offset));
+				int domDir = negativeDominant ? -1 : 1;
 
-				/*
-				 * If we have still no luck, we stop the calculation.
-				 */
+				Point o1 = new Point(nearest.x + (vertical ? domDir : 0),
+						nearest.y + (vertical ? 0 : domDir));
+
+				// <- NOT VALID!
 				if (!GridRoutines.VELOCITY_NODE_FILTER.accept(gridEntity
-						.childAt(grid.index(a)))) {
+						.childAt(grid.index(o1)))) {
 					return;
 				}
+
+				o1 = new Point(nearest.x + (vertical ? domDir : dir), nearest.y
+						+ (vertical ? dir : domDir));
+
+				// ? NOT VALID!
+				if (!GridRoutines.VELOCITY_NODE_FILTER.accept(gridEntity
+						.childAt(grid.index(o1)))) {
+					return;
+				}
+
+				offset = domDir;
 			}
 
 			/*
@@ -224,7 +203,7 @@ public final class GridController extends Entity {
 					* maxMovement;
 
 			// Limit the speed...
-			if (Math.abs(centerDistance) < tpf * maxSpeed) {
+			if (Math.abs(centerDistance) < Math.abs(orthogonalMovement)) {
 				orthogonalMovement = centerDistance;
 			}
 
