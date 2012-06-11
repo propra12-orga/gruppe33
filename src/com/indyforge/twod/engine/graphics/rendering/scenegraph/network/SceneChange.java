@@ -1,6 +1,6 @@
 package com.indyforge.twod.engine.graphics.rendering.scenegraph.network;
 
-import com.foxnet.rmi.pattern.change.Change;
+import com.indyforge.foxnet.rmi.pattern.change.Change;
 import com.indyforge.twod.engine.graphics.rendering.scenegraph.Scene;
 import com.indyforge.twod.engine.graphics.rendering.scenegraph.SceneProcessor;
 
@@ -32,7 +32,7 @@ public final class SceneChange implements Change<SceneProcessor> {
 	/*
 	 * (non-Javadoc)
 	 * 
-	 * @see com.foxnet.rmi.pattern.change.Change#apply(java.lang.Object)
+	 * @see com.indyforge.foxnet.rmi.pattern.change.Change#apply(java.lang.Object)
 	 */
 	@Override
 	public void apply(SceneProcessor ctx) {

@@ -6,7 +6,7 @@ import java.io.ObjectInput;
 import java.io.ObjectOutput;
 import java.util.UUID;
 
-import com.foxnet.rmi.pattern.change.Change;
+import com.indyforge.foxnet.rmi.pattern.change.Change;
 import com.indyforge.twod.engine.graphics.rendering.scenegraph.Entity;
 import com.indyforge.twod.engine.graphics.rendering.scenegraph.Scene;
 import com.indyforge.twod.engine.graphics.rendering.scenegraph.SceneProcessor;
@@ -74,7 +74,7 @@ public abstract class AbstractEntityChange<T extends Entity> implements
 	/*
 	 * (non-Javadoc)
 	 * 
-	 * @see com.foxnet.rmi.pattern.change.Change#apply(java.lang.Object)
+	 * @see com.indyforge.foxnet.rmi.pattern.change.Change#apply(java.lang.Object)
 	 */
 	@SuppressWarnings("unchecked")
 	@Override

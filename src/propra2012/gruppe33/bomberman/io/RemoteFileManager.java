@@ -2,7 +2,7 @@ package propra2012.gruppe33.bomberman.io;
 
 import java.io.IOException;
 
-import com.foxnet.rmi.Remote;
+import com.indyforge.foxnet.rmi.Remote;
 
 /**
  * @author Christopher Probst

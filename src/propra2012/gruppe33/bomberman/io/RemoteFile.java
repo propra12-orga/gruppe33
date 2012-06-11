@@ -3,7 +3,7 @@ package propra2012.gruppe33.bomberman.io;
 import java.io.Closeable;
 import java.io.IOException;
 
-import com.foxnet.rmi.Remote;
+import com.indyforge.foxnet.rmi.Remote;
 
 /**
  * 

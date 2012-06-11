@@ -15,15 +15,15 @@ import java.lang.reflect.InvocationTargetException;
 import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.LinkedBlockingDeque;
 
-import com.foxnet.rmi.InvokerManager;
-import com.foxnet.rmi.LookupException;
-import com.foxnet.rmi.pattern.change.AdminSessionServer;
-import com.foxnet.rmi.pattern.change.Change;
-import com.foxnet.rmi.pattern.change.Changeable;
-import com.foxnet.rmi.pattern.change.Session;
-import com.foxnet.rmi.pattern.change.SessionServer;
-import com.foxnet.rmi.pattern.change.impl.DefaultSessionServer;
-import com.foxnet.rmi.transport.network.ConnectionManager;
+import com.indyforge.foxnet.rmi.InvokerManager;
+import com.indyforge.foxnet.rmi.LookupException;
+import com.indyforge.foxnet.rmi.pattern.change.AdminSessionServer;
+import com.indyforge.foxnet.rmi.pattern.change.Change;
+import com.indyforge.foxnet.rmi.pattern.change.Changeable;
+import com.indyforge.foxnet.rmi.pattern.change.Session;
+import com.indyforge.foxnet.rmi.pattern.change.SessionServer;
+import com.indyforge.foxnet.rmi.pattern.change.impl.DefaultSessionServer;
+import com.indyforge.foxnet.rmi.transport.network.ConnectionManager;
 import com.indyforge.twod.engine.graphics.GraphicsRoutines;
 import com.indyforge.twod.engine.resources.assets.AssetManager;
 

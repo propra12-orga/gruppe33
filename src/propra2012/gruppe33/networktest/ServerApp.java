@@ -9,7 +9,7 @@ import propra2012.gruppe33.PreMilestoneApp;
 
 import chn.InputActivator;
 
-import com.foxnet.rmi.pattern.change.AdminSessionServer;
+import com.indyforge.foxnet.rmi.pattern.change.AdminSessionServer;
 import com.indyforge.twod.engine.graphics.rendering.scenegraph.Scene;
 import com.indyforge.twod.engine.graphics.rendering.scenegraph.SceneProcessor;
 import com.indyforge.twod.engine.graphics.rendering.scenegraph.SceneProcessor.NetworkMode;
