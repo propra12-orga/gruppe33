@@ -61,7 +61,8 @@ public final class DynamicRegistry extends Registry<DynamicBinding> {
 	/*
 	 * (non-Javadoc)
 	 * 
-	 * @see com.indyforge.foxnet.rmi.binding.registry.AbstractRegistry#bindingMap()
+	 * @see
+	 * com.indyforge.foxnet.rmi.binding.registry.AbstractRegistry#bindingMap()
 	 */
 	@Override
 	protected Map<Long, DynamicBinding> bindingMap() {

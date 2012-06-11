@@ -1,7 +1,10 @@
 package com.indyforge.twod.engine.graphics.rendering.scenegraph.math;
 
 import java.awt.Point;
-import java.io.Serializable;
+import java.io.Externalizable;
+import java.io.IOException;
+import java.io.ObjectInput;
+import java.io.ObjectOutput;
 
 import com.indyforge.twod.engine.graphics.rendering.scenegraph.Entity;
 
@@ -12,7 +15,7 @@ import com.indyforge.twod.engine.graphics.rendering.scenegraph.Entity;
  * @author Christopher Probst
  * @see Entity
  */
-public final class Vector2f implements Serializable {
+public final class Vector2f implements Externalizable {
 
 	/**
 	 * 
@@ -180,6 +183,31 @@ public final class Vector2f implements Serializable {
 	public Vector2f(float x, float y) {
 		this.x = x;
 		this.y = y;
+	}
+
+	/*
+	 * (non-Javadoc)
+	 * 
+	 * @see java.io.Externalizable#readExternal(java.io.ObjectInput)
+	 */
+	@Override
+	public void readExternal(ObjectInput in) throws IOException,
+			ClassNotFoundException {
+		// Read both components
+		x = in.readFloat();
+		y = in.readFloat();
+	}
+
+	/*
+	 * (non-Javadoc)
+	 * 
+	 * @see java.io.Externalizable#writeExternal(java.io.ObjectOutput)
+	 */
+	@Override
+	public void writeExternal(ObjectOutput out) throws IOException {
+		// Write both components
+		out.writeFloat(x);
+		out.writeFloat(y);
 	}
 
 	/**

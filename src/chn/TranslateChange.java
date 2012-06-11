@@ -1,22 +1,25 @@
-package com.indyforge.twod.engine.graphics.rendering.scenegraph.network;
+package chn;
 
 import java.util.UUID;
 
+import propra2012.gruppe33.bomberman.graphics.rendering.scenegraph.grid.GridRoutines;
+
 import com.indyforge.twod.engine.graphics.rendering.scenegraph.GraphicsEntity;
 import com.indyforge.twod.engine.graphics.rendering.scenegraph.math.Vector2f;
+import com.indyforge.twod.engine.graphics.rendering.scenegraph.network.transform.Vector2fChange;
 
 /**
  * 
  * @author Christopher Probst
  * 
  */
-public final class PositionChange extends Vector2fChange {
+public final class TranslateChange extends Vector2fChange {
 
-	public PositionChange() {
+	public TranslateChange() {
 		super();
 	}
 
-	public PositionChange(Vector2f vector, UUID registrationKey) {
+	public TranslateChange(Vector2f vector, UUID registrationKey) {
 		super(vector, registrationKey);
 	}
 
@@ -30,5 +33,6 @@ public final class PositionChange extends Vector2fChange {
 	@Override
 	protected void apply(GraphicsEntity entity) {
 		entity.position().addLocal(vector());
+		GridRoutines.rearrangeGridNode((GraphicsEntity) entity.parent());
 	}
 }

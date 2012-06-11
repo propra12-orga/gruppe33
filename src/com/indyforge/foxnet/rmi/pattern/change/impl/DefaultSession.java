@@ -68,7 +68,8 @@ final class DefaultSession<T> implements Session<T> {
 	/*
 	 * (non-Javadoc)
 	 * 
-	 * @see com.indyforge.foxnet.rmi.pattern.change.Session#name(java.lang.String)
+	 * @see
+	 * com.indyforge.foxnet.rmi.pattern.change.Session#name(java.lang.String)
 	 */
 	@Override
 	public void name(String name) {

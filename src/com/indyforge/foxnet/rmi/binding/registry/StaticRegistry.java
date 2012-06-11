@@ -59,7 +59,8 @@ public final class StaticRegistry extends Registry<StaticBinding> {
 	/*
 	 * (non-Javadoc)
 	 * 
-	 * @see com.indyforge.foxnet.rmi.binding.registry.AbstractRegistry#bindingMap()
+	 * @see
+	 * com.indyforge.foxnet.rmi.binding.registry.AbstractRegistry#bindingMap()
 	 */
 	@Override
 	protected Map<Long, StaticBinding> bindingMap() {

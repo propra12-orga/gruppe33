@@ -5,12 +5,15 @@ import java.util.EnumMap;
 import java.util.Iterator;
 import java.util.Map;
 
+import propra2012.gruppe33.bomberman.graphics.rendering.scenegraph.grid.GridConstants.Input;
+
 import com.indyforge.twod.engine.graphics.rendering.scenegraph.Entity;
 import com.indyforge.twod.engine.graphics.rendering.scenegraph.GraphicsEntity;
 import com.indyforge.twod.engine.graphics.rendering.scenegraph.math.Grid;
 import com.indyforge.twod.engine.graphics.rendering.scenegraph.math.Mathf;
 import com.indyforge.twod.engine.graphics.rendering.scenegraph.math.Vector2f;
 import com.indyforge.twod.engine.graphics.rendering.scenegraph.math.Vector2f.Direction;
+import com.indyforge.twod.engine.graphics.rendering.scenegraph.network.input.InputChange;
 import com.indyforge.twod.engine.util.FilteredIterator;
 
 /**
@@ -51,55 +54,6 @@ public final class GridController extends Entity {
 	// The input map
 	private final Map<Direction, Boolean> inputMap = new EnumMap<Direction, Boolean>(
 			Direction.class);
-
-	/**
-	 * @return the input map of this controller.
-	 */
-	public Map<Direction, Boolean> inputMap() {
-		return inputMap;
-	}
-
-	/**
-	 * @param dir
-	 *            The direction.
-	 * @return true if the input map is set for the given direction, otherwise
-	 *         false.
-	 */
-	public boolean hasInputFor(Direction dir) {
-		Boolean value = inputMap.get(dir);
-		return value != null ? value : false;
-	}
-
-	/**
-	 * @return the last direction of the entity.
-	 */
-	public Direction direction() {
-		return direction;
-	}
-
-	/**
-	 * @return the moving flag.
-	 */
-	public boolean isMoving() {
-		return moving;
-	}
-
-	/**
-	 * @return the velocity multiplier.
-	 */
-	public float velocityMultiplier() {
-		return velocityMultiplier;
-	}
-
-	/**
-	 * Sets the velocity multiplier.
-	 * 
-	 * @param velocityMultiplier
-	 *            The new multiplier you want to set.
-	 */
-	public void velocityMultiplier(float velocityMultiplier) {
-		this.velocityMultiplier = velocityMultiplier;
-	}
 
 	private void processMovement(boolean negative, boolean vertical,
 			GraphicsEntity gridEntity, GraphicsEntity node,
@@ -294,15 +248,6 @@ public final class GridController extends Entity {
 		// Reduce boxing...
 		float maxSpeed = maxSpeedObj.floatValue();
 
-		// inputMap.put(Direction.North,
-		// gridEntity.findScene().isPressed(KeyEvent.VK_UP));
-		// inputMap.put(Direction.South,
-		// gridEntity.findScene().isPressed(KeyEvent.VK_DOWN));
-		// inputMap.put(Direction.West,
-		// gridEntity.findScene().isPressed(KeyEvent.VK_LEFT));
-		// inputMap.put(Direction.East,
-		// gridEntity.findScene().isPressed(KeyEvent.VK_RIGHT));
-
 		// Init the input flags
 		boolean north = hasInputFor(Direction.North), south = hasInputFor(Direction.South), west = hasInputFor(Direction.West), east = hasInputFor(Direction.East);
 
@@ -429,5 +374,91 @@ public final class GridController extends Entity {
 			 */
 			GridRoutines.rearrangeGridNode(node);
 		}
+	}
+
+	/*
+	 * (non-Javadoc)
+	 * 
+	 * @see
+	 * com.indyforge.twod.engine.graphics.rendering.scenegraph.Entity#onEvent
+	 * (com.indyforge.twod.engine.graphics.rendering.scenegraph.Entity,
+	 * java.lang.Object, java.lang.Object[])
+	 */
+	@SuppressWarnings("unchecked")
+	@Override
+	protected void onEvent(Entity source, Object event, Object... params) {
+		super.onEvent(source, event, params);
+
+		if (event instanceof String) {
+			String str = (String) event;
+			if (str.equals(InputChange.EVENT_NAME)) {
+				Map<Input, Boolean> input = (Map<Input, Boolean>) params[0];
+
+				if (input != null) {
+					Boolean north = input.get(Input.Up);
+					inputMap.put(Direction.North, north != null ? north : false);
+
+					Boolean south = input.get(Input.Down);
+					inputMap.put(Direction.South, south != null ? south : false);
+
+					Boolean west = input.get(Input.Left);
+					inputMap.put(Direction.West, west != null ? west : false);
+
+					Boolean east = input.get(Input.Right);
+					inputMap.put(Direction.East, east != null ? east : false);
+				} else {
+					inputMap.clear();
+				}
+			}
+		}
+	}
+
+	/**
+	 * @return the input map of this controller.
+	 */
+	public Map<Direction, Boolean> inputMap() {
+		return inputMap;
+	}
+
+	/**
+	 * @param dir
+	 *            The direction.
+	 * @return true if the input map is set for the given direction, otherwise
+	 *         false.
+	 */
+	public boolean hasInputFor(Direction dir) {
+		Boolean value = inputMap.get(dir);
+		return value != null ? value : false;
+	}
+
+	/**
+	 * @return the last direction of the entity.
+	 */
+	public Direction direction() {
+		return direction;
+	}
+
+	/**
+	 * @return the moving flag.
+	 */
+	public boolean isMoving() {
+		return moving;
+	}
+
+	/**
+	 * @return the velocity multiplier.
+	 */
+	public float velocityMultiplier() {
+		return velocityMultiplier;
+	}
+
+	/**
+	 * Sets the velocity multiplier.
+	 * 
+	 * @param velocityMultiplier
+	 *            The new multiplier you want to set.
+	 */
+	public void velocityMultiplier(float velocityMultiplier) {
+		this.velocityMultiplier = velocityMultiplier;
 	}
 }

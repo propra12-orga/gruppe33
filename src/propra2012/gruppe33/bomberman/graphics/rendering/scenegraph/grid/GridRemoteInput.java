@@ -5,28 +5,28 @@ import java.util.EnumMap;
 import java.util.Map;
 import java.util.UUID;
 
-import chn.GridChange;
+import propra2012.gruppe33.bomberman.graphics.rendering.scenegraph.grid.GridConstants.Input;
+import chn.GridInputChange;
 
 import com.indyforge.twod.engine.graphics.rendering.scenegraph.GraphicsEntity;
 import com.indyforge.twod.engine.graphics.rendering.scenegraph.Scene;
-import com.indyforge.twod.engine.graphics.rendering.scenegraph.math.Vector2f.Direction;
 
 /**
  * 
  * @author Christopher Probst
  * 
  */
-public final class GridRemoteController extends GraphicsEntity {
+public final class GridRemoteInput extends GraphicsEntity {
 
 	/**
 	 * 
 	 */
 	private static final long serialVersionUID = 1L;
 	private final UUID peerKey;
-	private final Map<Direction, Boolean> inputMap = new EnumMap<Direction, Boolean>(
-			Direction.class);
+	private final Map<Input, Boolean> inputMap = new EnumMap<Input, Boolean>(
+			Input.class);
 
-	public GridRemoteController(UUID peerKey) {
+	public GridRemoteInput(UUID peerKey) {
 		this.peerKey = peerKey;
 	}
 
@@ -36,17 +36,17 @@ public final class GridRemoteController extends GraphicsEntity {
 
 		Scene scene = findScene();
 
-		final Map<Direction, Boolean> tmp = new EnumMap<Direction, Boolean>(
-				Direction.class);
-		tmp.put(Direction.North, scene.isPressed(KeyEvent.VK_UP));
-		tmp.put(Direction.South, scene.isPressed(KeyEvent.VK_DOWN));
-		tmp.put(Direction.West, scene.isPressed(KeyEvent.VK_LEFT));
-		tmp.put(Direction.East, scene.isPressed(KeyEvent.VK_RIGHT));
+		final Map<Input, Boolean> tmp = new EnumMap<Input, Boolean>(Input.class);
+		tmp.put(Input.Up, scene.isPressed(KeyEvent.VK_UP));
+		tmp.put(Input.Down, scene.isPressed(KeyEvent.VK_DOWN));
+		tmp.put(Input.Left, scene.isPressed(KeyEvent.VK_LEFT));
+		tmp.put(Input.Right, scene.isPressed(KeyEvent.VK_RIGHT));
+		tmp.put(Input.PlaceBomb, scene.isPressed(KeyEvent.VK_SPACE));
 
 		if (scene.processor().hasSession() && !tmp.equals(inputMap)) {
 			inputMap.putAll(tmp);
 			scene.processor().session().server()
-					.applyChange(new GridChange(tmp, peerKey));
+					.applyChange(new GridInputChange(peerKey, tmp));
 		}
 	}
 }

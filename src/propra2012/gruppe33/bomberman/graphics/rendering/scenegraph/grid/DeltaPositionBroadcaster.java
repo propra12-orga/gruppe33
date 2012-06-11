@@ -1,11 +1,11 @@
 package propra2012.gruppe33.bomberman.graphics.rendering.scenegraph.grid;
 
+import chn.TranslateChange;
 
 import com.indyforge.twod.engine.graphics.rendering.scenegraph.Entity;
 import com.indyforge.twod.engine.graphics.rendering.scenegraph.GraphicsEntity;
 import com.indyforge.twod.engine.graphics.rendering.scenegraph.Scene;
 import com.indyforge.twod.engine.graphics.rendering.scenegraph.math.Vector2f;
-import com.indyforge.twod.engine.graphics.rendering.scenegraph.network.PositionChange;
 
 public class DeltaPositionBroadcaster extends Entity {
 
@@ -41,7 +41,9 @@ public class DeltaPositionBroadcaster extends Entity {
 			Vector2f delta = pos.sub(oldPosition);
 			oldPosition.set(pos);
 
-			PositionChange pc = new PositionChange(delta, observed.registrationKey());
+			TranslateChange pc = new TranslateChange(delta,
+					observed.registrationKey());
+
 			scene.processor().adminSessionServer().broadcast().applyChange(pc);
 
 			timePassed = 0;

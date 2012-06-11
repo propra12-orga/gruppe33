@@ -12,6 +12,7 @@ import com.indyforge.twod.engine.graphics.rendering.scenegraph.animation.Rendere
 import com.indyforge.twod.engine.graphics.rendering.scenegraph.math.Grid;
 import com.indyforge.twod.engine.graphics.rendering.scenegraph.math.Vector2f;
 import com.indyforge.twod.engine.graphics.rendering.scenegraph.math.Vector2f.Direction;
+import com.indyforge.twod.engine.graphics.rendering.scenegraph.network.input.InputChange;
 import com.indyforge.twod.engine.graphics.sprite.Animation;
 import com.indyforge.twod.engine.graphics.sprite.AnimationBundle;
 import com.indyforge.twod.engine.graphics.sprite.Sprite;
@@ -226,6 +227,10 @@ public final class GridRoutines implements GridConstants {
 
 		// Create new player
 		GraphicsEntity player = new GraphicsEntity();
+
+		// Register the event name
+		player.events().put(InputChange.EVENT_NAME,
+				player.iterableChildren(true, true));
 
 		// Set player name
 		player.name(name);

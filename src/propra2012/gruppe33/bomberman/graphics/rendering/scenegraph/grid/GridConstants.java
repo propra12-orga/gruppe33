@@ -10,8 +10,12 @@ package propra2012.gruppe33.bomberman.graphics.rendering.scenegraph.grid;
  */
 public interface GridConstants {
 
+	enum Input {
+		Up, Down, Right, Left, PlaceBomb
+	}
+
 	int EXPLOSION_ORDER = 100000;
-	
+
 	Object FREE_TAG = new Object();
 	Object EXPLOSION_TAG = new Object();
 

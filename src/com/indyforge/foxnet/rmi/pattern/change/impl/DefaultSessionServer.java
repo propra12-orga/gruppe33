@@ -62,8 +62,8 @@ public final class DefaultSessionServer<T> implements AdminSessionServer<T> {
 	/*
 	 * (non-Javadoc)
 	 * 
-	 * @see
-	 * com.indyforge.foxnet.rmi.pattern.change.AdminSessionServer#isAcceptingSessions()
+	 * @see com.indyforge.foxnet.rmi.pattern.change.AdminSessionServer#
+	 * isAcceptingSessions()
 	 */
 	@Override
 	public synchronized boolean isAcceptingSessions() {
@@ -81,7 +81,8 @@ public final class DefaultSessionServer<T> implements AdminSessionServer<T> {
 	/*
 	 * (non-Javadoc)
 	 * 
-	 * @see com.indyforge.foxnet.rmi.pattern.change.AdminSessionServer#acceptingSessions
+	 * @see
+	 * com.indyforge.foxnet.rmi.pattern.change.AdminSessionServer#acceptingSessions
 	 * (boolean)
 	 */
 	@Override
@@ -93,8 +94,8 @@ public final class DefaultSessionServer<T> implements AdminSessionServer<T> {
 	 * @Override(non-Javadoc)
 	 * 
 	 * @see
-	 * com.indyforge.foxnet.rmi.pattern.change.SessionServer#openSession(com.indyforge.foxnet.rmi
-	 * .pattern.change.Changeable, java.lang.String)
+	 * com.indyforge.foxnet.rmi.pattern.change.SessionServer#openSession(com
+	 * .indyforge.foxnet.rmi .pattern.change.Changeable, java.lang.String)
 	 */
 	public synchronized Session<T> openSession(Changeable<T> changeable,
 			String name) {
@@ -134,7 +135,8 @@ public final class DefaultSessionServer<T> implements AdminSessionServer<T> {
 	/*
 	 * (non-Javadoc)
 	 * 
-	 * @see com.indyforge.foxnet.rmi.pattern.change.AdminSessionServer#sessionCount()
+	 * @see
+	 * com.indyforge.foxnet.rmi.pattern.change.AdminSessionServer#sessionCount()
 	 */
 	@Override
 	public synchronized int sessionCount() {
@@ -154,7 +156,8 @@ public final class DefaultSessionServer<T> implements AdminSessionServer<T> {
 	/*
 	 * (non-Javadoc)
 	 * 
-	 * @see com.indyforge.foxnet.rmi.pattern.change.AdminSessionServer#broadcast()
+	 * @see
+	 * com.indyforge.foxnet.rmi.pattern.change.AdminSessionServer#broadcast()
 	 */
 	@Override
 	public Changeable<T> broadcast() {
@@ -164,7 +167,8 @@ public final class DefaultSessionServer<T> implements AdminSessionServer<T> {
 	/*
 	 * (non-Javadoc)
 	 * 
-	 * @see com.indyforge.foxnet.rmi.pattern.change.AdminSessionServer#combined()
+	 * @see
+	 * com.indyforge.foxnet.rmi.pattern.change.AdminSessionServer#combined()
 	 */
 	@Override
 	public Changeable<T> combined() {
@@ -188,7 +192,8 @@ public final class DefaultSessionServer<T> implements AdminSessionServer<T> {
 	/*
 	 * (non-Javadoc)
 	 * 
-	 * @see com.indyforge.foxnet.rmi.pattern.change.AdminSessionServer#sessions()
+	 * @see
+	 * com.indyforge.foxnet.rmi.pattern.change.AdminSessionServer#sessions()
 	 */
 	@Override
 	public synchronized Map<Long, Session<T>> sessions() {
@@ -198,7 +203,8 @@ public final class DefaultSessionServer<T> implements AdminSessionServer<T> {
 	/*
 	 * (non-Javadoc)
 	 * 
-	 * @see com.indyforge.foxnet.rmi.pattern.change.AdminSessionServer#closeAll()
+	 * @see
+	 * com.indyforge.foxnet.rmi.pattern.change.AdminSessionServer#closeAll()
 	 */
 	@SuppressWarnings("unchecked")
 	@Override

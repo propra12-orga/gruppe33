@@ -51,7 +51,8 @@ public final class Invocation extends Future {
 	/*
 	 * (non-Javadoc)
 	 * 
-	 * @see com.indyforge.foxnet.rmi.util.Future#modifyAttachment(java.lang.Object)
+	 * @see
+	 * com.indyforge.foxnet.rmi.util.Future#modifyAttachment(java.lang.Object)
 	 */
 	@Override
 	protected Object modifyAttachment(Object attachment) {

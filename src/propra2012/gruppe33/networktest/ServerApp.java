@@ -6,16 +6,14 @@ import java.util.Scanner;
 import java.util.UUID;
 
 import propra2012.gruppe33.PreMilestoneApp;
-
 import chn.InputActivator;
 
 import com.indyforge.foxnet.rmi.pattern.change.AdminSessionServer;
 import com.indyforge.twod.engine.graphics.rendering.scenegraph.Scene;
 import com.indyforge.twod.engine.graphics.rendering.scenegraph.SceneProcessor;
 import com.indyforge.twod.engine.graphics.rendering.scenegraph.SceneProcessor.NetworkMode;
-import com.indyforge.twod.engine.graphics.rendering.scenegraph.network.ResetNetworkTimeChange;
-import com.indyforge.twod.engine.graphics.rendering.scenegraph.network.SceneChange;
-import com.indyforge.twod.engine.io.IoRoutines;
+import com.indyforge.twod.engine.graphics.rendering.scenegraph.network.scene.ResetNetworkTimeChange;
+import com.indyforge.twod.engine.graphics.rendering.scenegraph.network.scene.SceneChange;
 
 public class ServerApp {
 

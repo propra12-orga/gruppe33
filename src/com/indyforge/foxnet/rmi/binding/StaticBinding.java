@@ -33,7 +33,6 @@ package com.indyforge.foxnet.rmi.binding;
 
 import com.indyforge.foxnet.rmi.Remote;
 
-
 /**
  * This class represents a static local binding.
  * 

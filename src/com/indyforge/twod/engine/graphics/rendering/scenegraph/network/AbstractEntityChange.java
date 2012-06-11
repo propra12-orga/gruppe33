@@ -53,6 +53,7 @@ public abstract class AbstractEntityChange<T extends Entity> implements
 	@Override
 	public void readExternal(ObjectInput in) throws IOException,
 			ClassNotFoundException {
+
 		registrationKey = in.readBoolean() ? new UUID(in.readLong(),
 				in.readLong()) : null;
 	}
@@ -74,7 +75,8 @@ public abstract class AbstractEntityChange<T extends Entity> implements
 	/*
 	 * (non-Javadoc)
 	 * 
-	 * @see com.indyforge.foxnet.rmi.pattern.change.Change#apply(java.lang.Object)
+	 * @see
+	 * com.indyforge.foxnet.rmi.pattern.change.Change#apply(java.lang.Object)
 	 */
 	@SuppressWarnings("unchecked")
 	@Override

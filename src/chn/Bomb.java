@@ -1,5 +1,8 @@
 package chn;
 
+import java.io.IOException;
+import java.io.ObjectInput;
+import java.io.ObjectOutput;
 import java.util.UUID;
 
 import propra2012.gruppe33.bomberman.graphics.rendering.scenegraph.grid.BombSpawner;
@@ -7,7 +10,6 @@ import propra2012.gruppe33.bomberman.graphics.rendering.scenegraph.grid.GridRout
 
 import com.indyforge.twod.engine.graphics.rendering.scenegraph.GraphicsEntity;
 import com.indyforge.twod.engine.graphics.rendering.scenegraph.Scene;
-import com.indyforge.twod.engine.graphics.rendering.scenegraph.math.Grid;
 import com.indyforge.twod.engine.graphics.rendering.scenegraph.network.AbstractEntityChange;
 
 public class Bomb extends AbstractEntityChange<BombSpawner> {
@@ -20,22 +22,34 @@ public class Bomb extends AbstractEntityChange<BombSpawner> {
 		super(registrationKey);
 	}
 
+	public UUID dest;
+
+	@Override
+	public void writeExternal(ObjectOutput out) throws IOException {
+		super.writeExternal(out);
+		out.writeObject(dest);
+	}
+
+	@Override
+	public void readExternal(ObjectInput in) throws IOException,
+			ClassNotFoundException {
+		super.readExternal(in);
+		dest = (UUID) in.readObject();
+	}
+
 	@Override
 	protected void apply(BombSpawner entity) {
 
 		// Get scene
 		Scene scene = ((GraphicsEntity) entity.parent()).findScene();
-
-		GraphicsEntity node = ((GraphicsEntity) entity.parent().parent());
-		GraphicsEntity grid = (GraphicsEntity) node.parent();
+		GraphicsEntity node = ((GraphicsEntity) scene.registry().get(dest));
 
 		GraphicsEntity bomb = GridRoutines.createExplosion(entity.sprite(), 33);
 
 		scene.soundManager().playSound("exp", true);
 
 		// Attach the bomb
-		grid.childAt(grid.typeProp(Grid.class).index(node.position())).attach(
-				bomb);
+		node.attach(bomb);
 
 	}
 }

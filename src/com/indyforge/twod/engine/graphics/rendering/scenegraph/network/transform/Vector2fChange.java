@@ -1,4 +1,4 @@
-package com.indyforge.twod.engine.graphics.rendering.scenegraph.network;
+package com.indyforge.twod.engine.graphics.rendering.scenegraph.network.transform;
 
 import java.io.IOException;
 import java.io.ObjectInput;
@@ -7,6 +7,7 @@ import java.util.UUID;
 
 import com.indyforge.twod.engine.graphics.rendering.scenegraph.GraphicsEntity;
 import com.indyforge.twod.engine.graphics.rendering.scenegraph.math.Vector2f;
+import com.indyforge.twod.engine.graphics.rendering.scenegraph.network.AbstractEntityChange;
 
 /**
  * 
@@ -50,8 +51,10 @@ public abstract class Vector2fChange extends
 	public void readExternal(ObjectInput in) throws IOException,
 			ClassNotFoundException {
 		super.readExternal(in);
-		vector = in.readBoolean() ? new Vector2f(in.readFloat(), in.readFloat())
-				: null;
+		vector = in.readBoolean() ? new Vector2f() : null;
+		if (vector != null) {
+			vector.readExternal(in);
+		}
 	}
 
 	/*
@@ -65,8 +68,7 @@ public abstract class Vector2fChange extends
 		super.writeExternal(out);
 		out.writeBoolean(vector != null);
 		if (vector != null) {
-			out.writeFloat(vector.x);
-			out.writeFloat(vector.y);
+			vector.writeExternal(out);
 		}
 	}
 }

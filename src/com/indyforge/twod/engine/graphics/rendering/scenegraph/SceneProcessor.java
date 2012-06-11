@@ -126,6 +126,11 @@ public final class SceneProcessor implements Changeable<SceneProcessor> {
 	private volatile BufferStrategy bufferStrategy;
 
 	/*
+	 * The last thread which processed this scene processor.
+	 */
+	private volatile Thread lastProcessorThread;
+
+	/*
 	 * The fast offscreen image. Ultimate hardware performance. There is no
 	 * better way to render graphics in java2d.
 	 */
@@ -577,13 +582,17 @@ public final class SceneProcessor implements Changeable<SceneProcessor> {
 	 */
 	@Override
 	public void applyChange(final Change<SceneProcessor> change) {
-		tasks().offer(new Runnable() {
+		if (Thread.currentThread().equals(lastProcessorThread)) {
+			change.apply(this);
+		} else {
+			tasks().offer(new Runnable() {
 
-			@Override
-			public void run() {
-				change.apply(SceneProcessor.this);
-			}
-		});
+				@Override
+				public void run() {
+					change.apply(SceneProcessor.this);
+				}
+			});
+		}
 	}
 
 	/**
@@ -711,6 +720,9 @@ public final class SceneProcessor implements Changeable<SceneProcessor> {
 	 *             If some kind of error occurs.
 	 */
 	public void process(int maxFPS) throws Exception {
+
+		// Save the current thread
+		lastProcessorThread = Thread.currentThread();
 
 		// Process all pending tasks
 		processTasks();

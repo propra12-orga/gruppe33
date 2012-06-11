@@ -1,4 +1,4 @@
-package com.indyforge.twod.engine.graphics.rendering.scenegraph.network;
+package com.indyforge.twod.engine.graphics.rendering.scenegraph.network.scene;
 
 import com.indyforge.foxnet.rmi.pattern.change.Change;
 import com.indyforge.twod.engine.graphics.rendering.scenegraph.SceneProcessor;
