@@ -2,6 +2,7 @@ package com.indyforge.twod.engine.graphics.rendering.scenegraph;
 
 import java.awt.Canvas;
 import java.awt.Color;
+import java.awt.Frame;
 import java.awt.Graphics;
 import java.awt.Graphics2D;
 import java.awt.Toolkit;
@@ -10,20 +11,21 @@ import java.awt.event.ComponentEvent;
 import java.awt.image.BufferStrategy;
 import java.awt.image.BufferedImage;
 import java.io.IOException;
+import java.lang.reflect.InvocationTargetException;
 import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.LinkedBlockingDeque;
 
-import com.foxnet.rmi.InvokerManager;
-import com.foxnet.rmi.LookupException;
-import com.foxnet.rmi.RemoteInterfaces;
-import com.foxnet.rmi.pattern.change.AdminSessionServer;
-import com.foxnet.rmi.pattern.change.Change;
-import com.foxnet.rmi.pattern.change.Changeable;
-import com.foxnet.rmi.pattern.change.Session;
-import com.foxnet.rmi.pattern.change.SessionServer;
-import com.foxnet.rmi.pattern.change.impl.DefaultSessionServer;
-import com.foxnet.rmi.transport.network.ConnectionManager;
+import com.indyforge.foxnet.rmi.InvokerManager;
+import com.indyforge.foxnet.rmi.LookupException;
+import com.indyforge.foxnet.rmi.pattern.change.AdminSessionServer;
+import com.indyforge.foxnet.rmi.pattern.change.Change;
+import com.indyforge.foxnet.rmi.pattern.change.Changeable;
+import com.indyforge.foxnet.rmi.pattern.change.Session;
+import com.indyforge.foxnet.rmi.pattern.change.SessionServer;
+import com.indyforge.foxnet.rmi.pattern.change.impl.DefaultSessionServer;
+import com.indyforge.foxnet.rmi.transport.network.ConnectionManager;
 import com.indyforge.twod.engine.graphics.GraphicsRoutines;
+import com.indyforge.twod.engine.resources.assets.AssetManager;
 
 /**
  * This class supports active rendering which is the most performant way to
@@ -37,28 +39,14 @@ import com.indyforge.twod.engine.graphics.GraphicsRoutines;
  * @author Christopher Probst
  * @see Scene
  */
-@RemoteInterfaces(Changeable.class)
-public final class SceneProcessor extends Canvas implements
-		Changeable<SceneProcessor> {
+public final class SceneProcessor implements Changeable<SceneProcessor> {
 
 	public static final String REMOTE_NAME = "session_server";
-
-	/**
-	 * 
-	 */
-	private static final long serialVersionUID = 1L;
 
 	/*
 	 * Used for tasks which should be processed in the main thread.
 	 */
 	private BlockingQueue<Runnable> tasks = new LinkedBlockingDeque<Runnable>();
-
-	/*
-	 * This is the thread-safe buffer strategy for rendering.
-	 * 
-	 * VOLATILE: The var is set in the EDT.
-	 */
-	private volatile BufferStrategy bufferStrategy;
 
 	/*
 	 * ************************************************************************
@@ -121,6 +109,28 @@ public final class SceneProcessor extends Canvas implements
 	 */
 
 	/*
+	 * The frame of this scene processor or null (If headless).
+	 */
+	private final Frame frame;
+
+	/*
+	 * The canvas of this scene processor or null (If headless).
+	 */
+	private final Canvas canvas;
+
+	/*
+	 * This is the thread-safe buffer strategy for rendering.
+	 * 
+	 * VOLATILE: The var is set in the EDT.
+	 */
+	private volatile BufferStrategy bufferStrategy;
+
+	/*
+	 * The last thread which processed this scene processor.
+	 */
+	private volatile Thread lastProcessorThread;
+
+	/*
 	 * The fast offscreen image. Ultimate hardware performance. There is no
 	 * better way to render graphics in java2d.
 	 */
@@ -129,7 +139,7 @@ public final class SceneProcessor extends Canvas implements
 	/*
 	 * The shutdown requested flag.
 	 */
-	private boolean shutdownRequested = false,
+	private volatile boolean shutdownRequested = false,
 
 	/*
 	 * The only render with focus flag.
@@ -142,7 +152,7 @@ public final class SceneProcessor extends Canvas implements
 	private Scene root;
 
 	/*
-	 * Used for timed rendering.
+	 * Used for timing.
 	 */
 	private long curTime, lastTime = -1;
 
@@ -163,10 +173,37 @@ public final class SceneProcessor extends Canvas implements
 	}
 
 	/**
-	 * Creates a new offline scene processor.
+	 * Creates a new offline scene processor (Use only in headless mode).
+	 * 
 	 */
 	public SceneProcessor() {
-		this(NetworkMode.Offline);
+		this(NetworkMode.Offline, null, -1, -1);
+	}
+
+	/**
+	 * Creates a new offline scene processor.
+	 * 
+	 * @param title
+	 *            The title of the frame. (Ignored if headless mode)
+	 * @param width
+	 *            The width of the frame. (Ignored if headless mode)
+	 * @param height
+	 *            The height of the frame. (Ignored if headless mode)
+	 */
+	public SceneProcessor(String title, int width, int height)
+			throws InterruptedException, InvocationTargetException {
+		this(NetworkMode.Offline, title, width, height);
+	}
+
+	/**
+	 * Creates a new scene processor using the given network mode (Use only in
+	 * headless mode).
+	 * 
+	 * @param networkMode
+	 *            The network mode of this processor.
+	 */
+	public SceneProcessor(NetworkMode networkMode) {
+		this(networkMode, null, -1, -1);
 	}
 
 	/**
@@ -174,28 +211,104 @@ public final class SceneProcessor extends Canvas implements
 	 * 
 	 * @param networkMode
 	 *            The network mode of this processor.
+	 * @param title
+	 *            The title of the frame. (Ignored if headless mode)
+	 * @param width
+	 *            The width of the frame. (Ignored if headless mode)
+	 * @param height
+	 *            The height of the frame. (Ignored if headless mode)
 	 */
-	public SceneProcessor(NetworkMode networkMode) {
+	public SceneProcessor(NetworkMode networkMode, String title, int width,
+			int height) {
 
 		// Set the network mode
 		networkMode(networkMode);
 
-		// The canvas is rendered by us!
-		setIgnoreRepaint(true);
+		/*
+		 * Very important! The twod-engine decides between headless and
+		 * not-headless mode. This is very useful for server systems. In
+		 * headless mode no resources like images, sound, etc. are really
+		 * loaded. Only the references to these resources are used.
+		 */
+		if (!AssetManager.isHeadless()) {
 
-		// This canvas can receive input
-		setFocusable(true);
+			/*
+			 * Create a new canvas implementation if not headless.
+			 */
+			canvas = new Canvas() {
+				/**
+				 * 
+				 */
+				private static final long serialVersionUID = 1L;
 
-		// Add resize listener
-		addComponentListener(new ComponentAdapter() {
+				/*
+				 * (non-Javadoc)
+				 * 
+				 * @see java.awt.Canvas#addNotify()
+				 */
+				@Override
+				public void addNotify() {
+					super.addNotify();
 
-			@Override
-			public void componentResized(ComponentEvent e) {
-				// Threading issues...
-				peerWidth = getWidth();
-				peerHeight = getHeight();
+					// Double buffered should be fine
+					createBufferStrategy(2);
+
+					// Create the strategy
+					bufferStrategy = getBufferStrategy();
+				}
+			};
+
+			// The canvas is rendered by us!
+			canvas.setIgnoreRepaint(true);
+
+			// This canvas can receive input
+			canvas.setFocusable(true);
+
+			// Add resize listener
+			canvas.addComponentListener(new ComponentAdapter() {
+
+				@Override
+				public void componentResized(ComponentEvent e) {
+					// Threading issues...
+					peerWidth = canvas.getWidth();
+					peerHeight = canvas.getHeight();
+				}
+			});
+
+			/*
+			 * Create a new frame using this scene processor.
+			 */
+			try {
+				frame = GraphicsRoutines
+						.createFrame(this, title, width, height);
+			} catch (Exception e1) {
+				throw new RuntimeException("Failed to create scene processor "
+						+ "frame. Reason: " + e1.getMessage(), e1);
 			}
-		});
+		} else {
+			// Headless...
+			frame = null;
+			canvas = null;
+			bufferStrategy = null;
+			offscreen = null;
+			peerWidth = -1;
+			peerHeight = -1;
+		}
+	}
+
+	/**
+	 * @return the frame (which contains the canvas) of this scene processor or
+	 *         null in headless mode.
+	 */
+	public Frame frame() {
+		return frame;
+	}
+
+	/**
+	 * @return the canvas of this scene processor or null in headless mode.
+	 */
+	public Canvas canvas() {
+		return canvas;
 	}
 
 	/**
@@ -287,6 +400,17 @@ public final class SceneProcessor extends Canvas implements
 				invokerManager = null;
 				session = null;
 			}
+		}
+	}
+
+	/**
+	 * Disposes this scene processor which is not able to work after calling
+	 * this method.
+	 */
+	public void dispose() {
+		releaseNetworkResources();
+		if (frame != null) {
+			frame.dispose();
 		}
 	}
 
@@ -458,13 +582,17 @@ public final class SceneProcessor extends Canvas implements
 	 */
 	@Override
 	public void applyChange(final Change<SceneProcessor> change) {
-		tasks().offer(new Runnable() {
+		if (Thread.currentThread().equals(lastProcessorThread)) {
+			change.apply(this);
+		} else {
+			tasks().offer(new Runnable() {
 
-			@Override
-			public void run() {
-				change.apply(SceneProcessor.this);
-			}
-		});
+				@Override
+				public void run() {
+					applyChange(change);
+				}
+			});
+		}
 	}
 
 	/**
@@ -476,7 +604,7 @@ public final class SceneProcessor extends Canvas implements
 	public void root(Scene root) {
 		// Remove old link
 		if (this.root != null) {
-			this.root.disconnectFrom(this);
+			this.root.disconnectFrom(canvas);
 			this.root.processor = null;
 		}
 
@@ -486,7 +614,7 @@ public final class SceneProcessor extends Canvas implements
 		// Connect if not null...
 		if (root != null) {
 			// Connect the input
-			root.connectTo(this);
+			root.connectTo(canvas);
 
 			// Set processor
 			root.processor = this;
@@ -525,8 +653,18 @@ public final class SceneProcessor extends Canvas implements
 	 * @param shutdownRequested
 	 *            If true the shutdown will be initiated.
 	 */
-	public void shutdownRequest(boolean shutdownRequested) {
-		this.shutdownRequested = shutdownRequested;
+	public void shutdownRequest(final boolean shutdownRequested) {
+		if (Thread.currentThread().equals(lastProcessorThread)) {
+			this.shutdownRequested = shutdownRequested;
+		} else {
+			tasks().offer(new Runnable() {
+
+				@Override
+				public void run() {
+					shutdownRequest(shutdownRequested);
+				}
+			});
+		}
 	}
 
 	/**
@@ -546,22 +684,6 @@ public final class SceneProcessor extends Canvas implements
 		this.onlyRenderWithFocus = onlyRenderWithFocus;
 	}
 
-	/*
-	 * (non-Javadoc)
-	 * 
-	 * @see java.awt.Canvas#addNotify()
-	 */
-	@Override
-	public void addNotify() {
-		super.addNotify();
-
-		// Double buffered should be fine
-		createBufferStrategy(2);
-
-		// Create the strategy
-		bufferStrategy = getBufferStrategy();
-	}
-
 	/**
 	 * Processes all pending tasks. BE VERY CAREFUL with this method. It should
 	 * only be called in the game thread. Otherwise you will loose
@@ -578,6 +700,29 @@ public final class SceneProcessor extends Canvas implements
 	}
 
 	/**
+	 * Starts the game loop. This method blocks until shutdown is requested or
+	 * an exception is thrown. This method {@link SceneProcessor#dispose()
+	 * disposes} this scene processor when returning.
+	 * 
+	 * @param maxFPS
+	 *            The maximum frames per second. A value < 1 means no max.
+	 * @throws Exception
+	 *             If some kind of error occurs.
+	 */
+	public void start(int maxFps) throws Exception {
+		try {
+			while (!isShutdownRequested()) {
+				// Process the whole scene!
+				process(maxFps);
+			}
+		} finally {
+
+			// Dispose the scene processor
+			dispose();
+		}
+	}
+
+	/**
 	 * Process the whole scene.
 	 * 
 	 * @param maxFPS
@@ -586,6 +731,9 @@ public final class SceneProcessor extends Canvas implements
 	 *             If some kind of error occurs.
 	 */
 	public void process(int maxFPS) throws Exception {
+
+		// Save the current thread
+		lastProcessorThread = Thread.currentThread();
 
 		// Process all pending tasks
 		processTasks();
@@ -607,66 +755,82 @@ public final class SceneProcessor extends Canvas implements
 			return;
 		}
 
-		// Read into local cache
-		int w = peerWidth, h = peerHeight;
+		// Was the scene processed ?
+		boolean processed = false;
 
-		// Load from cache
-		BufferStrategy ptr = bufferStrategy;
+		/*
+		 * Do only render if NOT in headless mode!
+		 */
+		if (canvas != null) {
 
-		// Check size!
-		if (w > 0 && h > 0 && ptr != null
-				&& (!onlyRenderWithFocus || isFocusOwner())) {
-			/*
-			 * Advanced image rendering.
-			 */
-			// Create new...
-			if (offscreen == null || offscreen.getWidth() != w
-					|| offscreen.getHeight() != h) {
+			// Read into local cache
+			int w = peerWidth, h = peerHeight;
 
-				// Create new compatible image for fast rendering
-				offscreen = GraphicsRoutines.createImage(w, h);
+			// Load from cache
+			BufferStrategy ptr = bufferStrategy;
+
+			if (w > 0 && h > 0 && ptr != null
+					&& (!onlyRenderWithFocus || canvas.isFocusOwner())) {
+
+				/*
+				 * Advanced image rendering.
+				 */
+				// Create new...
+				if (offscreen == null || offscreen.getWidth() != w
+						|| offscreen.getHeight() != h) {
+
+					// Create new compatible image for fast rendering
+					offscreen = GraphicsRoutines.createImage(w, h);
+				}
+
+				// Create new graphics
+				Graphics2D g2d = offscreen.createGraphics();
+				try {
+
+					// Black is a good background
+					g2d.setBackground(Color.BLACK);
+					g2d.clearRect(0, 0, w, h);
+
+					// Simulate the scene
+					root.simulate(g2d, w, h, curTime - lastTime);
+
+					// Scene is processed now
+					processed = true;
+				} finally {
+					// Dispose
+					g2d.dispose();
+				}
+
+				// Get the graphics context
+				Graphics frameBuffer = ptr.getDrawGraphics();
+
+				try {
+
+					// Always clear
+					frameBuffer.setColor(Color.black);
+					frameBuffer.fillRect(0, 0, w, h);
+
+					// Render the offscreen
+					frameBuffer.drawImage(offscreen, 0, 0, null);
+				} finally {
+					// Dispose the buffer
+					frameBuffer.dispose();
+				}
+
+				// Render to frame if not lost
+				if (!ptr.contentsLost()) {
+					ptr.show();
+				}
+
+				// Synchronize with toolkit
+				Toolkit.getDefaultToolkit().sync();
 			}
+		}
 
-			// Create new graphics
-			Graphics2D g2d = offscreen.createGraphics();
-			try {
-
-				// Black is a good background
-				g2d.setBackground(Color.BLACK);
-				g2d.clearRect(0, 0, w, h);
-
-				// Simulate the scene
-				root.simulate(g2d, w, h, curTime - lastTime);
-			} finally {
-				// Dispose
-				g2d.dispose();
-			}
-
-			// Get the graphics context
-			Graphics frameBuffer = ptr.getDrawGraphics();
-
-			try {
-
-				// Always clear
-				frameBuffer.setColor(Color.black);
-				frameBuffer.fillRect(0, 0, w, h);
-
-				// Render the offscreen
-				frameBuffer.drawImage(offscreen, 0, 0, null);
-			} finally {
-				// Dispose the buffer
-				frameBuffer.dispose();
-			}
-
-			// Render to frame if not lost
-			if (!ptr.contentsLost()) {
-				ptr.show();
-			}
-
-			// Synchronize with toolkit
-			Toolkit.getDefaultToolkit().sync();
-		} else {
-
+		/*
+		 * If the scene was still not processed yet...
+		 */
+		if (!processed) {
 			// Simulate the scene without drawing
 			root.simulate(null, -1, -1, curTime - lastTime);
 		}

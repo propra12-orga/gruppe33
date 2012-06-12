@@ -1,17 +1,16 @@
 package propra2012.gruppe33;
 
-import java.awt.Color;
-import java.awt.Graphics2D;
-import java.awt.event.KeyEvent;
+import java.awt.Point;
 import java.io.File;
+import java.util.List;
+import java.util.UUID;
 
+import propra2012.gruppe33.bomberman.graphics.rendering.scenegraph.grid.GridConstants;
 import propra2012.gruppe33.bomberman.graphics.rendering.scenegraph.grid.GridLoader;
 import propra2012.gruppe33.bomberman.graphics.rendering.scenegraph.grid.GridRoutines;
 
-import com.indyforge.twod.engine.graphics.rendering.scenegraph.Entity;
 import com.indyforge.twod.engine.graphics.rendering.scenegraph.GraphicsEntity;
 import com.indyforge.twod.engine.graphics.rendering.scenegraph.Scene;
-import com.indyforge.twod.engine.graphics.rendering.scenegraph.SceneProcessor;
 import com.indyforge.twod.engine.graphics.rendering.scenegraph.math.Grid;
 import com.indyforge.twod.engine.graphics.sprite.Sprite;
 import com.indyforge.twod.engine.resources.assets.AssetManager;
@@ -22,101 +21,63 @@ import com.indyforge.twod.engine.resources.assets.AssetManager;
  */
 public class PreMilestoneApp {
 
-	public static Scene createGUI() throws Exception {
+	public static Scene createDemoGame(List<UUID> refs, long... ids)
+			throws Exception {
 
-		final Scene gui = new Scene(new AssetManager(new File(
-				"scenes/default.zip")), 1024, 1024);
+		if (ids.length > 4) {
+			throw new IllegalArgumentException("Too many players");
+		}
 
-		gui.attach(new GraphicsEntity() {
-
-			@Override
-			protected void onRender(Graphics2D original, Graphics2D transformed) {
-				super.onRender(original, transformed);
-
-				transformed.setColor(Color.black);
-				transformed.drawString("START DEMO", 0, 0);
-				transformed.drawString("PRESS ENTER", -3, 10);
-			}
-
-			@Override
-			protected void onUpdate(float tpf) {
-				super.onUpdate(tpf);
-
-				if (gui.isPressed(KeyEvent.VK_ENTER)) {
-					SceneProcessor sp = gui.processor();
-					try {
-						sp.root(createDemoGame());
-					} catch (Exception e) {
-						e.printStackTrace();
-					}
-				}
-			}
-		});
-
-		gui.scale().set(10, 10);
-		gui.position().set(120, 512);
-
-		return gui;
-	}
-
-	public static Scene createDemoGame() throws Exception {
+		// Delete old refs...
+		refs.clear();
 
 		// Create new asset manager using the given zip file
 		AssetManager assets = new AssetManager(new File("scenes/default.zip"));
 
 		// Create new scene with the given assets
-		Scene scene = new Scene(assets, 256, 256);
+		Scene scene = new Scene(assets, 1024, 1024);
 
 		// Load the char array
 		char[][] map = assets.loadAsset("assets/maps/smallmap.txt",
-				GridLoader.LOADER).get();
+				GridLoader.LOADER, true).get();
 
 		// Generate the map randomally
-		// GridLoader.generate(map, System.nanoTime());
+		GridLoader.generate(map, System.nanoTime());
 
 		// Put the new sound
-		scene.soundManager().putSound("exp", "assets/sounds/exp.wav");
+		scene.soundManager().putSound(GridConstants.EXP_SOUND_NAME,
+				"assets/sounds/exp.wav");
 
-		// Load boom
-		final Sprite boom = new Sprite(assets.loadImage(
-				"assets/images/animated/boom.png", true), 5, 5);
+		/*
+		 * Register global resources.
+		 */
+		scene.addProp(GridConstants.BOMB_IMAGE,
+				assets.loadImage("assets/images/bomb.png", true));
+		scene.addProp(
+				GridConstants.EXP_SPRITE,
+				new Sprite(assets.loadImage("assets/images/animated/boom.png",
+						true), 5, 5));
 
 		// Parse and setup map
 		final GraphicsEntity grid = GridLoader.parse(map, scene);
 
-		// Create new player as knight
-		GraphicsEntity player = GridRoutines.createLocalKnight(assets, "Kr0e");
+		// The spawn points
+		Point[] points = new Point[] { new Point(1, 1), new Point(9, 1),
+				new Point(9, 9), new Point(1, 9) };
 
-		player.attach(new Entity() {
+		int i = 0;
+		for (long id : ids) {
+			// Create new player as knight
+			GraphicsEntity player = GridRoutines.createLocalKnight(assets,
+					"Session-" + id);
 
-			@Override
-			protected void onUpdate(float tpf) {
-				super.onUpdate(tpf);
+			refs.add(player.registrationKey());
 
-				// Get scene
-				Scene scene = ((GraphicsEntity) parent()).findScene();
+			// Place to spawn
+			grid.childAt(grid.typeProp(Grid.class).index(points[i++])).attach(
+					player);
 
-				GraphicsEntity node = ((GraphicsEntity) parent().parent());
-
-				if (scene.isPressed(KeyEvent.VK_SPACE)
-						&& !GridRoutines.hasFieldExplosion(node)) {
-
-					GraphicsEntity bomb = GridRoutines
-							.createExplosion(boom, 33);
-
-					scene.soundManager().playSound("exp", true);
-
-					// Attach the bomb
-					grid.childAt(
-							grid.typeProp(Grid.class).index(node.position()))
-							.attach(bomb);
-
-				}
-			}
-		});
-
-		// Place to spawn
-		grid.childAt(grid.typeProp(Grid.class).index(1, 1)).attach(player);
+		}
 
 		return scene;
 	}

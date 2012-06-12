@@ -1,6 +1,7 @@
 package com.indyforge.twod.engine.resources;
 
 import java.awt.Color;
+import java.awt.HeadlessException;
 import java.awt.Image;
 import java.io.IOException;
 import java.io.ObjectInputStream;
@@ -8,7 +9,7 @@ import java.io.ObjectInputStream;
 import com.indyforge.twod.engine.graphics.GraphicsRoutines;
 import com.indyforge.twod.engine.graphics.rendering.scenegraph.GraphicsEntity;
 import com.indyforge.twod.engine.graphics.rendering.scenegraph.Scene;
-
+import com.indyforge.twod.engine.resources.assets.AssetManager;
 
 /**
  * This class represents a "rendered entity". This means that you provide a
@@ -61,8 +62,10 @@ public final class TransientRenderedEntity implements Resource<Image> {
 		// Restore all vars
 		in.defaultReadObject();
 
-		// Recreate the resource
-		createResource();
+		if (!AssetManager.isHeadless()) {
+			// Recreate the resource
+			createResource();
+		}
 	}
 
 	/**
@@ -111,8 +114,10 @@ public final class TransientRenderedEntity implements Resource<Image> {
 		this.background = background;
 		this.graphicsEntity = graphicsEntity;
 
-		// Just create the resource
-		createResource();
+		if (!AssetManager.isHeadless()) {
+			// Just create the resource
+			createResource();
+		}
 	}
 
 	/*
@@ -122,6 +127,9 @@ public final class TransientRenderedEntity implements Resource<Image> {
 	 */
 	@Override
 	public Image get() {
+		if (AssetManager.isHeadless()) {
+			throw new HeadlessException();
+		}
 		return resource;
 	}
 }

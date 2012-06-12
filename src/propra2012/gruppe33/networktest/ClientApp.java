@@ -1,8 +1,9 @@
 package propra2012.gruppe33.networktest;
 
-import java.awt.Frame;
-
-import com.indyforge.twod.engine.graphics.GraphicsRoutines;
+import com.indyforge.foxnet.rmi.InvokerManager;
+import com.indyforge.foxnet.rmi.pattern.change.Session;
+import com.indyforge.foxnet.rmi.util.Future;
+import com.indyforge.foxnet.rmi.util.FutureCallback;
 import com.indyforge.twod.engine.graphics.rendering.scenegraph.SceneProcessor;
 import com.indyforge.twod.engine.graphics.rendering.scenegraph.SceneProcessor.NetworkMode;
 
@@ -11,26 +12,29 @@ public class ClientApp {
 	public static void main(String[] args) throws Exception {
 
 		// Create a new scene
-		SceneProcessor sceneProcessor = new SceneProcessor(NetworkMode.Client);
+		final SceneProcessor sceneProcessor = new SceneProcessor(
+				NetworkMode.Client, "Bomberman", 640, 1024);
+
+		// Stop rendering if hidden...
 		sceneProcessor.onlyRenderWithFocus(false);
 
 		// Connect the scene
-		sceneProcessor.openClient("localhost", 1337).linkClient("Kr0e");
+		Session<SceneProcessor> session = sceneProcessor.openClient(
+				"localhost", 1337).linkClient("Kr0e");
 
-		// Create peer
-		Frame frame = GraphicsRoutines.createFrame(sceneProcessor, "Bomberman",
-				800, 600);
+		// Get the invoker manager
+		InvokerManager man = InvokerManager.of(session);
 
-		while (!sceneProcessor.isShutdownRequested()) {
+		man.closeFuture().add(new FutureCallback() {
 
-			// Process the world (the main game-loop)
-			sceneProcessor.process(60);
-		}
+			@Override
+			public void completed(Future future) throws Exception {
 
-		// Release all network resources
-		sceneProcessor.releaseNetworkResources();
+				sceneProcessor.shutdownRequest(true);
+			}
+		});
 
-		// Destroy
-		frame.dispose();
+		// Start the processor (In this thread!)
+		sceneProcessor.start(60);
 	}
 }

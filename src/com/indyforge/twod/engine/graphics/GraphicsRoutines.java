@@ -2,7 +2,6 @@ package com.indyforge.twod.engine.graphics;
 
 import java.awt.BorderLayout;
 import java.awt.Color;
-import java.awt.Component;
 import java.awt.EventQueue;
 import java.awt.Frame;
 import java.awt.Graphics2D;
@@ -12,11 +11,11 @@ import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
 import java.awt.image.BufferedImage;
 import java.awt.image.VolatileImage;
+import java.lang.reflect.InvocationTargetException;
 
 import com.indyforge.twod.engine.graphics.rendering.scenegraph.SceneProcessor;
 import com.indyforge.twod.engine.graphics.rendering.scenegraph.math.Mathf;
 import com.indyforge.twod.engine.graphics.sprite.Sprite;
-
 
 /**
  * Utility class to bundle some default graphics routines like creating frames.
@@ -198,11 +197,12 @@ public final class GraphicsRoutines {
 	 * @param height
 	 *            The height of the frame.
 	 * @return a new visible frame.
-	 * @throws Exception
-	 *             If init fails.
+	 * @throws InvocationTargetException
+	 * @throws InterruptedException
 	 */
 	public static Frame createFrame(SceneProcessor processor, String title,
-			int width, int height) throws Exception {
+			int width, int height) throws InterruptedException,
+			InvocationTargetException {
 		return createFrame(processor, title, width, height, true);
 	}
 
@@ -220,12 +220,13 @@ public final class GraphicsRoutines {
 	 * @param visible
 	 *            The visible flag of the frame.
 	 * @return a new frame.
-	 * @throws Exception
-	 *             If init fails.
+	 * @throws InvocationTargetException
+	 * @throws InterruptedException
 	 */
 	public static Frame createFrame(final SceneProcessor processor,
 			final String title, final int width, final int height,
-			final boolean visible) throws Exception {
+			final boolean visible) throws InterruptedException,
+			InvocationTargetException {
 
 		if (processor == null) {
 			throw new NullPointerException("processor");
@@ -251,14 +252,8 @@ public final class GraphicsRoutines {
 				// Disable the repaint events
 				frame.setIgnoreRepaint(true);
 
-				// Is this a component ?
-				if (processor instanceof Component) {
-					// Add to frame
-					frame.add((Component) processor, BorderLayout.CENTER);
-				} else {
-					throw new IllegalArgumentException(
-							"The given processor is not a component.");
-				}
+				// Add to frame
+				frame.add(processor.canvas(), BorderLayout.CENTER);
 
 				// Set size
 				frame.setSize(width, height);
@@ -267,15 +262,8 @@ public final class GraphicsRoutines {
 				frame.addWindowListener(new WindowAdapter() {
 					@Override
 					public void windowClosing(WindowEvent e) {
-
-						// Schedule for shutdown
-						processor.tasks().add(new Runnable() {
-
-							@Override
-							public void run() {
-								processor.shutdownRequest(true);
-							}
-						});
+						// Shutdown request
+						processor.shutdownRequest(true);
 					}
 				});
 

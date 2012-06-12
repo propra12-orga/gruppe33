@@ -8,7 +8,6 @@ import com.indyforge.twod.engine.graphics.sprite.Animation;
 import com.indyforge.twod.engine.graphics.sprite.AnimationBundle;
 import com.indyforge.twod.engine.graphics.sprite.Sprite;
 
-
 /**
  * This is an animation controller. It uses an {@link AnimationBundle} to render
  * the animated images. You can specify the active animation.

@@ -10,10 +10,24 @@ package propra2012.gruppe33.bomberman.graphics.rendering.scenegraph.grid;
  */
 public interface GridConstants {
 
+	enum Input {
+		Up, Down, Right, Left, PlaceBomb
+	}
+
+	String EXP_SOUND_NAME = "boom";
+
+	String BOMB_IMAGE = "bomb_image";
+	String EXP_SPRITE = "exp_sprite";
+
+	int BACKGROUND_ORDER = -10;
 	int EXPLOSION_ORDER = 100000;
-	
-	Object FREE_TAG = new Object();
-	Object EXPLOSION_TAG = new Object();
+	int BOMB_ORDER = -1;
+
+	String BOMB_TAG = "bomb";
+	String BREAKABLE_TAG = "breakable";
+	String PLAYER_TAG = "player";
+	String FREE_TAG = "free";
+	String EXPLOSION_TAG = "explosion";
 
 	char UP_BARRIER = 'u';
 	char DOWN_BARRIER = 'd';

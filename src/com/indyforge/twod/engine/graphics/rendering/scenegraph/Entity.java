@@ -39,7 +39,7 @@ public class Entity implements Comparable<Entity>, Iterable<Entity>,
 	/**
 	 * Used for tags.
 	 */
-	public static final Object TAG_OBJECT = new Object();
+	public static final Object TAG_OBJECT = Void.TYPE;
 
 	/**
 	 * 
@@ -113,7 +113,7 @@ public class Entity implements Comparable<Entity>, Iterable<Entity>,
 	 * The uuid of this entity which is the registration key. Used to identify
 	 * entities on multiple platforms.
 	 */
-	private final UUID registrationKey = UUID.randomUUID();
+	private UUID registrationKey = UUID.randomUUID();
 
 	/*
 	 * The ordering index of this entity.
@@ -385,6 +385,53 @@ public class Entity implements Comparable<Entity>, Iterable<Entity>,
 		 * Very important! Put this entity into the own map!
 		 */
 		registry.put(registrationKey, this);
+	}
+
+	/**
+	 * @return the uuid of this entity which is the registration key.
+	 */
+	public UUID registrationKey() {
+		return registrationKey;
+	}
+
+	/**
+	 * Sets the registration key of this entity. The new key will be checked to
+	 * be valid (not already in use).
+	 * 
+	 * @param registrationKey
+	 *            The new registration key.
+	 * @return this for chaining.
+	 */
+	public Entity registrationKey(UUID registrationKey) {
+		if (registrationKey == null) {
+			throw new NullPointerException("registrationKey");
+		}
+		// Find root entity
+		Entity root = root();
+
+		// Lookup
+		Entity ptr = root.registry.get(registrationKey);
+
+		// Check the entity
+		if (ptr != null) {
+
+			/*
+			 * The registration key already exists but is owned by an other
+			 * entity.
+			 */
+			if (ptr != this) {
+				throw new IllegalArgumentException("Registration key "
+						+ registrationKey + " is already in use by " + ptr);
+			}
+		} else {
+			// Remove old registration
+			root.registry.remove(this.registrationKey);
+
+			// Put into registry and save the key
+			root.registry.put(this.registrationKey = registrationKey, this);
+		}
+
+		return this;
 	}
 
 	/**
@@ -819,13 +866,6 @@ public class Entity implements Comparable<Entity>, Iterable<Entity>,
 	}
 
 	/**
-	 * @return the uuid of this entity which is the registration key.
-	 */
-	public UUID registrationKey() {
-		return registrationKey;
-	}
-
-	/**
 	 * @param typeClass
 	 *            The type of the property.
 	 * @return the property with the given type.
@@ -902,6 +942,18 @@ public class Entity implements Comparable<Entity>, Iterable<Entity>,
 	 */
 	public Object prop(Object key) {
 		return props.get(key);
+	}
+
+	/**
+	 * @param key
+	 *            The key of the value you want to lookup.
+	 * @param propType
+	 *            The type of the property.
+	 * @return the (converted) value of the given key or null.
+	 */
+	@SuppressWarnings("unchecked")
+	public <T> T prop(Object key, Class<T> propType) {
+		return (T) prop(key);
 	}
 
 	/**

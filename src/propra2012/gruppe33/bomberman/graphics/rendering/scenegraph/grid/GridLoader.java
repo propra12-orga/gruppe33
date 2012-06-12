@@ -19,7 +19,6 @@ import com.indyforge.twod.engine.resources.assets.Asset;
 import com.indyforge.twod.engine.resources.assets.AssetLoader;
 import com.indyforge.twod.engine.resources.assets.AssetManager;
 
-
 /**
  * This class loads the map for the Game and generates randomly destructible
  * blocks on it. Is able to throw IOExceptions.
@@ -167,8 +166,8 @@ public final class GridLoader implements GridConstants {
 
 					if (map[y][x] >= BREAKABLE_OFFSET) {
 						// Not solid ? Well, maybe a breakable component ?
-						fieldNode.attach(new RenderedImage(breakable)
-								.centered(true));
+						fieldNode.attach(new RenderedImage(breakable).centered(
+								true).tag(BREAKABLE_TAG));
 					}
 				}
 			}
@@ -181,7 +180,8 @@ public final class GridLoader implements GridConstants {
 		staticRoot.scale().set(gridHolder.scale());
 
 		// Merge to rendered entity
-		scene.attach(scene.renderedOpaqueEntity(Color.white, staticRoot));
+		scene.attach(scene.renderedOpaqueEntity(Color.white, staticRoot).index(
+				BACKGROUND_ORDER));
 
 		// Attach the grid holder
 		scene.attach(gridHolder);

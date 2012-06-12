@@ -155,6 +155,10 @@ public final class Animation implements Serializable {
 		return step == 0;
 	}
 
+	public void useLastStep() {
+		step = imageCoords.size() - 1;
+	}
+
 	public boolean isLast() {
 		return step == imageCoords.size() - 1;
 	}

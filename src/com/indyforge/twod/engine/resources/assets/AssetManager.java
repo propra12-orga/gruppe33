@@ -1,5 +1,6 @@
 package com.indyforge.twod.engine.resources.assets;
 
+import java.awt.GraphicsEnvironment;
 import java.awt.image.BufferedImage;
 import java.io.File;
 import java.io.IOException;
@@ -37,6 +38,13 @@ import com.indyforge.twod.engine.io.IoRoutines;
  * @see AssetLoader
  */
 public final class AssetManager implements Serializable {
+
+	/**
+	 * @return true if the environment is headless.
+	 */
+	public static boolean isHeadless() {
+		return GraphicsEnvironment.isHeadless();
+	}
 
 	/*
 	 * The byte array loader.
@@ -223,7 +231,7 @@ public final class AssetManager implements Serializable {
 	public Asset<BufferedImage> loadImage(String assetPath, boolean optimized)
 			throws Exception {
 		return loadAsset(assetPath, optimized ? OPTIMIZED_IMAGE_LOADER
-				: IMAGE_LOADER);
+				: IMAGE_LOADER, false);
 	}
 
 	/**
@@ -231,12 +239,15 @@ public final class AssetManager implements Serializable {
 	 * 
 	 * @param assetPath
 	 *            The asset path of the asset.
+	 * @param ignoreHeadless
+	 *            The ignore-headless flag.
 	 * @return an asset containing the byte array.
 	 * @throws Exception
 	 *             If an exception occurs.
 	 */
-	public Asset<byte[]> loadBytes(String assetPath) throws Exception {
-		return loadAsset(assetPath, BYTE_ARRAY_LOADER);
+	public Asset<byte[]> loadBytes(String assetPath, boolean ignoreHeadless)
+			throws Exception {
+		return loadAsset(assetPath, BYTE_ARRAY_LOADER, ignoreHeadless);
 	}
 
 	/**
@@ -246,13 +257,15 @@ public final class AssetManager implements Serializable {
 	 *            The asset path of the asset.
 	 * @param assetLoader
 	 *            The asset loader of the asset.
+	 * @param ignoreHeadless
+	 *            The ignore-headless flag.
 	 * @return an asset.
 	 * @throws Exception
 	 *             If an exception occurs.
 	 */
-	public <T> Asset<T> loadAsset(String assetPath, AssetLoader<T> assetLoader)
-			throws Exception {
-		return new Asset<T>(this, assetPath, assetLoader);
+	public <T> Asset<T> loadAsset(String assetPath, AssetLoader<T> assetLoader,
+			boolean ignoreHeadless) throws Exception {
+		return new Asset<T>(this, assetPath, assetLoader, ignoreHeadless);
 	}
 
 	/**

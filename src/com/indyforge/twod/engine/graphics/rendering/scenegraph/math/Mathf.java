@@ -11,8 +11,8 @@ public final class Mathf {
 	/**
 	 * Used to compare floats with a given threshold.
 	 */
-	public static final float kEpsilon = 1E-6f;
-	
+	public static final float kEpsilon = 1E-4f;
+
 	/**
 	 * 
 	 * @param a
@@ -23,8 +23,8 @@ public final class Mathf {
 	 * @return true if |a-b| is smaller than {@link Mathf#kEpsilon}, otherwise
 	 *         false.
 	 */
-	public static boolean threshold(float a, float b) {
-		return threshold(a, b, kEpsilon);
+	public static boolean equals(float a, float b) {
+		return equals(a, b, kEpsilon);
 	}
 
 	/**
@@ -38,7 +38,7 @@ public final class Mathf {
 	 * @return true if |a-b| is smaller than the given threshold, otherwise
 	 *         false.
 	 */
-	public static boolean threshold(float a, float b, float threshold) {
+	public static boolean equals(float a, float b, float threshold) {
 		return Math.abs(a - b) < Math.abs(threshold);
 	}
 

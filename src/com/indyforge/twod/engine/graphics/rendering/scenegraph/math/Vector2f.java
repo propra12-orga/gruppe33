@@ -1,7 +1,10 @@
 package com.indyforge.twod.engine.graphics.rendering.scenegraph.math;
 
 import java.awt.Point;
-import java.io.Serializable;
+import java.io.Externalizable;
+import java.io.IOException;
+import java.io.ObjectInput;
+import java.io.ObjectOutput;
 
 import com.indyforge.twod.engine.graphics.rendering.scenegraph.Entity;
 
@@ -12,7 +15,7 @@ import com.indyforge.twod.engine.graphics.rendering.scenegraph.Entity;
  * @author Christopher Probst
  * @see Entity
  */
-public final class Vector2f implements Serializable {
+public final class Vector2f implements Externalizable {
 
 	/**
 	 * 
@@ -25,13 +28,13 @@ public final class Vector2f implements Serializable {
 		public Vector2f vector() {
 			switch (this) {
 			case North:
-				return Vector2f.up();
+				return Vector2f.north();
 			case South:
-				return Vector2f.down();
+				return Vector2f.south();
 			case West:
-				return Vector2f.left();
+				return Vector2f.west();
 			case East:
-				return Vector2f.right();
+				return Vector2f.east();
 			case Undefined:
 				return Vector2f.zero();
 			default:
@@ -40,11 +43,6 @@ public final class Vector2f implements Serializable {
 			}
 		}
 	}
-
-	/**
-	 * 
-	 */
-	private static final long serialVersionUID = 1L;
 
 	/**
 	 * Lerps two vectors (Linear interpolation). This means you provide two
@@ -60,7 +58,7 @@ public final class Vector2f implements Serializable {
 	 *            A float value between 0 and 1.
 	 * @return a vector which is lerped between start and end.
 	 */
-	public Vector2f lerp(Vector2f start, Vector2f end, float time) {
+	public static Vector2f lerp(Vector2f start, Vector2f end, float time) {
 		if (start == null) {
 			throw new NullPointerException("start");
 		} else if (end == null) {
@@ -112,28 +110,28 @@ public final class Vector2f implements Serializable {
 	/**
 	 * @return a new vector initialized with 0,1
 	 */
-	public static Vector2f down() {
+	public static Vector2f south() {
 		return new Vector2f(0, 1);
 	}
 
 	/**
 	 * @return a new vector initialized with 1,0
 	 */
-	public static Vector2f right() {
+	public static Vector2f east() {
 		return new Vector2f(1, 0);
 	}
 
 	/**
 	 * @return a new vector initialized with -1,0
 	 */
-	public static Vector2f left() {
+	public static Vector2f west() {
 		return new Vector2f(-1, 0);
 	}
 
 	/**
 	 * @return a new vector initialized with 0,-1
 	 */
-	public static Vector2f up() {
+	public static Vector2f north() {
 		return new Vector2f(0, -1);
 	}
 
@@ -180,6 +178,31 @@ public final class Vector2f implements Serializable {
 	public Vector2f(float x, float y) {
 		this.x = x;
 		this.y = y;
+	}
+
+	/*
+	 * (non-Javadoc)
+	 * 
+	 * @see java.io.Externalizable#readExternal(java.io.ObjectInput)
+	 */
+	@Override
+	public void readExternal(ObjectInput in) throws IOException,
+			ClassNotFoundException {
+		// Read both components
+		x = in.readFloat();
+		y = in.readFloat();
+	}
+
+	/*
+	 * (non-Javadoc)
+	 * 
+	 * @see java.io.Externalizable#writeExternal(java.io.ObjectOutput)
+	 */
+	@Override
+	public void writeExternal(ObjectOutput out) throws IOException {
+		// Write both components
+		out.writeFloat(x);
+		out.writeFloat(y);
 	}
 
 	/**
@@ -369,6 +392,25 @@ public final class Vector2f implements Serializable {
 		return new Vector2f(this).invert();
 	}
 
+	/**
+	 * Normalizes this vector.
+	 * 
+	 * @return this for chaining.
+	 */
+	public Vector2f normalizeLocal() {
+		float length = length();
+		x /= length;
+		y /= length;
+		return this;
+	}
+
+	/**
+	 * @return a new vector which contains normalized components.
+	 */
+	public Vector2f normalize() {
+		return new Vector2f(this).normalizeLocal();
+	}
+
 	/*
 	 * (non-Javadoc)
 	 * 
@@ -414,7 +456,7 @@ public final class Vector2f implements Serializable {
 	 */
 	public Direction nearestDirection() {
 
-		if (Mathf.threshold(x, y)) {
+		if (Mathf.equals(x, y)) {
 			return Direction.Undefined;
 		} else if (Math.abs(x) > Math.abs(y)) {
 			return x > 0.0f ? Direction.East : Direction.West;
@@ -444,44 +486,22 @@ public final class Vector2f implements Serializable {
 	}
 
 	/**
-	 * @param v
-	 *            The value you want to compare with the x component.
-	 * @param threshold
-	 *            The threshold.
-	 * @return true if |x-v| is smaller than the given threshold, otherwise
-	 *         false.
-	 */
-	public boolean xThreshold(float v, float threshold) {
-		return Mathf.threshold(x, v, threshold);
-	}
-
-	/**
-	 * @param v
-	 *            The value you want to compare with the y component.
-	 * @param threshold
-	 *            The threshold.
-	 * @return true if |y-v| is smaller than the given threshold, otherwise
-	 *         false.
-	 */
-	public boolean yThreshold(float v, float threshold) {
-		return Mathf.threshold(y, v, threshold);
-	}
-
-	/**
 	 * @param other
 	 *            The vector you want to compare with this vector.
 	 * @param threshold
-	 * @return true if xThreshold and yThreshold succeeds, otherwise false.
+	 *            The threshold.
+	 * @return true if this vector equals the other vector (using the
+	 *         threshold), otherwise false.
 	 */
-	public boolean threshold(Vector2f other, Vector2f threshold) {
+	public boolean equals(Vector2f other, Vector2f threshold) {
 		if (other == null) {
 			throw new NullPointerException("other");
 		} else if (threshold == null) {
 			throw new NullPointerException("threshold");
 		}
 
-		return xThreshold(other.x, threshold.x)
-				&& yThreshold(other.y, threshold.y);
+		return Mathf.equals(x, other.x, threshold.x)
+				&& Mathf.equals(y, other.y, threshold.y);
 	}
 
 	/*
@@ -502,11 +522,11 @@ public final class Vector2f implements Serializable {
 		}
 		Vector2f other = (Vector2f) obj;
 
-		if (!xThreshold(other.x, Mathf.kEpsilon)) {
+		if (!Mathf.equals(x, other.x)) {
 			return false;
 		}
 
-		if (!yThreshold(other.y, Mathf.kEpsilon)) {
+		if (!Mathf.equals(y, other.y)) {
 			return false;
 		}
 

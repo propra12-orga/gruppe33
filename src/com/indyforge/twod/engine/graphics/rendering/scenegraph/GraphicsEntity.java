@@ -4,8 +4,12 @@ import java.awt.Graphics;
 import java.awt.Graphics2D;
 import java.awt.Image;
 import java.awt.geom.AffineTransform;
+import java.awt.image.BufferedImage;
 
 import com.indyforge.twod.engine.graphics.rendering.scenegraph.math.Vector2f;
+import com.indyforge.twod.engine.graphics.sprite.Sprite;
+import com.indyforge.twod.engine.resources.assets.Asset;
+import com.indyforge.twod.engine.resources.assets.AssetManager;
 import com.indyforge.twod.engine.util.FilteredIterator;
 import com.indyforge.twod.engine.util.IterationRoutines;
 import com.indyforge.twod.engine.util.TypeFilter;
@@ -306,6 +310,25 @@ public class GraphicsEntity extends Entity {
 	}
 
 	/**
+	 * @param key
+	 *            The key of the sprite you want to lookup.
+	 * @return the sprite of the given key or null.
+	 */
+	public Sprite spriteProp(Object key) {
+		return prop(key, Sprite.class);
+	}
+
+	/**
+	 * @param key
+	 *            The key of the image you want to lookup.
+	 * @return the image of the given key or null.
+	 */
+	@SuppressWarnings("unchecked")
+	public Asset<BufferedImage> imageProp(Object key) {
+		return (Asset<BufferedImage>) prop(key, Asset.class);
+	}
+
+	/**
 	 * Renders this entity and all children to an image. This method uses the
 	 * visible/childrenVisible flags to determine what to render.
 	 * 
@@ -316,26 +339,28 @@ public class GraphicsEntity extends Entity {
 	public final Image renderTo(Image destination) {
 		if (destination == null) {
 			throw new NullPointerException("destination");
-		}
+		} else if (!AssetManager.isHeadless()) {
 
-		// Get the graphics context
-		Graphics graphics = destination.getGraphics();
+			// Get the graphics context
+			Graphics graphics = destination.getGraphics();
 
-		try {
-			if (graphics instanceof Graphics2D) {
+			try {
+				if (graphics instanceof Graphics2D) {
 
-				// Just render to image
-				render((Graphics2D) graphics);
-			} else {
-				throw new IllegalArgumentException("The image must return a "
-						+ "Graphics2D object when calling getGraphics().");
+					// Just render to image
+					render((Graphics2D) graphics);
+				} else {
+					throw new IllegalArgumentException(
+							"The image must return a "
+									+ "Graphics2D object when calling getGraphics().");
+				}
+			} finally {
+				// Dispose
+				graphics.dispose();
 			}
-
-			return destination;
-		} finally {
-			// Dispose
-			graphics.dispose();
 		}
+
+		return destination;
 	}
 
 	/**
@@ -360,8 +385,11 @@ public class GraphicsEntity extends Entity {
 	 */
 	public GraphicsEntity render(EntityFilter entityFilter, Graphics2D original) {
 
-		// Fire event for all children
-		fireEvent(entityFilter, GraphicsEvent.Render, original);
+		// Not headless ?
+		if (!AssetManager.isHeadless()) {
+			// Fire event for all children
+			fireEvent(entityFilter, GraphicsEvent.Render, original);
+		}
 		return this;
 	}
 }
