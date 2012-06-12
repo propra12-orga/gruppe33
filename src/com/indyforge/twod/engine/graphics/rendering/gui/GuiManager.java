@@ -12,6 +12,7 @@ import com.indyforge.twod.engine.graphics.rendering.scenegraph.math.Vector2f;
 import com.indyforge.twod.engine.graphics.sprite.Animation;
 import com.indyforge.twod.engine.graphics.sprite.Sprite;
 import com.indyforge.twod.engine.resources.assets.AssetManager;
+import com.indyforge.twod.engine.sound.SoundManager;
 
 public class GuiManager {
 
@@ -24,7 +25,11 @@ public class GuiManager {
 	private Entity testE;
 
 	private Gui main, multi;
-	
+
+	private SoundManager sm;
+
+	private boolean introFinish;
+
 	private Intro intro;
 
 	public GuiManager() throws Exception {
@@ -33,22 +38,34 @@ public class GuiManager {
 		List<Gui> guiList = new ArrayList<Gui>();
 
 		am = new AssetManager(new File("scenes/default.zip"));
+		
+		sm = new SoundManager(am);
+
+		sm.putSound("back", "assets/sounds/menu2.wav");
+		
+		sm.playSound("back", true);
+		
 
 		main = this.createMain();
 
 		multi = this.createMultiPlayer();
-		
-		intro = new Intro(am);
-		
+
+		intro = new Intro(am, new Runnable() {
+
+			@Override
+			public void run() {
+				activeGui.processor().root(main);
+				activeGui = main;
+
+			}
+		});
+
 		activeGui = intro;
-		
-		
-	//	guiList.add(main);
-	//	guiList.add(multi);
 
-	
+		// guiList.add(main);
+		// guiList.add(multi);
 
-	//	activeGui = main;
+		// activeGui = main;
 
 	}
 
@@ -75,16 +92,9 @@ public class GuiManager {
 
 			@Override
 			public void run() {
-				
-				
-				
-				
-				
+
 				activeGui.processor().root(main);
 				activeGui = main;
-				
-				
-				
 
 			}
 
@@ -94,7 +104,6 @@ public class GuiManager {
 
 	}
 
-	
 	public Gui createMain() throws Exception {
 
 		// Hier laden wir das boom sprite... 5 *5 bilder

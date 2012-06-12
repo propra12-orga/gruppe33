@@ -12,6 +12,7 @@ import com.indyforge.twod.engine.graphics.rendering.scenegraph.animation.Rendere
 import com.indyforge.twod.engine.graphics.rendering.scenegraph.math.Vector2f;
 import com.indyforge.twod.engine.graphics.sprite.Animation;
 import com.indyforge.twod.engine.resources.assets.AssetManager;
+import com.indyforge.twod.engine.sound.SoundManager;
 
 public class Gui extends Scene {
 
@@ -20,6 +21,8 @@ public class Gui extends Scene {
 	private Vector2f[] pointList;
 	private Animation itemChooseAnimation;
 	private Map<Vector2f, List<Runnable>> buttons = new LinkedHashMap<Vector2f, List<Runnable>>();
+
+	private SoundManager sm;
 
 	private int menuPos, menuEntries;
 
@@ -35,8 +38,10 @@ public class Gui extends Scene {
 		cursor = new RenderedImage(
 				assetManager.loadImage(cursorAssetPath, true)).centered(true);
 
-		
-		
+		sm = new SoundManager(assetManager);
+
+		sm.putSound("1", "assets/sounds/exp.wav");
+
 		scale(sizeAsVector());
 		attach(backGround);
 		attach(cursor);
@@ -88,6 +93,7 @@ public class Gui extends Scene {
 		}
 
 		if (!pressedENTER && isPressed(KeyEvent.VK_ENTER)) {
+			sm.playSound("1", true);
 			// Create an entity using the animation
 			RenderedAnimation renderedAnimation = new RenderedAnimation() {
 				protected void onAnimationFinished(
@@ -146,7 +152,6 @@ public class Gui extends Scene {
 	public void updateCursor() {
 		cursor.position().set(this.getMenuVector());
 	}
-	
 
 	// Retun a 2D vector of the actual menu Position
 	public Vector2f getMenuVector() {
