@@ -47,7 +47,7 @@ public class Intro extends Scene {
 				"assets/images/gui/intro1.jpg", true)).centered(true).position(
 				new Vector2f(0.5f, 0.5f)));
 		imgList.add((RenderedImage) new RenderedImage(am.loadImage(
-				"assets/images/gui/intro2.jpg", true)).centered(true).position(
+				"assets/images/gui/intro1.jpg", true)).centered(true).position(
 				new Vector2f(0.5f, 0.5f)));
 		imgList.add((RenderedImage) new RenderedImage(am.loadImage(
 				"assets/images/gui/intro3.jpg", true)).centered(true).position(
