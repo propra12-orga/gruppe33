@@ -1,13 +1,11 @@
 package com.indyforge.twod.engine.graphics.rendering.gui;
 
-import java.io.File;
 import java.util.ArrayList;
 import java.util.List;
 
 import com.indyforge.twod.engine.graphics.rendering.scenegraph.RenderedImage;
 import com.indyforge.twod.engine.graphics.rendering.scenegraph.Scene;
 import com.indyforge.twod.engine.graphics.rendering.scenegraph.math.Vector2f;
-import com.indyforge.twod.engine.resources.Resource;
 import com.indyforge.twod.engine.resources.assets.AssetManager;
 import com.indyforge.twod.engine.sound.SoundManager;
 
@@ -24,8 +22,8 @@ public class Intro extends Scene {
 	private Runnable callback;
 
 	private SoundManager sm;
-	
-	private int i,x;
+
+	private int i, x;
 
 	public Intro(AssetManager am, Runnable callback) throws Exception {
 		super(am, 1024, 1024);
@@ -36,14 +34,13 @@ public class Intro extends Scene {
 		delay1 = 2f;
 		delay2 = 0.5f;
 		delay3 = 2f;
-		
+
 		sm = new SoundManager(am);
-		
+
 		sm.putSound("1", "assets/sounds/exp.wav");
-	
 
 		x = 1;
-		
+
 		status = false;
 		finished = false;
 		imgList.add((RenderedImage) new RenderedImage(am.loadImage(
@@ -94,14 +91,14 @@ public class Intro extends Scene {
 				}
 			} else {
 				time += tpf;
-			
+
 				if (time >= delay2) {
-					
+
 					System.out.println("Delay 2");
 					sm.playSound("1", true);
-				
+
 					attach(imgList.get(i));
-					
+
 					i++;
 					time = 0f;
 				}

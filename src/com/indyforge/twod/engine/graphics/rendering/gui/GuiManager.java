@@ -4,8 +4,6 @@ import java.io.File;
 import java.util.ArrayList;
 import java.util.List;
 
-import javax.swing.JOptionPane;
-
 import com.indyforge.twod.engine.graphics.rendering.scenegraph.Entity;
 import com.indyforge.twod.engine.graphics.rendering.scenegraph.Scene;
 import com.indyforge.twod.engine.graphics.rendering.scenegraph.math.Vector2f;
@@ -38,13 +36,12 @@ public class GuiManager {
 		List<Gui> guiList = new ArrayList<Gui>();
 
 		am = new AssetManager(new File("scenes/default.zip"));
-		
+
 		sm = new SoundManager(am);
 
 		sm.putSound("back", "assets/sounds/menu2.wav");
-		
+
 		sm.playSound("back", true);
-		
 
 		main = this.createMain();
 

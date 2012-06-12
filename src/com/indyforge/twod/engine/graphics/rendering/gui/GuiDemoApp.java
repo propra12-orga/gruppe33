@@ -19,7 +19,7 @@ public class GuiDemoApp {
 		// Create peer
 		Frame frame = GraphicsRoutines.createFrame(sceneProcessor, "Bomberman",
 				800, 600);
-		
+
 		GuiManager guiM = new GuiManager();
 
 		// Set root
