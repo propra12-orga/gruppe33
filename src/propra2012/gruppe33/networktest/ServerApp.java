@@ -62,7 +62,7 @@ public class ServerApp {
 				.adminSessionServer();
 
 		// Apply the scene change
-		server.combined().applyChange(new SceneChange(scene));
+		server.composite().applyChange(new SceneChange(scene));
 
 		// Enable input on all clients !!
 		for (i = 0; i < longs.length; i++) {
@@ -71,7 +71,7 @@ public class ServerApp {
 		}
 
 		// Reset the network time every where
-		server.combined().applyChange(new ResetNetworkTimeChange());
+		server.composite().applyChange(new ResetNetworkTimeChange());
 
 		System.out.println("Game started!");
 

@@ -38,7 +38,7 @@ public final class DefaultSessionServer<T> implements AdminSessionServer<T> {
 				}
 			}
 		}
-	}, combined = new Changeable<T>() {
+	}, composite = new Changeable<T>() {
 		@Override
 		public void applyChange(Change<T> change) {
 			local.applyChange(change);
@@ -168,11 +168,11 @@ public final class DefaultSessionServer<T> implements AdminSessionServer<T> {
 	 * (non-Javadoc)
 	 * 
 	 * @see
-	 * com.indyforge.foxnet.rmi.pattern.change.AdminSessionServer#combined()
+	 * com.indyforge.foxnet.rmi.pattern.change.AdminSessionServer#composite()
 	 */
 	@Override
-	public Changeable<T> combined() {
-		return combined;
+	public Changeable<T> composite() {
+		return composite;
 	}
 
 	/*

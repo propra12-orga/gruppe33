@@ -125,7 +125,7 @@ public final class Bomb extends AbstractEntityChange<GraphicsEntity> {
 
 								scene.processor()
 										.adminSessionServer()
-										.combined()
+										.composite()
 										.applyChange(
 												new Killer(child
 														.registrationKey()));
@@ -137,7 +137,7 @@ public final class Bomb extends AbstractEntityChange<GraphicsEntity> {
 				}
 
 				if (!c.list.isEmpty()) {
-					scene.processor().adminSessionServer().combined()
+					scene.processor().adminSessionServer().composite()
 							.applyChange(c);
 				}
 

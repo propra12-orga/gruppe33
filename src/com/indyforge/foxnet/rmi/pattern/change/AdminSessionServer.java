@@ -23,9 +23,9 @@ public interface AdminSessionServer<T> extends SessionServer<T> {
 	Changeable<T> local();
 
 	/**
-	 * @return the combined (local & broadcast) changeable object.
+	 * @return the composite (local & broadcast) changeable object.
 	 */
-	Changeable<T> combined();
+	Changeable<T> composite();
 
 	/**
 	 * @return the accepting-sessions flag.

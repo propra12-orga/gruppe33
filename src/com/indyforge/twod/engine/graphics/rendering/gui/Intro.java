@@ -31,7 +31,7 @@ public class Intro extends Scene {
 		imgList = new ArrayList<RenderedImage>();
 		time = 0f;
 		i = 0;
-		delay1 = 2f;
+		delay1 = 2.5f;
 		delay2 = 0.5f;
 		delay3 = 2f;
 

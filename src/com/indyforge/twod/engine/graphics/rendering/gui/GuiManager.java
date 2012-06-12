@@ -41,8 +41,6 @@ public class GuiManager {
 
 		sm.putSound("back", "assets/sounds/menu2.wav");
 
-		sm.playSound("back", true);
-
 		main = this.createMain();
 
 		multi = this.createMultiPlayer();
@@ -59,6 +57,9 @@ public class GuiManager {
 
 		activeGui = intro;
 
+		sm.playSound("back", true);
+
+		
 		// guiList.add(main);
 		// guiList.add(multi);
 

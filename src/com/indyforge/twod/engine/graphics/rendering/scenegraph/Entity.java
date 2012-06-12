@@ -39,7 +39,7 @@ public class Entity implements Comparable<Entity>, Iterable<Entity>,
 	/**
 	 * Used for tags.
 	 */
-	public static final Object TAG_OBJECT = Void.TYPE;
+	public static final Object TAG_VALUE = Void.TYPE;
 
 	/**
 	 * 
@@ -972,7 +972,7 @@ public class Entity implements Comparable<Entity>, Iterable<Entity>,
 	 * @return this for chaining.
 	 */
 	public Entity tag(Object tag) {
-		return addProp(tag, TAG_OBJECT);
+		return addProp(tag, TAG_VALUE);
 	}
 
 	/**
@@ -994,7 +994,7 @@ public class Entity implements Comparable<Entity>, Iterable<Entity>,
 	 * @return true if the tag exists, otherwise false.
 	 */
 	public boolean tagged(Object tag) {
-		return props.get(tag) == TAG_OBJECT;
+		return props.get(tag) == TAG_VALUE;
 	}
 
 	/**
