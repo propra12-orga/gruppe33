@@ -19,11 +19,6 @@ import com.indyforge.twod.engine.graphics.rendering.scenegraph.SceneProcessor;
 public abstract class AbstractEntityChange<T extends Entity> implements
 		Change<SceneProcessor>, Externalizable {
 
-	/**
-	 * 
-	 */
-	private static final long serialVersionUID = 1L;
-
 	// The uuid of the entity
 	private UUID registrationKey;
 
@@ -53,7 +48,6 @@ public abstract class AbstractEntityChange<T extends Entity> implements
 	@Override
 	public void readExternal(ObjectInput in) throws IOException,
 			ClassNotFoundException {
-
 		registrationKey = in.readBoolean() ? new UUID(in.readLong(),
 				in.readLong()) : null;
 	}

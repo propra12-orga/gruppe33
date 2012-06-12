@@ -262,15 +262,8 @@ public final class GraphicsRoutines {
 				frame.addWindowListener(new WindowAdapter() {
 					@Override
 					public void windowClosing(WindowEvent e) {
-
-						// Schedule for shutdown
-						processor.tasks().add(new Runnable() {
-
-							@Override
-							public void run() {
-								processor.shutdownRequest(true);
-							}
-						});
+						// Shutdown request
+						processor.shutdownRequest(true);
 					}
 				});
 

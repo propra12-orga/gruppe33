@@ -12,6 +12,10 @@ import com.indyforge.twod.engine.graphics.rendering.scenegraph.network.AbstractE
 
 /**
  * 
+ * This method represents an enum input change. To receive the fired events you
+ * must register the {@link InputChange} class object at {@link Entity#events()}
+ * .
+ * 
  * @author Christopher Probst
  * 
  * @param <E>
@@ -22,7 +26,9 @@ import com.indyforge.twod.engine.graphics.rendering.scenegraph.network.AbstractE
 public abstract class InputChange<E extends Enum<E>, T extends Entity> extends
 		AbstractEntityChange<T> {
 
-	public static final String EVENT_NAME = "remote_input_event";
+	/**
+	 * Represents the maximal number of parallel input states.
+	 */
 	public static final int USED_BITS = 8;
 
 	// Here we store the input
@@ -37,7 +43,7 @@ public abstract class InputChange<E extends Enum<E>, T extends Entity> extends
 	 */
 	@Override
 	protected void apply(T entity) {
-		entity.fireEvent(EVENT_NAME, inputMap);
+		entity.fireEvent(InputChange.class, inputMap);
 	}
 
 	public InputChange() {

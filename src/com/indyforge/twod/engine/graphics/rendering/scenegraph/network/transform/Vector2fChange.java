@@ -17,11 +17,6 @@ import com.indyforge.twod.engine.graphics.rendering.scenegraph.network.AbstractE
 public abstract class Vector2fChange extends
 		AbstractEntityChange<GraphicsEntity> {
 
-	/**
-	 * 
-	 */
-	private static final long serialVersionUID = 1L;
-
 	// The vector of this change
 	private Vector2f vector;
 

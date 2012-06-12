@@ -1,8 +1,6 @@
-package chn;
+package propra2012.gruppe33.bomberman.graphics.rendering.scenegraph.grid.input;
 
 import java.util.UUID;
-
-import propra2012.gruppe33.bomberman.graphics.rendering.scenegraph.grid.GridRemoteInput;
 
 import com.indyforge.twod.engine.graphics.rendering.scenegraph.Entity;
 import com.indyforge.twod.engine.graphics.rendering.scenegraph.network.AbstractEntityChange;

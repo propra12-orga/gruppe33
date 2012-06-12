@@ -139,7 +139,7 @@ public final class SceneProcessor implements Changeable<SceneProcessor> {
 	/*
 	 * The shutdown requested flag.
 	 */
-	private boolean shutdownRequested = false,
+	private volatile boolean shutdownRequested = false,
 
 	/*
 	 * The only render with focus flag.
@@ -589,7 +589,7 @@ public final class SceneProcessor implements Changeable<SceneProcessor> {
 
 				@Override
 				public void run() {
-					change.apply(SceneProcessor.this);
+					applyChange(change);
 				}
 			});
 		}
@@ -653,8 +653,18 @@ public final class SceneProcessor implements Changeable<SceneProcessor> {
 	 * @param shutdownRequested
 	 *            If true the shutdown will be initiated.
 	 */
-	public void shutdownRequest(boolean shutdownRequested) {
-		this.shutdownRequested = shutdownRequested;
+	public void shutdownRequest(final boolean shutdownRequested) {
+		if (Thread.currentThread().equals(lastProcessorThread)) {
+			this.shutdownRequested = shutdownRequested;
+		} else {
+			tasks().offer(new Runnable() {
+
+				@Override
+				public void run() {
+					shutdownRequest(shutdownRequested);
+				}
+			});
+		}
 	}
 
 	/**
@@ -702,6 +712,7 @@ public final class SceneProcessor implements Changeable<SceneProcessor> {
 	public void start(int maxFps) throws Exception {
 		try {
 			while (!isShutdownRequested()) {
+				// Process the whole scene!
 				process(maxFps);
 			}
 		} finally {

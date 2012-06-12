@@ -6,7 +6,7 @@ import java.util.Scanner;
 import java.util.UUID;
 
 import propra2012.gruppe33.PreMilestoneApp;
-import chn.InputActivator;
+import propra2012.gruppe33.bomberman.graphics.rendering.scenegraph.grid.input.InputActivator;
 
 import com.indyforge.foxnet.rmi.pattern.change.AdminSessionServer;
 import com.indyforge.twod.engine.graphics.rendering.scenegraph.Scene;
@@ -35,8 +35,9 @@ public class ServerApp {
 			input.next();
 
 			synchronized (serverProcessor.adminSessionServer()) {
-				if (serverProcessor.adminSessionServer().sessionCount() <= 0) {
-					System.out.println("Session count <= 0");
+				if (serverProcessor.adminSessionServer().sessionCount() <= 0
+						|| serverProcessor.adminSessionServer().sessionCount() > 4) {
+					System.out.println("Session count not 1 - 4");
 
 				} else {
 					serverProcessor.adminSessionServer().acceptingSessions(

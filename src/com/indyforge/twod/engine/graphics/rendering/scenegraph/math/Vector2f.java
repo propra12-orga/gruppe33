@@ -45,11 +45,6 @@ public final class Vector2f implements Externalizable {
 	}
 
 	/**
-	 * 
-	 */
-	private static final long serialVersionUID = 1L;
-
-	/**
 	 * Lerps two vectors (Linear interpolation). This means you provide two
 	 * vectors (start, end) and a float between 0 and 1. This method calculates
 	 * a new vector which is between start and end using the given float value.

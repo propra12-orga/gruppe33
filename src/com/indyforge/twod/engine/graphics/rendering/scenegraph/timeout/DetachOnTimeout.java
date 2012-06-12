@@ -26,6 +26,7 @@ public class DetachOnTimeout extends Entity {
 
 				// Detach the parent
 				Entity entity = ((Entity) source).parent();
+
 				if (entity != null) {
 					entity.detach();
 				}

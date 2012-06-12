@@ -119,7 +119,7 @@ public final class DefaultSessionServer<T> implements AdminSessionServer<T> {
 
 		// Put into map
 		sessions.put(id, s);
-		Invoker.getInvokerOf(changeable).manager().closeFuture()
+		Invoker.of(changeable).manager().closeFuture()
 				.add(new FutureCallback() {
 
 					@Override
@@ -210,8 +210,7 @@ public final class DefaultSessionServer<T> implements AdminSessionServer<T> {
 	@Override
 	public synchronized void closeAll() {
 		for (Object session : sessions.values().toArray()) {
-			Invoker.getInvokerOf(((Session<T>) session).client()).manager()
-					.close();
+			Invoker.of(((Session<T>) session).client()).manager().close();
 		}
 	}
 }

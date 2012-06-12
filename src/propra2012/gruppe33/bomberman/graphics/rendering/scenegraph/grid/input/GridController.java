@@ -1,4 +1,4 @@
-package propra2012.gruppe33.bomberman.graphics.rendering.scenegraph.grid;
+package propra2012.gruppe33.bomberman.graphics.rendering.scenegraph.grid.input;
 
 import java.awt.Point;
 import java.util.EnumMap;
@@ -6,6 +6,7 @@ import java.util.Iterator;
 import java.util.Map;
 
 import propra2012.gruppe33.bomberman.graphics.rendering.scenegraph.grid.GridConstants.Input;
+import propra2012.gruppe33.bomberman.graphics.rendering.scenegraph.grid.GridRoutines;
 
 import com.indyforge.twod.engine.graphics.rendering.scenegraph.Entity;
 import com.indyforge.twod.engine.graphics.rendering.scenegraph.GraphicsEntity;
@@ -389,26 +390,24 @@ public final class GridController extends Entity {
 	protected void onEvent(Entity source, Object event, Object... params) {
 		super.onEvent(source, event, params);
 
-		if (event instanceof String) {
-			String str = (String) event;
-			if (str.equals(InputChange.EVENT_NAME)) {
-				Map<Input, Boolean> input = (Map<Input, Boolean>) params[0];
+		if (event == InputChange.class) {
 
-				if (input != null) {
-					Boolean north = input.get(Input.Up);
-					inputMap.put(Direction.North, north != null ? north : false);
+			Map<Input, Boolean> input = (Map<Input, Boolean>) params[0];
 
-					Boolean south = input.get(Input.Down);
-					inputMap.put(Direction.South, south != null ? south : false);
+			if (input != null) {
+				Boolean north = input.get(Input.Up);
+				inputMap.put(Direction.North, north != null ? north : false);
 
-					Boolean west = input.get(Input.Left);
-					inputMap.put(Direction.West, west != null ? west : false);
+				Boolean south = input.get(Input.Down);
+				inputMap.put(Direction.South, south != null ? south : false);
 
-					Boolean east = input.get(Input.Right);
-					inputMap.put(Direction.East, east != null ? east : false);
-				} else {
-					inputMap.clear();
-				}
+				Boolean west = input.get(Input.Left);
+				inputMap.put(Direction.West, west != null ? west : false);
+
+				Boolean east = input.get(Input.Right);
+				inputMap.put(Direction.East, east != null ? east : false);
+			} else {
+				inputMap.clear();
 			}
 		}
 	}

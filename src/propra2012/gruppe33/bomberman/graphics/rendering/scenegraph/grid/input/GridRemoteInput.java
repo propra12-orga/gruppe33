@@ -1,4 +1,4 @@
-package propra2012.gruppe33.bomberman.graphics.rendering.scenegraph.grid;
+package propra2012.gruppe33.bomberman.graphics.rendering.scenegraph.grid.input;
 
 import java.awt.event.KeyEvent;
 import java.util.EnumMap;
@@ -6,7 +6,6 @@ import java.util.Map;
 import java.util.UUID;
 
 import propra2012.gruppe33.bomberman.graphics.rendering.scenegraph.grid.GridConstants.Input;
-import chn.GridInputChange;
 
 import com.indyforge.twod.engine.graphics.rendering.scenegraph.GraphicsEntity;
 import com.indyforge.twod.engine.graphics.rendering.scenegraph.Scene;

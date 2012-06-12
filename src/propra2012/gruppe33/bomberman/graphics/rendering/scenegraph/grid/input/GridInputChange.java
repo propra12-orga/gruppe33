@@ -1,4 +1,4 @@
-package chn;
+package propra2012.gruppe33.bomberman.graphics.rendering.scenegraph.grid.input;
 
 import java.util.Map;
 import java.util.UUID;

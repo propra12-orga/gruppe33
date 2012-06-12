@@ -4,8 +4,11 @@ import java.awt.Graphics;
 import java.awt.Graphics2D;
 import java.awt.Image;
 import java.awt.geom.AffineTransform;
+import java.awt.image.BufferedImage;
 
 import com.indyforge.twod.engine.graphics.rendering.scenegraph.math.Vector2f;
+import com.indyforge.twod.engine.graphics.sprite.Sprite;
+import com.indyforge.twod.engine.resources.assets.Asset;
 import com.indyforge.twod.engine.resources.assets.AssetManager;
 import com.indyforge.twod.engine.util.FilteredIterator;
 import com.indyforge.twod.engine.util.IterationRoutines;
@@ -304,6 +307,25 @@ public class GraphicsEntity extends Entity {
 
 		this.position = position;
 		return this;
+	}
+
+	/**
+	 * @param key
+	 *            The key of the sprite you want to lookup.
+	 * @return the sprite of the given key or null.
+	 */
+	public Sprite spriteProp(Object key) {
+		return prop(key, Sprite.class);
+	}
+
+	/**
+	 * @param key
+	 *            The key of the image you want to lookup.
+	 * @return the image of the given key or null.
+	 */
+	@SuppressWarnings("unchecked")
+	public Asset<BufferedImage> imageProp(Object key) {
+		return (Asset<BufferedImage>) prop(key, Asset.class);
 	}
 
 	/**

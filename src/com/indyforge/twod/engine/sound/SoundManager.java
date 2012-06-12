@@ -18,6 +18,7 @@ import java.util.concurrent.ThreadFactory;
 import javax.sound.sampled.AudioInputStream;
 import javax.sound.sampled.AudioSystem;
 import javax.sound.sampled.Clip;
+import javax.sound.sampled.DataLine;
 import javax.sound.sampled.LineEvent;
 import javax.sound.sampled.LineEvent.Type;
 import javax.sound.sampled.LineListener;
@@ -190,8 +191,12 @@ public final class SoundManager implements Serializable {
 							.getAudioInputStream(new ByteArrayInputStream(
 									soundAsset.get()));
 
+					// Get line (using clip interface)
+					DataLine.Info info = new DataLine.Info(Clip.class, ais
+							.getFormat());
+
 					// Create a new clip
-					final Clip clip = AudioSystem.getClip();
+					final Clip clip = (Clip) AudioSystem.getLine(info);
 
 					// Open with binary data
 					clip.open(ais);

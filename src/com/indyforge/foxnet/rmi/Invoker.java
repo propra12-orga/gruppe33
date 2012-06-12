@@ -51,7 +51,7 @@ public final class Invoker implements InvocationHandler {
 	 *            The proxy.
 	 * @return the invoker instance of the given proxy or null.
 	 */
-	public static Invoker getInvokerOf(Object proxy) {
+	public static Invoker of(Object proxy) {
 		// Check to be a proxy class
 		if (proxy == null || !Proxy.isProxyClass(proxy.getClass())) {
 			return null;

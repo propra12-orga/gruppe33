@@ -78,6 +78,7 @@ public class Timeout extends Entity {
 	 *            The timeout in seconds.
 	 */
 	public Timeout(float timeout) {
+		this();
 		timeout(timeout);
 	}
 

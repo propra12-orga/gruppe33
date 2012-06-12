@@ -99,7 +99,7 @@ public abstract class InvokerManager {
 	private Object replaceProxyWithLocalObject(Object proxy) {
 
 		// Try to get proxy invoker
-		Invoker invoker = Invoker.getInvokerOf(proxy);
+		Invoker invoker = Invoker.of(proxy);
 
 		// Obviously not a proxy which was created by us
 		if (invoker == null || !equals(invoker.manager())) {
@@ -154,6 +154,17 @@ public abstract class InvokerManager {
 	protected abstract void sendInvocation(Invocation invocation);
 
 	/**
+	 * @param proxy
+	 *            The proxy.
+	 * @return the invoker manager instance which manages the invoker of the
+	 *         given proxy or null.
+	 */
+	public static InvokerManager of(Object proxy) {
+		Invoker invoker = Invoker.of(proxy);
+		return invoker != null ? invoker.manager() : null;
+	}
+
+	/**
 	 * Creates a new invoker manager using the given argument.
 	 * 
 	 * @param staticRegistry
@@ -164,6 +175,7 @@ public abstract class InvokerManager {
 			throw new NullPointerException("staticRegistry");
 		}
 
+		// Save the static registry
 		this.staticRegistry = staticRegistry;
 	}
 
