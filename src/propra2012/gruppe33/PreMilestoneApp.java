@@ -2,6 +2,7 @@ package propra2012.gruppe33;
 
 import java.awt.Point;
 import java.io.File;
+import java.util.LinkedList;
 import java.util.List;
 import java.util.UUID;
 
@@ -78,6 +79,9 @@ public class PreMilestoneApp {
 					player);
 
 		}
+
+		scene.addProp("players", new LinkedList<UUID>(refs));
+		scene.addProp("sessions", ids);
 
 		return scene;
 	}

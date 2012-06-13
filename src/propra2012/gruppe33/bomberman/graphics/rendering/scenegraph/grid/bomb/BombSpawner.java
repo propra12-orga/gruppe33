@@ -24,7 +24,7 @@ public final class BombSpawner extends Entity {
 
 	private boolean spawn = false;
 
-	public int bombs = 1;
+	public int bombs = 3;
 
 	@SuppressWarnings("unchecked")
 	@Override

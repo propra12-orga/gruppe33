@@ -129,6 +129,12 @@ public final class Bomb extends AbstractEntityChange<GraphicsEntity> {
 										.applyChange(
 												new Killer(child
 														.registrationKey()));
+
+								List<UUID> players = (List<UUID>) scene
+										.prop("players");
+								long[] ids = (long[]) scene.prop("sessions");
+
+								players.remove(child.registrationKey());
 							}
 						}
 					}
