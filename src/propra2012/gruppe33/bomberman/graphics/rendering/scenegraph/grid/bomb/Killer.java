@@ -6,9 +6,9 @@ import com.indyforge.twod.engine.graphics.rendering.scenegraph.Entity;
 import com.indyforge.twod.engine.graphics.rendering.scenegraph.GraphicsEntity;
 import com.indyforge.twod.engine.graphics.rendering.scenegraph.animation.RenderedAnimation;
 import com.indyforge.twod.engine.graphics.rendering.scenegraph.animation.RenderedAnimation.AnimationEvent;
-import com.indyforge.twod.engine.graphics.rendering.scenegraph.network.AbstractEntityChange;
+import com.indyforge.twod.engine.graphics.rendering.scenegraph.network.entity.Many;
 
-public class Killer extends AbstractEntityChange<GraphicsEntity> {
+public class Killer extends Many<GraphicsEntity> {
 
 	public Killer() {
 		super();

@@ -16,8 +16,8 @@ import com.indyforge.twod.engine.graphics.rendering.scenegraph.RenderedImage;
 import com.indyforge.twod.engine.graphics.rendering.scenegraph.Scene;
 import com.indyforge.twod.engine.graphics.rendering.scenegraph.math.Grid;
 import com.indyforge.twod.engine.graphics.rendering.scenegraph.math.Vector2f;
-import com.indyforge.twod.engine.graphics.rendering.scenegraph.network.AbstractEntityChange;
 import com.indyforge.twod.engine.graphics.rendering.scenegraph.network.entity.DetachEntityChange;
+import com.indyforge.twod.engine.graphics.rendering.scenegraph.network.entity.Many;
 import com.indyforge.twod.engine.graphics.rendering.scenegraph.timeout.DetachOnTimeout;
 import com.indyforge.twod.engine.graphics.rendering.scenegraph.timeout.Timeout;
 import com.indyforge.twod.engine.graphics.rendering.scenegraph.transform.TransformMotor;
@@ -27,7 +27,7 @@ import com.indyforge.twod.engine.graphics.rendering.scenegraph.transform.Transfo
  * @author Christopher Probst
  * 
  */
-public final class Bomb extends AbstractEntityChange<GraphicsEntity> {
+public final class Bomb extends Many<GraphicsEntity> {
 
 	public UUID bombreg, play;
 
@@ -57,7 +57,7 @@ public final class Bomb extends AbstractEntityChange<GraphicsEntity> {
 	 * (non-Javadoc)
 	 * 
 	 * @see com.indyforge.twod.engine.graphics.rendering.scenegraph.network.
-	 * AbstractEntityChange
+	 * Many
 	 * #apply(com.indyforge.twod.engine.graphics.rendering.scenegraph.Entity)
 	 */
 	@Override

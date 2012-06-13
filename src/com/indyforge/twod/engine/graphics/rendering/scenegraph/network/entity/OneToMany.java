@@ -4,26 +4,39 @@ import com.indyforge.twod.engine.graphics.rendering.scenegraph.Entity;
 
 /**
  * 
- * @author Christopher Probst
+ * @author Kr0e
  * 
+ * @param <T>
+ * @param <V>
  */
-public class DetachEntityChange extends Many<Entity> {
+public abstract class OneToMany<T extends Entity, V> extends Many<T> {
 
 	/**
 	 * 
 	 */
 	private static final long serialVersionUID = 1L;
 
+	private V value;
+
+	protected abstract void apply(T entity, V value);
+
 	/*
 	 * (non-Javadoc)
 	 * 
 	 * @see
 	 * com.indyforge.twod.engine.graphics.rendering.scenegraph.network.entity
-	 * .OneToManyChange
+	 * .OneToMany
 	 * #apply(com.indyforge.twod.engine.graphics.rendering.scenegraph.Entity)
 	 */
-	@Override
-	protected void apply(Entity entity) {
-		entity.detach();
+	protected final void apply(T entity) {
+		apply(entity, value);
+	}
+
+	public V value() {
+		return value;
+	}
+
+	public void value(V value) {
+		this.value = value;
 	}
 }
