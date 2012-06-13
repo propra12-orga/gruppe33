@@ -66,8 +66,9 @@ public class ServerApp {
 
 		// Enable input on all clients !!
 		for (i = 0; i < longs.length; i++) {
-			server.session(longs[i]).client()
-					.applyChange(new InputActivator(refs.get(i)));
+			InputActivator inputAc = new InputActivator();
+			inputAc.entities().add(refs.get(i));
+			server.session(longs[i]).client().applyChange(inputAc);
 		}
 
 		// Reset the network time every where

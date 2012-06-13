@@ -393,22 +393,10 @@ public final class GridController extends Entity {
 		if (event == InputChange.class) {
 
 			Map<Input, Boolean> input = (Map<Input, Boolean>) params[0];
-
-			if (input != null) {
-				Boolean north = input.get(Input.Up);
-				inputMap.put(Direction.North, north != null ? north : false);
-
-				Boolean south = input.get(Input.Down);
-				inputMap.put(Direction.South, south != null ? south : false);
-
-				Boolean west = input.get(Input.Left);
-				inputMap.put(Direction.West, west != null ? west : false);
-
-				Boolean east = input.get(Input.Right);
-				inputMap.put(Direction.East, east != null ? east : false);
-			} else {
-				inputMap.clear();
-			}
+			inputMap.put(Direction.North, input.get(Input.Up));
+			inputMap.put(Direction.South, input.get(Input.Down));
+			inputMap.put(Direction.West, input.get(Input.Left));
+			inputMap.put(Direction.East, input.get(Input.Right));
 		}
 	}
 

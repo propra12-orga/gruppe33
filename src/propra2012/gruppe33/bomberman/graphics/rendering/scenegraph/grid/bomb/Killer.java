@@ -1,7 +1,5 @@
 package propra2012.gruppe33.bomberman.graphics.rendering.scenegraph.grid.bomb;
 
-import java.util.UUID;
-
 import com.indyforge.twod.engine.graphics.rendering.scenegraph.Entity;
 import com.indyforge.twod.engine.graphics.rendering.scenegraph.GraphicsEntity;
 import com.indyforge.twod.engine.graphics.rendering.scenegraph.animation.RenderedAnimation;
@@ -10,15 +8,10 @@ import com.indyforge.twod.engine.graphics.rendering.scenegraph.network.entity.Ma
 
 public class Killer extends Many<GraphicsEntity> {
 
-	public Killer() {
-		super();
-		// TODO Auto-generated constructor stub
-	}
-
-	public Killer(UUID registrationKey) {
-		super(registrationKey);
-		// TODO Auto-generated constructor stub
-	}
+	/**
+	 * 
+	 */
+	private static final long serialVersionUID = 1L;
 
 	@Override
 	protected void apply(GraphicsEntity entity) {

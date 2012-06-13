@@ -86,23 +86,21 @@ public abstract class InputChange<E extends Enum<E>, T extends Entity> extends
 		// Read the input state
 		int inputState = s.read();
 
-		// Any bits set ?
-		if (inputState != 0) {
+		// The offset
+		int offset = 0;
 
-			// The offset
-			int offset = 0;
+		// Go through all enums
+		for (E input : enumType.getEnumConstants()) {
 
-			// Go through all enums
-			for (E input : enumType.getEnumConstants()) {
+			if (offset >= USED_BITS) {
+				throw new IOException("Enum type has more than " + USED_BITS
+						+ " values. Please check your code.");
+			} else {
 
-				if (offset >= USED_BITS) {
-					throw new IOException("Enum type has more than "
-							+ USED_BITS + " values. Please check your code.");
-				} else {
-
-					// Parse the bit set
-					inputMap.put(input, (inputState & (1 << offset++)) != 0);
-				}
+				// Parse the bit set
+				inputMap.put(input,
+						inputState != 0 ? (inputState & (1 << offset++)) != 0
+								: false);
 			}
 		}
 	}

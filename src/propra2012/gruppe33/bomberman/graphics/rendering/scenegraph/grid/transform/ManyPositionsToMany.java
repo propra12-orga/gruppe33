@@ -1,23 +1,22 @@
-package propra2012.gruppe33.bomberman.graphics.rendering.scenegraph.grid.network;
+package propra2012.gruppe33.bomberman.graphics.rendering.scenegraph.grid.transform;
 
 import propra2012.gruppe33.bomberman.graphics.rendering.scenegraph.grid.GridRoutines;
 
 import com.indyforge.twod.engine.graphics.rendering.scenegraph.GraphicsEntity;
 import com.indyforge.twod.engine.graphics.rendering.scenegraph.math.Vector2f;
-import com.indyforge.twod.engine.graphics.rendering.scenegraph.network.transform.OneVectorToMany;
+import com.indyforge.twod.engine.graphics.rendering.scenegraph.network.transform.ManyVectorsToMany;
 
 /**
  * 
  * @author Christopher Probst
  * 
  */
-public final class OnePositionToMany extends OneVectorToMany<GraphicsEntity> {
-
+public final class ManyPositionsToMany extends
+		ManyVectorsToMany<GraphicsEntity> {
 	/**
 	 * 
 	 */
 	private static final long serialVersionUID = 1L;
-
 	/*
 	 * If true the given vector will be added to the position, otherwise the
 	 * position will be set.

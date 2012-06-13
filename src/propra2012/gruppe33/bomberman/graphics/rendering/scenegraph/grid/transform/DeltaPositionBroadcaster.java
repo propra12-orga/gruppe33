@@ -1,7 +1,5 @@
 package propra2012.gruppe33.bomberman.graphics.rendering.scenegraph.grid.transform;
 
-import propra2012.gruppe33.bomberman.graphics.rendering.scenegraph.grid.network.OnePositionToMany;
-
 import com.indyforge.twod.engine.graphics.rendering.scenegraph.Entity;
 import com.indyforge.twod.engine.graphics.rendering.scenegraph.GraphicsEntity;
 import com.indyforge.twod.engine.graphics.rendering.scenegraph.Scene;
@@ -80,8 +78,11 @@ public final class DeltaPositionBroadcaster extends Entity {
 				oldPosition.set(absolutePosition);
 
 				// Create a translation change
-				OnePositionToMany translation = new OnePositionToMany(delta, true,
-						graphicsParent.registrationKey());
+				OnePositionToMany translation = new OnePositionToMany();
+
+				// Activate translation and setup correctly
+				translation.translate(true).value(delta).entities()
+						.add(graphicsParent.registrationKey());
 
 				// Broadcast the change
 				scene.processor().adminSessionServer().broadcast()

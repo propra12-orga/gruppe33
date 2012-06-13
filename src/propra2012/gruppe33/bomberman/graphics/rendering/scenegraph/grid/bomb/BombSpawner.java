@@ -24,7 +24,7 @@ public final class BombSpawner extends Entity {
 
 	private boolean spawn = false;
 
-	public int bombs = 3;
+	public int bombs = 20;
 
 	@SuppressWarnings("unchecked")
 	@Override
@@ -32,12 +32,7 @@ public final class BombSpawner extends Entity {
 		super.onEvent(source, event, params);
 		if (event == InputChange.class) {
 			Map<Input, Boolean> input = (Map<Input, Boolean>) params[0];
-			if (input != null) {
-				Boolean b = input.get(Input.PlaceBomb);
-				spawn = b != null ? b : false;
-			} else {
-				spawn = false;
-			}
+			spawn = input.get(Input.PlaceBomb);
 		}
 	}
 
@@ -50,11 +45,13 @@ public final class BombSpawner extends Entity {
 			UUID u = UUID.randomUUID();
 
 			// Create bomb for the given field
-			Bomb bombA = new Bomb(node.registrationKey());
+			Bomb bombA = new Bomb();
+			bombA.entities().add(node.registrationKey());
 			bombA.bombreg = u;
 			bombA.play = parent().registrationKey();
 
-			Bomb bombB = new Bomb(node.registrationKey());
+			Bomb bombB = new Bomb();
+			bombB.entities().add(node.registrationKey());
 			bombB.bombreg = u;
 			bombs--;
 

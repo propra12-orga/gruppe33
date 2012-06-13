@@ -1,9 +1,6 @@
 package propra2012.gruppe33.bomberman.graphics.rendering.scenegraph.grid.bomb;
 
 import java.awt.Point;
-import java.io.IOException;
-import java.io.ObjectInput;
-import java.io.ObjectOutput;
 import java.util.List;
 import java.util.UUID;
 
@@ -29,29 +26,11 @@ import com.indyforge.twod.engine.graphics.rendering.scenegraph.transform.Transfo
  */
 public final class Bomb extends Many<GraphicsEntity> {
 
+	/**
+	 * 
+	 */
+	private static final long serialVersionUID = 1L;
 	public UUID bombreg, play;
-
-	public Bomb() {
-	}
-
-	public Bomb(UUID registrationKey) {
-		super(registrationKey);
-	}
-
-	@Override
-	public void writeExternal(ObjectOutput out) throws IOException {
-		super.writeExternal(out);
-		out.writeObject(bombreg);
-		out.writeObject(play);
-	}
-
-	@Override
-	public void readExternal(ObjectInput in) throws IOException,
-			ClassNotFoundException {
-		super.readExternal(in);
-		bombreg = (UUID) in.readObject();
-		play = (UUID) in.readObject();
-	}
 
 	/*
 	 * (non-Javadoc)
@@ -88,6 +67,7 @@ public final class Bomb extends Many<GraphicsEntity> {
 			 */
 			private static final long serialVersionUID = 1L;
 
+			@SuppressWarnings("unchecked")
 			@Override
 			protected void onParentDetached() {
 				super.onParentDetached();
@@ -120,19 +100,19 @@ public final class Bomb extends Many<GraphicsEntity> {
 						for (Entity child : node) {
 							if (child.tagged(GridConstants.BREAKABLE_TAG)
 									|| child.tagged(GridConstants.BOMB_TAG)) {
-								c.list.add(child.registrationKey());
+								c.entities().add(child.registrationKey());
 							} else if (child.tagged(GridConstants.PLAYER_TAG)) {
 
-								scene.processor()
-										.adminSessionServer()
-										.composite()
-										.applyChange(
-												new Killer(child
-														.registrationKey()));
+								// Create new killer
+								Killer k = new Killer();
+								k.entities().add(child.registrationKey());
+
+								// Submit the killer
+								scene.processor().adminSessionServer()
+										.composite().applyChange(k);
 
 								List<UUID> players = (List<UUID>) scene
 										.prop("players");
-								long[] ids = (long[]) scene.prop("sessions");
 
 								players.remove(child.registrationKey());
 							}
@@ -142,7 +122,7 @@ public final class Bomb extends Many<GraphicsEntity> {
 					node.attach(bomb);
 				}
 
-				if (!c.list.isEmpty()) {
+				if (!c.entities().isEmpty()) {
 					scene.processor().adminSessionServer().composite()
 							.applyChange(c);
 				}

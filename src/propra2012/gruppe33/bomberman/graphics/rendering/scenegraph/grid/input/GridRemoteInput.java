@@ -44,8 +44,11 @@ public final class GridRemoteInput extends GraphicsEntity {
 
 		if (scene.processor().hasSession() && !tmp.equals(inputMap)) {
 			inputMap.putAll(tmp);
-			scene.processor().session().server()
-					.applyChange(new GridInputChange(peerKey, tmp));
+
+			GridInputChange ch = new GridInputChange(Input.class);
+			ch.entities().add(peerKey);
+			ch.inputMap().putAll(tmp);
+			scene.processor().session().server().applyChange(ch);
 		}
 	}
 }

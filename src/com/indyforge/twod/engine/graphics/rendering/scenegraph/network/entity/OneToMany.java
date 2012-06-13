@@ -36,7 +36,8 @@ public abstract class OneToMany<T extends Entity, V> extends Many<T> {
 		return value;
 	}
 
-	public void value(V value) {
+	public OneToMany<T, V> value(V value) {
 		this.value = value;
+		return this;
 	}
 }
