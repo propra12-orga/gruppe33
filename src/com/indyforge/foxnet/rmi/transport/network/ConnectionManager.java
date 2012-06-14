@@ -217,10 +217,14 @@ public final class ConnectionManager implements ChannelPipelineFactory {
 		}
 	}
 
+	public InvokerManager openClient(SocketAddress socketAddress)
+			throws IOException {
+		return InvokerHandler.of(openClientAsync(socketAddress)
+				.awaitUninterruptibly().getChannel());
+	}
+
 	public InvokerManager openClient(String host, int port) throws IOException {
-		return InvokerHandler.of(openClientAsync(
-				new InetSocketAddress(host, port)).awaitUninterruptibly()
-				.getChannel());
+		return openClient(new InetSocketAddress(host, port));
 	}
 
 	public Future openClientAsync(String host, int port) {

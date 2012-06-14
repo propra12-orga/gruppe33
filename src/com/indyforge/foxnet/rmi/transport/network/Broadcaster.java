@@ -1,4 +1,4 @@
-package com.indyforge.twod.engine.io.network.udp.broadcast;
+package com.indyforge.foxnet.rmi.transport.network;
 
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
@@ -11,7 +11,10 @@ import java.net.DatagramSocket;
 import java.net.InetAddress;
 import java.net.InetSocketAddress;
 import java.net.SocketAddress;
+import java.net.SocketTimeoutException;
 import java.nio.ByteBuffer;
+import java.util.ArrayList;
+import java.util.List;
 
 /**
  * Simple broadcaster class. Basically you initialize this class with a given
@@ -40,29 +43,25 @@ public final class Broadcaster extends Thread {
 	 */
 	public static final int MAX_READ_SIZE = 128;
 
-	public static Object receiveMessageFrom(int port, int timeoutmillies)
-			throws IOException, ClassNotFoundException {
-		return receiveMessageFrom(
+	public static List<Object> receiveBroadcast(int port, int maxResults,
+			int timeoutmillies) throws IOException, ClassNotFoundException {
+		return receiveBroadcast(
 				new InetSocketAddress(InetAddress.getByName("255.255.255.255"),
-						port), timeoutmillies);
+						port), maxResults, timeoutmillies);
 	}
 
-	/**
-	 * This method is the client which sends and receives packets.
-	 * 
-	 * @param target
-	 * @return
-	 * @throws IOException
-	 * @throws ClassNotFoundException
-	 */
-	public static Object receiveMessageFrom(SocketAddress target,
-			int timeoutmillies) throws IOException, ClassNotFoundException {
+	public static List<Object> receiveBroadcast(SocketAddress target,
+			int maxResults, int timeoutmillies) throws IOException,
+			ClassNotFoundException {
 
 		// Just open, does not matter which port
 		DatagramSocket receiver = new DatagramSocket();
 
 		// Use timeout
 		receiver.setSoTimeout(timeoutmillies);
+
+		// The results
+		List<Object> resultList = new ArrayList<Object>(maxResults);
 
 		// Build request
 		ByteBuffer buffer = ByteBuffer.allocate(2);
@@ -82,19 +81,31 @@ public final class Broadcaster extends Thread {
 		// Define answer
 		DatagramPacket answer = new DatagramPacket(response, response.length);
 
-		// Try to read answer
-		receiver.receive(answer);
-
-		// Create a new parser
-		ObjectInputStream parser = new ObjectInputStream(
-				new ByteArrayInputStream(answer.getData(), answer.getOffset(),
-						answer.getLength()));
 		try {
-			// Read the message and return
-			return parser.readObject();
+			for (int i = 0; i < maxResults; i++) {
+				try {
+					// Try to read answer
+					receiver.receive(answer);
+				} catch (SocketTimeoutException timeout) {
+					break;
+				}
+
+				// Create a new parser
+				ObjectInputStream parser = new ObjectInputStream(
+						new ByteArrayInputStream(answer.getData(),
+								answer.getOffset(), answer.getLength()));
+
+				try {
+					// Read the message
+					resultList.add(parser.readObject());
+
+				} finally {
+					parser.close();
+				}
+			}
+			return resultList;
 		} finally {
 			receiver.close();
-			parser.close();
 		}
 	}
 
@@ -180,6 +191,12 @@ public final class Broadcaster extends Thread {
 	}
 
 	@Override
+	public void interrupt() {
+		super.interrupt();
+		udpServer.close();
+	}
+
+	@Override
 	public void run() {
 		// As long as the thread is not interrupted
 		while (!Thread.interrupted()) {
@@ -191,9 +208,6 @@ public final class Broadcaster extends Thread {
 			try {
 				// Try to receive
 				udpServer.receive(packet);
-
-				// Log
-				System.out.println("Received broadcast request");
 
 				// Create a parser on top of the received packet
 				DataInputStream packetParser = new DataInputStream(

@@ -1,5 +1,8 @@
 package propra2012.gruppe33.networktest;
 
+import java.net.InetSocketAddress;
+import java.util.List;
+
 import com.indyforge.foxnet.rmi.InvokerManager;
 import com.indyforge.foxnet.rmi.pattern.change.Session;
 import com.indyforge.foxnet.rmi.util.Future;
@@ -15,12 +18,16 @@ public class ClientApp {
 		final SceneProcessor sceneProcessor = new SceneProcessor(
 				NetworkMode.Client, "Bomberman", 640, 1024);
 
+		List<Object> msg = SceneProcessor.receiveBroadcast(1338, 1, 10000);
+
+		System.out.println("Rcv: " + msg);
+
 		// Stop rendering if hidden...
 		sceneProcessor.onlyRenderWithFocus(false);
 
 		// Connect the scene
 		Session<SceneProcessor> session = sceneProcessor.openClient(
-				"localhost", 1337).linkClient("Kr0e");
+				(InetSocketAddress) msg.get(0)).linkClient("Kr0e");
 
 		// Get the invoker manager
 		InvokerManager man = InvokerManager.of(session);

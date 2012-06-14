@@ -1,5 +1,6 @@
 package propra2012.gruppe33.networktest;
 
+import java.net.InetSocketAddress;
 import java.util.Scanner;
 
 import propra2012.gruppe33.PreMilestoneApp;
@@ -14,12 +15,13 @@ public class ServerApp {
 	 */
 	public static void main(String[] args) throws Exception {
 
-
-		
-
 		// Create a new scene as server
 		SceneProcessor serverProcessor = new SceneProcessor(NetworkMode.Server)
 				.openServer(1337);
+
+		// Start broadcasting the address
+		serverProcessor.openBroadcaster(1338, new InetSocketAddress("kr0e-pc",
+				1337));
 
 		// Scanner from console
 		Scanner input = new Scanner(System.in);

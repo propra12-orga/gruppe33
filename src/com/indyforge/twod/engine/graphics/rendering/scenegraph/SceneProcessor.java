@@ -12,6 +12,9 @@ import java.awt.image.BufferStrategy;
 import java.awt.image.BufferedImage;
 import java.io.IOException;
 import java.lang.reflect.InvocationTargetException;
+import java.net.InetSocketAddress;
+import java.net.SocketAddress;
+import java.util.List;
 import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.LinkedBlockingDeque;
 
@@ -25,6 +28,7 @@ import com.indyforge.foxnet.rmi.pattern.change.Session;
 import com.indyforge.foxnet.rmi.pattern.change.SessionServer;
 import com.indyforge.foxnet.rmi.pattern.change.impl.DefaultChangeableQueue;
 import com.indyforge.foxnet.rmi.pattern.change.impl.DefaultSessionServer;
+import com.indyforge.foxnet.rmi.transport.network.Broadcaster;
 import com.indyforge.foxnet.rmi.transport.network.ConnectionManager;
 import com.indyforge.twod.engine.graphics.GraphicsRoutines;
 import com.indyforge.twod.engine.resources.assets.AssetManager;
@@ -42,6 +46,23 @@ import com.indyforge.twod.engine.resources.assets.AssetManager;
  * @see Scene
  */
 public final class SceneProcessor implements Changeable<SceneProcessor> {
+
+	/**
+	 * @see Broadcaster#receiveBroadcast(int, int, int)
+	 */
+	public static List<Object> receiveBroadcast(int port, int maxResults,
+			int timeoutmillies) throws IOException, ClassNotFoundException {
+		return Broadcaster.receiveBroadcast(port, maxResults, timeoutmillies);
+	}
+
+	/**
+	 * @see Broadcaster#receiveBroadcast(SocketAddress, int, int)
+	 */
+	public static List<Object> receiveBroadcast(SocketAddress target,
+			int maxResults, int timeoutmillies) throws IOException,
+			ClassNotFoundException {
+		return Broadcaster.receiveBroadcast(target, maxResults, timeoutmillies);
+	}
 
 	public static final String REMOTE_NAME = "session_server";
 
@@ -70,6 +91,11 @@ public final class SceneProcessor implements Changeable<SceneProcessor> {
 	 * The network mode of this processor.
 	 */
 	private NetworkMode networkMode;
+
+	/*
+	 * The message broadcaster.
+	 */
+	private Broadcaster broadcaster;
 
 	/*
 	 * Will be set by the server to "reset" the network time. The user can
@@ -356,15 +382,15 @@ public final class SceneProcessor implements Changeable<SceneProcessor> {
 	 */
 	public boolean hasNetworkResources() {
 		synchronized (netLock) {
-			return connectionManager != null ? !connectionManager.isDisposed()
-					: false;
+			return (connectionManager != null ? !connectionManager.isDisposed()
+					: false) || broadcaster != null;
 		}
 	}
 
 	/**
-	 * Resets the network. All active connections will be terminated and
-	 * internal bindings will be removed. Please note that the network is still
-	 * able to work after this method.
+	 * Resets the network. All active connections (broadcasting is not affected
+	 * by this method) will be terminated and internal bindings will be removed.
+	 * Please note that the network is still able to work after this method.
 	 * <p>
 	 * If you want to DESTROY the active network please use
 	 * {@link SceneProcessor#releaseNetworkResources()}.
@@ -397,11 +423,14 @@ public final class SceneProcessor implements Changeable<SceneProcessor> {
 	 */
 	public void releaseNetworkResources() {
 		synchronized (netLock) {
-			if (connectionManager != null) {
-				connectionManager.dispose();
-				connectionManager = null;
+			if (hasNetworkResources()) {
+				if (connectionManager != null) {
+					connectionManager.dispose();
+					connectionManager = null;
+				}
 				networkMode = NetworkMode.Offline;
 				networkInitTimestamp = -1;
+				closeBroadcaster();
 
 				// Delete server stuff
 				adminSessionServer = null;
@@ -430,6 +459,31 @@ public final class SceneProcessor implements Changeable<SceneProcessor> {
 	 * Connects to the given server. If the scene processor is already
 	 * connected, the old connection will be cancelled first.
 	 * 
+	 * @param socketAddress
+	 *            The host address.
+	 * @return this for chaining;
+	 * @throws IOException
+	 *             If the connection attempt failed.
+	 */
+	public SceneProcessor openClient(SocketAddress socketAddress)
+			throws IOException {
+		synchronized (netLock) {
+			if (networkMode != NetworkMode.Client) {
+				throw new IllegalStateException("Wrong network mode");
+			} else if (invokerManager != null) {
+				// Reset the network
+				resetNetwork();
+			}
+			// Try to open the connection
+			invokerManager = connectionManager.openClient(socketAddress);
+			return this;
+		}
+	}
+
+	/**
+	 * Connects to the given server. If the scene processor is already
+	 * connected, the old connection will be cancelled first.
+	 * 
 	 * @param host
 	 *            The host address.
 	 * @param port
@@ -439,17 +493,7 @@ public final class SceneProcessor implements Changeable<SceneProcessor> {
 	 *             If the connection attempt failed.
 	 */
 	public SceneProcessor openClient(String host, int port) throws IOException {
-		synchronized (netLock) {
-			if (networkMode != NetworkMode.Client) {
-				throw new IllegalStateException("Wrong network mode");
-			} else if (invokerManager != null) {
-				// Reset the network
-				resetNetwork();
-			}
-			// Try to open the connection
-			invokerManager = connectionManager.openClient(host, port);
-			return this;
-		}
+		return openClient(new InetSocketAddress(host, port));
 	}
 
 	/**
@@ -507,6 +551,69 @@ public final class SceneProcessor implements Changeable<SceneProcessor> {
 			connectionManager.openServer(port);
 
 			return this;
+		}
+	}
+
+	/**
+	 * Opens a broadcaster.
+	 * 
+	 * @param port
+	 *            The broadcasting port.
+	 * @param message
+	 *            The broadcasted message.
+	 * @return this for chaining.
+	 * @throws IOException
+	 *             If an IO exception occurs.
+	 */
+	public SceneProcessor openBroadcaster(int port, Object message)
+			throws IOException {
+		synchronized (netLock) {
+			if (networkMode == NetworkMode.Offline) {
+				throw new IllegalStateException("Wrong network mode");
+			} else if (broadcaster != null) {
+				closeBroadcaster();
+			}
+
+			// Try to create a new broadcaster
+			broadcaster = new Broadcaster(port, message);
+
+			// Start the broadcaster
+			broadcaster.start();
+
+			return this;
+		}
+	}
+
+	/**
+	 * @return true if this scene processor has broadcaster, otherwise false.
+	 */
+	public boolean hasBroadcaster() {
+		synchronized (netLock) {
+			return broadcaster != null;
+		}
+	}
+
+	/**
+	 * Closes the broadcaster.
+	 * 
+	 * @return this for chaining.
+	 */
+	public SceneProcessor closeBroadcaster() {
+		synchronized (netLock) {
+			if (broadcaster != null) {
+				broadcaster.interrupt();
+			}
+			broadcaster = null;
+			return this;
+		}
+	}
+
+	/**
+	 * @return the broadcaster.
+	 */
+	public Broadcaster broadcaster() {
+		synchronized (netLock) {
+			return broadcaster;
 		}
 	}
 
