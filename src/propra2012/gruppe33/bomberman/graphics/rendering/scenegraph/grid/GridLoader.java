@@ -1,14 +1,18 @@
 package propra2012.gruppe33.bomberman.graphics.rendering.scenegraph.grid;
 
 import java.awt.Color;
+import java.awt.Point;
 import java.awt.image.BufferedImage;
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
+import java.util.ArrayList;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Random;
+
+import propra2012.gruppe33.bomberman.graphics.rendering.scenegraph.grid.transform.DeltaPositionBroadcaster;
 
 import com.indyforge.twod.engine.graphics.rendering.scenegraph.Entity;
 import com.indyforge.twod.engine.graphics.rendering.scenegraph.GraphicsEntity;
@@ -27,6 +31,28 @@ import com.indyforge.twod.engine.resources.assets.AssetManager;
  */
 public final class GridLoader implements GridConstants {
 
+	public static List<Point> find(char[][] map, char sign) {
+		if (map == null) {
+			throw new NullPointerException("map");
+		}
+
+		// Calc the dim
+		int rx = map[0].length, ry = map.length;
+
+		// Create new array list
+		List<Point> points = new ArrayList<Point>();
+
+		for (int y = 0; y < ry; y++) {
+			for (int x = 0; x < rx; x++) {
+				if (map[y][x] == sign) {
+					points.add(new Point(x, y));
+				}
+			}
+		}
+
+		return points;
+	}
+
 	/**
 	 * Parses the given char array to setup the scene.
 	 * 
@@ -37,6 +63,12 @@ public final class GridLoader implements GridConstants {
 	 */
 	public static GraphicsEntity parse(char[][] map, Scene scene)
 			throws Exception {
+
+		if (map == null) {
+			throw new NullPointerException("map");
+		} else if (scene == null) {
+			throw new NullPointerException("scene");
+		}
 
 		// Calc the dim
 		int rx = map[0].length, ry = map.length;
@@ -60,6 +92,16 @@ public final class GridLoader implements GridConstants {
 
 		// Attach grid to holder
 		gridHolder.attach(gridEntity);
+
+		// Create new broadcaster
+		DeltaPositionBroadcaster broadcaster = new DeltaPositionBroadcaster(
+				0.025f);
+
+		// Attach the broadcaster
+		scene.attach(broadcaster);
+
+		// Add broadcaster
+		scene.addProp(BROADCASTER_NAME, broadcaster);
 
 		/*
 		 * The breakable image.
@@ -286,8 +328,8 @@ public final class GridLoader implements GridConstants {
 		Random ran = new Random(seed);
 		for (int y = 1; y < map.length - 1; y++) {
 			for (int x = 1; x < map[0].length - 1; x++) {
-				if (!nextTo(map, x, y, START) && map[y][x] != SOLID
-						&& map[y][x] != START) {
+				if (!nextTo(map, x, y, SPAWN) && map[y][x] != SOLID
+						&& map[y][x] != SPAWN) {
 					if (ran.nextInt(10 - nextToCount(map, x, y)) > 2) {
 						map[y][x] += BREAKABLE_OFFSET;
 					}

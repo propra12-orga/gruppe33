@@ -4,6 +4,7 @@ import java.awt.Point;
 import java.util.List;
 import java.util.UUID;
 
+import propra2012.gruppe33.PreMilestoneApp;
 import propra2012.gruppe33.bomberman.graphics.rendering.scenegraph.grid.GridConstants;
 import propra2012.gruppe33.bomberman.graphics.rendering.scenegraph.grid.GridRoutines;
 
@@ -11,10 +12,12 @@ import com.indyforge.twod.engine.graphics.rendering.scenegraph.Entity;
 import com.indyforge.twod.engine.graphics.rendering.scenegraph.GraphicsEntity;
 import com.indyforge.twod.engine.graphics.rendering.scenegraph.RenderedImage;
 import com.indyforge.twod.engine.graphics.rendering.scenegraph.Scene;
+import com.indyforge.twod.engine.graphics.rendering.scenegraph.SceneProcessor;
 import com.indyforge.twod.engine.graphics.rendering.scenegraph.math.Grid;
 import com.indyforge.twod.engine.graphics.rendering.scenegraph.math.Vector2f;
 import com.indyforge.twod.engine.graphics.rendering.scenegraph.network.entity.DetachEntityChange;
 import com.indyforge.twod.engine.graphics.rendering.scenegraph.network.entity.Many;
+import com.indyforge.twod.engine.graphics.rendering.scenegraph.network.scene.SceneChange;
 import com.indyforge.twod.engine.graphics.rendering.scenegraph.timeout.DetachOnTimeout;
 import com.indyforge.twod.engine.graphics.rendering.scenegraph.timeout.Timeout;
 import com.indyforge.twod.engine.graphics.rendering.scenegraph.transform.TransformMotor;
@@ -72,8 +75,13 @@ public final class Bomb extends Many<GraphicsEntity> {
 			protected void onParentDetached() {
 				super.onParentDetached();
 
+				if (scene.processor() == null) {
+					return;
+				}
+
 				if (scene.processor().hasAdminSessionServer()) {
-					scene.registry().get(play).prop("BS", BombSpawner.class).bombs++;
+					scene.registry().get(play).prop("BS", BombSpawner.class)
+							.addBomb();
 				}
 
 				// Lookup grid
@@ -96,7 +104,7 @@ public final class Bomb extends Many<GraphicsEntity> {
 					 */
 					if (scene.processor().hasAdminSessionServer()) {
 
-						// Destroy breackable objects on both sides!
+						// Destroy breakable objects on both sides!
 						for (Entity child : node) {
 							if (child.tagged(GridConstants.BREAKABLE_TAG)
 									|| child.tagged(GridConstants.BOMB_TAG)) {
@@ -115,6 +123,23 @@ public final class Bomb extends Many<GraphicsEntity> {
 										.prop("players");
 
 								players.remove(child.registrationKey());
+
+								if (players.size() <= 1) {
+
+									try {
+										SceneProcessor proc = scene.processor();
+										proc.adminSessionServer()
+												.composite()
+												.applyChange(
+														new SceneChange(null));
+
+										PreMilestoneApp.createServerGame(proc);
+
+										return;
+									} catch (Exception e) {
+										e.printStackTrace();
+									}
+								}
 							}
 						}
 					}
@@ -124,7 +149,7 @@ public final class Bomb extends Many<GraphicsEntity> {
 
 				if (!c.entities().isEmpty()) {
 					scene.processor().adminSessionServer().composite()
-							.applyChange(c);
+							.queueChange(c, true);
 				}
 
 				// Play a sound

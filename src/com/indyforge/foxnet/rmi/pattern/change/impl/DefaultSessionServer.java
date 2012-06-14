@@ -9,6 +9,7 @@ import com.indyforge.foxnet.rmi.RemoteInterfaces;
 import com.indyforge.foxnet.rmi.pattern.change.AdminSessionServer;
 import com.indyforge.foxnet.rmi.pattern.change.Change;
 import com.indyforge.foxnet.rmi.pattern.change.Changeable;
+import com.indyforge.foxnet.rmi.pattern.change.ChangeableQueue;
 import com.indyforge.foxnet.rmi.pattern.change.Session;
 import com.indyforge.foxnet.rmi.pattern.change.SessionServer;
 import com.indyforge.foxnet.rmi.util.Future;
@@ -26,25 +27,20 @@ public final class DefaultSessionServer<T> implements AdminSessionServer<T> {
 	// The accepting sessions flag
 	private boolean acceptingSessions = true;
 
-	// The changeable local and broadcast
-	private final Changeable<T> local, broadcast = new Changeable<T>() {
-		@Override
-		public void applyChange(Change<T> change) {
-			for (Session<T> session : sessions.values()) {
-				try {
-					session.client().applyChange(change);
-				} catch (Exception e) {
-					e.printStackTrace();
+	// The changeable local, broadcast and composite queue
+	private final ChangeableQueue<T> local,
+			broadcast = new DefaultChangeableQueue<T>(new Changeable<T>() {
+				@Override
+				public void applyChange(Change<T> change) {
+					for (Session<T> session : sessions.values()) {
+						try {
+							session.client().applyChange(change);
+						} catch (Exception e) {
+							e.printStackTrace();
+						}
+					}
 				}
-			}
-		}
-	}, composite = new Changeable<T>() {
-		@Override
-		public void applyChange(Change<T> change) {
-			local.applyChange(change);
-			broadcast.applyChange(change);
-		}
-	};
+			}), composite;
 
 	/**
 	 * Creates a new session server using the changeable local.
@@ -52,11 +48,16 @@ public final class DefaultSessionServer<T> implements AdminSessionServer<T> {
 	 * @param local
 	 *            The local.
 	 */
+	@SuppressWarnings("unchecked")
 	public DefaultSessionServer(Changeable<T> local) {
 		if (local == null) {
 			throw new NullPointerException("local");
 		}
-		this.local = local;
+		// Create new local changeable queue
+		this.local = new DefaultChangeableQueue<T>(local);
+
+		// Create a new composite changeable
+		composite = new CompositeChangeableQueue<T>(this.local, broadcast);
 	}
 
 	/*
@@ -149,7 +150,7 @@ public final class DefaultSessionServer<T> implements AdminSessionServer<T> {
 	 * @see com.indyforge.foxnet.rmi.pattern.change.AdminSessionServer#local()
 	 */
 	@Override
-	public Changeable<T> local() {
+	public ChangeableQueue<T> local() {
 		return local;
 	}
 
@@ -160,7 +161,7 @@ public final class DefaultSessionServer<T> implements AdminSessionServer<T> {
 	 * com.indyforge.foxnet.rmi.pattern.change.AdminSessionServer#broadcast()
 	 */
 	@Override
-	public Changeable<T> broadcast() {
+	public ChangeableQueue<T> broadcast() {
 		return broadcast;
 	}
 
@@ -171,7 +172,7 @@ public final class DefaultSessionServer<T> implements AdminSessionServer<T> {
 	 * com.indyforge.foxnet.rmi.pattern.change.AdminSessionServer#composite()
 	 */
 	@Override
-	public Changeable<T> composite() {
+	public ChangeableQueue<T> composite() {
 		return composite;
 	}
 

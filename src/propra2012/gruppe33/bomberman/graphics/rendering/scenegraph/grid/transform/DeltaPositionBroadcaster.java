@@ -1,6 +1,8 @@
 package propra2012.gruppe33.bomberman.graphics.rendering.scenegraph.grid.transform;
 
+import java.util.ArrayList;
 import java.util.LinkedHashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.UUID;
@@ -51,12 +53,23 @@ public final class DeltaPositionBroadcaster extends Entity {
 				// Clear old
 				message.entityMap().clear();
 
+				// Used to remove uuids later...
+				List<UUID> removed = null;
+
 				// Go through all observed entities
 				for (Entry<UUID, Vector2f> entity : entities.entrySet()) {
 
 					// Lookup entity
 					GraphicsEntity ptr = (GraphicsEntity) scene.registry().get(
 							entity.getKey());
+
+					// Add old uuid to remove list!
+					if (ptr == null) {
+						if (removed == null) {
+							removed = new ArrayList<UUID>();
+						}
+						removed.add(entity.getKey());
+					}
 
 					// Calc the absolute position
 					Vector2f absolutePosition = ptr.position().add(
@@ -76,12 +89,19 @@ public final class DeltaPositionBroadcaster extends Entity {
 					}
 				}
 
+				// Delete old entities
+				if (removed != null) {
+					for (UUID entity : removed) {
+						entities.remove(entity);
+					}
+				}
+
 				// Send if not empty!
 				if (!message.entityMap().isEmpty()) {
 
 					// Broadcast the change
 					scene.processor().adminSessionServer().broadcast()
-							.applyChange(message);
+							.queueChange(message, true);
 				}
 
 				// Reset time
@@ -99,7 +119,7 @@ public final class DeltaPositionBroadcaster extends Entity {
 	 *            The update delay.
 	 */
 	public DeltaPositionBroadcaster(float updateDelay) {
-		this.updateDelay = Math.abs(updateDelay);
+		this.updateDelay = updateDelay;
 		message.translate(true);
 	}
 

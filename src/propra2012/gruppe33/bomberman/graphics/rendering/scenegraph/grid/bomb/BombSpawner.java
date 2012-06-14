@@ -24,7 +24,7 @@ public final class BombSpawner extends Entity {
 
 	private boolean spawn = false;
 
-	public int bombs = 20;
+	private int bombs = 20;
 
 	@SuppressWarnings("unchecked")
 	@Override
@@ -34,6 +34,42 @@ public final class BombSpawner extends Entity {
 			Map<Input, Boolean> input = (Map<Input, Boolean>) params[0];
 			spawn = input.get(Input.PlaceBomb);
 		}
+	}
+
+	public int bombs() {
+		return bombs;
+	}
+
+	public BombSpawner removeBombs(int count) {
+		return addBombs(-count);
+	}
+
+	public BombSpawner addBombs(int count) {
+		bombs += count;
+		if (bombs < 0) {
+			bombs = 0;
+		}
+		return this;
+	}
+
+	public BombSpawner addBomb() {
+		bombs++;
+		return this;
+	}
+
+	public BombSpawner removeBomb() {
+		if (bombs > 0) {
+			bombs--;
+		}
+		return this;
+	}
+
+	public BombSpawner bombs(int bombs) {
+		if (bombs < 0) {
+			throw new IllegalArgumentException("bombs must be >= 0");
+		}
+		this.bombs = bombs;
+		return this;
 	}
 
 	@Override
@@ -57,9 +93,9 @@ public final class BombSpawner extends Entity {
 
 			// Apply global change
 			node.findSceneProcessor().adminSessionServer().broadcast()
-					.applyChange(bombB);
+					.queueChange(bombB, true);
 			node.findSceneProcessor().adminSessionServer().local()
-					.applyChange(bombA);
+					.queueChange(bombA, true);
 		}
 	}
 }

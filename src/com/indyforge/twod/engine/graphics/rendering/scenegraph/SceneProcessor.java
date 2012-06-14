@@ -20,8 +20,10 @@ import com.indyforge.foxnet.rmi.LookupException;
 import com.indyforge.foxnet.rmi.pattern.change.AdminSessionServer;
 import com.indyforge.foxnet.rmi.pattern.change.Change;
 import com.indyforge.foxnet.rmi.pattern.change.Changeable;
+import com.indyforge.foxnet.rmi.pattern.change.ChangeableQueue;
 import com.indyforge.foxnet.rmi.pattern.change.Session;
 import com.indyforge.foxnet.rmi.pattern.change.SessionServer;
+import com.indyforge.foxnet.rmi.pattern.change.impl.DefaultChangeableQueue;
 import com.indyforge.foxnet.rmi.pattern.change.impl.DefaultSessionServer;
 import com.indyforge.foxnet.rmi.transport.network.ConnectionManager;
 import com.indyforge.twod.engine.graphics.GraphicsRoutines;
@@ -90,6 +92,12 @@ public final class SceneProcessor implements Changeable<SceneProcessor> {
 	 * Here we can store the session of this scene processor.
 	 */
 	private Session<SceneProcessor> session;
+
+	/*
+	 * The changeable session instances.
+	 */
+	private ChangeableQueue<SceneProcessor> changeableClient;
+	private ChangeableQueue<SceneProcessor> changeableServer;
 
 	/*
 	 * ************************************************************************
@@ -377,6 +385,8 @@ public final class SceneProcessor implements Changeable<SceneProcessor> {
 				// Reset client stuff
 				invokerManager = null;
 				session = null;
+				changeableClient = null;
+				changeableServer = null;
 			}
 		}
 	}
@@ -399,6 +409,8 @@ public final class SceneProcessor implements Changeable<SceneProcessor> {
 				// Delete client stuff
 				invokerManager = null;
 				session = null;
+				changeableClient = null;
+				changeableServer = null;
 			}
 		}
 	}
@@ -525,7 +537,20 @@ public final class SceneProcessor implements Changeable<SceneProcessor> {
 			/*
 			 * Open a session for this scene processor and save it.
 			 */
-			return session = server.openSession(this, name);
+			if ((session = server.openSession(this, name)) != null) {
+
+				/*
+				 * Init both changeable instances.
+				 */
+				changeableClient = new DefaultChangeableQueue<SceneProcessor>(
+						session.client());
+				changeableServer = new DefaultChangeableQueue<SceneProcessor>(
+						session.server());
+
+				return session;
+			} else {
+				throw new IllegalStateException("Null session returned");
+			}
 		}
 	}
 
@@ -563,6 +588,24 @@ public final class SceneProcessor implements Changeable<SceneProcessor> {
 	public Session<SceneProcessor> session() {
 		synchronized (netLock) {
 			return session;
+		}
+	}
+
+	/**
+	 * @return the changeable client (client-side).
+	 */
+	public ChangeableQueue<SceneProcessor> changeableClient() {
+		synchronized (netLock) {
+			return changeableClient;
+		}
+	}
+
+	/**
+	 * @return the changeable server (client-side).
+	 */
+	public ChangeableQueue<SceneProcessor> changeableServer() {
+		synchronized (netLock) {
+			return changeableServer;
 		}
 	}
 
@@ -833,6 +876,20 @@ public final class SceneProcessor implements Changeable<SceneProcessor> {
 		if (!processed) {
 			// Simulate the scene without drawing
 			root.simulate(null, -1, -1, curTime - lastTime);
+		}
+
+		/*
+		 * Send all queued changes if not offline...
+		 */
+		synchronized (netLock) {
+			if (networkMode != NetworkMode.Offline) {
+				if (hasAdminSessionServer()) {
+					adminSessionServer.composite().applyQueuedChanges();
+				} else {
+					changeableClient.applyQueuedChanges();
+					changeableServer.applyQueuedChanges();
+				}
+			}
 		}
 
 		// Check!

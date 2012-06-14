@@ -13,19 +13,19 @@ import java.util.Map;
 public interface AdminSessionServer<T> extends SessionServer<T> {
 
 	/**
-	 * @return the changeable broadcast.
+	 * @return the changeable broadcast queue.
 	 */
-	Changeable<T> broadcast();
+	ChangeableQueue<T> broadcast();
 
 	/**
-	 * @return the changeable local.
+	 * @return the changeable local queue.
 	 */
-	Changeable<T> local();
+	ChangeableQueue<T> local();
 
 	/**
-	 * @return the composite (local & broadcast) changeable object.
+	 * @return the composite (local & broadcast) changeable queue.
 	 */
-	Changeable<T> composite();
+	ChangeableQueue<T> composite();
 
 	/**
 	 * @return the accepting-sessions flag.

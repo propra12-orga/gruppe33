@@ -15,7 +15,7 @@ public interface GridConstants {
 	}
 
 	String EXP_SOUND_NAME = "boom";
-
+	String BROADCASTER_NAME = "broadcaster";
 	String BOMB_IMAGE = "bomb_image";
 	String EXP_SPRITE = "exp_sprite";
 
@@ -40,7 +40,7 @@ public interface GridConstants {
 	char DOWN_LEFT_CORNER = '[';
 	char DOWN_RIGHT_CORNER = ']';
 
-	char START = 's';
+	char SPAWN = 's';
 
 	/**
 	 * Free fields use the defined default speed. To configure field with a

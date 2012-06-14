@@ -1,19 +1,11 @@
 package propra2012.gruppe33.networktest;
 
-import java.util.LinkedList;
-import java.util.List;
 import java.util.Scanner;
-import java.util.UUID;
 
 import propra2012.gruppe33.PreMilestoneApp;
-import propra2012.gruppe33.bomberman.graphics.rendering.scenegraph.grid.input.InputActivator;
 
-import com.indyforge.foxnet.rmi.pattern.change.AdminSessionServer;
-import com.indyforge.twod.engine.graphics.rendering.scenegraph.Scene;
 import com.indyforge.twod.engine.graphics.rendering.scenegraph.SceneProcessor;
 import com.indyforge.twod.engine.graphics.rendering.scenegraph.SceneProcessor.NetworkMode;
-import com.indyforge.twod.engine.graphics.rendering.scenegraph.network.scene.ResetNetworkTimeChange;
-import com.indyforge.twod.engine.graphics.rendering.scenegraph.network.scene.SceneChange;
 
 public class ServerApp {
 
@@ -21,6 +13,9 @@ public class ServerApp {
 	 * @param args
 	 */
 	public static void main(String[] args) throws Exception {
+
+
+		
 
 		// Create a new scene as server
 		SceneProcessor serverProcessor = new SceneProcessor(NetworkMode.Server)
@@ -47,36 +42,11 @@ public class ServerApp {
 			}
 		}
 
-		final long[] longs = new long[serverProcessor.adminSessionServer()
-				.sessionCount()];
-		int i = 0;
-		for (long l : serverProcessor.adminSessionServer().sessions().keySet()) {
-			longs[i++] = l;
-		}
+		// for (int i = 0; i < 1000; i++) {
+		// System.out.println(i);
+		PreMilestoneApp.createServerGame(serverProcessor);
+		// }
 
-		final List<UUID> refs = new LinkedList<UUID>();
-		Scene scene = PreMilestoneApp.createDemoGame(refs, longs);
-		System.out.println(refs);
-
-		AdminSessionServer<SceneProcessor> server = serverProcessor
-				.adminSessionServer();
-
-		// Apply the scene change
-		server.composite().applyChange(new SceneChange(scene));
-
-		// Enable input on all clients !!
-		for (i = 0; i < longs.length; i++) {
-			InputActivator inputAc = new InputActivator();
-			inputAc.entities().add(refs.get(i));
-			server.session(longs[i]).client().applyChange(inputAc);
-		}
-
-		// Reset the network time every where
-		server.composite().applyChange(new ResetNetworkTimeChange());
-
-		System.out.println("Game started!");
-
-		// Start the processor
 		serverProcessor.start(60);
 	}
 }
