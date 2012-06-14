@@ -1,5 +1,8 @@
 package propra2012.gruppe33.bomberman.graphics.rendering.scenegraph.grid.transform;
 
+import java.util.Map;
+import java.util.UUID;
+
 import propra2012.gruppe33.bomberman.graphics.rendering.scenegraph.grid.GridRoutines;
 
 import com.indyforge.twod.engine.graphics.rendering.scenegraph.GraphicsEntity;
@@ -33,11 +36,19 @@ public final class ManyPositionsToMany extends
 		GridRoutines.rearrangeGridNode((GraphicsEntity) entity.parent());
 	}
 
+	public ManyPositionsToMany() {
+	}
+
+	public ManyPositionsToMany(Map<UUID, Vector2f> entityMap) {
+		super(entityMap);
+	}
+
 	public boolean isTranslate() {
 		return translate;
 	}
 
-	public void translate(boolean translate) {
+	public ManyPositionsToMany translate(boolean translate) {
 		this.translate = translate;
+		return this;
 	}
 }

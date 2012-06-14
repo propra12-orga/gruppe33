@@ -9,10 +9,12 @@ import java.util.UUID;
 import propra2012.gruppe33.bomberman.graphics.rendering.scenegraph.grid.GridConstants;
 import propra2012.gruppe33.bomberman.graphics.rendering.scenegraph.grid.GridLoader;
 import propra2012.gruppe33.bomberman.graphics.rendering.scenegraph.grid.GridRoutines;
+import propra2012.gruppe33.bomberman.graphics.rendering.scenegraph.grid.transform.DeltaPositionBroadcaster;
 
 import com.indyforge.twod.engine.graphics.rendering.scenegraph.GraphicsEntity;
 import com.indyforge.twod.engine.graphics.rendering.scenegraph.Scene;
 import com.indyforge.twod.engine.graphics.rendering.scenegraph.math.Grid;
+import com.indyforge.twod.engine.graphics.rendering.scenegraph.math.Vector2f;
 import com.indyforge.twod.engine.graphics.sprite.Sprite;
 import com.indyforge.twod.engine.resources.assets.AssetManager;
 
@@ -66,6 +68,9 @@ public class PreMilestoneApp {
 		Point[] points = new Point[] { new Point(1, 1), new Point(9, 1),
 				new Point(9, 9), new Point(1, 9) };
 
+		// Create new position broadcaster
+		DeltaPositionBroadcaster broad = new DeltaPositionBroadcaster(0.025f);
+
 		int i = 0;
 		for (long id : ids) {
 			// Create new player as knight
@@ -74,12 +79,16 @@ public class PreMilestoneApp {
 
 			refs.add(player.registrationKey());
 
+			broad.entities().put(player.registrationKey(),
+					new Vector2f(points[i]));
+
 			// Place to spawn
 			grid.childAt(grid.typeProp(Grid.class).index(points[i++])).attach(
 					player);
 
 		}
 
+		scene.attach(broad);
 		scene.addProp("players", new LinkedList<UUID>(refs));
 		scene.addProp("sessions", ids);
 

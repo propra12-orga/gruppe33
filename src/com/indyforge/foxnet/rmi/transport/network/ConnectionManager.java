@@ -56,12 +56,15 @@ import org.jboss.netty.channel.group.ChannelGroup;
 import org.jboss.netty.channel.group.DefaultChannelGroup;
 import org.jboss.netty.channel.socket.nio.NioClientSocketChannelFactory;
 import org.jboss.netty.channel.socket.nio.NioServerSocketChannelFactory;
+import org.jboss.netty.handler.codec.compression.ZlibDecoder;
+import org.jboss.netty.handler.codec.compression.ZlibEncoder;
+import org.jboss.netty.handler.codec.serialization.ClassResolvers;
+import org.jboss.netty.handler.codec.serialization.ObjectDecoder;
+import org.jboss.netty.handler.codec.serialization.ObjectEncoder;
 import org.jboss.netty.util.internal.ExecutorUtil;
 
 import com.indyforge.foxnet.rmi.InvokerManager;
 import com.indyforge.foxnet.rmi.binding.registry.StaticRegistry;
-import com.indyforge.foxnet.rmi.transport.network.handler.codec.Deserializer;
-import com.indyforge.foxnet.rmi.transport.network.handler.codec.Serializer;
 import com.indyforge.foxnet.rmi.transport.network.handler.invocation.InvokerHandler;
 import com.indyforge.foxnet.rmi.transport.network.handler.lookup.LookupHandler;
 import com.indyforge.foxnet.rmi.transport.network.handler.reqres.ReqResHandler;
@@ -265,14 +268,22 @@ public final class ConnectionManager implements ChannelPipelineFactory {
 		// Used to identify the channel
 		channelPipeline.addLast("id_handler", identificationHandler);
 
+		// Add good compression
+		channelPipeline.addLast("in_com", new ZlibDecoder());
+		channelPipeline.addLast("out_com", new ZlibEncoder(9));
+
 		// Add config manager
 		channelPipeline.addLast("cfg", SetupHandler.INSTANCE);
 
 		// Use the default decoder
-		channelPipeline.addLast("obj_decoder", new Deserializer());
+		channelPipeline.addLast(
+				"obj_decoder",
+				new ObjectDecoder(Integer.MAX_VALUE, ClassResolvers
+						.weakCachingResolver(Thread.currentThread()
+								.getContextClassLoader())));
 
 		// Use the default encoder
-		channelPipeline.addLast("obj_encoder", new Serializer());
+		channelPipeline.addLast("obj_encoder", new ObjectEncoder(1024));
 
 		// The request response handler
 		channelPipeline.addLast("reqres", ReqResHandler.INSTANCE);

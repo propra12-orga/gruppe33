@@ -1,5 +1,8 @@
 package com.indyforge.twod.engine.graphics.rendering.scenegraph.network.entity;
 
+import java.util.List;
+import java.util.UUID;
+
 import com.indyforge.twod.engine.graphics.rendering.scenegraph.Entity;
 
 /**
@@ -30,6 +33,13 @@ public abstract class OneToMany<T extends Entity, V> extends Many<T> {
 	 */
 	protected final void apply(T entity) {
 		apply(entity, value);
+	}
+
+	public OneToMany() {
+	}
+
+	public OneToMany(List<UUID> registrationKeys) {
+		super(registrationKeys);
 	}
 
 	public V value() {

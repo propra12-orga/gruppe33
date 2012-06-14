@@ -22,9 +22,20 @@ public abstract class Many<T extends Entity> implements Change<SceneProcessor> {
 	private static final long serialVersionUID = 1L;
 
 	// The uuid of the entity
-	private final List<UUID> registrationKeys = new LinkedList<UUID>();
+	private final List<UUID> registrationKeys;
 
 	protected abstract void apply(T entity);
+
+	public Many() {
+		this(null);
+	}
+
+	public Many(List<UUID> registrationKeys) {
+		if (registrationKeys == null) {
+			registrationKeys = new LinkedList<UUID>();
+		}
+		this.registrationKeys = registrationKeys;
+	}
 
 	/**
 	 * @return a list with all registration keys.

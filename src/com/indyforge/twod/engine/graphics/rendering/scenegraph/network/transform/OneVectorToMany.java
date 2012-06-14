@@ -1,5 +1,8 @@
 package com.indyforge.twod.engine.graphics.rendering.scenegraph.network.transform;
 
+import java.util.List;
+import java.util.UUID;
+
 import com.indyforge.twod.engine.graphics.rendering.scenegraph.Entity;
 import com.indyforge.twod.engine.graphics.rendering.scenegraph.math.Vector2f;
 import com.indyforge.twod.engine.graphics.rendering.scenegraph.network.entity.OneToMany;
@@ -16,4 +19,12 @@ public abstract class OneVectorToMany<T extends Entity> extends
 	 * 
 	 */
 	private static final long serialVersionUID = 1L;
+
+	public OneVectorToMany() {
+		super();
+	}
+
+	public OneVectorToMany(List<UUID> registrationKeys) {
+		super(registrationKeys);
+	}
 }

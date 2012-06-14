@@ -1,5 +1,10 @@
 package propra2012.gruppe33.bomberman.graphics.rendering.scenegraph.grid.transform;
 
+import java.util.LinkedHashMap;
+import java.util.Map;
+import java.util.Map.Entry;
+import java.util.UUID;
+
 import com.indyforge.twod.engine.graphics.rendering.scenegraph.Entity;
 import com.indyforge.twod.engine.graphics.rendering.scenegraph.GraphicsEntity;
 import com.indyforge.twod.engine.graphics.rendering.scenegraph.Scene;
@@ -19,74 +24,65 @@ public final class DeltaPositionBroadcaster extends Entity {
 	 */
 	private static final long serialVersionUID = 1L;
 
+	// The observed entities
+	private final Map<UUID, Vector2f> entities = new LinkedHashMap<UUID, Vector2f>();
+
+	// The message
+	private final ManyPositionsToMany message = new ManyPositionsToMany();
+
+	// Tells the passed time
+	private float timePassed = Float.MAX_VALUE;
+
 	// The update delay
 	private final float updateDelay;
-
-	/*
-	 * (non-Javadoc)
-	 * 
-	 * @see
-	 * com.indyforge.twod.engine.graphics.rendering.scenegraph.Entity#onAttached
-	 * ()
-	 */
-	@Override
-	protected void onAttached() {
-		super.onAttached();
-
-		// Parent changed...
-		oldPosition = null;
-
-		// Reset time...
-		timePassed = 0;
-	}
-
-	private Vector2f oldPosition;
-	private float timePassed;
 
 	@Override
 	protected void onUpdate(float tpf) {
 		super.onUpdate(tpf);
 
-		if (parent() instanceof GraphicsEntity) {
-
-			// Convert to graphic entity
-			GraphicsEntity graphicsParent = (GraphicsEntity) parent();
-
-			// Find the scene
-			Scene scene = graphicsParent.findScene();
-
-			// Calc the absolute position
-			Vector2f absolutePosition = graphicsParent.position().add(
-					((GraphicsEntity) graphicsParent.parent()).position());
-
-			// Check for null...
-			if (oldPosition == null) {
-				oldPosition = new Vector2f(absolutePosition);
-			}
+		if (parent() instanceof Scene) {
+			// Convert to scene
+			Scene scene = (Scene) parent();
 
 			// Server mode ?
 			if (scene.processor().hasAdminSessionServer()
-			// If update delay passed or if this is the first update!
-					&& (timePassed >= updateDelay || oldPosition == null)
+					&& timePassed >= updateDelay) {
+
+				// Clear old
+				message.entityMap().clear();
+
+				// Go through all observed entities
+				for (Entry<UUID, Vector2f> entity : entities.entrySet()) {
+
+					// Lookup entity
+					GraphicsEntity ptr = (GraphicsEntity) scene.registry().get(
+							entity.getKey());
+
+					// Calc the absolute position
+					Vector2f absolutePosition = ptr.position().add(
+							((GraphicsEntity) ptr.parent()).position());
+
 					// If positions are not equal
-					&& !absolutePosition.equals(oldPosition)) {
+					if (!absolutePosition.equals(entity.getValue())) {
+						// Calc the absolute delta position
+						Vector2f delta = absolutePosition
+								.sub(entity.getValue());
 
-				// Calc the absolute delta position
-				Vector2f delta = absolutePosition.sub(oldPosition);
+						// Save!
+						entity.getValue().set(absolutePosition);
 
-				// Save!
-				oldPosition.set(absolutePosition);
+						// Put delta vector
+						message.entityMap().put(entity.getKey(), delta);
+					}
+				}
 
-				// Create a translation change
-				OnePositionToMany translation = new OnePositionToMany();
+				// Send if not empty!
+				if (!message.entityMap().isEmpty()) {
 
-				// Activate translation and setup correctly
-				translation.translate(true).value(delta).entities()
-						.add(graphicsParent.registrationKey());
-
-				// Broadcast the change
-				scene.processor().adminSessionServer().broadcast()
-						.applyChange(translation);
+					// Broadcast the change
+					scene.processor().adminSessionServer().broadcast()
+							.applyChange(message);
+				}
 
 				// Reset time
 				timePassed = 0;
@@ -104,5 +100,10 @@ public final class DeltaPositionBroadcaster extends Entity {
 	 */
 	public DeltaPositionBroadcaster(float updateDelay) {
 		this.updateDelay = Math.abs(updateDelay);
+		message.translate(true);
+	}
+
+	public Map<UUID, Vector2f> entities() {
+		return entities;
 	}
 }

@@ -6,7 +6,6 @@ import java.util.List;
 
 import propra2012.gruppe33.bomberman.graphics.rendering.scenegraph.grid.bomb.BombSpawner;
 import propra2012.gruppe33.bomberman.graphics.rendering.scenegraph.grid.input.GridController;
-import propra2012.gruppe33.bomberman.graphics.rendering.scenegraph.grid.transform.DeltaPositionBroadcaster;
 import propra2012.gruppe33.bomberman.graphics.sprite.AnimationRoutines;
 
 import com.indyforge.twod.engine.graphics.rendering.scenegraph.Entity;
@@ -340,8 +339,7 @@ public final class GridRoutines implements GridConstants {
 		BombSpawner bs = new BombSpawner();
 
 		// Attach remaining stuff
-		player.attach(charAni, movement, new DeltaPositionBroadcaster(0.025f),
-				bs);
+		player.attach(charAni, movement, bs);
 
 		player.addProp("BS", bs);
 

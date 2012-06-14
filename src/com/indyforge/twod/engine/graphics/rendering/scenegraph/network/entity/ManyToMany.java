@@ -24,9 +24,20 @@ public abstract class ManyToMany<T extends Entity, V> implements
 	private static final long serialVersionUID = 1L;
 
 	// All mappings
-	private final Map<UUID, V> entityMap = new HashMap<UUID, V>();
+	private final Map<UUID, V> entityMap;
 
 	protected abstract void apply(T entity, V value);
+
+	public ManyToMany() {
+		this(null);
+	}
+
+	public ManyToMany(Map<UUID, V> entityMap) {
+		if (entityMap == null) {
+			entityMap = new HashMap<UUID, V>();
+		}
+		this.entityMap = entityMap;
+	}
 
 	/**
 	 * @return a map with all registration key mappings.

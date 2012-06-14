@@ -1,5 +1,8 @@
 package propra2012.gruppe33.bomberman.graphics.rendering.scenegraph.grid.transform;
 
+import java.util.List;
+import java.util.UUID;
+
 import propra2012.gruppe33.bomberman.graphics.rendering.scenegraph.grid.GridRoutines;
 
 import com.indyforge.twod.engine.graphics.rendering.scenegraph.GraphicsEntity;
@@ -32,6 +35,13 @@ public final class OnePositionToMany extends OneVectorToMany<GraphicsEntity> {
 			entity.position().set(value);
 		}
 		GridRoutines.rearrangeGridNode((GraphicsEntity) entity.parent());
+	}
+
+	public OnePositionToMany() {
+	}
+
+	public OnePositionToMany(List<UUID> registrationKeys) {
+		super(registrationKeys);
 	}
 
 	public boolean isTranslate() {
