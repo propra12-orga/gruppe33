@@ -83,7 +83,7 @@ public class PreMilestoneApp {
 		Scene scene = new Scene(assets, 1024, 1024);
 
 		// Load the char array
-		char[][] map = assets.loadAsset("assets/maps/smallmap.txt",
+		char[][] map = assets.loadAsset("assets/maps/smallmap2.txt",
 				GridLoader.LOADER, true).get();
 
 		// Generate the map randomally
