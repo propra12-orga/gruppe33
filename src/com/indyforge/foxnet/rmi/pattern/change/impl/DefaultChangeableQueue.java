@@ -1,8 +1,12 @@
 package com.indyforge.foxnet.rmi.pattern.change.impl;
 
+import java.util.Collection;
 import java.util.LinkedList;
 import java.util.Queue;
 
+import com.indyforge.foxnet.rmi.Invocation;
+import com.indyforge.foxnet.rmi.Invoker;
+import com.indyforge.foxnet.rmi.RemoteInterfaces;
 import com.indyforge.foxnet.rmi.pattern.change.Change;
 import com.indyforge.foxnet.rmi.pattern.change.Changeable;
 import com.indyforge.foxnet.rmi.pattern.change.ChangeableQueue;
@@ -13,6 +17,7 @@ import com.indyforge.foxnet.rmi.pattern.change.ChangeableQueue;
  * 
  * @param <T>
  */
+@RemoteInterfaces(Changeable.class)
 public final class DefaultChangeableQueue<T> implements ChangeableQueue<T> {
 
 	/*
@@ -42,6 +47,40 @@ public final class DefaultChangeableQueue<T> implements ChangeableQueue<T> {
 	@Override
 	public void applyChange(Change<T> change) {
 		peer.applyChange(change);
+	}
+
+	/*
+	 * (non-Javadoc)
+	 * 
+	 * @see
+	 * com.indyforge.foxnet.rmi.pattern.change.ChangeableQueue#applyChangeLater
+	 * (com.indyforge.foxnet.rmi.pattern.change.Change, java.util.Collection)
+	 */
+	@Override
+	public void applyChangeLater(Change<T> change,
+			Collection<Invocation> invocations) {
+
+		// Generate an invocation
+		Invocation invocation = Invoker.of(peer).invoke("applyChange", change);
+
+		// Add... ?
+		if (invocations != null) {
+			invocations.add(invocation);
+		}
+	}
+
+	/*
+	 * (non-Javadoc)
+	 * 
+	 * @see com.indyforge.foxnet.rmi.pattern.change.ChangeableQueue#
+	 * applyQueuedChangesLater(java.util.Collection)
+	 */
+	@Override
+	public void applyQueuedChangesLater(Collection<Invocation> invocations) {
+		Change<T> change;
+		while ((change = changes.poll()) != null) {
+			applyChangeLater(change, invocations);
+		}
 	}
 
 	/*

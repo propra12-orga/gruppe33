@@ -104,6 +104,11 @@ public final class SceneProcessor implements Changeable<SceneProcessor> {
 	private long networkInitTimestamp = -1;
 
 	/*
+	 * This flag is used for applying queued changes.
+	 */
+	private boolean synchronousQueue = false;
+
+	/*
 	 * ************************************************************************
 	 * NETWORK CLIENT PART ****************************************************
 	 * ************************************************************************
@@ -506,6 +511,30 @@ public final class SceneProcessor implements Changeable<SceneProcessor> {
 			}
 			// Init the local network time
 			networkInitTimestamp = System.currentTimeMillis();
+		}
+	}
+
+	/**
+	 * @return the synchronous queue flag.
+	 */
+	public boolean isSynchronousQueue() {
+		synchronized (netLock) {
+			return synchronousQueue;
+		}
+	}
+
+	/**
+	 * Sets the synchronous queue flag.
+	 * 
+	 * @param synchronousQueue
+	 *            If true, the queued changes will be applied synchronously,
+	 *            otherwise they are applies asynchronously.
+	 * @return this for chaining.
+	 */
+	public SceneProcessor synchronousQueue(boolean synchronousQueue) {
+		synchronized (netLock) {
+			this.synchronousQueue = synchronousQueue;
+			return this;
 		}
 	}
 
@@ -990,11 +1019,21 @@ public final class SceneProcessor implements Changeable<SceneProcessor> {
 		 */
 		synchronized (netLock) {
 			if (networkMode != NetworkMode.Offline) {
-				if (hasAdminSessionServer()) {
-					adminSessionServer.composite().applyQueuedChanges();
+				if (!synchronousQueue) {
+					if (hasAdminSessionServer()) {
+						adminSessionServer.composite().applyQueuedChanges();
+					} else {
+						changeableClient.applyQueuedChanges();
+						changeableServer.applyQueuedChanges();
+					}
 				} else {
-					changeableClient.applyQueuedChanges();
-					changeableServer.applyQueuedChanges();
+					if (hasAdminSessionServer()) {
+						adminSessionServer.composite().applyQueuedChangesLater(
+								null);
+					} else {
+						changeableClient.applyQueuedChangesLater(null);
+						changeableServer.applyQueuedChangesLater(null);
+					}
 				}
 			}
 		}

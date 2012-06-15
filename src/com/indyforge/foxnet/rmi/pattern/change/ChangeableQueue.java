@@ -1,5 +1,9 @@
 package com.indyforge.foxnet.rmi.pattern.change;
 
+import java.util.Collection;
+
+import com.indyforge.foxnet.rmi.Invocation;
+
 /**
  * 
  * @author Christopher Probst
@@ -7,6 +11,22 @@ package com.indyforge.foxnet.rmi.pattern.change;
  * @param <T>
  */
 public interface ChangeableQueue<T> extends Changeable<T> {
+
+	/**
+	 * Applies the given change asynchronously.
+	 * 
+	 * @param invocations
+	 *            The invocations will be stored in this collection.
+	 */
+	void applyChangeLater(Change<T> change, Collection<Invocation> invocations);
+
+	/**
+	 * Applies the queued changes asynchronously.
+	 * 
+	 * @param invocations
+	 *            The invocations will be stored in this collection.
+	 */
+	void applyQueuedChangesLater(Collection<Invocation> invocations);
 
 	/**
 	 * Applies the queued changes.

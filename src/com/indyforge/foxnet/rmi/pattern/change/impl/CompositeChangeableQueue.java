@@ -1,10 +1,14 @@
 package com.indyforge.foxnet.rmi.pattern.change.impl;
 
+import java.util.Collection;
 import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
 
+import com.indyforge.foxnet.rmi.Invocation;
+import com.indyforge.foxnet.rmi.RemoteInterfaces;
 import com.indyforge.foxnet.rmi.pattern.change.Change;
+import com.indyforge.foxnet.rmi.pattern.change.Changeable;
 import com.indyforge.foxnet.rmi.pattern.change.ChangeableQueue;
 
 /**
@@ -13,6 +17,7 @@ import com.indyforge.foxnet.rmi.pattern.change.ChangeableQueue;
  * 
  * @param <T>
  */
+@RemoteInterfaces(Changeable.class)
 public final class CompositeChangeableQueue<T> implements ChangeableQueue<T> {
 
 	/*
@@ -51,6 +56,34 @@ public final class CompositeChangeableQueue<T> implements ChangeableQueue<T> {
 	public void applyChange(Change<T> change) {
 		for (ChangeableQueue<T> changeableQueue : changeableQueues) {
 			changeableQueue.applyChange(change);
+		}
+	}
+
+	/*
+	 * (non-Javadoc)
+	 * 
+	 * @see
+	 * com.indyforge.foxnet.rmi.pattern.change.ChangeableQueue#applyChangeLater
+	 * (com.indyforge.foxnet.rmi.pattern.change.Change, java.util.Collection)
+	 */
+	@Override
+	public void applyChangeLater(Change<T> change,
+			Collection<Invocation> invocations) {
+		for (ChangeableQueue<T> changeableQueue : changeableQueues) {
+			changeableQueue.applyChangeLater(change, invocations);
+		}
+	}
+
+	/*
+	 * (non-Javadoc)
+	 * 
+	 * @see com.indyforge.foxnet.rmi.pattern.change.ChangeableQueue#
+	 * applyQueuedChangesLater(java.util.Collection)
+	 */
+	@Override
+	public void applyQueuedChangesLater(Collection<Invocation> invocations) {
+		for (ChangeableQueue<T> changeableQueue : changeableQueues) {
+			changeableQueue.applyQueuedChangesLater(invocations);
 		}
 	}
 
