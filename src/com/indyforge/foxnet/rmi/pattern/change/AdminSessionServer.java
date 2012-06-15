@@ -1,5 +1,6 @@
 package com.indyforge.foxnet.rmi.pattern.change;
 
+import java.util.List;
 import java.util.Map;
 
 /**
@@ -51,9 +52,14 @@ public interface AdminSessionServer<T> extends SessionServer<T> {
 	int sessionCount();
 
 	/**
+	 * @return the session map.
+	 */
+	Map<Long, Session<T>> sessionMap();
+
+	/**
 	 * @return the sessions.
 	 */
-	Map<Long, Session<T>> sessions();
+	List<Session<T>> sessions();
 
 	/**
 	 * @param id

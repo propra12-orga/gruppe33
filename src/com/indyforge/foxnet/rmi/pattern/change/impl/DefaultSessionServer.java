@@ -1,6 +1,9 @@
 package com.indyforge.foxnet.rmi.pattern.change.impl;
 
+import java.util.ArrayList;
+import java.util.Collections;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.concurrent.atomic.AtomicLong;
 
@@ -24,6 +27,12 @@ public final class DefaultSessionServer<T> implements AdminSessionServer<T> {
 	// The maps which store the sessions
 	private final Map<Long, Session<T>> sessions = new HashMap<Long, Session<T>>();
 
+	// The cached session map
+	private Map<Long, Session<T>> cachedSessionMap;
+
+	// The cached sessions
+	private List<Session<T>> cachedSessions;
+
 	// The accepting sessions flag
 	private boolean acceptingSessions = true;
 
@@ -32,7 +41,7 @@ public final class DefaultSessionServer<T> implements AdminSessionServer<T> {
 			broadcast = new DefaultChangeableQueue<T>(new Changeable<T>() {
 				@Override
 				public void applyChange(Change<T> change) {
-					for (Session<T> session : sessions.values()) {
+					for (Session<T> session : sessions()) {
 						try {
 							session.client().applyChange(change);
 						} catch (Exception e) {
@@ -120,13 +129,30 @@ public final class DefaultSessionServer<T> implements AdminSessionServer<T> {
 
 		// Put into map
 		sessions.put(id, s);
+
+		// Clear caches
+		cachedSessionMap = null;
+		cachedSessions = null;
+
+		// Register remover!
 		Invoker.of(changeable).manager().closeFuture()
 				.add(new FutureCallback() {
 
 					@Override
 					public void completed(Future future) throws Exception {
-						// Remove after disconnect
-						sessions.remove(id);
+
+						/*
+						 * Synchronize with this server!
+						 */
+						synchronized (DefaultSessionServer.this) {
+
+							// Remove after disconnect
+							sessions.remove(id);
+
+							// Clear caches
+							cachedSessionMap = null;
+							cachedSessions = null;
+						}
 					}
 				});
 
@@ -182,9 +208,9 @@ public final class DefaultSessionServer<T> implements AdminSessionServer<T> {
 	 * @see com.indyforge.foxnet.rmi.pattern.change.AdminSessionServer#names()
 	 */
 	@Override
-	public synchronized Map<Long, String> names() {
+	public Map<Long, String> names() {
 		Map<Long, String> ptr = new HashMap<Long, String>();
-		for (Session<T> session : sessions.values()) {
+		for (Session<T> session : sessions()) {
 			ptr.put(session.id(), session.name());
 		}
 		return ptr;
@@ -194,11 +220,31 @@ public final class DefaultSessionServer<T> implements AdminSessionServer<T> {
 	 * (non-Javadoc)
 	 * 
 	 * @see
+	 * com.indyforge.foxnet.rmi.pattern.change.AdminSessionServer#sessionMap()
+	 */
+	@Override
+	public synchronized Map<Long, Session<T>> sessionMap() {
+		if (cachedSessionMap == null) {
+			cachedSessionMap = Collections
+					.unmodifiableMap(new HashMap<Long, Session<T>>(sessions));
+		}
+		return cachedSessionMap;
+	}
+
+	/*
+	 * (non-Javadoc)
+	 * 
+	 * @see
 	 * com.indyforge.foxnet.rmi.pattern.change.AdminSessionServer#sessions()
 	 */
 	@Override
-	public synchronized Map<Long, Session<T>> sessions() {
-		return new HashMap<Long, Session<T>>(sessions);
+	public synchronized List<Session<T>> sessions() {
+		if (cachedSessions == null) {
+			cachedSessions = Collections
+					.unmodifiableList(new ArrayList<Session<T>>(sessions
+							.values()));
+		}
+		return cachedSessions;
 	}
 
 	/*
@@ -207,11 +253,10 @@ public final class DefaultSessionServer<T> implements AdminSessionServer<T> {
 	 * @see
 	 * com.indyforge.foxnet.rmi.pattern.change.AdminSessionServer#closeAll()
 	 */
-	@SuppressWarnings("unchecked")
 	@Override
-	public synchronized void closeAll() {
-		for (Object session : sessions.values().toArray()) {
-			Invoker.of(((Session<T>) session).client()).manager().close();
+	public void closeAll() {
+		for (Session<T> session : sessions()) {
+			Invoker.of(session.client()).manager().close();
 		}
 	}
 }

@@ -726,9 +726,9 @@ public final class SceneProcessor implements Changeable<SceneProcessor> {
 	/*
 	 * (non-Javadoc)
 	 * 
-	 * @see com.indyforge.twod.engine.graphics.rendering.scenegraph.Changeable#
-	 * applyChange
-	 * (com.indyforge.twod.engine.graphics.rendering.scenegraph.Change)
+	 * @see
+	 * com.indyforge.foxnet.rmi.pattern.change.Changeable#applyChange(com.indyforge
+	 * .foxnet.rmi.pattern.change.Change)
 	 */
 	@Override
 	public void applyChange(final Change<SceneProcessor> change) {

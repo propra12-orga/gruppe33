@@ -42,7 +42,7 @@ public class PreMilestoneApp {
 		// Copy ids
 		long[] longs = new long[server.sessionCount()];
 		int i = 0;
-		for (long l : server.sessions().keySet()) {
+		for (long l : server.sessionMap().keySet()) {
 			longs[i++] = l;
 		}
 
