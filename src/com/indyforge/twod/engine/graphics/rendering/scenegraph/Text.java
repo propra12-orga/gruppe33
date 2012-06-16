@@ -2,6 +2,7 @@ package com.indyforge.twod.engine.graphics.rendering.scenegraph;
 
 import java.awt.Color;
 import java.awt.Font;
+import java.awt.FontMetrics;
 import java.awt.Graphics2D;
 
 public class Text extends GraphicsEntity {
@@ -47,13 +48,22 @@ public class Text extends GraphicsEntity {
 		this.font = font;
 	}
 
+	public void drawCenteredString(String s, Graphics2D g) {
+		FontMetrics fm = g.getFontMetrics();
+
+		double x = -fm.stringWidth(s) * 0.5;
+		double y = (fm.getAscent() - (fm.getAscent() + fm.getDescent()) * 0.5);
+
+		g.translate(x, y);
+		g.drawString(s, 0, 0);
+	}
+
 	@Override
 	protected void onRender(Graphics2D original, Graphics2D transformed) {
 		super.onRender(original, transformed);
 
 		transformed.setFont(font);
 		transformed.setColor(fontColor);
-		//transformed.scale(1f / text.length(), 1f / text.length());
-		transformed.drawString(text, 0, 0);
+		drawCenteredString(text, transformed);
 	}
 }

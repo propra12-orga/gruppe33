@@ -3,10 +3,14 @@ package com.indyforge.twod.engine.graphics;
 import java.awt.BorderLayout;
 import java.awt.Color;
 import java.awt.EventQueue;
+import java.awt.Font;
+import java.awt.FontMetrics;
 import java.awt.Frame;
+import java.awt.Graphics;
 import java.awt.Graphics2D;
 import java.awt.GraphicsConfiguration;
 import java.awt.GraphicsEnvironment;
+import java.awt.Image;
 import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
 import java.awt.image.BufferedImage;
@@ -14,7 +18,7 @@ import java.awt.image.VolatileImage;
 import java.lang.reflect.InvocationTargetException;
 
 import com.indyforge.twod.engine.graphics.rendering.scenegraph.SceneProcessor;
-import com.indyforge.twod.engine.graphics.rendering.scenegraph.math.Mathf;
+import com.indyforge.twod.engine.graphics.rendering.scenegraph.math.MathExt;
 import com.indyforge.twod.engine.graphics.sprite.Sprite;
 
 /**
@@ -49,6 +53,21 @@ public final class GraphicsRoutines {
 		}
 
 		return optimizedImage;
+	}
+
+	public static void drawCenteredString(String s, Font font, Image image) {
+		drawCenteredString(s, font, image.getWidth(null),
+				image.getHeight(null), image.getGraphics());
+	}
+
+	public static void drawCenteredString(String s, Font font, int w, int h,
+			Graphics g) {
+		g.setFont(font);
+
+		FontMetrics fm = g.getFontMetrics();
+		int x = (w - fm.stringWidth(s)) / 2;
+		int y = (fm.getAscent() + (h - (fm.getAscent() + fm.getDescent())) / 2);
+		g.drawString(s, x, y);
 	}
 
 	/**
@@ -173,8 +192,8 @@ public final class GraphicsRoutines {
 		}
 
 		// Clamp the coords
-		x = Mathf.clamp(x, 0, rasterX - 1);
-		y = Mathf.clamp(y, 0, rasterY - 1);
+		x = MathExt.clamp(x, 0, rasterX - 1);
+		y = MathExt.clamp(y, 0, rasterY - 1);
 
 		// Calculating the size of one sub image
 		int sizeXPlate = image.getWidth(null) / rasterX;

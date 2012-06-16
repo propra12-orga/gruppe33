@@ -112,7 +112,7 @@ public class PreMilestoneApp {
 		int i = 0;
 		for (long id : ids) {
 			// Create new player as knight
-			GraphicsEntity player = GridRoutines.createLocalKnight(assets,
+			GraphicsEntity player = GridRoutines.createRemoteDwarf(assets,
 					"Session-" + id);
 
 			refs.add(player.registrationKey());

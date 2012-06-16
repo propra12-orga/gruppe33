@@ -150,8 +150,7 @@ public class GraphicsEntity extends Entity {
 	 *         or null if there is no scene at all.
 	 */
 	public Scene findScene() {
-		return (Scene) IterationRoutines.next(new FilteredIterator<Entity>(
-				new TypeFilter(Scene.class, true), parentIterator(true)));
+		return (Scene) findParent(new TypeFilter(Scene.class), true);
 	}
 
 	/**

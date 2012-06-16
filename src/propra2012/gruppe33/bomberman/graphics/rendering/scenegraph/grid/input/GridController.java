@@ -11,7 +11,7 @@ import propra2012.gruppe33.bomberman.graphics.rendering.scenegraph.grid.GridRout
 import com.indyforge.twod.engine.graphics.rendering.scenegraph.Entity;
 import com.indyforge.twod.engine.graphics.rendering.scenegraph.GraphicsEntity;
 import com.indyforge.twod.engine.graphics.rendering.scenegraph.math.Grid;
-import com.indyforge.twod.engine.graphics.rendering.scenegraph.math.Mathf;
+import com.indyforge.twod.engine.graphics.rendering.scenegraph.math.MathExt;
 import com.indyforge.twod.engine.graphics.rendering.scenegraph.math.Vector2f;
 import com.indyforge.twod.engine.graphics.rendering.scenegraph.math.Vector2f.Direction;
 import com.indyforge.twod.engine.graphics.rendering.scenegraph.network.input.InputChange;
@@ -72,7 +72,7 @@ public final class GridController extends Entity {
 				- pos.y) > 0f;
 
 		// Is the entity already centered ?
-		boolean isCentered = vertical ? Mathf.equals(pos.x, center.x) : Mathf
+		boolean isCentered = vertical ? MathExt.equals(pos.x, center.x) : MathExt
 				.equals(pos.y, center.y);
 
 		// Get the grid
@@ -93,7 +93,7 @@ public final class GridController extends Entity {
 								: Direction.East));
 
 		// If movement != 0 -> We can move!
-		boolean canMove = !Mathf.equals(movement, 0);
+		boolean canMove = !MathExt.equals(movement, 0);
 
 		/*
 		 * If centered and able to move!
@@ -325,13 +325,13 @@ public final class GridController extends Entity {
 		}
 
 		// Limit the x velocity
-		movement.x = Mathf.absClamp(movement.x, 0f, maxSpeed * tpf);
+		movement.x = MathExt.absClamp(movement.x, 0f, maxSpeed * tpf);
 
 		// Limit the y veloctiy
-		movement.y = Mathf.absClamp(movement.y, 0f, maxSpeed * tpf);
+		movement.y = MathExt.absClamp(movement.y, 0f, maxSpeed * tpf);
 
 		// Calc thresholds
-		boolean xT = Mathf.equals(movement.x, 0), yT = Mathf.equals(movement.y,
+		boolean xT = MathExt.equals(movement.x, 0), yT = MathExt.equals(movement.y,
 				0);
 
 		// Look if at least one component is 0

@@ -10,7 +10,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 import com.indyforge.twod.engine.graphics.GraphicsRoutines;
-import com.indyforge.twod.engine.graphics.rendering.scenegraph.math.Mathf;
+import com.indyforge.twod.engine.graphics.rendering.scenegraph.math.MathExt;
 import com.indyforge.twod.engine.resources.Resource;
 import com.indyforge.twod.engine.resources.assets.AssetManager;
 
@@ -164,8 +164,8 @@ public final class Sprite implements Serializable {
 		}
 
 		// Clamp the coords
-		fromX = Mathf.clamp(fromX, 0, rasterX - 1);
-		fromY = Mathf.clamp(fromY, 0, rasterY - 1);
+		fromX = MathExt.clamp(fromX, 0, rasterX - 1);
+		fromY = MathExt.clamp(fromY, 0, rasterY - 1);
 
 		// Create a list holding the image coords
 		List<Point> imageCoords = new ArrayList<Point>(count);

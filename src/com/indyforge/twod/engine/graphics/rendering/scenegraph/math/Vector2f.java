@@ -68,7 +68,7 @@ public final class Vector2f implements Serializable {
 		}
 
 		// Return the lerp vector
-		return start.add(end.sub(start).scale(Mathf.clamp(time, 0f, 1f)));
+		return start.add(end.sub(start).scale(MathExt.clamp(time, 0f, 1f)));
 	}
 
 	/**
@@ -99,7 +99,7 @@ public final class Vector2f implements Serializable {
 		float time = maxDelta / dist.length();
 
 		// Return a lerped value
-		return start.add(dist.scale(Mathf.clamp(time, 0f, 1f)));
+		return start.add(dist.scale(MathExt.clamp(time, 0f, 1f)));
 	}
 
 	/**
@@ -433,7 +433,7 @@ public final class Vector2f implements Serializable {
 	 */
 	public Direction nearestDirection() {
 
-		if (Mathf.equals(x, y)) {
+		if (MathExt.equals(x, y)) {
 			return Direction.Undefined;
 		} else if (Math.abs(x) > Math.abs(y)) {
 			return x > 0.0f ? Direction.East : Direction.West;
@@ -477,8 +477,8 @@ public final class Vector2f implements Serializable {
 			throw new NullPointerException("threshold");
 		}
 
-		return Mathf.equals(x, other.x, threshold.x)
-				&& Mathf.equals(y, other.y, threshold.y);
+		return MathExt.equals(x, other.x, threshold.x)
+				&& MathExt.equals(y, other.y, threshold.y);
 	}
 
 	/*
@@ -499,11 +499,11 @@ public final class Vector2f implements Serializable {
 		}
 		Vector2f other = (Vector2f) obj;
 
-		if (!Mathf.equals(x, other.x)) {
+		if (!MathExt.equals(x, other.x)) {
 			return false;
 		}
 
-		if (!Mathf.equals(y, other.y)) {
+		if (!MathExt.equals(y, other.y)) {
 			return false;
 		}
 

@@ -19,6 +19,7 @@ import com.indyforge.twod.engine.graphics.rendering.scenegraph.util.RecursiveChi
 import com.indyforge.twod.engine.graphics.rendering.scenegraph.util.RootFilter;
 import com.indyforge.twod.engine.graphics.rendering.scenegraph.util.SiblingIterator;
 import com.indyforge.twod.engine.util.ArrayIterator;
+import com.indyforge.twod.engine.util.Filter;
 import com.indyforge.twod.engine.util.FilteredIterator;
 import com.indyforge.twod.engine.util.IterationRoutines;
 import com.indyforge.twod.engine.util.SerializableIterable;
@@ -735,7 +736,8 @@ public class Entity implements Comparable<Entity>, Iterable<Entity>,
 	 * @see IterationRoutines#next(Iterator)
 	 * @see Entity#findParents(EntityFilter, boolean)
 	 */
-	public Entity findParent(EntityFilter entityFilter, boolean includeThis) {
+	public Entity findParent(Filter<? super Entity> entityFilter,
+			boolean includeThis) {
 		return IterationRoutines.next(findParents(entityFilter, includeThis));
 	}
 
@@ -748,7 +750,7 @@ public class Entity implements Comparable<Entity>, Iterable<Entity>,
 	 *            If true, this entity will be part of the iteration, too.
 	 * @return an iterator.
 	 */
-	public Iterator<Entity> findParents(EntityFilter entityFilter,
+	public Iterator<Entity> findParents(Filter<? super Entity> entityFilter,
 			boolean includeThis) {
 		return new FilteredIterator<Entity>(entityFilter,
 				parentIterator(includeThis));
@@ -758,8 +760,8 @@ public class Entity implements Comparable<Entity>, Iterable<Entity>,
 	 * @see IterationRoutines#next(Iterator)
 	 * @see Entity#findChildren(EntityFilter, boolean, boolean)
 	 */
-	public Entity findChild(EntityFilter entityFilter, boolean includeThis,
-			boolean recursive) {
+	public Entity findChild(Filter<? super Entity> entityFilter,
+			boolean includeThis, boolean recursive) {
 		return IterationRoutines.next(findChildren(entityFilter, includeThis,
 				recursive));
 	}
@@ -775,7 +777,7 @@ public class Entity implements Comparable<Entity>, Iterable<Entity>,
 	 *            If true, the sub-children will be part of the iteration, too.
 	 * @return an iterator.
 	 */
-	public Iterator<Entity> findChildren(EntityFilter entityFilter,
+	public Iterator<Entity> findChildren(Filter<? super Entity> entityFilter,
 			boolean includeThis, boolean recursive) {
 		return new FilteredIterator<Entity>(entityFilter, childIterator(
 				includeThis, recursive));

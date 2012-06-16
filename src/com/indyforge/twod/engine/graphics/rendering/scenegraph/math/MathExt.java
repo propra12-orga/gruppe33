@@ -6,7 +6,7 @@ package com.indyforge.twod.engine.graphics.rendering.scenegraph.math;
  * @author Christopher Probst
  * 
  */
-public final class Mathf {
+public final class MathExt {
 
 	/**
 	 * Used to compare floats with a given threshold.
@@ -20,7 +20,7 @@ public final class Mathf {
 	 * @param b
 	 *            The seconds valud.
 	 * 
-	 * @return true if |a-b| is smaller than {@link Mathf#kEpsilon}, otherwise
+	 * @return true if |a-b| is smaller than {@link MathExt#kEpsilon}, otherwise
 	 *         false.
 	 */
 	public static boolean equals(float a, float b) {
@@ -123,6 +123,6 @@ public final class Mathf {
 	}
 
 	// Should not be instantiated
-	private Mathf() {
+	private MathExt() {
 	}
 }

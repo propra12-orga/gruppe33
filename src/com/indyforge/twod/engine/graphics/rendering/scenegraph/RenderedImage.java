@@ -5,7 +5,6 @@ import java.awt.Image;
 
 import com.indyforge.twod.engine.resources.Resource;
 
-
 /**
  * This entity simply renders a centered image. You MUST specify the correct
  * scale for the image, because this entity always renders images with a width
@@ -80,6 +79,26 @@ public class RenderedImage extends GraphicsEntity {
 	 */
 	public RenderedImage(Resource<? extends Image> imageResource) {
 		imageResource(imageResource);
+	}
+
+	/**
+	 * 
+	 * @return this for chaining.
+	 */
+	public RenderedImage useRatio() {
+		if (imageResource != null) {
+			// Try to get image
+			Image image = imageResource.get();
+			if (image != null) {
+				// Calc ratio
+				float ratio = image.getHeight(null)
+						/ (float) image.getWidth(null);
+
+				// Calculate the ratio
+				scale().y = scale().x * ratio;
+			}
+		}
+		return this;
 	}
 
 	/**

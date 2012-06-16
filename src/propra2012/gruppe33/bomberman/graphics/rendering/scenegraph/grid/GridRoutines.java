@@ -278,7 +278,58 @@ public final class GridRoutines implements GridConstants {
 	}
 
 	/**
-	 * Creates a new local knight player.
+	 * Creates a new remote dwarf player.
+	 * 
+	 * @param assetManager
+	 *            The asset manager to load the dwarf.
+	 * @param name
+	 *            The name of the player.
+	 * @return the created dwarf.
+	 * @throws Exception
+	 *             If an error occurs.
+	 */
+	public static GraphicsEntity createRemoteDwarf(AssetManager assetManager,
+			String name) throws Exception {
+		return createRemoteGridPlayer(name,
+				AnimationRoutines.createDwarf(assetManager, 35, 35));
+	}
+
+	/**
+	 * Creates a new remote wizard player.
+	 * 
+	 * @param assetManager
+	 *            The asset manager to load the wizard.
+	 * @param name
+	 *            The name of the player.
+	 * @return the created wizard.
+	 * @throws Exception
+	 *             If an error occurs.
+	 */
+	public static GraphicsEntity createRemoteWizard(AssetManager assetManager,
+			String name) throws Exception {
+		return createRemoteGridPlayer(name,
+				AnimationRoutines.createWizard(assetManager, 35, 35));
+	}
+
+	/**
+	 * Creates a new remote santa player.
+	 * 
+	 * @param assetManager
+	 *            The asset manager to load the santa.
+	 * @param name
+	 *            The name of the player.
+	 * @return the created santa.
+	 * @throws Exception
+	 *             If an error occurs.
+	 */
+	public static GraphicsEntity createRemoteSanta(AssetManager assetManager,
+			String name) throws Exception {
+		return createRemoteGridPlayer(name,
+				AnimationRoutines.createSanta(assetManager, 35, 35));
+	}
+
+	/**
+	 * Creates a new remote knight player.
 	 * 
 	 * @param assetManager
 	 *            The asset manager to load the knight.
@@ -288,9 +339,9 @@ public final class GridRoutines implements GridConstants {
 	 * @throws Exception
 	 *             If an error occurs.
 	 */
-	public static GraphicsEntity createLocalKnight(AssetManager assetManager,
+	public static GraphicsEntity createRemoteKnight(AssetManager assetManager,
 			String name) throws Exception {
-		return createLocalGridPlayer(name,
+		return createRemoteGridPlayer(name,
 				AnimationRoutines.createKnight(assetManager, 35, 35));
 	}
 
@@ -303,7 +354,7 @@ public final class GridRoutines implements GridConstants {
 	 *            The char-animation bundle.
 	 * @return the created player entity.
 	 */
-	public static GraphicsEntity createLocalGridPlayer(String name,
+	public static GraphicsEntity createRemoteGridPlayer(String name,
 			AnimationBundle charAniBundle) {
 		if (name == null) {
 			throw new NullPointerException("name");

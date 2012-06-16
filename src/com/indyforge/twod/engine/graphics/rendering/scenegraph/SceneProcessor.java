@@ -8,6 +8,10 @@ import java.awt.Graphics2D;
 import java.awt.Toolkit;
 import java.awt.event.ComponentAdapter;
 import java.awt.event.ComponentEvent;
+import java.awt.event.FocusEvent;
+import java.awt.event.FocusListener;
+import java.awt.event.KeyEvent;
+import java.awt.event.KeyListener;
 import java.awt.image.BufferStrategy;
 import java.awt.image.BufferedImage;
 import java.io.IOException;
@@ -45,7 +49,8 @@ import com.indyforge.twod.engine.resources.assets.AssetManager;
  * @author Christopher Probst
  * @see Scene
  */
-public final class SceneProcessor implements Changeable<SceneProcessor> {
+public final class SceneProcessor implements Changeable<SceneProcessor>,
+		KeyListener, FocusListener {
 
 	/**
 	 * @see Broadcaster#receiveBroadcast(int, int, int)
@@ -313,6 +318,10 @@ public final class SceneProcessor implements Changeable<SceneProcessor> {
 					peerHeight = canvas.getHeight();
 				}
 			});
+
+			// Add listener
+			canvas.addKeyListener(this);
+			canvas.addFocusListener(this);
 
 			/*
 			 * Create a new frame using this scene processor.
@@ -783,7 +792,6 @@ public final class SceneProcessor implements Changeable<SceneProcessor> {
 	public void root(Scene root) {
 		// Remove old link
 		if (this.root != null) {
-			this.root.disconnectFrom(canvas);
 			this.root.processor = null;
 		}
 
@@ -792,8 +800,6 @@ public final class SceneProcessor implements Changeable<SceneProcessor> {
 
 		// Connect if not null...
 		if (root != null) {
-			// Connect the input
-			root.connectTo(canvas);
 
 			// Set processor
 			root.processor = this;
@@ -1052,5 +1058,79 @@ public final class SceneProcessor implements Changeable<SceneProcessor> {
 				Thread.sleep(minDuration - frameDuration);
 			}
 		}
+	}
+
+	/*
+	 * (non-Javadoc)
+	 * 
+	 * @see java.awt.event.FocusListener#focusGained(java.awt.event.FocusEvent)
+	 */
+	@Override
+	public void focusGained(FocusEvent e) {
+	}
+
+	/*
+	 * (non-Javadoc)
+	 * 
+	 * @see java.awt.event.FocusListener#focusLost(java.awt.event.FocusEvent)
+	 */
+	@Override
+	public void focusLost(FocusEvent e) {
+		tasks().add(new Runnable() {
+
+			@Override
+			public void run() {
+				if (root != null) {
+					// Clear keyboard
+					root.clearKeyboardState();
+				}
+			}
+		});
+	}
+
+	/*
+	 * (non-Javadoc)
+	 * 
+	 * @see java.awt.event.KeyListener#keyPressed(java.awt.event.KeyEvent)
+	 */
+	@Override
+	public void keyPressed(final KeyEvent e) {
+
+		tasks().add(new Runnable() {
+
+			@Override
+			public void run() {
+				if (root != null) {
+					root.pressed(e.getKeyCode(), Boolean.TRUE);
+				}
+			}
+		});
+	}
+
+	/*
+	 * (non-Javadoc)
+	 * 
+	 * @see java.awt.event.KeyListener#keyReleased(java.awt.event.KeyEvent)
+	 */
+	@Override
+	public void keyReleased(final KeyEvent e) {
+		tasks().add(new Runnable() {
+
+			@Override
+			public void run() {
+				if (root != null) {
+					root.pressed(e.getKeyCode(), Boolean.FALSE);
+				}
+			}
+		});
+	}
+
+	/*
+	 * (non-Javadoc)
+	 * 
+	 * @see java.awt.event.KeyListener#keyTyped(java.awt.event.KeyEvent)
+	 */
+	@Override
+	public void keyTyped(KeyEvent e) {
 	}
 }
