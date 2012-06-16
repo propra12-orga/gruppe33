@@ -48,7 +48,11 @@ public final class GridRemoteInput extends GraphicsEntity {
 			GridInputChange ch = new GridInputChange(Input.class);
 			ch.entities().add(peerKey);
 			ch.inputMap().putAll(tmp);
-			scene.processor().changeableServer().queueChange(ch, true);
+
+			/*
+			 * Do NOT queue. This event should be send directly!
+			 */
+			scene.processor().changeableServer().applyChangeLater(ch, null);
 		}
 	}
 }

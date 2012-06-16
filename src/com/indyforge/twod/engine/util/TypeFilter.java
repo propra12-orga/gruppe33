@@ -13,6 +13,10 @@ public final class TypeFilter implements Filter<Object> {
 	// Whether or not to allow extended classes
 	private final boolean allowExtendedClasses;
 
+	public TypeFilter(Class<?> elementType) {
+		this(elementType, true);
+	}
+
 	public TypeFilter(Class<?> elementType, boolean allowExtendedClasses) {
 		if (elementType == null) {
 			throw new NullPointerException("elementType");

@@ -244,15 +244,15 @@ public class Entity implements Comparable<Entity>, Iterable<Entity>,
 				Entity child = (Entity) params[0];
 
 				// Invoke default event
-				onAttached(source, child);
+				onEntityAttached(source, child);
 
 				// Evaluate the other events...
 				if (this == source) {
-					onChildAttached(child);
+					onChildAttached(source, child);
 				} else if (this == child) {
-					onAttached();
+					onAttached(source, child);
 				} else if (parent == child) {
-					onParentAttached();
+					onParentAttached(source, child);
 				}
 				break;
 			case Detached:
@@ -260,15 +260,15 @@ public class Entity implements Comparable<Entity>, Iterable<Entity>,
 				child = (Entity) params[0];
 
 				// Invoke default event
-				onDetached(source, child);
+				onEntityDetached(source, child);
 
 				// Evaluate the other events...
 				if (this == source) {
-					onChildDetached(child);
+					onChildDetached(source, child);
 				} else if (this == child) {
-					onDetached();
+					onDetached(source, child);
 				} else if (parent == child) {
-					onParentDetached();
+					onParentDetached(source, child);
 				}
 				break;
 
@@ -288,7 +288,7 @@ public class Entity implements Comparable<Entity>, Iterable<Entity>,
 	 * @param child
 	 *            The child which has been attached.
 	 */
-	protected void onAttached(Entity parent, Entity child) {
+	protected void onEntityAttached(Entity parent, Entity child) {
 
 	}
 
@@ -296,8 +296,13 @@ public class Entity implements Comparable<Entity>, Iterable<Entity>,
 	 * OVERRIDE FOR CUSTOM BEHAVIOUR.
 	 * 
 	 * This method is called when this entity was attached to an entity.
+	 * 
+	 * @param parent
+	 *            The parent which attached the given child.
+	 * @param child
+	 *            The child which has been attached.
 	 */
-	protected void onAttached() {
+	protected void onAttached(Entity parent, Entity child) {
 	}
 
 	/**
@@ -305,10 +310,12 @@ public class Entity implements Comparable<Entity>, Iterable<Entity>,
 	 * 
 	 * This method is called when a child is attached to this entity.
 	 * 
+	 * @param parent
+	 *            The parent which attached the given child.
 	 * @param child
 	 *            The child which has been attached.
 	 */
-	protected void onChildAttached(Entity child) {
+	protected void onChildAttached(Entity parent, Entity child) {
 
 	}
 
@@ -317,8 +324,13 @@ public class Entity implements Comparable<Entity>, Iterable<Entity>,
 	 * 
 	 * This method is called when the parent of this entity was attached to an
 	 * entity.
+	 * 
+	 * @param parent
+	 *            The parent which attached the given child.
+	 * @param child
+	 *            The child which has been attached.
 	 */
-	protected void onParentAttached() {
+	protected void onParentAttached(Entity parent, Entity child) {
 	}
 
 	/**
@@ -331,15 +343,20 @@ public class Entity implements Comparable<Entity>, Iterable<Entity>,
 	 * @param child
 	 *            The child which has been detached.
 	 */
-	protected void onDetached(Entity parent, Entity child) {
+	protected void onEntityDetached(Entity parent, Entity child) {
 	}
 
 	/**
 	 * OVERRIDE FOR CUSTOM BEHAVIOUR.
 	 * 
 	 * This method is called when this entity was detached from an entity.
+	 * 
+	 * @param parent
+	 *            The parent which detached the given child.
+	 * @param child
+	 *            The child which has been detached.
 	 */
-	protected void onDetached() {
+	protected void onDetached(Entity parent, Entity child) {
 	}
 
 	/**
@@ -347,10 +364,12 @@ public class Entity implements Comparable<Entity>, Iterable<Entity>,
 	 * 
 	 * This method is called when a child is detached from this entity.
 	 * 
+	 * @param parent
+	 *            The parent which detached the given child.
 	 * @param child
 	 *            The child which has been detached.
 	 */
-	protected void onChildDetached(Entity child) {
+	protected void onChildDetached(Entity parent, Entity child) {
 
 	}
 
@@ -359,8 +378,13 @@ public class Entity implements Comparable<Entity>, Iterable<Entity>,
 	 * 
 	 * This method is called when the parent of this entity was detached from an
 	 * entity.
+	 * 
+	 * @param parent
+	 *            The parent which detached the given child.
+	 * @param child
+	 *            The child which has been detached.
 	 */
-	protected void onParentDetached() {
+	protected void onParentDetached(Entity parent, Entity child) {
 	}
 
 	/**
@@ -704,8 +728,57 @@ public class Entity implements Comparable<Entity>, Iterable<Entity>,
 	 *         entity is a root entity).
 	 */
 	public Entity root() {
-		return IterationRoutines.next(new FilteredIterator<Entity>(
-				RootFilter.INSTANCE, parentIterator(true)));
+		return findParent(RootFilter.INSTANCE, true);
+	}
+
+	/**
+	 * @see IterationRoutines#next(Iterator)
+	 * @see Entity#findParents(EntityFilter, boolean)
+	 */
+	public Entity findParent(EntityFilter entityFilter, boolean includeThis) {
+		return IterationRoutines.next(findParents(entityFilter, includeThis));
+	}
+
+	/**
+	 * Returns a filtered parent iterator.
+	 * 
+	 * @param entityFilter
+	 *            The entity filter.
+	 * @param includeThis
+	 *            If true, this entity will be part of the iteration, too.
+	 * @return an iterator.
+	 */
+	public Iterator<Entity> findParents(EntityFilter entityFilter,
+			boolean includeThis) {
+		return new FilteredIterator<Entity>(entityFilter,
+				parentIterator(includeThis));
+	}
+
+	/**
+	 * @see IterationRoutines#next(Iterator)
+	 * @see Entity#findChildren(EntityFilter, boolean, boolean)
+	 */
+	public Entity findChild(EntityFilter entityFilter, boolean includeThis,
+			boolean recursive) {
+		return IterationRoutines.next(findChildren(entityFilter, includeThis,
+				recursive));
+	}
+
+	/**
+	 * Returns a filtered children iterator.
+	 * 
+	 * @param entityFilter
+	 *            The entity filter.
+	 * @param includeThis
+	 *            If true, this entity will be part of the iteration, too.
+	 * @param recursive
+	 *            If true, the sub-children will be part of the iteration, too.
+	 * @return an iterator.
+	 */
+	public Iterator<Entity> findChildren(EntityFilter entityFilter,
+			boolean includeThis, boolean recursive) {
+		return new FilteredIterator<Entity>(entityFilter, childIterator(
+				includeThis, recursive));
 	}
 
 	/**

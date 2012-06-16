@@ -1019,7 +1019,7 @@ public final class SceneProcessor implements Changeable<SceneProcessor> {
 		 */
 		synchronized (netLock) {
 			if (networkMode != NetworkMode.Offline) {
-				if (!synchronousQueue) {
+				if (synchronousQueue) {
 					if (hasAdminSessionServer()) {
 						adminSessionServer.composite().applyQueuedChanges();
 					} else {

@@ -60,12 +60,20 @@ public final class DefaultChangeableQueue<T> implements ChangeableQueue<T> {
 	public void applyChangeLater(Change<T> change,
 			Collection<Invocation> invocations) {
 
-		// Generate an invocation
-		Invocation invocation = Invoker.of(peer).invoke("applyChange", change);
+		// Lookup invoker
+		Invoker invoker = Invoker.of(peer);
 
-		// Add... ?
-		if (invocations != null) {
-			invocations.add(invocation);
+		if (invoker != null) {
+			// Generate an invocation
+			Invocation invocation = invoker.invoke("applyChange", change);
+
+			// Add... ?
+			if (invocations != null) {
+				invocations.add(invocation);
+			}
+		} else {
+			// Apply directly!
+			peer.applyChange(change);
 		}
 	}
 

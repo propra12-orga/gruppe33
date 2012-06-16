@@ -72,8 +72,8 @@ public final class Bomb extends Many<GraphicsEntity> {
 
 			@SuppressWarnings("unchecked")
 			@Override
-			protected void onParentDetached() {
-				super.onParentDetached();
+			protected void onParentDetached(Entity parent, Entity child) {
+				super.onParentDetached(parent, child);
 
 				if (scene.processor() == null) {
 					return;
@@ -105,15 +105,15 @@ public final class Bomb extends Many<GraphicsEntity> {
 					if (scene.processor().hasAdminSessionServer()) {
 
 						// Destroy breakable objects on both sides!
-						for (Entity child : node) {
-							if (child.tagged(GridConstants.BREAKABLE_TAG)
-									|| child.tagged(GridConstants.BOMB_TAG)) {
-								c.entities().add(child.registrationKey());
-							} else if (child.tagged(GridConstants.PLAYER_TAG)) {
+						for (Entity ptr : node) {
+							if (ptr.tagged(GridConstants.BREAKABLE_TAG)
+									|| ptr.tagged(GridConstants.BOMB_TAG)) {
+								c.entities().add(ptr.registrationKey());
+							} else if (ptr.tagged(GridConstants.PLAYER_TAG)) {
 
 								// Create new killer
 								Killer k = new Killer();
-								k.entities().add(child.registrationKey());
+								k.entities().add(ptr.registrationKey());
 
 								// Submit the killer
 								scene.processor().adminSessionServer()
@@ -122,7 +122,7 @@ public final class Bomb extends Many<GraphicsEntity> {
 								List<UUID> players = (List<UUID>) scene
 										.prop("players");
 
-								players.remove(child.registrationKey());
+								players.remove(ptr.registrationKey());
 
 								if (players.size() <= 1) {
 
