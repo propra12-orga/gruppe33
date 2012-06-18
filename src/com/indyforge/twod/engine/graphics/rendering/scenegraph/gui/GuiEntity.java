@@ -24,32 +24,20 @@ public class GuiEntity extends GuiListener {
 	 */
 	private boolean selected = false;
 
-	/*
-	 * (non-Javadoc)
-	 * 
-	 * @see
-	 * com.indyforge.twod.engine.graphics.rendering.scenegraph.gui.GuiListener
-	 * #onSelected
-	 * (com.indyforge.twod.engine.graphics.rendering.scenegraph.gui.GuiEntity)
-	 */
 	@Override
 	protected void onSelected(GuiEntity guiEntity) {
 		super.onSelected(guiEntity);
-		selected = true;
+		if (guiEntity == this) {
+			selected = true;
+		}
 	}
 
-	/*
-	 * (non-Javadoc)
-	 * 
-	 * @see
-	 * com.indyforge.twod.engine.graphics.rendering.scenegraph.gui.GuiListener
-	 * #onDeselected
-	 * (com.indyforge.twod.engine.graphics.rendering.scenegraph.gui.GuiEntity)
-	 */
 	@Override
 	protected void onDeselected(GuiEntity guiEntity) {
 		super.onDeselected(guiEntity);
-		selected = false;
+		if (guiEntity == this) {
+			selected = false;
+		}
 	}
 
 	/*
@@ -110,14 +98,14 @@ public class GuiEntity extends GuiListener {
 	 * Selects this entity.
 	 */
 	public void select() {
-		fireEvent(GuiEvent.Selected, this);
+		fireEvent(GuiEvent.Selected);
 	}
 
 	/**
 	 * Deselects this entity.
 	 */
 	public void deselect() {
-		fireEvent(GuiEvent.Deselected, this);
+		fireEvent(GuiEvent.Deselected);
 	}
 
 	/**

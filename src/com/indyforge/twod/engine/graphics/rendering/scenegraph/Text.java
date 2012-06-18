@@ -1,12 +1,12 @@
 package com.indyforge.twod.engine.graphics.rendering.scenegraph;
 
+import java.awt.BasicStroke;
 import java.awt.Color;
 import java.awt.Font;
 import java.awt.FontMetrics;
 import java.awt.Graphics2D;
-import java.awt.Transparency;
+import java.awt.Image;
 
-import com.indyforge.twod.engine.graphics.GraphicsRoutines;
 import com.indyforge.twod.engine.resources.Resource;
 import com.indyforge.twod.engine.resources.TransientBufferedImage;
 
@@ -22,15 +22,20 @@ public final class Text extends RenderedImage {
 	 */
 	private static final long serialVersionUID = 1L;
 
+	public enum Alignment {
+		Left, Center, Right
+	}
+
 	/*
 	 * The text.
 	 */
 	private String text = "";
 
 	/*
-	 * The text and clear color.
+	 * The text, clear and border color.
 	 */
-	private Color textColor = Color.BLACK, clearColor = new Color(0, 0, 0, 0);
+	private Color textColor = Color.BLACK, clearColor = new Color(0, 0, 0, 0),
+			borderColor = Color.LIGHT_GRAY;
 
 	/*
 	 * The font asset.
@@ -40,12 +45,17 @@ public final class Text extends RenderedImage {
 	/*
 	 * Whether or not the text has changed.
 	 */
-	private boolean changed = false, manageImage = true;
+	private boolean changed = false;
 
 	/*
-	 * The transparency (Only used if manageImage = true).
+	 * The text alignment.
 	 */
-	private int transparency = Transparency.TRANSLUCENT;
+	private Alignment alignment = Alignment.Center;
+
+	/*
+	 * The border width.
+	 */
+	private float borderWidth = 0f;
 
 	/*
 	 * (non-Javadoc)
@@ -58,56 +68,112 @@ public final class Text extends RenderedImage {
 	protected void onRender(Graphics2D original, Graphics2D transformed) {
 
 		// Has the text changed ??
-		if (changed && fontResource != null & textColor != null
-				&& (manageImage || imageResource() != null)) {
+		if (changed && fontResource != null && imageResource() != null) {
 
-			/*
-			 * Are we allowed to manage the image ?
-			 */
-			if (manageImage) {
-				// Set font (To use the font metrics)
-				transformed.setFont(fontResource.get());
+			// Get the image
+			Image im = imageResource().get();
+
+			// Get graphics 2d context
+			Graphics2D graphics2d = (Graphics2D) im.getGraphics();
+			try {
+
+				// Read dimension
+				int w = im.getWidth(null), h = im.getHeight(null);
+
+				// Clear the image
+				graphics2d.setBackground(clearColor);
+				graphics2d.clearRect(0, 0, w, h);
+
+				// Set font
+				graphics2d.setFont(fontResource.get());
+
+				// Set the text color
+				graphics2d.setColor(textColor);
 
 				// Get the font metrics
-				FontMetrics fm = transformed.getFontMetrics();
+				FontMetrics fm = graphics2d.getFontMetrics();
 
-				// Create new image based on the text metrics
-				TransientBufferedImage image = new TransientBufferedImage(
-						fm.stringWidth(text), fm.getHeight(), transparency);
+				// Do some text calculations
+				float textWidth = fm.stringWidth(text), x, y = (fm.getAscent() + (h - (fm
+						.getAscent() + fm.getDescent())) * 0.5f);
 
-				// Overwrite the image and use ratio
-				imageResource(image).useRatio();
+				// Use the alignment
+				switch (alignment) {
+				case Left:
+					x = borderWidth;
+					break;
+				case Center:
+					x = (w - textWidth) * 0.5f;
+					break;
+				case Right:
+					x = w - textWidth - borderWidth;
+					break;
+				default:
+					throw new IllegalStateException("Unknown alignment: "
+							+ alignment);
+				}
+
+				// Offset needed for left alignment
+				float off = 0;
+
+				// Too much text ?
+				if (textWidth > w && alignment == Alignment.Left) {
+					off += textWidth - w;
+				}
+
+				// Draw the string
+				graphics2d.drawString(text, x - off, y);
+
+				// Draw border if necessary
+				if (borderWidth > 0) {
+					// Round the border width
+					int bw = Math.round(borderWidth * 0.5f);
+
+					graphics2d.setColor(borderColor);
+					graphics2d.setStroke(new BasicStroke(borderWidth));
+					graphics2d.drawRoundRect(bw, bw, w - bw * 2, h - bw * 2,
+							h / 2, h / 2);
+				}
+
+				// Disable change flag
+				changed = false;
+			} finally {
+				graphics2d.dispose();
 			}
-
-			// Draw centered text
-			GraphicsRoutines.drawCenteredString(text, fontResource.get(),
-					clearColor, textColor, imageResource().get());
-
-			// Disable change flag
-			changed = false;
 		}
 
 		super.onRender(original, transformed);
 	}
 
 	/**
-	 * @return the transparency of the image (Only used if the text can manage
-	 *         its image).
+	 * Creates an empty text.
 	 */
-	public int transparency() {
-		return transparency;
+	public Text() {
 	}
 
 	/**
-	 * Sets the transparency of the image (Only used if the text can manage its
-	 * image).
+	 * Creates a text.
 	 * 
+	 * @see Text#setup(int, int, int)
+	 */
+	public Text(int width, int height, int transparency) {
+		setup(width, height, transparency);
+	}
+
+	/**
+	 * Creates an image resource using the given parameters.
+	 * 
+	 * @param width
+	 *            The width.
+	 * @param height
+	 *            The height.
 	 * @param transparency
 	 *            The transparency.
 	 * @return this for chaining.
 	 */
-	public Text transparency(int transparency) {
-		this.transparency = transparency;
+	public Text setup(int width, int height, int transparency) {
+		imageResource(new TransientBufferedImage(width, height, transparency))
+				.useRatio();
 		return this;
 	}
 
@@ -116,6 +182,53 @@ public final class Text extends RenderedImage {
 	 */
 	public String text() {
 		return text;
+	}
+
+	/**
+	 * @return the border width.
+	 */
+	public float borderWidth() {
+		return borderWidth;
+	}
+
+	/**
+	 * Sets the border width.
+	 * 
+	 * @param borderWidth
+	 *            The border width or 0 (no border!).
+	 * @return this for chaining.
+	 */
+	public Text borderWidth(float borderWidth) {
+		if (borderWidth < 0) {
+			throw new IllegalArgumentException("Border width must be >= 0");
+		} else if (borderWidth != this.borderWidth) {
+			changed();
+		}
+		this.borderWidth = borderWidth;
+		return this;
+	}
+
+	/**
+	 * @return the text alignment.
+	 */
+	public Alignment alignment() {
+		return alignment;
+	}
+
+	/**
+	 * 
+	 * 
+	 * @param alignment
+	 * @return
+	 */
+	public Text alignment(Alignment alignment) {
+		if (alignment == null) {
+			throw new NullPointerException("alignment");
+		} else if (this.alignment != alignment) {
+			changed();
+		}
+		this.alignment = alignment;
+		return this;
 	}
 
 	/**
@@ -133,6 +246,9 @@ public final class Text extends RenderedImage {
 	 * @return this for chaining.
 	 */
 	public Text fontResource(Resource<? extends Font> fontResource) {
+		if (fontResource == null || !fontResource.equals(this.fontResource)) {
+			changed();
+		}
 		this.fontResource = fontResource;
 		return this;
 	}
@@ -147,32 +263,18 @@ public final class Text extends RenderedImage {
 	/**
 	 * Sets the text color.
 	 * 
-	 * @param color
+	 * @param textColor
 	 *            The text color.
 	 * @return this for chaining.
 	 */
-	public Text textColor(Color color) {
-		textColor = color;
+	public Text textColor(Color textColor) {
+		if (textColor == null) {
+			throw new NullPointerException("textColor");
+		} else if (!textColor.equals(this.textColor)) {
+			changed();
+		}
+		this.textColor = textColor;
 		return this;
-	}
-
-	/**
-	 * Sets the manage-image flag.
-	 * 
-	 * @param manageImage
-	 *            The manage-image flag. (True = Image recreation + use ratio)
-	 * @return this for chaining.
-	 */
-	public Text manageImage(boolean manageImage) {
-		this.manageImage = manageImage;
-		return this;
-	}
-
-	/**
-	 * @return the manage-image flag.
-	 */
-	public boolean isManageImage() {
-		return manageImage;
 	}
 
 	/**
@@ -183,15 +285,59 @@ public final class Text extends RenderedImage {
 	}
 
 	/**
-	 * Sets the text color.
+	 * Sets the clear color.
 	 * 
-	 * @param color
+	 * @param clearColor
 	 *            The clear color.
 	 * @return this for chaining.
 	 */
-	public Text clearColor(Color color) {
-		clearColor = color;
+	public Text clearColor(Color clearColor) {
+		if (clearColor == null) {
+			throw new NullPointerException("clearColor");
+		} else if (!clearColor.equals(this.clearColor)) {
+			changed();
+		}
+		this.clearColor = clearColor;
 		return this;
+	}
+
+	/**
+	 * @return the border color.
+	 */
+	public Color borderColor() {
+		return borderColor;
+	}
+
+	/**
+	 * Sets the border color.
+	 * 
+	 * @param borderColor
+	 *            The border color.
+	 * @return this for chaining.
+	 */
+	public Text borderColor(Color borderColor) {
+		if (borderColor == null) {
+			throw new NullPointerException("borderColor");
+		} else if (!borderColor.equals(this.borderColor)) {
+			changed();
+		}
+		this.borderColor = borderColor;
+		return this;
+	}
+
+	/*
+	 * (non-Javadoc)
+	 * 
+	 * @see
+	 * com.indyforge.twod.engine.graphics.rendering.scenegraph.RenderedImage
+	 * #imageResource(com.indyforge.twod.engine.resources.Resource)
+	 */
+	@Override
+	public RenderedImage imageResource(Resource<? extends Image> imageResource) {
+		if (imageResource == null || !imageResource.equals(imageResource())) {
+			changed();
+		}
+		return super.imageResource(imageResource);
 	}
 
 	/**
@@ -202,6 +348,55 @@ public final class Text extends RenderedImage {
 	}
 
 	/**
+	 * Requests a repaint.
+	 * 
+	 * @return this for chaining.
+	 */
+	public Text changed() {
+		changed = true;
+		return this;
+	}
+
+	/**
+	 * Appends a backspace.
+	 * 
+	 * @return this for chaining.
+	 */
+	public Text backspace() {
+		if (text.length() > 1) {
+			text(text.substring(0, text.length() - 1));
+		} else {
+			text("");
+		}
+		return this;
+	}
+
+	/**
+	 * Appends text.
+	 * 
+	 * @param string
+	 *            The string.
+	 * @return this for chaining.
+	 */
+	public Text append(String string) {
+		if (string == null) {
+			throw new NullPointerException("string");
+		}
+		return text(text + string);
+	}
+
+	/**
+	 * Appends a char.
+	 * 
+	 * @param c
+	 *            The char.
+	 * @return this for chaining.
+	 */
+	public Text append(char c) {
+		return text(text + c);
+	}
+
+	/**
 	 * Sets the text.
 	 * 
 	 * @param text
@@ -209,14 +404,15 @@ public final class Text extends RenderedImage {
 	 * @return this for chaining.
 	 */
 	public Text text(String text) {
-		// If the new text is not null and is different
-		if (text != null && !this.text.equals(text)) {
+		if (text == null) {
+			throw new NullPointerException("text");
+		} else if (!this.text.equals(text)) {
 
 			// Save
 			this.text = text;
 
 			// Text has changed
-			changed = true;
+			changed();
 		}
 		return this;
 	}

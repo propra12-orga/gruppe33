@@ -2,7 +2,6 @@ package com.indyforge.twod.engine.graphics.rendering.scenegraph.gui;
 
 import com.indyforge.twod.engine.graphics.rendering.scenegraph.Entity;
 import com.indyforge.twod.engine.graphics.rendering.scenegraph.GraphicsEntity;
-import com.indyforge.twod.engine.graphics.rendering.scenegraph.Scene;
 
 /**
  * 
@@ -33,36 +32,10 @@ public abstract class GuiListener extends GraphicsEntity {
 		super.onEvent(source, event, params);
 
 		if (event == GuiEvent.Selected) {
-			onSelected((GuiEntity) params[0]);
+			onSelected((GuiEntity) source);
 		} else if (event == GuiEvent.Deselected) {
-			onDeselected((GuiEntity) params[0]);
-		} else if (event == EntityEvent.Update) {
-			if (parent() instanceof GuiEntity) {
-				GuiEntity guiParent = (GuiEntity) parent();
-				Scene scene = guiParent.findScene();
-				if (scene != null) {
-					onGuiUpdated(scene, guiParent, guiParent.isSelected(),
-							(Float) params[0]);
-				}
-			}
+			onDeselected((GuiEntity) source);
 		}
-	}
-
-	/**
-	 * Called every frame.
-	 * 
-	 * @param scene
-	 *            The scene.
-	 * @param guiEntity
-	 *            The gui entity.
-	 * @param selected
-	 *            The selected-flag.
-	 * @param tpf
-	 *            The time-per-frame.
-	 */
-	protected void onGuiUpdated(Scene scene, GuiEntity guiEntity,
-			boolean selected, float tpf) {
-
 	}
 
 	/**
