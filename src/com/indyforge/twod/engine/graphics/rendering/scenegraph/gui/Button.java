@@ -21,6 +21,7 @@ public class Button extends GuiEntity {
 	 * 
 	 */
 	private static final long serialVersionUID = 1L;
+	public static final float TEXT_SCALE = 0.8f;
 
 	public enum ButtonEvent {
 		Pressed
@@ -146,7 +147,7 @@ public class Button extends GuiEntity {
 		// Create the text component
 		text = (Text) new Text(width, height, transparency).fontResource(
 				fontResource).centered(true);
-		text.scale().scaleLocal(0.8f);
+		text.scale().scaleLocal(TEXT_SCALE);
 
 		// Attach all components
 		attach(selected, deselected, text);

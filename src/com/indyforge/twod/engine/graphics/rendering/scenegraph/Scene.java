@@ -6,8 +6,8 @@ import java.awt.Graphics;
 import java.awt.Graphics2D;
 import java.awt.Image;
 import java.awt.Transparency;
-import java.util.HashMap;
-import java.util.Map;
+import java.util.HashSet;
+import java.util.Set;
 
 import com.indyforge.twod.engine.graphics.rendering.scenegraph.math.Vector2f;
 import com.indyforge.twod.engine.resources.TransientRenderedEntity;
@@ -41,8 +41,8 @@ public class Scene extends GraphicsEntity {
 	 * 
 	 * IMPORTANT: This attribute is not serialized!
 	 */
-	private transient Map<Integer, Boolean> keyboardState,
-			singleKeyboardStates;
+	private transient Set<Integer> keyboardState, singleKeyboardState,
+			singleDiscardedKeyboardState;
 
 	// The asset manager of this scene
 	private final AssetManager assetManager;
@@ -64,23 +64,34 @@ public class Scene extends GraphicsEntity {
 	transient SceneProcessor processor = null;
 
 	/**
-	 * @return the single keyboard state. If this map does not exist yet it will
-	 *         be created.
+	 * @return the single discarded keyboard state. If the set does not exist
+	 *         yet it will be created.
 	 */
-	private Map<Integer, Boolean> singleKeyboardStates() {
-		if (singleKeyboardStates == null) {
-			singleKeyboardStates = new HashMap<Integer, Boolean>();
+	private Set<Integer> singleDiscardedKeyboardState() {
+		if (singleDiscardedKeyboardState == null) {
+			singleDiscardedKeyboardState = new HashSet<Integer>();
 		}
-		return singleKeyboardStates;
+		return singleDiscardedKeyboardState;
 	}
 
 	/**
-	 * @return the keyboard state. If this map does not exist yet it will be
+	 * @return the single keyboard state. If the set does not exist yet it will
+	 *         be created.
+	 */
+	private Set<Integer> singleKeyboardState() {
+		if (singleKeyboardState == null) {
+			singleKeyboardState = new HashSet<Integer>();
+		}
+		return singleKeyboardState;
+	}
+
+	/**
+	 * @return the keyboard state. If the set does not exist yet it will be
 	 *         created.
 	 */
-	private Map<Integer, Boolean> keyboardState() {
+	private Set<Integer> keyboardState() {
 		if (keyboardState == null) {
-			keyboardState = new HashMap<Integer, Boolean>();
+			keyboardState = new HashSet<Integer>();
 		}
 		return keyboardState;
 	}
@@ -175,19 +186,28 @@ public class Scene extends GraphicsEntity {
 	 * @return this for chaining.
 	 */
 	public Scene pressed(int vk, boolean pressed) {
-		keyboardState().put(vk, pressed);
 
-		// If there is an old mapping...
-		if (singleKeyboardStates != null
-				&& singleKeyboardStates.containsKey(vk)) {
+		// Add or remove the key code
+		if (pressed) {
+			// Already exists ?
+			if (keyboardState().add(vk)) {
 
-			// Remove mapping if released
-			if (!pressed) {
-				singleKeyboardStates.remove(vk);
+				// This key was not pressed yet!
+				singleKeyboardState().add(vk);
 			}
-		} else if (pressed) {
-			// Set new state
-			singleKeyboardStates().put(vk, Boolean.FALSE);
+		} else {
+			/*
+			 * Remove from all maps!
+			 */
+			if (keyboardState != null) {
+				keyboardState.remove(vk);
+			}
+			if (singleKeyboardState != null) {
+				singleKeyboardState.remove(vk);
+			}
+			if (singleDiscardedKeyboardState != null) {
+				singleDiscardedKeyboardState.remove(vk);
+			}
 		}
 
 		return this;
@@ -203,12 +223,8 @@ public class Scene extends GraphicsEntity {
 	 * @return true if the key is pressed otherwise false.
 	 */
 	public boolean isSinglePressed(int vk) {
-		if (singleKeyboardStates == null
-				|| !singleKeyboardStates.containsKey(vk)) {
-			return false;
-		}
-		if (!singleKeyboardStates.get(vk)) {
-			singleKeyboardStates.put(vk, Boolean.TRUE);
+		if (singleKeyboardState != null && singleKeyboardState.contains(vk)) {
+			singleDiscardedKeyboardState().add(vk);
 			return true;
 		}
 		return false;
@@ -222,8 +238,7 @@ public class Scene extends GraphicsEntity {
 	 * @return true if the key is pressed otherwise false.
 	 */
 	public boolean isPressed(int vk) {
-		Boolean pressed = keyboardState != null ? keyboardState.get(vk) : null;
-		return pressed != null ? pressed : false;
+		return keyboardState != null && keyboardState.contains(vk);
 	}
 
 	/**
@@ -401,6 +416,14 @@ public class Scene extends GraphicsEntity {
 	 */
 	public final Scene simulate(Graphics2D graphics, int width, int height,
 			long tpf) {
+
+		// Remove the discarded single keyboard state
+		if (singleDiscardedKeyboardState != null) {
+			for (Integer vk : singleDiscardedKeyboardState) {
+				singleKeyboardState.remove(vk);
+			}
+			singleDiscardedKeyboardState.clear();
+		}
 
 		// Only update if tpf is > 0
 		if (tpf > 0) {

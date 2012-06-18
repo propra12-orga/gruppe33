@@ -6,6 +6,7 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.LinkedHashSet;
+import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.NavigableMap;
@@ -23,6 +24,8 @@ import com.indyforge.twod.engine.util.Filter;
 import com.indyforge.twod.engine.util.FilteredIterator;
 import com.indyforge.twod.engine.util.IterationRoutines;
 import com.indyforge.twod.engine.util.SerializableIterable;
+import com.indyforge.twod.engine.util.Task;
+import com.indyforge.twod.engine.util.TaskQueue;
 
 /**
  * 
@@ -157,6 +160,11 @@ public class Entity implements Comparable<Entity>, Iterable<Entity>,
 	private final Map<Object, Object> props = new HashMap<Object, Object>();
 
 	/*
+	 * Each entity can execute taskQueue before processing the update event.
+	 */
+	private final TaskQueue taskQueue = new TaskQueue(new LinkedList<Task>());
+
+	/*
 	 * Used to cache children iterations.
 	 */
 	private List<Entity> cachedChildren = null;
@@ -274,6 +282,11 @@ public class Entity implements Comparable<Entity>, Iterable<Entity>,
 				break;
 
 			case Update:
+
+				// Execute all taskQueue of this entity
+				taskQueue.run();
+
+				// Invoke callback method
 				onUpdate((Float) params[0]);
 			}
 		}
@@ -410,6 +423,13 @@ public class Entity implements Comparable<Entity>, Iterable<Entity>,
 		 * Very important! Put this entity into the own map!
 		 */
 		registry.put(registrationKey, this);
+	}
+
+	/**
+	 * @return the task queue.
+	 */
+	public TaskQueue taskQueue() {
+		return taskQueue;
 	}
 
 	/**

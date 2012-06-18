@@ -19,7 +19,6 @@ import java.lang.reflect.InvocationTargetException;
 import java.net.InetSocketAddress;
 import java.net.SocketAddress;
 import java.util.List;
-import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.LinkedBlockingDeque;
 
 import com.indyforge.foxnet.rmi.InvokerManager;
@@ -36,6 +35,8 @@ import com.indyforge.foxnet.rmi.transport.network.Broadcaster;
 import com.indyforge.foxnet.rmi.transport.network.ConnectionManager;
 import com.indyforge.twod.engine.graphics.GraphicsRoutines;
 import com.indyforge.twod.engine.resources.assets.AssetManager;
+import com.indyforge.twod.engine.util.Task;
+import com.indyforge.twod.engine.util.TaskQueue;
 
 /**
  * This class supports active rendering which is the most performant way to
@@ -74,7 +75,8 @@ public final class SceneProcessor implements Changeable<SceneProcessor>,
 	/*
 	 * Used for tasks which should be processed in the main thread.
 	 */
-	private BlockingQueue<Runnable> tasks = new LinkedBlockingDeque<Runnable>();
+	private final TaskQueue taskQueue = new TaskQueue(
+			new LinkedBlockingDeque<Task>());
 
 	/*
 	 * ************************************************************************
@@ -773,7 +775,12 @@ public final class SceneProcessor implements Changeable<SceneProcessor>,
 		if (Thread.currentThread().equals(lastProcessorThread)) {
 			change.apply(this);
 		} else {
-			tasks().offer(new Runnable() {
+			taskQueue.tasks().offer(new Task() {
+
+				/**
+				 * 
+				 */
+				private static final long serialVersionUID = 1L;
 
 				@Override
 				public void run() {
@@ -810,12 +817,10 @@ public final class SceneProcessor implements Changeable<SceneProcessor>,
 	}
 
 	/**
-	 * The returned queue is thread-safe.
-	 * 
-	 * @return the task queue.
+	 * @return the task deque.
 	 */
-	public BlockingQueue<Runnable> tasks() {
-		return tasks;
+	public TaskQueue taskQueue() {
+		return taskQueue;
 	}
 
 	/**
@@ -842,7 +847,12 @@ public final class SceneProcessor implements Changeable<SceneProcessor>,
 		if (Thread.currentThread().equals(lastProcessorThread)) {
 			this.shutdownRequested = shutdownRequested;
 		} else {
-			tasks().offer(new Runnable() {
+			taskQueue.tasks().offer(new Task() {
+
+				/**
+				 * 
+				 */
+				private static final long serialVersionUID = 1L;
 
 				@Override
 				public void run() {
@@ -867,21 +877,6 @@ public final class SceneProcessor implements Changeable<SceneProcessor>,
 	 */
 	public void onlyRenderWithFocus(boolean onlyRenderWithFocus) {
 		this.onlyRenderWithFocus = onlyRenderWithFocus;
-	}
-
-	/**
-	 * Processes all pending tasks. BE VERY CAREFUL with this method. It should
-	 * only be called in the game thread. Otherwise you will loose
-	 * thread-safety.
-	 */
-	public void processTasks() {
-		// Tmp var
-		Runnable task;
-
-		// Process all tasks
-		while ((task = tasks.poll()) != null) {
-			task.run();
-		}
 	}
 
 	/**
@@ -920,8 +915,8 @@ public final class SceneProcessor implements Changeable<SceneProcessor>,
 		// Save the current thread
 		lastProcessorThread = Thread.currentThread();
 
-		// Process all pending tasks
-		processTasks();
+		// Execute all pending tasks
+		taskQueue.run();
 
 		// Do the time stuff...
 		lastTime = lastTime == -1 ? System.currentTimeMillis() : curTime;
@@ -1076,7 +1071,12 @@ public final class SceneProcessor implements Changeable<SceneProcessor>,
 	 */
 	@Override
 	public void focusLost(FocusEvent e) {
-		tasks().add(new Runnable() {
+		taskQueue.tasks().offer(new Task() {
+
+			/**
+			 * 
+			 */
+			private static final long serialVersionUID = 1L;
 
 			@Override
 			public void run() {
@@ -1096,7 +1096,12 @@ public final class SceneProcessor implements Changeable<SceneProcessor>,
 	@Override
 	public void keyPressed(final KeyEvent e) {
 
-		tasks().add(new Runnable() {
+		taskQueue.tasks().offer(new Task() {
+
+			/**
+			 * 
+			 */
+			private static final long serialVersionUID = 1L;
 
 			@Override
 			public void run() {
@@ -1114,7 +1119,12 @@ public final class SceneProcessor implements Changeable<SceneProcessor>,
 	 */
 	@Override
 	public void keyReleased(final KeyEvent e) {
-		tasks().add(new Runnable() {
+		taskQueue.tasks().offer(new Task() {
+
+			/**
+			 * 
+			 */
+			private static final long serialVersionUID = 1L;
 
 			@Override
 			public void run() {

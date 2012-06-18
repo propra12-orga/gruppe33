@@ -50,7 +50,7 @@ public final class Text extends RenderedImage {
 	/*
 	 * The text alignment.
 	 */
-	private Alignment alignment = Alignment.Center;
+	private Alignment alignment = Alignment.Left;
 
 	/*
 	 * The border width.

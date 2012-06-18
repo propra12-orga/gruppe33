@@ -4,6 +4,7 @@ import java.awt.event.KeyEvent;
 
 import com.indyforge.twod.engine.graphics.rendering.scenegraph.Entity;
 import com.indyforge.twod.engine.graphics.rendering.scenegraph.Scene;
+import com.indyforge.twod.engine.util.Task;
 
 /**
  * Represents a gui entity. Gui entities can be "selected" by using the defaults
@@ -54,58 +55,93 @@ public class GuiEntity extends GuiListener {
 		// Find scene
 		Scene scene = findScene();
 
-		if (scene != null) {
+		// Scene available and selected ?
+		if (scene != null && selected) {
 
-			if (selected) {
+			// Read input values
+			boolean up = scene.isSinglePressed(KeyEvent.VK_UP), down = scene
+					.isSinglePressed(KeyEvent.VK_DOWN);
+
+			if (up != down) {
 
 				// The move dir
-				int dir = 0;
+				int dir = up ? -1 : 1;
 
-				// Assign
-				if (scene.isSinglePressed(KeyEvent.VK_UP)) {
-					dir = -1;
-				} else if (scene.isSinglePressed(KeyEvent.VK_DOWN)) {
-					dir = 1;
-				}
+				// Iterate...
+				for (int next = cacheIndex() + dir;; next += dir) {
 
-				if (dir != 0) {
-					// Iterate...
-					for (int next = cacheIndex() + dir;; next += dir) {
+					// Check!
+					if (next < 0) {
+						next = parent().children().size() - 1;
+					} else if (next >= parent().children().size()) {
+						next = 0;
+					}
 
-						// Check!
-						if (next < 0) {
-							next = parent().children().size() - 1;
-						} else if (next >= parent().children().size()) {
-							next = 0;
-						}
+					// Lookup child
+					final Entity nextChild = parent().childAt(next);
 
-						// Lookup child
-						Entity nextChild = parent().childAt(next);
+					// If gui entity... select it !
+					if (nextChild instanceof GuiEntity) {
 
-						// If gui entity... select it !
-						if (nextChild instanceof GuiEntity) {
-							deselect();
-							((GuiEntity) nextChild).select();
-							break;
-						}
+						// Queue the new task
+						parent().taskQueue()
+								.tasks()
+								.offer(new ChangeSelectionTask(this,
+										(GuiEntity) nextChild));
+						break;
 					}
 				}
 			}
 		}
 	}
 
+	private static final class ChangeSelectionTask implements Task {
+
+		/**
+		 * 
+		 */
+		private static final long serialVersionUID = 1L;
+
+		/*
+		 * The gui entities.
+		 */
+		private final GuiEntity deselect, select;
+
+		public ChangeSelectionTask(GuiEntity deselect, GuiEntity select) {
+			if (deselect == null) {
+				throw new NullPointerException("deselect");
+			} else if (select == null) {
+				throw new NullPointerException("select");
+			}
+			this.deselect = deselect;
+			this.select = select;
+		}
+
+		@Override
+		public void run() {
+			deselect.deselect();
+			select.select();
+		}
+	}
+
 	/**
 	 * Selects this entity.
+	 * 
+	 * @return this for chaining.
 	 */
-	public void select() {
+	public GuiEntity select() {
 		fireEvent(GuiEvent.Selected);
+		return this;
 	}
 
 	/**
 	 * Deselects this entity.
+	 * 
+	 * @return this for chaining.
 	 */
-	public void deselect() {
+	public GuiEntity deselect() {
 		fireEvent(GuiEvent.Deselected);
+		return this;
 	}
 
 	/**
