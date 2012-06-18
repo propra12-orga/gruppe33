@@ -1,10 +1,11 @@
 package com.indyforge.twod.engine.resources;
 
+import java.awt.HeadlessException;
 import java.awt.image.BufferedImage;
 import java.io.IOException;
 
 import com.indyforge.twod.engine.graphics.GraphicsRoutines;
-
+import com.indyforge.twod.engine.resources.assets.AssetManager;
 
 /**
  * This class represents a serializable buffered image.
@@ -27,15 +28,17 @@ public final class BufferedImageResource implements Resource<BufferedImage> {
 		// Write default vars
 		out.defaultWriteObject();
 
-		// Write some image information
-		out.writeInt(image.getWidth());
-		out.writeInt(image.getHeight());
-		out.writeInt(image.getTransparency());
+		if (!AssetManager.isHeadless()) {
+			// Write some image information
+			out.writeInt(image.getWidth());
+			out.writeInt(image.getHeight());
+			out.writeInt(image.getTransparency());
 
-		// Write all rgb values
-		for (int x = 0; x < image.getWidth(); x++) {
-			for (int y = 0; y < image.getHeight(); y++) {
-				out.writeInt(image.getRGB(x, y));
+			// Write all rgb values
+			for (int x = 0; x < image.getWidth(); x++) {
+				for (int y = 0; y < image.getHeight(); y++) {
+					out.writeInt(image.getRGB(x, y));
+				}
 			}
 		}
 	}
@@ -46,15 +49,19 @@ public final class BufferedImageResource implements Resource<BufferedImage> {
 		// Read default vars
 		in.defaultReadObject();
 
-		// Ready the image data
-		image = GraphicsRoutines.createImage(in.readInt(), in.readInt(),
-				in.readInt());
+		if (!AssetManager.isHeadless()) {
+			// Ready the image data
+			image = GraphicsRoutines.createImage(in.readInt(), in.readInt(),
+					in.readInt());
 
-		// Read all rgb values
-		for (int x = 0; x < image.getWidth(); x++) {
-			for (int y = 0; y < image.getHeight(); y++) {
-				image.setRGB(x, y, in.readInt());
+			// Read all rgb values
+			for (int x = 0; x < image.getWidth(); x++) {
+				for (int y = 0; y < image.getHeight(); y++) {
+					image.setRGB(x, y, in.readInt());
+				}
 			}
+		} else {
+			image = null;
 		}
 	}
 
@@ -74,10 +81,13 @@ public final class BufferedImageResource implements Resource<BufferedImage> {
 	/*
 	 * (non-Javadoc)
 	 * 
-	 * @see propra2012.gruppe33.graphics.rendering.util.Resource#get()
+	 * @see com.indyforge.twod.engine.resources.Resource#get()
 	 */
 	@Override
 	public BufferedImage get() {
+		if (AssetManager.isHeadless()) {
+			throw new HeadlessException();
+		}
 		return image;
 	}
 }

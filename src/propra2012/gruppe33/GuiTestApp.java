@@ -4,11 +4,11 @@ import java.awt.Font;
 import java.awt.image.BufferedImage;
 import java.io.File;
 
-import com.indyforge.twod.engine.graphics.GraphicsRoutines;
-import com.indyforge.twod.engine.graphics.rendering.scenegraph.RenderedImage;
 import com.indyforge.twod.engine.graphics.rendering.scenegraph.Scene;
 import com.indyforge.twod.engine.graphics.rendering.scenegraph.SceneProcessor;
 import com.indyforge.twod.engine.graphics.rendering.scenegraph.gui.Button;
+import com.indyforge.twod.engine.resources.Resource;
+import com.indyforge.twod.engine.resources.TransientDerivedFontResource;
 import com.indyforge.twod.engine.resources.assets.Asset;
 import com.indyforge.twod.engine.resources.assets.AssetManager;
 
@@ -40,18 +40,17 @@ public class GuiTestApp {
 				"assets/images/gui/progui/gui_back.jpg", true);
 
 		// The background
-		RenderedImage background = new RenderedImage(backImage);
-		scene.attach(background);
+		// RenderedImage background = new RenderedImage(backImage);
+		// scene.attach(background);
+
+		// Load a font
+		Resource<Font> font = new TransientDerivedFontResource(scene
+				.assetManager().loadFont("assets/fonts/ALGERIA.TTF"),
+				Font.PLAIN, 36);
 
 		Button btn1 = new Button(selectedA, deselectedA);
-//
-//		Font font = scene.assetManager().loadFont("assets/fonts/ALGERIA.TTF")
-//				.get();
-//		font = font.deriveFont(80f);
-//
-//		GraphicsRoutines.drawCenteredString("HELLO", font, btn1.selectedImage()
-//				.imageResource().get());
-
+		btn1.text().fontResource(font);
+		btn1.text().text("HELLO 123");
 		btn1.scale().set(0.5f, 0.5f);
 		btn1.position().set(0.25f, 0.25f);
 

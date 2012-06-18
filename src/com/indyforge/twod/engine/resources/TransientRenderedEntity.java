@@ -41,15 +41,19 @@ public final class TransientRenderedEntity implements Resource<Image> {
 	 * Renders the graphics entity to an image.
 	 */
 	private void createResource() {
-		// Create resource
-		resource = graphicsEntity.renderTo(GraphicsRoutines.clear(
-				GraphicsRoutines.createImage(width, height, transparency),
-				background));
+		if (!AssetManager.isHeadless()) {
+			// Create resource
+			resource = graphicsEntity.renderTo(GraphicsRoutines.clear(
+					GraphicsRoutines.createImage(width, height, transparency),
+					background));
 
-		// Check resource
-		if (resource == null) {
-			throw new IllegalStateException("The resource is null. "
-					+ "Please check your code.");
+			// Check resource
+			if (resource == null) {
+				throw new IllegalStateException("The resource is null. "
+						+ "Please check your code.");
+			}
+		} else {
+			resource = null;
 		}
 	}
 
@@ -62,10 +66,8 @@ public final class TransientRenderedEntity implements Resource<Image> {
 		// Restore all vars
 		in.defaultReadObject();
 
-		if (!AssetManager.isHeadless()) {
-			// Recreate the resource
-			createResource();
-		}
+		// Recreate the resource
+		createResource();
 	}
 
 	/**
@@ -114,16 +116,14 @@ public final class TransientRenderedEntity implements Resource<Image> {
 		this.background = background;
 		this.graphicsEntity = graphicsEntity;
 
-		if (!AssetManager.isHeadless()) {
-			// Just create the resource
-			createResource();
-		}
+		// Just create the resource
+		createResource();
 	}
 
 	/*
 	 * (non-Javadoc)
 	 * 
-	 * @see propra2012.gruppe33.resources.Resource#get()
+	 * @see com.indyforge.twod.engine.resources.Resource#get()
 	 */
 	@Override
 	public Image get() {

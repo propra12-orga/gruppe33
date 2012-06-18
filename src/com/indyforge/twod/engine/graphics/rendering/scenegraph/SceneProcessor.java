@@ -1047,10 +1047,10 @@ public final class SceneProcessor implements Changeable<SceneProcessor>,
 		// Check!
 		if (maxFPS > 0) {
 			// Calc the frame duration
-			int frameDuration = (int) (System.currentTimeMillis() - curTime);
+			long frameDuration = System.currentTimeMillis() - curTime;
 
 			// Calc the minimum duration
-			int minDuration = 1000 / maxFPS;
+			long minDuration = 1000 / maxFPS;
 
 			// Wait a bit
 			if (frameDuration < minDuration) {

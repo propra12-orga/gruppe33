@@ -55,15 +55,21 @@ public final class GraphicsRoutines {
 		return optimizedImage;
 	}
 
-	public static void drawCenteredString(String s, Font font, Image image) {
-		drawCenteredString(s, font, image.getWidth(null),
-				image.getHeight(null), image.getGraphics());
+	public static void drawCenteredString(String s, Font font,
+			Color clearColor, Color textColor, Image image) {
+		drawCenteredString(s, font, clearColor, textColor,
+				image.getWidth(null), image.getHeight(null),
+				image.getGraphics());
 	}
 
-	public static void drawCenteredString(String s, Font font, int w, int h,
-			Graphics g) {
-		g.setFont(font);
+	public static void drawCenteredString(String s, Font font,
+			Color clearColor, Color textColor, int w, int h, Graphics g) {
 
+		g.setColor(clearColor);
+		g.fillRect(0, 0, w, h);
+
+		g.setFont(font);
+		g.setColor(textColor);
 		FontMetrics fm = g.getFontMetrics();
 		int x = (w - fm.stringWidth(s)) / 2;
 		int y = (fm.getAscent() + (h - (fm.getAscent() + fm.getDescent())) / 2);
