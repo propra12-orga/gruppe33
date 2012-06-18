@@ -3,56 +3,62 @@ package com.indyforge.twod.engine.graphics.rendering.scenegraph.gui;
 import java.awt.event.KeyEvent;
 
 import com.indyforge.twod.engine.graphics.rendering.scenegraph.Entity;
-import com.indyforge.twod.engine.graphics.rendering.scenegraph.GraphicsEntity;
 import com.indyforge.twod.engine.graphics.rendering.scenegraph.Scene;
 
-public class GuiEntity extends GraphicsEntity {
+/**
+ * Represents a gui entity. Gui entities can be "selected" by using the defaults
+ * keys.
+ * 
+ * @author Christopher Probst
+ * 
+ */
+public class GuiEntity extends GuiListener {
 
 	/**
 	 * 
 	 */
 	private static final long serialVersionUID = 1L;
 
-	public enum GuiEvent {
-		Selected, Deselected
-	}
-
+	/*
+	 * The selected flag.
+	 */
 	private boolean selected = false;
 
+	/*
+	 * (non-Javadoc)
+	 * 
+	 * @see
+	 * com.indyforge.twod.engine.graphics.rendering.scenegraph.gui.GuiListener
+	 * #onSelected
+	 * (com.indyforge.twod.engine.graphics.rendering.scenegraph.gui.GuiEntity)
+	 */
 	@Override
-	protected void onEvent(Entity source, Object event, Object... params) {
-		super.onEvent(source, event, params);
-
-		if (event == GuiEvent.Selected) {
-			selected = true;
-			onSelected();
-		} else if (event == GuiEvent.Deselected) {
-			selected = false;
-			onDeselected();
-		}
+	protected void onSelected(GuiEntity guiEntity) {
+		super.onSelected(guiEntity);
+		selected = true;
 	}
 
-	protected void onSelected() {
-
+	/*
+	 * (non-Javadoc)
+	 * 
+	 * @see
+	 * com.indyforge.twod.engine.graphics.rendering.scenegraph.gui.GuiListener
+	 * #onDeselected
+	 * (com.indyforge.twod.engine.graphics.rendering.scenegraph.gui.GuiEntity)
+	 */
+	@Override
+	protected void onDeselected(GuiEntity guiEntity) {
+		super.onDeselected(guiEntity);
+		selected = false;
 	}
 
-	protected void onDeselected() {
-
-	}
-
-	public GuiEntity() {
-		events().put(GuiEvent.Selected, iterableChildren(true, true));
-		events().put(GuiEvent.Deselected, iterableChildren(true, true));
-	}
-
-	public void select() {
-		fireEvent(GuiEvent.Selected);
-	}
-
-	public void deselect() {
-		fireEvent(GuiEvent.Deselected);
-	}
-
+	/*
+	 * (non-Javadoc)
+	 * 
+	 * @see
+	 * com.indyforge.twod.engine.graphics.rendering.scenegraph.Entity#onUpdate
+	 * (float)
+	 */
 	@Override
 	protected void onUpdate(float tpf) {
 		super.onUpdate(tpf);
@@ -60,40 +66,64 @@ public class GuiEntity extends GraphicsEntity {
 		// Find scene
 		Scene scene = findScene();
 
-		if (scene != null && selected) {
+		if (scene != null) {
 
-			// The move dir
-			int dir = 0;
+			if (selected) {
 
-			// Assign
-			if (scene.isSinglePressed(KeyEvent.VK_UP)) {
-				dir = -1;
-			} else if (scene.isSinglePressed(KeyEvent.VK_DOWN)) {
-				dir = 1;
-			}
+				// The move dir
+				int dir = 0;
 
-			if (dir != 0) {
-				// Iterate...
-				for (int next = cacheIndex() + dir;; next += dir) {
+				// Assign
+				if (scene.isSinglePressed(KeyEvent.VK_UP)) {
+					dir = -1;
+				} else if (scene.isSinglePressed(KeyEvent.VK_DOWN)) {
+					dir = 1;
+				}
 
-					// Check!
-					if (next < 0) {
-						next = parent().children().size() - 1;
-					} else if (next >= parent().children().size()) {
-						next = 0;
-					}
+				if (dir != 0) {
+					// Iterate...
+					for (int next = cacheIndex() + dir;; next += dir) {
 
-					// Lookup child
-					Entity nextChild = parent().childAt(next);
+						// Check!
+						if (next < 0) {
+							next = parent().children().size() - 1;
+						} else if (next >= parent().children().size()) {
+							next = 0;
+						}
 
-					// If gui entity... select it !
-					if (nextChild instanceof GuiEntity) {
-						deselect();
-						((GuiEntity) nextChild).select();
-						break;
+						// Lookup child
+						Entity nextChild = parent().childAt(next);
+
+						// If gui entity... select it !
+						if (nextChild instanceof GuiEntity) {
+							deselect();
+							((GuiEntity) nextChild).select();
+							break;
+						}
 					}
 				}
 			}
 		}
+	}
+
+	/**
+	 * Selects this entity.
+	 */
+	public void select() {
+		fireEvent(GuiEvent.Selected, this);
+	}
+
+	/**
+	 * Deselects this entity.
+	 */
+	public void deselect() {
+		fireEvent(GuiEvent.Deselected, this);
+	}
+
+	/**
+	 * @return true if this gui entity is selected, otherwise false.
+	 */
+	public boolean isSelected() {
+		return selected;
 	}
 }
