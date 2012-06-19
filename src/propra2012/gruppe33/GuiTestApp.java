@@ -5,12 +5,18 @@ import java.awt.Font;
 import java.awt.Transparency;
 import java.awt.image.BufferedImage;
 import java.io.File;
+import java.net.InetSocketAddress;
 
+import com.indyforge.foxnet.rmi.InvokerManager;
+import com.indyforge.foxnet.rmi.pattern.change.Session;
+import com.indyforge.foxnet.rmi.util.Future;
+import com.indyforge.foxnet.rmi.util.FutureCallback;
 import com.indyforge.twod.engine.graphics.ImageDesc;
 import com.indyforge.twod.engine.graphics.rendering.scenegraph.Entity;
 import com.indyforge.twod.engine.graphics.rendering.scenegraph.RenderedImage;
 import com.indyforge.twod.engine.graphics.rendering.scenegraph.Scene;
 import com.indyforge.twod.engine.graphics.rendering.scenegraph.SceneProcessor;
+import com.indyforge.twod.engine.graphics.rendering.scenegraph.SceneProcessor.NetworkMode;
 import com.indyforge.twod.engine.graphics.rendering.scenegraph.Text.Alignment;
 import com.indyforge.twod.engine.graphics.rendering.scenegraph.gui.Button;
 import com.indyforge.twod.engine.graphics.rendering.scenegraph.gui.Label;
@@ -26,7 +32,8 @@ public class GuiTestApp {
 	 * @param args
 	 */
 	public static void main(String[] args) throws Exception {
-		SceneProcessor processor = new SceneProcessor("Gui Test", 800, 600);
+		final SceneProcessor processor = new SceneProcessor("Gui Test", 800,
+				600);
 
 		Scene scene = new Scene(
 				new AssetManager(new File("scenes/default.zip")), 1024, 1024);
@@ -83,19 +90,57 @@ public class GuiTestApp {
 		labels.attach(label1, label2);
 
 		// Create a new text field
-		TextField tf = new TextField(desc2, font);
+		final TextField tf = new TextField(desc2, font);
 		tf.text().alignment(Alignment.Center).textColor(Color.WHITE);
 		tf.select();
 		tf.scale().set(0.5f, 0.5f);
 		tf.position().set(0.75f, 0.2f);
 
 		// Create a new text field
-		TextField tf2 = new TextField(desc2, font);
+		final TextField tf2 = new TextField(desc2, font);
 		tf2.text().alignment(Alignment.Center).textColor(Color.WHITE);
 		tf2.scale().set(0.5f, 0.5f);
 		tf2.position().set(0.75f, 0.4f);
 
-		Button btn1 = new Button(selectedA, deselectedA, desc2, font, "Connect");
+		Button btn1 = new Button(selectedA, deselectedA, desc2, font, "Connect") {
+
+			/*
+			 * (non-Javadoc)
+			 * 
+			 * @see
+			 * com.indyforge.twod.engine.graphics.rendering.scenegraph.gui.Button
+			 * #onButtonPressed()
+			 */
+			@Override
+			protected void onButtonPressed() {
+				super.onButtonPressed();
+
+				InetSocketAddress addr = new InetSocketAddress(
+						tf.text().text(), Integer.parseInt(tf2.text().text()));
+
+				// Connect the scene
+				Session<SceneProcessor> session;
+				try {
+					processor.networkMode(NetworkMode.Client);
+					session = processor.openClient(addr).linkClient("Kr0e");
+
+					// Get the invoker manager
+					InvokerManager man = InvokerManager.of(session);
+
+					man.closeFuture().add(new FutureCallback() {
+
+						@Override
+						public void completed(Future future) throws Exception {
+
+							processor.shutdownRequest(true);
+						}
+					});
+
+				} catch (Exception e) {
+					e.printStackTrace();
+				}
+			}
+		};
 
 		btn1.scale().set(0.5f, 0.5f);
 		btn1.position().set(0.75f, 0.75f);
