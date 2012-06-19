@@ -10,9 +10,10 @@ import com.indyforge.twod.engine.graphics.rendering.scenegraph.Entity;
 import com.indyforge.twod.engine.graphics.rendering.scenegraph.RenderedImage;
 import com.indyforge.twod.engine.graphics.rendering.scenegraph.Scene;
 import com.indyforge.twod.engine.graphics.rendering.scenegraph.SceneProcessor;
-import com.indyforge.twod.engine.graphics.rendering.scenegraph.Text;
 import com.indyforge.twod.engine.graphics.rendering.scenegraph.Text.Alignment;
 import com.indyforge.twod.engine.graphics.rendering.scenegraph.gui.Button;
+import com.indyforge.twod.engine.graphics.rendering.scenegraph.gui.Label;
+import com.indyforge.twod.engine.graphics.rendering.scenegraph.gui.TextContext;
 import com.indyforge.twod.engine.graphics.rendering.scenegraph.gui.TextField;
 import com.indyforge.twod.engine.resources.Resource;
 import com.indyforge.twod.engine.resources.TransientSystemFontResource;
@@ -57,67 +58,55 @@ public class GuiTestApp {
 		Resource<Font> font = new TransientSystemFontResource("Sans Serif",
 				Font.BOLD, 48);
 
+		/*
+		 * Used to initialize!
+		 */
+		TextContext labelCtx = new TextContext().width(164).height(48)
+				.transparency(Transparency.TRANSLUCENT).fontResource(font);
+		TextContext textFieldCtx = new TextContext().width(256).height(96)
+				.transparency(Transparency.TRANSLUCENT).fontResource(font);
+
 		// Here we store the labels
 		Entity labels = new Entity();
 
 		// Setup labels
+		Label label1 = new Label(labelCtx);
+		label1.background().imageResource(deselectedA);
+		label1.text().text("Host/IP");
 
-		RenderedImage lblBg1 = new RenderedImage(deselectedA);
-		RenderedImage lblBg2 = new RenderedImage(deselectedA);
-
-		Text hostLbl = new Text(256, 48, Transparency.TRANSLUCENT);
-		hostLbl.fontResource(font).text("Host/IP").centered(false);
-		Text portLbl = new Text(256, 48, Transparency.TRANSLUCENT);
-		portLbl.fontResource(font).text("Port").centered(false);
+		Label label2 = new Label(labelCtx);
+		label2.background().imageResource(deselectedA);
+		label2.text().text("Port");
 
 		// Adjust label scales
-		lblBg1.scale().scaleLocal(0.4f);
-		lblBg2.scale().scaleLocal(0.4f);
-
-		lblBg1.position().x = 0.05f;
-		lblBg1.position().y = 0.05f;
-		lblBg2.position().x = 0.05f;
-		lblBg2.position().y = 0.35f;
-
-		hostLbl.scale().x = 0.5f;
-		portLbl.scale().x = 0.5f;
-		hostLbl.position().x = 0.1f;
-		hostLbl.position().y = 0.1f;
-		portLbl.position().x = 0.1f;
-		portLbl.position().y = 0.4f;
+		label1.scale().scaleLocal(0.3f);
+		label1.position().set(0.25f, 0.2f);
+		label2.scale().scaleLocal(0.3f);
+		label2.position().set(0.25f, 0.4f);
 
 		// Attach both
-		// labels.attach(lblBg1.useRatio(), hostLbl.useRatio(),
-		// lblBg2.useRatio(),
-		// portLbl.useRatio());
+		labels.attach(label1, label2);
 
 		// Create a new text field
-		TextField tf = new TextField(256, 96, Transparency.TRANSLUCENT, font);
+		TextField tf = new TextField(textFieldCtx);
 		tf.text().alignment(Alignment.Center).textColor(Color.WHITE);
 		tf.select();
 		tf.scale().set(0.5f, 0.5f);
-		tf.position().set(0.75f, 0.15f);
+		tf.position().set(0.75f, 0.2f);
 
 		// Create a new text field
-		TextField tf2 = new TextField(256, 96, Transparency.TRANSLUCENT, font);
+		TextField tf2 = new TextField(textFieldCtx);
 		tf2.text().alignment(Alignment.Center).textColor(Color.WHITE);
 		tf2.scale().set(0.5f, 0.5f);
-		tf2.position().set(0.75f, 0.45f);
+		tf2.position().set(0.75f, 0.4f);
 
-		// Create a new text field
-		TextField tf3 = new TextField(256, 96, Transparency.TRANSLUCENT, font);
-		tf3.text().alignment(Alignment.Center).textColor(Color.WHITE);
-		tf3.scale().set(0.5f, 0.5f);
-		tf3.select();
-		tf3.position().set(0.75f, 0.55f);
+		Button btn1 = new Button(selectedA, deselectedA, textFieldCtx,
+				"Connect");
 
-		Button btn1 = new Button(selectedA, deselectedA, 256, 96,
-				Transparency.TRANSLUCENT, font);
-		btn1.text().text("Connect").alignment(Alignment.Center);
 		btn1.scale().set(0.5f, 0.5f);
 		btn1.position().set(0.75f, 0.75f);
 
-		labels.attach(tf, tf2, tf3, btn1);
+		labels.attach(tf, tf2, btn1);
 
 		scene.attach(labels);
 		processor.root(scene);

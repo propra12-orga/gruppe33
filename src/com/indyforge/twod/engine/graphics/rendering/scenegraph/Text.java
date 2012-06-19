@@ -149,6 +149,10 @@ public final class Text extends RenderedImage {
 	 * Creates an empty text.
 	 */
 	public Text() {
+		/*
+		 * A text should always keep the ratio!
+		 */
+		keepRatio(true);
 	}
 
 	/**
@@ -157,6 +161,8 @@ public final class Text extends RenderedImage {
 	 * @see Text#setup(int, int, int)
 	 */
 	public Text(int width, int height, int transparency) {
+		// Invoke default constructor!
+		this();
 		setup(width, height, transparency);
 	}
 
@@ -172,8 +178,7 @@ public final class Text extends RenderedImage {
 	 * @return this for chaining.
 	 */
 	public Text setup(int width, int height, int transparency) {
-		imageResource(new TransientBufferedImage(width, height, transparency))
-				.useRatio();
+		imageResource(new TransientBufferedImage(width, height, transparency));
 		return this;
 	}
 

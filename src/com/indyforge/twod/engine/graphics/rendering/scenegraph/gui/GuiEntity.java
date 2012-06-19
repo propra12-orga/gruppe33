@@ -21,9 +21,9 @@ public class GuiEntity extends GuiListener {
 	private static final long serialVersionUID = 1L;
 
 	/*
-	 * The selected flag.
+	 * The selected and selectable flag.
 	 */
-	private boolean selected = false;
+	private boolean selected = false, selectable = true;
 
 	@Override
 	protected void onSelected(GuiEntity guiEntity) {
@@ -80,8 +80,9 @@ public class GuiEntity extends GuiListener {
 					// Lookup child
 					final Entity nextChild = parent().childAt(next);
 
-					// If gui entity... select it !
-					if (nextChild instanceof GuiEntity) {
+					// If gui entity and selectable... select it !
+					if (nextChild instanceof GuiEntity
+							&& ((GuiEntity) nextChild).isSelectable()) {
 
 						// Queue the new task
 						parent().taskQueue()
@@ -141,6 +142,25 @@ public class GuiEntity extends GuiListener {
 	 */
 	public GuiEntity deselect() {
 		fireEvent(GuiEvent.Deselected);
+		return this;
+	}
+
+	/**
+	 * @return the selectable-flag.
+	 */
+	public boolean isSelectable() {
+		return selectable;
+	}
+
+	/**
+	 * Sets the selectable-flag.
+	 * 
+	 * @param selectable
+	 *            If true this gui entity can be selected.
+	 * @return this for chaining.
+	 */
+	public GuiEntity selectable(boolean selectable) {
+		this.selectable = selectable;
 		return this;
 	}
 

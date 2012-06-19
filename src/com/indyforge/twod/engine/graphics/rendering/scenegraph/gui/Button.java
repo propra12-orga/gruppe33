@@ -5,9 +5,9 @@ import java.awt.Image;
 import java.awt.event.KeyEvent;
 
 import com.indyforge.twod.engine.graphics.rendering.scenegraph.Entity;
-import com.indyforge.twod.engine.graphics.rendering.scenegraph.RenderedImage;
+import com.indyforge.twod.engine.graphics.rendering.scenegraph.EntityRoutines;
 import com.indyforge.twod.engine.graphics.rendering.scenegraph.Scene;
-import com.indyforge.twod.engine.graphics.rendering.scenegraph.Text;
+import com.indyforge.twod.engine.graphics.rendering.scenegraph.Text.Alignment;
 import com.indyforge.twod.engine.resources.Resource;
 
 /**
@@ -21,7 +21,6 @@ public class Button extends GuiEntity {
 	 * 
 	 */
 	private static final long serialVersionUID = 1L;
-	public static final float TEXT_SCALE = 0.8f;
 
 	public enum ButtonEvent {
 		Pressed
@@ -30,13 +29,7 @@ public class Button extends GuiEntity {
 	/*
 	 * The selected/deselected images.
 	 */
-	private final RenderedImage selected = new RenderedImage().centered(true),
-			deselected = new RenderedImage().centered(true);
-
-	/*
-	 * The text component of the button.
-	 */
-	private final Text text;
+	private final Label selected, deselected;
 
 	/*
 	 * (non-Javadoc)
@@ -95,8 +88,8 @@ public class Button extends GuiEntity {
 	protected void onSelected(GuiEntity guiEntity) {
 		super.onSelected(guiEntity);
 		if (guiEntity == this) {
-			selected.visible(true);
-			deselected.visible(false);
+			EntityRoutines.visible(selected.childIterator(true, true), true);
+			EntityRoutines.visible(deselected.childIterator(true, true), false);
 		}
 	}
 
@@ -112,9 +105,17 @@ public class Button extends GuiEntity {
 	protected void onDeselected(GuiEntity guiEntity) {
 		super.onDeselected(guiEntity);
 		if (guiEntity == this) {
-			selected.visible(false);
-			deselected.visible(true);
+			EntityRoutines.visible(selected.childIterator(true, true), false);
+			EntityRoutines.visible(deselected.childIterator(true, true), true);
 		}
+	}
+
+	public Button(Resource<? extends Image> selectedImageResource,
+			Resource<? extends Image> deselectedImageResource,
+			TextContext textContext, String buttonText) {
+		this(selectedImageResource, deselectedImageResource, textContext
+				.width(), textContext.height(), textContext.transparency(),
+				textContext.fontResource(), buttonText);
 	}
 
 	/**
@@ -135,45 +136,42 @@ public class Button extends GuiEntity {
 	 */
 	public Button(Resource<? extends Image> selectedImageResource,
 			Resource<? extends Image> deselectedImageResource, int width,
-			int height, int transparency, Resource<? extends Font> fontResource) {
+			int height, int transparency,
+			Resource<? extends Font> fontResource, String buttonText) {
 
 		// Register the pressed event
 		events().put(ButtonEvent.Pressed, iterableChildren(true, true));
 
-		// Setup images
-		selected.imageResource(selectedImageResource).useRatio();
-		deselected.imageResource(deselectedImageResource).useRatio();
+		// Create both labels
+		selected = new Label(width, height, transparency, fontResource);
+		deselected = new Label(width, height, transparency, fontResource);
 
-		// Create the text component
-		text = (Text) new Text(width, height, transparency).fontResource(
-				fontResource).centered(true);
-		text.scale().scaleLocal(TEXT_SCALE);
+		// Set textures
+		selected.background().imageResource(selectedImageResource);
+		deselected.background().imageResource(deselectedImageResource);
+
+		// Set text and default center alignment
+		selected.text().text(buttonText).alignment(Alignment.Center);
+		deselected.text().text(buttonText).alignment(Alignment.Center);
 
 		// Attach all components
-		attach(selected, deselected, text);
+		attach(selected, deselected);
 
 		// Start deselected
 		deselect();
 	}
 
 	/**
-	 * @return the button text.
+	 * @return selected label.
 	 */
-	public Text text() {
-		return text;
-	}
-
-	/**
-	 * @return selected image.
-	 */
-	public RenderedImage selectedImage() {
+	public Label selectedLabel() {
 		return selected;
 	}
 
 	/**
-	 * @return the deselected image.
+	 * @return the deselected label.
 	 */
-	public RenderedImage deselectedImage() {
+	public Label deselectedLabel() {
 		return deselected;
 	}
 }

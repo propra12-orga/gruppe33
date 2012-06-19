@@ -5,7 +5,6 @@ import java.awt.event.KeyEvent;
 
 import com.indyforge.twod.engine.graphics.rendering.scenegraph.Entity;
 import com.indyforge.twod.engine.graphics.rendering.scenegraph.Scene;
-import com.indyforge.twod.engine.graphics.rendering.scenegraph.Text;
 import com.indyforge.twod.engine.resources.Resource;
 
 /**
@@ -13,7 +12,7 @@ import com.indyforge.twod.engine.resources.Resource;
  * @author Christopher Probst
  * 
  */
-public class TextField extends GuiEntity {
+public class TextField extends Label {
 
 	/**
 	 * 
@@ -23,11 +22,6 @@ public class TextField extends GuiEntity {
 	public enum TextFieldEvent {
 		Changed
 	}
-
-	/*
-	 * A text component.
-	 */
-	private final Text text;
 
 	/*
 	 * (non-Javadoc)
@@ -41,7 +35,7 @@ public class TextField extends GuiEntity {
 	protected void onSelected(GuiEntity guiEntity) {
 		super.onSelected(guiEntity);
 		if (guiEntity == this) {
-			text.borderWidth(10);
+			text().borderWidth(10);
 		}
 	}
 
@@ -57,7 +51,7 @@ public class TextField extends GuiEntity {
 	protected void onDeselected(GuiEntity guiEntity) {
 		super.onDeselected(guiEntity);
 		if (guiEntity == this) {
-			text.borderWidth(0);
+			text().borderWidth(0);
 		}
 	}
 
@@ -99,29 +93,29 @@ public class TextField extends GuiEntity {
 
 				for (int i = 0x30; i <= 0x39; i++) {
 					if (scene.isSinglePressed(i)) {
-						text.append((char) i);
+						text().append((char) i);
 					}
 				}
 
 				for (int i = 0x41; i <= 0x5A; i++) {
 					if (scene.isSinglePressed(i)) {
-						text.append((char) i);
+						text().append((char) i);
 					}
 				}
 
 				if (scene.isSinglePressed(KeyEvent.VK_PERIOD)) {
-					text.append(".");
+					text().append(".");
 				}
 
 				if (scene.isSinglePressed(KeyEvent.VK_BACK_SPACE)) {
-					text.backspace();
+					text().backspace();
 				}
 
 				if (scene.isSinglePressed(KeyEvent.VK_SPACE)) {
-					text.append(" ");
+					text().append(" ");
 				}
 
-				if (text.isChanged()) {
+				if (text().isChanged()) {
 					fireEvent(TextFieldEvent.Changed);
 				}
 			}
@@ -134,20 +128,19 @@ public class TextField extends GuiEntity {
 	protected void onTextFieldChanged() {
 	}
 
-	public TextField(int width, int height, int transparency,
-			Resource<? extends Font> fontResource) {
-		// Register the text field changed event
-		events().put(TextFieldEvent.Changed, iterableChildren(true, true));
-
-		// Create static text field
-		attach(text = (Text) new Text(width, height, transparency)
-				.fontResource(fontResource).centered(true));
+	public TextField(TextContext textContext) {
+		this(textContext.width(), textContext.height(), textContext
+				.transparency(), textContext.fontResource());
 	}
 
-	/**
-	 * @return the text.
-	 */
-	public Text text() {
-		return text;
+	public TextField(int width, int height, int transparency,
+			Resource<? extends Font> fontResource) {
+		super(width, height, transparency, fontResource);
+
+		// Text fields ARE selectable!
+		selectable(true);
+
+		// Register the text field changed event
+		events().put(TextFieldEvent.Changed, iterableChildren(true, true));
 	}
 }
