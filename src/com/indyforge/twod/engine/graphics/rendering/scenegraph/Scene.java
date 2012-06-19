@@ -9,6 +9,7 @@ import java.awt.Transparency;
 import java.util.HashSet;
 import java.util.Set;
 
+import com.indyforge.twod.engine.graphics.ImageDesc;
 import com.indyforge.twod.engine.graphics.rendering.scenegraph.math.Vector2f;
 import com.indyforge.twod.engine.resources.TransientRenderedEntity;
 import com.indyforge.twod.engine.resources.assets.AssetManager;
@@ -306,7 +307,8 @@ public class Scene extends GraphicsEntity {
 
 		// Bundle to entity and store as rendered transient entity
 		TransientRenderedEntity renderedEntity = new TransientRenderedEntity(
-				this, transparency, bgColor, graphicsEntity);
+				new ImageDesc().width(width).height(height)
+						.transparency(transparency), bgColor, graphicsEntity);
 
 		// Create a new entity
 		RenderedImage root = new RenderedImage(renderedEntity);

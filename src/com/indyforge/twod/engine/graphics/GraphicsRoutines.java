@@ -7,6 +7,7 @@ import java.awt.Frame;
 import java.awt.Graphics2D;
 import java.awt.GraphicsConfiguration;
 import java.awt.GraphicsEnvironment;
+import java.awt.HeadlessException;
 import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
 import java.awt.image.BufferedImage;
@@ -16,6 +17,7 @@ import java.lang.reflect.InvocationTargetException;
 import com.indyforge.twod.engine.graphics.rendering.scenegraph.SceneProcessor;
 import com.indyforge.twod.engine.graphics.rendering.scenegraph.math.MathExt;
 import com.indyforge.twod.engine.graphics.sprite.Sprite;
+import com.indyforge.twod.engine.resources.assets.AssetManager;
 
 /**
  * Utility class to bundle some default graphics routines like creating frames.
@@ -33,6 +35,10 @@ public final class GraphicsRoutines {
 	 * @return a optimized copy of the given image.
 	 */
 	public static BufferedImage optimizeImage(BufferedImage image) {
+
+		if (image == null) {
+			throw new NullPointerException("image");
+		}
 
 		// Create a new optimized image
 		BufferedImage optimizedImage = GraphicsRoutines.createImage(
@@ -108,6 +114,22 @@ public final class GraphicsRoutines {
 	}
 
 	/**
+	 * Creates a compatible image.
+	 * 
+	 * @param imageDesc
+	 *            The image description.
+	 * @return the new compatible image.
+	 */
+	public static BufferedImage createImage(ImageDesc imageDesc) {
+		if (imageDesc == null) {
+			throw new NullPointerException("imageDesc");
+		}
+
+		return getGC().createCompatibleImage(imageDesc.width(),
+				imageDesc.height(), imageDesc.transparency());
+	}
+
+	/**
 	 * Creates a compatible volatile image.
 	 * 
 	 * @param width
@@ -141,6 +163,9 @@ public final class GraphicsRoutines {
 	 * @return the active graphics configuration.
 	 */
 	public static GraphicsConfiguration getGC() {
+		if (AssetManager.isHeadless()) {
+			throw new HeadlessException();
+		}
 		return GraphicsEnvironment.getLocalGraphicsEnvironment()
 				.getDefaultScreenDevice().getDefaultConfiguration();
 	}

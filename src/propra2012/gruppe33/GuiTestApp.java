@@ -6,6 +6,7 @@ import java.awt.Transparency;
 import java.awt.image.BufferedImage;
 import java.io.File;
 
+import com.indyforge.twod.engine.graphics.ImageDesc;
 import com.indyforge.twod.engine.graphics.rendering.scenegraph.Entity;
 import com.indyforge.twod.engine.graphics.rendering.scenegraph.RenderedImage;
 import com.indyforge.twod.engine.graphics.rendering.scenegraph.Scene;
@@ -13,7 +14,6 @@ import com.indyforge.twod.engine.graphics.rendering.scenegraph.SceneProcessor;
 import com.indyforge.twod.engine.graphics.rendering.scenegraph.Text.Alignment;
 import com.indyforge.twod.engine.graphics.rendering.scenegraph.gui.Button;
 import com.indyforge.twod.engine.graphics.rendering.scenegraph.gui.Label;
-import com.indyforge.twod.engine.graphics.rendering.scenegraph.gui.TextContext;
 import com.indyforge.twod.engine.graphics.rendering.scenegraph.gui.TextField;
 import com.indyforge.twod.engine.resources.Resource;
 import com.indyforge.twod.engine.resources.TransientSystemFontResource;
@@ -47,11 +47,6 @@ public class GuiTestApp {
 		Asset<BufferedImage> backImage = scene.assetManager().loadImage(
 				"assets/images/gui/progui/gui_back.jpg", true);
 
-		// Load a font
-		// Resource<Font> font = new TransientDerivedFontResource(scene
-		// .assetManager().loadFont("assets/fonts/ALGERIA.TTF"),
-		// Font.PLAIN, 36);
-
 		RenderedImage background = new RenderedImage(backImage);
 		scene.attach(background);
 
@@ -61,20 +56,20 @@ public class GuiTestApp {
 		/*
 		 * Used to initialize!
 		 */
-		TextContext labelCtx = new TextContext().width(164).height(48)
-				.transparency(Transparency.TRANSLUCENT).fontResource(font);
-		TextContext textFieldCtx = new TextContext().width(256).height(96)
-				.transparency(Transparency.TRANSLUCENT).fontResource(font);
+		ImageDesc desc1 = new ImageDesc().width(164).height(48)
+				.transparency(Transparency.TRANSLUCENT);
+		ImageDesc desc2 = new ImageDesc().width(256).height(96)
+				.transparency(Transparency.TRANSLUCENT);
 
 		// Here we store the labels
 		Entity labels = new Entity();
 
 		// Setup labels
-		Label label1 = new Label(labelCtx);
+		Label label1 = new Label(desc1, font);
 		label1.background().imageResource(deselectedA);
 		label1.text().text("Host/IP");
 
-		Label label2 = new Label(labelCtx);
+		Label label2 = new Label(desc1, font);
 		label2.background().imageResource(deselectedA);
 		label2.text().text("Port");
 
@@ -88,20 +83,19 @@ public class GuiTestApp {
 		labels.attach(label1, label2);
 
 		// Create a new text field
-		TextField tf = new TextField(textFieldCtx);
+		TextField tf = new TextField(desc2, font);
 		tf.text().alignment(Alignment.Center).textColor(Color.WHITE);
 		tf.select();
 		tf.scale().set(0.5f, 0.5f);
 		tf.position().set(0.75f, 0.2f);
 
 		// Create a new text field
-		TextField tf2 = new TextField(textFieldCtx);
+		TextField tf2 = new TextField(desc2, font);
 		tf2.text().alignment(Alignment.Center).textColor(Color.WHITE);
 		tf2.scale().set(0.5f, 0.5f);
 		tf2.position().set(0.75f, 0.4f);
 
-		Button btn1 = new Button(selectedA, deselectedA, textFieldCtx,
-				"Connect");
+		Button btn1 = new Button(selectedA, deselectedA, desc2, font, "Connect");
 
 		btn1.scale().set(0.5f, 0.5f);
 		btn1.position().set(0.75f, 0.75f);

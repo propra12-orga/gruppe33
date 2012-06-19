@@ -5,6 +5,7 @@ import java.awt.image.BufferedImage;
 import java.io.IOException;
 
 import com.indyforge.twod.engine.graphics.GraphicsRoutines;
+import com.indyforge.twod.engine.graphics.ImageDesc;
 import com.indyforge.twod.engine.resources.assets.AssetManager;
 
 /**
@@ -19,19 +20,16 @@ public final class TransientBufferedImage implements Resource<BufferedImage> {
 	 */
 	private static final long serialVersionUID = 1L;
 
-	// The image dimension and the transparency
-	private final int width, height, transparency;
+	// The image description
+	private final ImageDesc imageDesc;
 
 	// The buffered image
 	private transient BufferedImage image;
 
 	private void createResource() {
-		if (!AssetManager.isHeadless()) {
-			// Create new image
-			image = GraphicsRoutines.createImage(width, height, transparency);
-		} else {
-			image = null;
-		}
+		// Create resource
+		image = !AssetManager.isHeadless() ? GraphicsRoutines
+				.createImage(imageDesc) : null;
 	}
 
 	private void readObject(java.io.ObjectInputStream in) throws IOException,
@@ -44,31 +42,15 @@ public final class TransientBufferedImage implements Resource<BufferedImage> {
 		createResource();
 	}
 
-	public TransientBufferedImage(int width, int height, int transparency) {
-		if (width <= 0) {
-			throw new IllegalArgumentException("Width must be > 0");
-		} else if (height <= 0) {
-			throw new IllegalArgumentException("Height must be > 0");
+	public TransientBufferedImage(ImageDesc imageDesc) {
+		if (imageDesc == null) {
+			throw new NullPointerException("imageDesc");
 		}
 		// Save parameters
-		this.width = width;
-		this.height = height;
-		this.transparency = transparency;
+		this.imageDesc = imageDesc;
 
 		// Create the resource
 		createResource();
-	}
-
-	public int width() {
-		return width;
-	}
-
-	public int height() {
-		return height;
-	}
-
-	public int transparency() {
-		return transparency;
 	}
 
 	/*

@@ -7,6 +7,7 @@ import java.awt.FontMetrics;
 import java.awt.Graphics2D;
 import java.awt.Image;
 
+import com.indyforge.twod.engine.graphics.ImageDesc;
 import com.indyforge.twod.engine.resources.Resource;
 import com.indyforge.twod.engine.resources.TransientBufferedImage;
 
@@ -160,25 +161,24 @@ public final class Text extends RenderedImage {
 	 * 
 	 * @see Text#setup(int, int, int)
 	 */
-	public Text(int width, int height, int transparency) {
+	public Text(ImageDesc imageDesc) {
 		// Invoke default constructor!
 		this();
-		setup(width, height, transparency);
+		setup(imageDesc);
 	}
 
 	/**
 	 * Creates an image resource using the given parameters.
 	 * 
-	 * @param width
-	 *            The width.
-	 * @param height
-	 *            The height.
-	 * @param transparency
-	 *            The transparency.
+	 * @param imageDesc
+	 *            The image description.
 	 * @return this for chaining.
 	 */
-	public Text setup(int width, int height, int transparency) {
-		imageResource(new TransientBufferedImage(width, height, transparency));
+	public Text setup(ImageDesc imageDesc) {
+		if (imageDesc == null) {
+			throw new NullPointerException("imageDesc");
+		}
+		imageResource(new TransientBufferedImage(imageDesc));
 		return this;
 	}
 

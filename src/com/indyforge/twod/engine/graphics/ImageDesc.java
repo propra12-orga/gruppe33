@@ -1,16 +1,13 @@
-package com.indyforge.twod.engine.graphics.rendering.scenegraph.gui;
+package com.indyforge.twod.engine.graphics;
 
-import java.awt.Font;
 import java.io.Serializable;
-
-import com.indyforge.twod.engine.resources.Resource;
 
 /**
  * 
  * @author Christopher Probst
  * 
  */
-public final class TextContext implements Serializable {
+public final class ImageDesc implements Serializable {
 
 	/**
 	 * 
@@ -21,11 +18,6 @@ public final class TextContext implements Serializable {
 	 * The image dimension values.
 	 */
 	private int width, height, transparency;
-
-	/*
-	 * The text font resource.
-	 */
-	private Resource<? extends Font> fontResource;
 
 	/**
 	 * @return the width.
@@ -39,7 +31,7 @@ public final class TextContext implements Serializable {
 	 *            The width to set.
 	 * @return this for chaining.
 	 */
-	public TextContext width(int width) {
+	public ImageDesc width(int width) {
 		if (width <= 0) {
 			throw new IllegalArgumentException("Width must be > 0");
 		}
@@ -59,7 +51,7 @@ public final class TextContext implements Serializable {
 	 *            The height to set.
 	 * @return this for chaining.
 	 */
-	public TextContext height(int height) {
+	public ImageDesc height(int height) {
 		if (height <= 0) {
 			throw new IllegalArgumentException("Height must be > 0");
 		}
@@ -79,25 +71,8 @@ public final class TextContext implements Serializable {
 	 *            The transparency to set.
 	 * @return this for chaining.
 	 */
-	public TextContext transparency(int transparency) {
+	public ImageDesc transparency(int transparency) {
 		this.transparency = transparency;
-		return this;
-	}
-
-	/**
-	 * @return the fontResource.
-	 */
-	public Resource<? extends Font> fontResource() {
-		return fontResource;
-	}
-
-	/**
-	 * @param fontResource
-	 *            The font resource to set.
-	 * @return this for chaining.
-	 */
-	public TextContext fontResource(Resource<? extends Font> fontResource) {
-		this.fontResource = fontResource;
 		return this;
 	}
 }

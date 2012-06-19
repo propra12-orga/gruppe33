@@ -3,6 +3,7 @@ package com.indyforge.twod.engine.graphics.rendering.scenegraph.gui;
 import java.awt.Font;
 import java.awt.event.KeyEvent;
 
+import com.indyforge.twod.engine.graphics.ImageDesc;
 import com.indyforge.twod.engine.graphics.rendering.scenegraph.Entity;
 import com.indyforge.twod.engine.graphics.rendering.scenegraph.Scene;
 import com.indyforge.twod.engine.resources.Resource;
@@ -128,14 +129,8 @@ public class TextField extends Label {
 	protected void onTextFieldChanged() {
 	}
 
-	public TextField(TextContext textContext) {
-		this(textContext.width(), textContext.height(), textContext
-				.transparency(), textContext.fontResource());
-	}
-
-	public TextField(int width, int height, int transparency,
-			Resource<? extends Font> fontResource) {
-		super(width, height, transparency, fontResource);
+	public TextField(ImageDesc imageDesc, Resource<? extends Font> fontResource) {
+		super(imageDesc, fontResource);
 
 		// Text fields ARE selectable!
 		selectable(true);

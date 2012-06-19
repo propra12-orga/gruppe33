@@ -4,6 +4,7 @@ import java.awt.Font;
 import java.awt.Image;
 import java.awt.event.KeyEvent;
 
+import com.indyforge.twod.engine.graphics.ImageDesc;
 import com.indyforge.twod.engine.graphics.rendering.scenegraph.Entity;
 import com.indyforge.twod.engine.graphics.rendering.scenegraph.EntityRoutines;
 import com.indyforge.twod.engine.graphics.rendering.scenegraph.Scene;
@@ -110,14 +111,6 @@ public class Button extends GuiEntity {
 		}
 	}
 
-	public Button(Resource<? extends Image> selectedImageResource,
-			Resource<? extends Image> deselectedImageResource,
-			TextContext textContext, String buttonText) {
-		this(selectedImageResource, deselectedImageResource, textContext
-				.width(), textContext.height(), textContext.transparency(),
-				textContext.fontResource(), buttonText);
-	}
-
 	/**
 	 * Creates a button using the default values and the given parameters.
 	 * 
@@ -125,26 +118,22 @@ public class Button extends GuiEntity {
 	 *            The selected image.
 	 * @param deselectedImageResource
 	 *            The deselected image.
-	 * @param width
-	 *            The width of the text label.
-	 * @param height
-	 *            The height of the text label.
-	 * @param transparency
-	 *            The transparency of the text label.
+	 * @param imageDesc
+	 *            The image description.
 	 * @param fontResource
 	 *            The font of the text.
 	 */
 	public Button(Resource<? extends Image> selectedImageResource,
-			Resource<? extends Image> deselectedImageResource, int width,
-			int height, int transparency,
-			Resource<? extends Font> fontResource, String buttonText) {
+			Resource<? extends Image> deselectedImageResource,
+			ImageDesc imageDesc, Resource<? extends Font> fontResource,
+			String buttonText) {
 
 		// Register the pressed event
 		events().put(ButtonEvent.Pressed, iterableChildren(true, true));
 
 		// Create both labels
-		selected = new Label(width, height, transparency, fontResource);
-		deselected = new Label(width, height, transparency, fontResource);
+		selected = new Label(imageDesc, fontResource);
+		deselected = new Label(imageDesc, fontResource);
 
 		// Set textures
 		selected.background().imageResource(selectedImageResource);
