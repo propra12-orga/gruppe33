@@ -6,6 +6,7 @@ import java.awt.Font;
 import java.awt.FontMetrics;
 import java.awt.Graphics2D;
 import java.awt.Image;
+import java.awt.RenderingHints;
 
 import com.indyforge.twod.engine.graphics.ImageDesc;
 import com.indyforge.twod.engine.resources.Resource;
@@ -77,6 +78,11 @@ public final class Text extends RenderedImage {
 			// Get graphics 2d context
 			Graphics2D graphics2d = (Graphics2D) im.getGraphics();
 			try {
+
+				graphics2d.setRenderingHint(RenderingHints.KEY_ANTIALIASING,
+						RenderingHints.VALUE_ANTIALIAS_ON);
+				graphics2d.setRenderingHint(RenderingHints.KEY_INTERPOLATION,
+						RenderingHints.VALUE_INTERPOLATION_BICUBIC);
 
 				// Read dimension
 				int w = im.getWidth(null), h = im.getHeight(null);

@@ -46,9 +46,9 @@ public class IntroCreator {
 		scene.attach(background);
 
 		final Resource<Font> font = new TransientSystemFontResource(
-				"Sans Serif", Font.BOLD, 48);
+				"Arial", Font.BOLD, 48);
 		final Resource<Font> tinyFont = new TransientSystemFontResource(
-				"Sans Serif", Font.BOLD, 36);
+				"Arial", Font.BOLD, 36);
 
 		/*
 		 * Used to initialize!
@@ -66,13 +66,13 @@ public class IntroCreator {
 		hello.position().y = 0.5f;
 
 		Label hello2 = new Label(desc1, font);
-		hello2.text().text("... to be ...");
+		hello2.text().text("the BEST remake of");
 		hello2.attach(new TransformMotor());
 		hello2.position().x = 0.5f;
 		hello2.position().y = 1.5f;
 
 		Label hello3 = new Label(desc1, font);
-		hello3.text().text("... AWESOME!");
+		hello3.text().text("Bomber Man!");
 		hello3.attach(new TransformMotor());
 		hello3.position().x = -1.5f;
 		hello3.position().y = 0.5f;
