@@ -60,7 +60,7 @@ public class GuiTestApp {
 		final Resource<Font> font = new TransientSystemFontResource(
 				"Sans Serif", Font.BOLD, 48);
 		final Resource<Font> tinyFont = new TransientSystemFontResource(
-				"Sans Serif", Font.BOLD, 24);
+				"Sans Serif", Font.BOLD, 36);
 
 		/*
 		 * Used to initialize!

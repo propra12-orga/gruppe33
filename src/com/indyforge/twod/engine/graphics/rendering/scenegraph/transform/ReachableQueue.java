@@ -1,16 +1,16 @@
 package com.indyforge.twod.engine.graphics.rendering.scenegraph.transform;
 
 import java.util.Deque;
-import java.util.Iterator;
 import java.util.LinkedList;
+
+import com.indyforge.twod.engine.graphics.rendering.scenegraph.Entity;
 
 /**
  * A simple reachable queue.
  * 
  * @author Christopher Probst
  */
-public class ReachableQueue<R extends Reachable> implements Reachable,
-		Iterable<R> {
+public class ReachableQueue extends Entity implements Reachable {
 
 	/**
 	 * 
@@ -19,23 +19,41 @@ public class ReachableQueue<R extends Reachable> implements Reachable,
 	/*
 	 * Here we store all reachables.
 	 */
-	private final Deque<R> reachables = new LinkedList<R>();
+	private final Deque<Reachable> reachables = new LinkedList<Reachable>();
+
+	/*
+	 * (non-Javadoc)
+	 * 
+	 * @see
+	 * com.indyforge.twod.engine.graphics.rendering.scenegraph.Entity#onUpdate
+	 * (float)
+	 */
+	@Override
+	protected void onUpdate(float tpf) {
+		super.onUpdate(tpf);
+		reach(tpf);
+	}
 
 	/**
 	 * @return all reachables.
 	 */
-	public Deque<R> reachables() {
+	public Deque<Reachable> reachables() {
 		return reachables;
 	}
 
 	/*
 	 * (non-Javadoc)
 	 * 
-	 * @see java.lang.Iterable#iterator()
+	 * @see
+	 * com.indyforge.twod.engine.graphics.rendering.scenegraph.transform.Reachable
+	 * #cancel()
 	 */
 	@Override
-	public Iterator<R> iterator() {
-		return reachables.iterator();
+	public void cancel() {
+		Reachable reachable;
+		while ((reachable = reachables.poll()) != null) {
+			reachable.cancel();
+		}
 	}
 
 	/*
@@ -48,7 +66,7 @@ public class ReachableQueue<R extends Reachable> implements Reachable,
 	@Override
 	public boolean reach(float tpf) {
 		// Peek the next reachable
-		R reachable = reachables.peek();
+		Reachable reachable = reachables.peek();
 
 		// Not empty ?
 		if (reachable != null) {

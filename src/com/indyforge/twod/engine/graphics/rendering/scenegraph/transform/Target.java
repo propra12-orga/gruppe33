@@ -166,10 +166,15 @@ public abstract class Target<T> implements Reachable {
 		return reached;
 	}
 
-	/**
-	 * Stops the transform.
+	/*
+	 * (non-Javadoc)
+	 * 
+	 * @see
+	 * com.indyforge.twod.engine.graphics.rendering.scenegraph.transform.Reachable
+	 * #cancel()
 	 */
-	public void stop() {
+	@Override
+	public void cancel() {
 		transform(null);
 	}
 

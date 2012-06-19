@@ -805,8 +805,9 @@ public final class SceneProcessor implements Changeable<SceneProcessor>,
 	 * 
 	 * @param root
 	 *            The root scene.
+	 * @return this for chaining.
 	 */
-	public void root(Scene root) {
+	public SceneProcessor root(Scene root) {
 		// Remove old link
 		if (this.root != null) {
 			this.root.processor = null;
@@ -824,6 +825,8 @@ public final class SceneProcessor implements Changeable<SceneProcessor>,
 			// The time must be resetted.
 			resetTime();
 		}
+
+		return this;
 	}
 
 	/**

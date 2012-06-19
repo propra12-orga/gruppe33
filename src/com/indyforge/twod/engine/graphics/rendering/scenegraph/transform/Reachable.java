@@ -16,4 +16,9 @@ public interface Reachable extends Serializable {
 	 * @return true if the reachable is reached now, otherwise false.
 	 */
 	boolean reach(float tpf);
+
+	/**
+	 * Releases resources.
+	 */
+	void cancel();
 }
