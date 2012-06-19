@@ -35,8 +35,8 @@ public class GuiTestApp {
 		final SceneProcessor processor = new SceneProcessor("Gui Test", 800,
 				600);
 
-		Scene scene = new Scene(
-				new AssetManager(new File("scenes/default.zip")), 1024, 1024);
+		final Scene scene = new Scene(new AssetManager(new File(
+				"scenes/default.zip")), 1024, 1024);
 
 		scene.scale(scene.sizeAsVector());
 
@@ -57,8 +57,10 @@ public class GuiTestApp {
 		RenderedImage background = new RenderedImage(backImage);
 		scene.attach(background);
 
-		Resource<Font> font = new TransientSystemFontResource("Sans Serif",
-				Font.BOLD, 48);
+		final Resource<Font> font = new TransientSystemFontResource(
+				"Sans Serif", Font.BOLD, 48);
+		final Resource<Font> tinyFont = new TransientSystemFontResource(
+				"Sans Serif", Font.BOLD, 24);
 
 		/*
 		 * Used to initialize!
@@ -84,23 +86,25 @@ public class GuiTestApp {
 		label1.scale().scaleLocal(0.3f);
 		label1.position().set(0.25f, 0.2f);
 		label2.scale().scaleLocal(0.3f);
-		label2.position().set(0.25f, 0.4f);
+		label2.position().set(0.25f, 0.5f);
 
 		// Attach both
 		labels.attach(label1, label2);
 
 		// Create a new text field
-		final TextField tf = new TextField(desc2, font);
+		final TextField tf = new TextField(desc2, tinyFont);
+		tf.background().imageResource(deselectedA);
 		tf.text().alignment(Alignment.Center).textColor(Color.WHITE);
 		tf.select();
 		tf.scale().set(0.5f, 0.5f);
 		tf.position().set(0.75f, 0.2f);
 
 		// Create a new text field
-		final TextField tf2 = new TextField(desc2, font);
+		final TextField tf2 = new TextField(desc2, tinyFont);
+		tf2.background().imageResource(deselectedA);
 		tf2.text().alignment(Alignment.Center).textColor(Color.WHITE);
 		tf2.scale().set(0.5f, 0.5f);
-		tf2.position().set(0.75f, 0.4f);
+		tf2.position().set(0.75f, 0.5f);
 
 		Button btn1 = new Button(selectedA, deselectedA, desc2, font, "Connect") {
 
@@ -136,6 +140,17 @@ public class GuiTestApp {
 						}
 					});
 
+					Label cont = new Label(new ImageDesc().width(256)
+							.height(64).transparency(Transparency.TRANSLUCENT),
+							font);
+
+					cont.text().text("Connected!");
+
+					scene.detachAll();
+					scene.attach(cont);
+
+					cont.position().set(0.5f, 0.5f);
+
 				} catch (Exception e) {
 					e.printStackTrace();
 				}
@@ -143,7 +158,7 @@ public class GuiTestApp {
 		};
 
 		btn1.scale().set(0.5f, 0.5f);
-		btn1.position().set(0.75f, 0.75f);
+		btn1.position().set(0.75f, 0.8f);
 
 		labels.attach(tf, tf2, btn1);
 

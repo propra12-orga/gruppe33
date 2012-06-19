@@ -490,8 +490,18 @@ public final class SceneProcessor implements Changeable<SceneProcessor>,
 				// Reset the network
 				resetNetwork();
 			}
-			// Try to open the connection
-			invokerManager = connectionManager.openClient(socketAddress);
+			try {
+				// Try to open the connection
+				invokerManager = connectionManager.openClient(socketAddress);
+			} catch (IOException e) {
+				/*
+				 * Reset the network if the connection failed.
+				 */
+				resetNetwork();
+
+				// Throw again!
+				throw e;
+			}
 			return this;
 		}
 	}
@@ -1023,7 +1033,7 @@ public final class SceneProcessor implements Changeable<SceneProcessor>,
 				if (synchronousQueue) {
 					if (hasAdminSessionServer()) {
 						adminSessionServer.composite().applyQueuedChanges();
-					} else {
+					} else if (hasSession()) {
 						changeableClient.applyQueuedChanges();
 						changeableServer.applyQueuedChanges();
 					}
@@ -1031,7 +1041,7 @@ public final class SceneProcessor implements Changeable<SceneProcessor>,
 					if (hasAdminSessionServer()) {
 						adminSessionServer.composite().applyQueuedChangesLater(
 								null);
-					} else {
+					} else if (hasSession()) {
 						changeableClient.applyQueuedChangesLater(null);
 						changeableServer.applyQueuedChangesLater(null);
 					}
