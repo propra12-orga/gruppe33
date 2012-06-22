@@ -29,7 +29,7 @@ import com.indyforge.twod.engine.util.TaskQueue;
 
 /**
  * 
- * An entity is basically a node of tree. Each entity (node) can have multiple
+ * An entity is basically a node of a tree. Each entity (node) can have multiple
  * children which are sorted by their indeces. This ensures modifiable event
  * ordering. The entity-tree-concept is the key feature for processing
  * hierarchically ordered data.
