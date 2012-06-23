@@ -24,7 +24,8 @@ public final class BombSpawner extends Entity {
 
 	private boolean spawn = false;
 
-	private int bombs = 20;
+	private int bombs = 3;
+	private int range = 4;
 
 	@SuppressWarnings("unchecked")
 	@Override
@@ -82,11 +83,13 @@ public final class BombSpawner extends Entity {
 
 			// Create bomb for the given field
 			Bomb bombA = new Bomb();
+			bombA.range = range;
 			bombA.entities().add(node.registrationKey());
 			bombA.bombreg = u;
 			bombA.play = parent().registrationKey();
 
 			Bomb bombB = new Bomb();
+			bombB.range = range;
 			bombB.entities().add(node.registrationKey());
 			bombB.bombreg = u;
 			bombs--;
@@ -96,6 +99,8 @@ public final class BombSpawner extends Entity {
 					.queueChange(bombB, true);
 			node.findSceneProcessor().adminSessionServer().local()
 					.queueChange(bombA, true);
+
+			spawn = false;
 		}
 	}
 }

@@ -11,6 +11,7 @@ import com.indyforge.twod.engine.graphics.rendering.scenegraph.Scene;
 import com.indyforge.twod.engine.graphics.rendering.scenegraph.gui.Label;
 import com.indyforge.twod.engine.graphics.rendering.scenegraph.math.Vector2f;
 import com.indyforge.twod.engine.graphics.rendering.scenegraph.transform.Pause;
+import com.indyforge.twod.engine.graphics.rendering.scenegraph.transform.PositionPath;
 import com.indyforge.twod.engine.graphics.rendering.scenegraph.transform.PositionTarget;
 import com.indyforge.twod.engine.graphics.rendering.scenegraph.transform.ReachableQueue;
 import com.indyforge.twod.engine.graphics.rendering.scenegraph.transform.TransformMotor;
@@ -45,8 +46,8 @@ public class IntroCreator {
 		RenderedImage background = new RenderedImage(backImage);
 		scene.attach(background);
 
-		final Resource<Font> font = new TransientSystemFontResource(
-				"Arial", Font.BOLD, 48);
+		final Resource<Font> font = new TransientSystemFontResource("Arial",
+				Font.BOLD, 48);
 		final Resource<Font> tinyFont = new TransientSystemFontResource(
 				"Arial", Font.BOLD, 36);
 
@@ -82,29 +83,26 @@ public class IntroCreator {
 
 		positions.reachables().offer(new Pause(2f));
 
-		positions.reachables()
-				.offer(new PositionTarget(hello, new Vector2f(0.5f, 0.5f),
-						1.5f, false));
-		positions.reachables().offer(new Pause(2f));
-		positions.reachables()
-				.offer(new PositionTarget(hello, new Vector2f(0.5f, -1.5f), 3f,
-						false));
-
 		positions.reachables().offer(
-				new PositionTarget(hello2, new Vector2f(0.5f, 0.5f), 1.5f,
-						false));
-		positions.reachables().offer(new Pause(2f));
-		positions.reachables()
-				.offer(new PositionTarget(hello2, new Vector2f(1.5f, 0.5f), 3f,
-						false));
+				new PositionPath(hello, Vector2f.west().scaleLocal(1f), 3));
 
-		positions.reachables().offer(
-				new PositionTarget(hello3, new Vector2f(0.5f, 0.5f), 1.5f,
-						false));
-		positions.reachables().offer(new Pause(2f));
-		positions.reachables()
-				.offer(new PositionTarget(hello3, new Vector2f(0.5f, 1.5f), 3f,
-						false));
+		// positions.reachables().offer(
+		// new PositionTarget(hello, new Vector2f(0.5f, 0.5f), 1.5f));
+		// positions.reachables().offer(new Pause(2f));
+		// positions.reachables().offer(
+		// new PositionTarget(hello, new Vector2f(0.5f, -1.5f), 3f));
+		//
+		// positions.reachables().offer(
+		// new PositionTarget(hello2, new Vector2f(0.5f, 0.5f), 1.5f));
+		// positions.reachables().offer(new Pause(2f));
+		// positions.reachables().offer(
+		// new PositionTarget(hello2, new Vector2f(1.5f, 0.5f), 3f));
+		//
+		// positions.reachables().offer(
+		// new PositionTarget(hello3, new Vector2f(0.5f, 0.5f), 1.5f));
+		// positions.reachables().offer(new Pause(2f));
+		// positions.reachables().offer(
+		// new PositionTarget(hello3, new Vector2f(0.5f, 1.5f), 3f));
 
 		// Attach and return
 		scene.attach(positions, hello, hello2, hello3);

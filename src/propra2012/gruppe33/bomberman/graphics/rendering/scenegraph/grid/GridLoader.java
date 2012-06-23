@@ -95,7 +95,7 @@ public final class GridLoader implements GridConstants {
 
 		// Create new broadcaster
 		DeltaPositionBroadcaster broadcaster = new DeltaPositionBroadcaster(
-				0.033f);
+				0.020f);
 
 		// Attach the broadcaster
 		scene.attach(broadcaster);

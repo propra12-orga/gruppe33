@@ -6,8 +6,12 @@ import java.util.UUID;
 import propra2012.gruppe33.bomberman.graphics.rendering.scenegraph.grid.GridRoutines;
 
 import com.indyforge.twod.engine.graphics.rendering.scenegraph.GraphicsEntity;
+import com.indyforge.twod.engine.graphics.rendering.scenegraph.math.Timed;
 import com.indyforge.twod.engine.graphics.rendering.scenegraph.math.Vector2f;
-import com.indyforge.twod.engine.graphics.rendering.scenegraph.network.transform.ManyVectorsToMany;
+import com.indyforge.twod.engine.graphics.rendering.scenegraph.network.entity.ManyToMany;
+import com.indyforge.twod.engine.graphics.rendering.scenegraph.transform.PositionPath;
+import com.indyforge.twod.engine.graphics.rendering.scenegraph.transform.Reachable;
+import com.indyforge.twod.engine.graphics.rendering.scenegraph.transform.ReachableQueue;
 
 /**
  * 
@@ -15,40 +19,46 @@ import com.indyforge.twod.engine.graphics.rendering.scenegraph.network.transform
  * 
  */
 public final class ManyPositionsToMany extends
-		ManyVectorsToMany<GraphicsEntity> {
+		ManyToMany<GraphicsEntity, Timed<Vector2f>> {
 	/**
 	 * 
 	 */
 	private static final long serialVersionUID = 1L;
-	/*
-	 * If true the given vector will be added to the position, otherwise the
-	 * position will be set.
-	 */
-	private boolean translate;
 
 	@Override
-	protected void apply(GraphicsEntity entity, Vector2f value) {
-		if (translate) {
-			entity.position().addLocal(value);
-		} else {
-			entity.position().set(value);
-		}
-		GridRoutines.rearrangeGridNode((GraphicsEntity) entity.parent());
+	protected void apply(final GraphicsEntity entity, Timed<Vector2f> value) {
+
+		// Get the queu
+		ReachableQueue rq = (ReachableQueue) entity.prop("RQ");
+
+		float vel = value.value().length() / value.time();
+
+		rq.reachables().offer(new PositionPath(entity, value.value(), vel));
+
+		rq.reachables().offer(new Reachable() {
+
+			/**
+			 * 
+			 */
+			private static final long serialVersionUID = 1L;
+
+			public boolean reach(float tpf) {
+				GridRoutines.rearrangeGridNode((GraphicsEntity) entity.parent());
+
+				return true;
+			}
+
+			@Override
+			public void cancel() {
+			}
+		});
+
 	}
 
-	public ManyPositionsToMany() {
-	}
-
-	public ManyPositionsToMany(Map<UUID, Vector2f> entityMap) {
+	public ManyPositionsToMany(Map<UUID, Timed<Vector2f>> entityMap) {
 		super(entityMap);
 	}
 
-	public boolean isTranslate() {
-		return translate;
-	}
-
-	public ManyPositionsToMany translate(boolean translate) {
-		this.translate = translate;
-		return this;
+	public ManyPositionsToMany() {
 	}
 }

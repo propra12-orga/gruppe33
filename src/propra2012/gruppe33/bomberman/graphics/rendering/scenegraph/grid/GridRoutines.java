@@ -17,6 +17,8 @@ import com.indyforge.twod.engine.graphics.rendering.scenegraph.math.Grid;
 import com.indyforge.twod.engine.graphics.rendering.scenegraph.math.Vector2f;
 import com.indyforge.twod.engine.graphics.rendering.scenegraph.math.Vector2f.Direction;
 import com.indyforge.twod.engine.graphics.rendering.scenegraph.network.input.InputChange;
+import com.indyforge.twod.engine.graphics.rendering.scenegraph.transform.ReachableQueue;
+import com.indyforge.twod.engine.graphics.rendering.scenegraph.transform.TransformMotor;
 import com.indyforge.twod.engine.graphics.sprite.Animation;
 import com.indyforge.twod.engine.graphics.sprite.AnimationBundle;
 import com.indyforge.twod.engine.graphics.sprite.Sprite;
@@ -386,11 +388,17 @@ public final class GridRoutines implements GridConstants {
 
 		player.addProp("ANI", charAni);
 
+		TransformMotor tm = new TransformMotor();
+		ReachableQueue rq = new ReachableQueue();
+
+		player.addProp("TM", tm);
+		player.addProp("RQ", rq);
+
 		// Create new bomb spawner
 		BombSpawner bs = new BombSpawner();
 
 		// Attach remaining stuff
-		player.attach(charAni, movement, bs);
+		player.attach(charAni, movement, bs, tm, rq);
 
 		player.addProp("BS", bs);
 

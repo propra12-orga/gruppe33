@@ -8,7 +8,7 @@ import com.indyforge.twod.engine.graphics.rendering.scenegraph.math.Vector2f;
  * @author Christopher Probst
  * 
  */
-public class PositionTarget extends Vector2fTarget {
+public class PositionPath extends Vector2fPath {
 
 	/**
 	 * 
@@ -18,21 +18,16 @@ public class PositionTarget extends Vector2fTarget {
 	/*
 	 * (non-Javadoc)
 	 * 
-	 * @see
-	 * com.indyforge.twod.engine.graphics.rendering.scenegraph.transform.Target
-	 * #transform(java.lang.Object)
+	 * @see com.indyforge.twod.engine.graphics.rendering.scenegraph.transform.
+	 * EntityReachable#addToState(java.lang.Object)
 	 */
 	@Override
-	protected void transform(Vector2f state) {
-		if (state == null) {
-			state = Vector2f.zero();
-		}
-
-		transformMotor().linearVelocity(state);
+	protected void addToState(Vector2f state) {
+		controlled().position().addLocal(state);
 	}
 
-	public PositionTarget(GraphicsEntity controlled, Vector2f target,
+	public PositionPath(GraphicsEntity controlled, Vector2f destination,
 			float velocity) {
-		super(controlled, target, velocity);
+		super(controlled, destination, velocity);
 	}
 }

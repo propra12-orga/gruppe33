@@ -34,6 +34,7 @@ public final class Bomb extends Many<GraphicsEntity> {
 	 */
 	private static final long serialVersionUID = 1L;
 	public UUID bombreg, play;
+	public int range = 3;
 
 	/*
 	 * (non-Javadoc)
@@ -88,7 +89,7 @@ public final class Bomb extends Many<GraphicsEntity> {
 				Grid grid = entity.parent().typeProp(Grid.class);
 
 				List<Point> points = GridRoutines.bombRange(entity,
-						GridRoutines.EXP_RANGE_FILTER, 3);
+						GridRoutines.EXP_RANGE_FILTER, range);
 
 				DetachEntityChange c = new DetachEntityChange();
 

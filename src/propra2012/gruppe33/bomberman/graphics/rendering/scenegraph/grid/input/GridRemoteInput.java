@@ -40,7 +40,7 @@ public final class GridRemoteInput extends GraphicsEntity {
 		tmp.put(Input.Down, scene.isPressed(KeyEvent.VK_DOWN));
 		tmp.put(Input.Left, scene.isPressed(KeyEvent.VK_LEFT));
 		tmp.put(Input.Right, scene.isPressed(KeyEvent.VK_RIGHT));
-		tmp.put(Input.PlaceBomb, scene.isPressed(KeyEvent.VK_SPACE));
+		tmp.put(Input.PlaceBomb, scene.isSinglePressed(KeyEvent.VK_SPACE));
 
 		if (scene.processor().hasSession() && !tmp.equals(inputMap)) {
 			inputMap.putAll(tmp);

@@ -10,6 +10,7 @@ import java.util.UUID;
 import com.indyforge.twod.engine.graphics.rendering.scenegraph.Entity;
 import com.indyforge.twod.engine.graphics.rendering.scenegraph.GraphicsEntity;
 import com.indyforge.twod.engine.graphics.rendering.scenegraph.Scene;
+import com.indyforge.twod.engine.graphics.rendering.scenegraph.math.Timed;
 import com.indyforge.twod.engine.graphics.rendering.scenegraph.math.Vector2f;
 
 /**
@@ -85,7 +86,8 @@ public final class DeltaPositionBroadcaster extends Entity {
 						entity.getValue().set(absolutePosition);
 
 						// Put delta vector
-						message.entityMap().put(entity.getKey(), delta);
+						message.entityMap().put(entity.getKey(),
+								new Timed<Vector2f>(delta, tpf));
 					}
 				}
 
@@ -120,7 +122,6 @@ public final class DeltaPositionBroadcaster extends Entity {
 	 */
 	public DeltaPositionBroadcaster(float updateDelay) {
 		this.updateDelay = updateDelay;
-		message.translate(true);
 	}
 
 	public Map<UUID, Vector2f> entities() {
