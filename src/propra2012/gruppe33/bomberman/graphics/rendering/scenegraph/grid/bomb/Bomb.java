@@ -4,7 +4,7 @@ import java.awt.Point;
 import java.util.List;
 import java.util.UUID;
 
-import propra2012.gruppe33.PreMilestoneApp;
+import propra2012.gruppe33.bomberman.graphics.rendering.scenegraph.grid.Game;
 import propra2012.gruppe33.bomberman.graphics.rendering.scenegraph.grid.GridConstants;
 import propra2012.gruppe33.bomberman.graphics.rendering.scenegraph.grid.GridRoutines;
 
@@ -134,8 +134,9 @@ public final class Bomb extends Many<GraphicsEntity> {
 												.applyChange(
 														new SceneChange(null));
 
-										PreMilestoneApp.createServerGame(proc);
-
+										// Initiate new server game
+										scene.typeProp(Game.class).serverGame(
+												proc);
 										return;
 									} catch (Exception e) {
 										e.printStackTrace();
