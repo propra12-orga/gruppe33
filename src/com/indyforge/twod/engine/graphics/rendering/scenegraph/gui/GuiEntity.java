@@ -5,6 +5,7 @@ import java.util.Iterator;
 
 import com.indyforge.twod.engine.graphics.rendering.scenegraph.Entity;
 import com.indyforge.twod.engine.graphics.rendering.scenegraph.EntityFilter;
+import com.indyforge.twod.engine.graphics.rendering.scenegraph.EntityRoutines;
 import com.indyforge.twod.engine.graphics.rendering.scenegraph.GraphicsEntity;
 import com.indyforge.twod.engine.graphics.rendering.scenegraph.Scene;
 import com.indyforge.twod.engine.util.FilteredIterator;
@@ -138,6 +139,71 @@ public class GuiEntity extends GuiListener {
 		attach(container);
 	}
 
+	public GuiEntity leave(boolean selectParent) {
+		if (isSelected()) {
+			// Delete selection
+			deselect();
+		}
+
+		// Get gui parent
+		GuiEntity guiParent = guiParent();
+
+		// Hide container
+		guiParent.containerVisible(false);
+
+		// Make the gui parent visible
+		guiParent.thisVisible(true);
+
+		// Should the parent be selected ?
+		if (selectParent) {
+			guiParent.select();
+		}
+
+		return this;
+	}
+
+	/**
+	 * Enters the container.
+	 * 
+	 * @return this for chaining.
+	 */
+	public GuiEntity enter(final int selectionIndex) {
+		if (isSelected()) {
+			// Delete selection
+			deselect();
+		}
+
+		// Hide this entity
+		thisVisible(false);
+
+		// Make container visible
+		containerVisible(true);
+
+		// Check range
+		if (selectionIndex >= 0 && selectionIndex < container.children().size()) {
+
+			findScene().taskQueue().tasks().offer(new Task() {
+
+				/**
+				 * 
+				 */
+				private static final long serialVersionUID = 1L;
+
+				@Override
+				public void run() {
+					((GuiEntity) container().childAt(selectionIndex)).select();
+				}
+			});
+		}
+		return this;
+	}
+
+	/**
+	 * @param visible
+	 *            If true this gui entity (+ components) will be visible,
+	 *            otherwise false.
+	 * @return this for chaining.
+	 */
 	public GuiEntity thisVisible(boolean visible) {
 		Iterator<Entity> ptr = new FilteredIterator<Entity>(new EntityFilter() {
 
@@ -148,27 +214,36 @@ public class GuiEntity extends GuiListener {
 
 			@Override
 			public boolean accept(Entity element) {
-				return element != container;
+				Iterator<Entity> ptr = element.parentIterator(true);
+
+				while (ptr.hasNext()) {
+					if (ptr.next() == container) {
+						return false;
+					}
+				}
+				return true;
 			}
-		}, container.childIterator(true, true));
-		while (ptr.hasNext()) {
-			Entity e = ptr.next();
-			if (e instanceof GraphicsEntity) {
-				((GraphicsEntity) e).visible(visible);
-			}
-		}
+		}, childIterator(true, true));
+		EntityRoutines.visible(ptr, visible);
 		return this;
 	}
 
+	/**
+	 * @param visible
+	 *            If true the container of this entity (+ components) will be
+	 *            visible, otherwise false.
+	 * @return this for chaining.
+	 */
 	public GuiEntity containerVisible(boolean visible) {
-		Iterator<Entity> ptr = container.childIterator(true, true);
-		while (ptr.hasNext()) {
-			Entity e = ptr.next();
-			if (e instanceof GraphicsEntity) {
-				((GraphicsEntity) e).visible(visible);
-			}
-		}
+		EntityRoutines.visible(container.childIterator(true, true), visible);
 		return this;
+	}
+
+	/**
+	 * @return the gui parent.
+	 */
+	public GuiEntity guiParent() {
+		return (GuiEntity) parent().parent();
 	}
 
 	/**

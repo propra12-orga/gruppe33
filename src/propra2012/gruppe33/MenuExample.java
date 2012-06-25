@@ -5,17 +5,14 @@ import java.awt.Font;
 import java.awt.Transparency;
 import java.awt.image.BufferedImage;
 import java.io.File;
-import java.util.Iterator;
 
 import com.indyforge.twod.engine.graphics.ImageDesc;
-import com.indyforge.twod.engine.graphics.rendering.scenegraph.Entity;
-import com.indyforge.twod.engine.graphics.rendering.scenegraph.GraphicsEntity;
 import com.indyforge.twod.engine.graphics.rendering.scenegraph.RenderedImage;
 import com.indyforge.twod.engine.graphics.rendering.scenegraph.Scene;
 import com.indyforge.twod.engine.graphics.rendering.scenegraph.SceneProcessor;
 import com.indyforge.twod.engine.graphics.rendering.scenegraph.Text.Alignment;
 import com.indyforge.twod.engine.graphics.rendering.scenegraph.gui.Button;
-import com.indyforge.twod.engine.graphics.rendering.scenegraph.gui.GuiEntity;
+import com.indyforge.twod.engine.graphics.rendering.scenegraph.gui.MenuButton;
 import com.indyforge.twod.engine.graphics.rendering.scenegraph.gui.TextField;
 import com.indyforge.twod.engine.resources.Resource;
 import com.indyforge.twod.engine.resources.TransientSystemFontResource;
@@ -61,90 +58,41 @@ public class MenuExample {
 		/*
 		 * Used to initialize!
 		 */
-		ImageDesc desc1 = new ImageDesc().width(164).height(48)
-				.transparency(Transparency.TRANSLUCENT);
 		ImageDesc desc2 = new ImageDesc().width(256).height(96)
 				.transparency(Transparency.TRANSLUCENT);
 
-		// Here we store the labels
-		Entity labels = new Entity();
+		/*
+		 * Der Options Button.
+		 */
+		Button rootButton = new MenuButton(selectedA, deselectedA, desc2, font,
+				"Options", true);
 
-		Button rootButton = new Button(selectedA, deselectedA, desc2, font,
-				"Options") {
-
-			/*
-			 * (non-Javadoc)
-			 * 
-			 * @see
-			 * com.indyforge.twod.engine.graphics.rendering.scenegraph.gui.Button
-			 * #onButtonPressed()
-			 */
-			@Override
-			protected void onButtonPressed() {
-				super.onButtonPressed();
-
-				
-				thisVisible(false);
-				containerVisible(true);
-				
-				System.out.println("bla");
-				
-				deselect();
-
-				((GuiEntity) container().childAt(0)).select();
-			}
-		};
-
-		Button backButton = new Button(selectedA, deselectedA, desc2, font,
-				"Back") {
-
-			/*
-			 * (non-Javadoc)
-			 * 
-			 * @see
-			 * com.indyforge.twod.engine.graphics.rendering.scenegraph.gui.Button
-			 * #onButtonPressed()
-			 */
-			@Override
-			protected void onButtonPressed() {
-				super.onButtonPressed();
-
-				deselect();
-				
-				Button parentBtn = (Button) parent().parent();
-				parentBtn.select();
-				parentBtn.containerVisible(false);
-				parentBtn.thisVisible(true);
-
-			}
-		};
-		backButton.thisVisible(false);
+		/*
+		 * Der Back Button.
+		 */
+		Button backButton = new MenuButton(selectedA, deselectedA, desc2, font,
+				"Back", false);
 
 		// Create a new text field
 		final TextField tf = new TextField(desc2, tinyFont);
 		tf.background().imageResource(deselectedA);
 		tf.text().alignment(Alignment.Center).textColor(Color.WHITE);
-		tf.thisVisible(false);
-		tf.scale().set(0.5f, 0.5f);
-		tf.position().set(0.75f, 0.2f);
+		tf.position().set(0, -0.6f);
 
 		// Create a new text field
 		final TextField tf2 = new TextField(desc2, tinyFont);
 		tf2.background().imageResource(deselectedA);
 		tf2.text().alignment(Alignment.Center).textColor(Color.WHITE);
-		tf2.scale().set(0.5f, 0.5f);
-		tf2.position().set(0.75f, 0.5f);
-		tf2.thisVisible(false);
+		tf2.position().set(0, -1.2f);
 
-		rootButton.container().attach(backButton, tf, tf2);
+		rootButton.container().attach(tf2, tf, backButton);
 		rootButton.containerVisible(false);
 
 		rootButton.scale().set(0.5f, 0.5f);
 		rootButton.position().set(0.75f, 0.8f);
 		rootButton.select();
-		labels.attach(rootButton);
+		scene.attach(rootButton);
 
-		scene.attach(labels);
 		processor.root(scene);
 		processor.start(60);
 	}
