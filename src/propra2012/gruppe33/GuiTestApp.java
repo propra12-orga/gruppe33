@@ -22,6 +22,7 @@ import com.indyforge.twod.engine.graphics.rendering.scenegraph.gui.Button;
 import com.indyforge.twod.engine.graphics.rendering.scenegraph.gui.Label;
 import com.indyforge.twod.engine.graphics.rendering.scenegraph.gui.TextField;
 import com.indyforge.twod.engine.resources.Resource;
+import com.indyforge.twod.engine.resources.TransientDerivedFontResource;
 import com.indyforge.twod.engine.resources.TransientSystemFontResource;
 import com.indyforge.twod.engine.resources.assets.Asset;
 import com.indyforge.twod.engine.resources.assets.AssetManager;
@@ -65,10 +66,8 @@ public class GuiTestApp {
 		/*
 		 * Used to initialize!
 		 */
-		ImageDesc desc1 = new ImageDesc().width(164).height(48)
-				.transparency(Transparency.TRANSLUCENT);
-		ImageDesc desc2 = new ImageDesc().width(256).height(96)
-				.transparency(Transparency.TRANSLUCENT);
+		ImageDesc desc1 = new ImageDesc().width(164).height(48).transparency(Transparency.TRANSLUCENT);
+		ImageDesc desc2 = new ImageDesc().width(256).height(96).transparency(Transparency.TRANSLUCENT);
 
 		// Here we store the labels
 		Entity labels = new Entity();
@@ -106,6 +105,9 @@ public class GuiTestApp {
 		tf2.scale().set(0.5f, 0.5f);
 		tf2.position().set(0.75f, 0.5f);
 
+
+		
+		
 		Button btn1 = new Button(selectedA, deselectedA, desc2, font, "Connect") {
 
 			/*
