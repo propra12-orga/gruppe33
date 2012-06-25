@@ -29,7 +29,8 @@ import com.indyforge.twod.engine.resources.assets.AssetManager;
  */
 public class PreMilestoneApp {
 
-	public static SceneProcessor createServerGame(SceneProcessor sceneProcessor)
+	public static SceneProcessor createServerGame(
+			SceneProcessor sceneProcessor, float broadcastingTime)
 			throws Exception {
 		if (!sceneProcessor.hasAdminSessionServer()) {
 			throw new IllegalArgumentException("The scene processor "
@@ -47,7 +48,8 @@ public class PreMilestoneApp {
 		}
 
 		List<UUID> refs = new LinkedList<UUID>();
-		Scene scene = PreMilestoneApp.createDemoGame(refs, longs);
+		Scene scene = PreMilestoneApp.createDemoGame(refs, broadcastingTime,
+				longs);
 		System.out.println(refs);
 
 		// Apply the scene change
@@ -66,8 +68,8 @@ public class PreMilestoneApp {
 		return sceneProcessor;
 	}
 
-	public static Scene createDemoGame(List<UUID> refs, long... ids)
-			throws Exception {
+	public static Scene createDemoGame(List<UUID> refs, float broadcastingTime,
+			long... ids) throws Exception {
 
 		if (ids.length > 4) {
 			throw new IllegalArgumentException("Too many players");
@@ -104,7 +106,7 @@ public class PreMilestoneApp {
 						true), 5, 5));
 
 		// Parse and setup map
-		GraphicsEntity grid = GridLoader.parse(map, scene);
+		GraphicsEntity grid = GridLoader.parse(map, scene, broadcastingTime);
 
 		// The spawn points
 		List<Point> spawnPoints = GridLoader.find(map, GridConstants.SPAWN);

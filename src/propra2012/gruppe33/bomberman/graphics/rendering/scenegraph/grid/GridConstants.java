@@ -14,9 +14,9 @@ public interface GridConstants {
 		Up, Down, Right, Left, PlaceBomb
 	}
 
-	String EXP_SOUND_NAME = "boom";
 	String BROADCASTER_NAME = "broadcaster";
 	String BOMB_IMAGE = "bomb_image";
+	String EXP_SOUND_NAME = "exp_sound";
 	String EXP_SPRITE = "exp_sprite";
 
 	int BACKGROUND_ORDER = -10;

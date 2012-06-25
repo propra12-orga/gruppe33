@@ -124,6 +124,13 @@ public final class DeltaPositionBroadcaster extends Entity {
 		this.updateDelay = updateDelay;
 	}
 
+	/**
+	 * @return the update delay.
+	 */
+	public float updateDelay() {
+		return updateDelay;
+	}
+
 	public Map<UUID, Vector2f> entities() {
 		return entities;
 	}

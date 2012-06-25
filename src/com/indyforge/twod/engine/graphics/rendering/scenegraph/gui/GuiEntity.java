@@ -1,9 +1,13 @@
 package com.indyforge.twod.engine.graphics.rendering.scenegraph.gui;
 
 import java.awt.event.KeyEvent;
+import java.util.Iterator;
 
 import com.indyforge.twod.engine.graphics.rendering.scenegraph.Entity;
+import com.indyforge.twod.engine.graphics.rendering.scenegraph.EntityFilter;
+import com.indyforge.twod.engine.graphics.rendering.scenegraph.GraphicsEntity;
 import com.indyforge.twod.engine.graphics.rendering.scenegraph.Scene;
+import com.indyforge.twod.engine.util.FilteredIterator;
 import com.indyforge.twod.engine.util.Task;
 
 /**
@@ -24,6 +28,11 @@ public class GuiEntity extends GuiListener {
 	 * The selected and selectable flag.
 	 */
 	private boolean selected = false, selectable = true;
+
+	/*
+	 * The container of a gui entity.
+	 */
+	private final GraphicsEntity container = new GraphicsEntity();
 
 	@Override
 	protected void onSelected(GuiEntity guiEntity) {
@@ -123,6 +132,50 @@ public class GuiEntity extends GuiListener {
 			deselect.deselect();
 			select.select();
 		}
+	}
+
+	public GuiEntity() {
+		attach(container);
+	}
+
+	public GuiEntity thisVisible(boolean visible) {
+		Iterator<Entity> ptr = new FilteredIterator<Entity>(new EntityFilter() {
+
+			/**
+			 * 
+			 */
+			private static final long serialVersionUID = 1L;
+
+			@Override
+			public boolean accept(Entity element) {
+				return element != container;
+			}
+		}, container.childIterator(true, true));
+		while (ptr.hasNext()) {
+			Entity e = ptr.next();
+			if (e instanceof GraphicsEntity) {
+				((GraphicsEntity) e).visible(visible);
+			}
+		}
+		return this;
+	}
+
+	public GuiEntity containerVisible(boolean visible) {
+		Iterator<Entity> ptr = container.childIterator(true, true);
+		while (ptr.hasNext()) {
+			Entity e = ptr.next();
+			if (e instanceof GraphicsEntity) {
+				((GraphicsEntity) e).visible(visible);
+			}
+		}
+		return this;
+	}
+
+	/**
+	 * @return the container.
+	 */
+	public GraphicsEntity container() {
+		return container;
 	}
 
 	/**

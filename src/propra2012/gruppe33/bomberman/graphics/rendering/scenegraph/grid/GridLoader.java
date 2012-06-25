@@ -57,12 +57,17 @@ public final class GridLoader implements GridConstants {
 	 * Parses the given char array to setup the scene.
 	 * 
 	 * @param map
+	 *            The map.
 	 * @param scene
-	 * @return
+	 *            The scene.
+	 * @param broadcastTime
+	 *            The time of broadcasting the positions.
+	 * @return a graphics entity which contains the parsed map.
 	 * @throws Exception
+	 *             If an exception occurs.
 	 */
-	public static GraphicsEntity parse(char[][] map, Scene scene)
-			throws Exception {
+	public static GraphicsEntity parse(char[][] map, Scene scene,
+			float broadcastTime) throws Exception {
 
 		if (map == null) {
 			throw new NullPointerException("map");
@@ -95,7 +100,7 @@ public final class GridLoader implements GridConstants {
 
 		// Create new broadcaster
 		DeltaPositionBroadcaster broadcaster = new DeltaPositionBroadcaster(
-				0.020f);
+				broadcastTime);
 
 		// Attach the broadcaster
 		scene.attach(broadcaster);

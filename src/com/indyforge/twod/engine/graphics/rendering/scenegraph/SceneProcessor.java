@@ -219,7 +219,7 @@ public final class SceneProcessor implements Changeable<SceneProcessor>,
 	}
 
 	/**
-	 * Creates a new offline scene processor (Use only in headless mode).
+	 * Creates a new offline scene processor.
 	 * 
 	 */
 	public SceneProcessor() {
@@ -242,8 +242,7 @@ public final class SceneProcessor implements Changeable<SceneProcessor>,
 	}
 
 	/**
-	 * Creates a new scene processor using the given network mode (Use only in
-	 * headless mode).
+	 * Creates a new scene processor using the given network mode.
 	 * 
 	 * @param networkMode
 	 *            The network mode of this processor.
@@ -329,8 +328,8 @@ public final class SceneProcessor implements Changeable<SceneProcessor>,
 			 * Create a new frame using this scene processor.
 			 */
 			try {
-				frame = GraphicsRoutines
-						.createFrame(this, title, width, height);
+				frame = title != null && width > 0 && height > 0 ? GraphicsRoutines
+						.createFrame(this, title, width, height) : null;
 			} catch (Exception e1) {
 				throw new RuntimeException("Failed to create scene processor "
 						+ "frame. Reason: " + e1.getMessage(), e1);
@@ -899,15 +898,18 @@ public final class SceneProcessor implements Changeable<SceneProcessor>,
 	 * 
 	 * @param maxFPS
 	 *            The maximum frames per second. A value < 1 means no max.
+	 * @return this for chaining.
 	 * @throws Exception
 	 *             If some kind of error occurs.
 	 */
-	public void start(int maxFps) throws Exception {
+	public SceneProcessor start(int maxFps) throws Exception {
 		try {
 			while (!isShutdownRequested()) {
 				// Process the whole scene!
 				process(maxFps);
 			}
+
+			return this;
 		} finally {
 
 			// Dispose the scene processor

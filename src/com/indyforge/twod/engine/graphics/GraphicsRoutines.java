@@ -1,5 +1,6 @@
 package com.indyforge.twod.engine.graphics;
 
+import java.applet.Applet;
 import java.awt.BorderLayout;
 import java.awt.Color;
 import java.awt.EventQueue;
@@ -298,6 +299,19 @@ public final class GraphicsRoutines {
 		});
 
 		return frame;
+	}
+
+	public static Applet setupApplet(Applet applet, SceneProcessor processor) {
+		// Set border layout
+		applet.setLayout(new BorderLayout());
+
+		// Disable the repaint events
+		applet.setIgnoreRepaint(true);
+
+		// Add to applet
+		applet.add(processor.canvas(), BorderLayout.CENTER);
+
+		return applet;
 	}
 
 	// Should not be instantiated...
