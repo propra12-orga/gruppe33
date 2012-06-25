@@ -1,14 +1,27 @@
 package propra2012.gruppe33.networktest;
 
+import java.io.IOException;
 import java.net.InetSocketAddress;
 import java.util.Scanner;
 
-import propra2012.gruppe33.PreMilestoneApp;
+import propra2012.gruppe33.bomberman.graphics.rendering.scenegraph.grid.Game;
 
 import com.indyforge.twod.engine.graphics.rendering.scenegraph.SceneProcessor;
 import com.indyforge.twod.engine.graphics.rendering.scenegraph.SceneProcessor.NetworkMode;
 
 public class ServerApp {
+
+	public static void newServer() throws IOException, InterruptedException {
+
+		Process p = Runtime
+				.getRuntime()
+				.exec("java -Djava.awt.headless=True propra2012.gruppe33.networktest.ServerApp");
+
+		while (true) {
+			int i = p.getErrorStream().read();
+			System.out.write(i);
+		}
+	}
 
 	/**
 	 * @param args
@@ -23,20 +36,14 @@ public class ServerApp {
 		serverProcessor.openBroadcaster(1338, new InetSocketAddress("kr0e-pc",
 				1337));
 
-		// Scanner from console
-		Scanner input = new Scanner(System.in);
-
 		// Wait for two players
 		while (true) {
 			System.out.println("Started ?");
-			input.next();
+
+			Thread.sleep(1000);
 
 			synchronized (serverProcessor.adminSessionServer()) {
-				if (serverProcessor.adminSessionServer().sessionCount() <= 0
-						|| serverProcessor.adminSessionServer().sessionCount() > 4) {
-					System.out.println("Session count not 1 - 4");
-
-				} else {
+				if (serverProcessor.adminSessionServer().sessionCount() != 2) {
 					serverProcessor.adminSessionServer().acceptingSessions(
 							false);
 					break;
@@ -44,7 +51,7 @@ public class ServerApp {
 			}
 		}
 
-		PreMilestoneApp.createServerGame(serverProcessor);
+		new Game().serverGame(serverProcessor);
 
 		serverProcessor.start(60);
 	}

@@ -14,6 +14,7 @@ public interface GridConstants {
 		Up, Down, Right, Left, PlaceBomb
 	}
 
+	String MAP_NAME_KEY = "map";
 	String MAP_WIDTH_PROP = "width";
 	String MAP_HEIGHT_PROP = "height";
 
@@ -23,6 +24,8 @@ public interface GridConstants {
 	String EXP_SPRITE = "exp_sprite";
 	String EXP_SPRITE_WIDTH = "exp_sprite_columns";
 	String EXP_SPRITE_HEIGHT = "exp_sprite_rows";
+	String SESSIONS_KEY = "sessions";
+	String PLAYERS_KEY = "players";
 
 	int BACKGROUND_ORDER = -10;
 	int EXPLOSION_ORDER = 100000;
