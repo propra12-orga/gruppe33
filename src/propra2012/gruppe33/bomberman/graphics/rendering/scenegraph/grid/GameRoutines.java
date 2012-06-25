@@ -4,6 +4,8 @@ import java.awt.Point;
 import java.io.File;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.Map;
+import java.util.Map.Entry;
 import java.util.Properties;
 import java.util.UUID;
 
@@ -23,9 +25,13 @@ import com.indyforge.twod.engine.resources.assets.AssetManager;
  */
 public final class GameRoutines implements GridConstants {
 
+	public enum Char {
+		Dwarf, Santa, Knight, Wizard
+	}
+
 	public static Scene serverGame(List<UUID> refs, float broadcastingTime,
-			String assetBundle, String mapAssetPath, String mapPropAssetPath, int width, int height,
-			long... ids) throws Exception {
+			String assetBundle, String mapAssetPath, String mapPropAssetPath,
+			Map<Long, Char> playerIds) throws Exception {
 
 		// Delete old refs...
 		refs.clear();
@@ -33,15 +39,19 @@ public final class GameRoutines implements GridConstants {
 		// Create new asset manager using the given zip file
 		AssetManager assets = new AssetManager(new File(assetBundle));
 
+		// Use property file
+		Properties properties = new Properties();
+
+		// Try to load the given prop file
+		properties.load(assets.open(mapPropAssetPath));
+
+		// Parse the width and height
+		int width = Integer.parseInt(properties.getProperty(MAP_WIDTH_PROP));
+		int height = Integer.parseInt(properties.getProperty(MAP_HEIGHT_PROP));
+
 		// Create new scene with the given assets
 		Scene scene = new Scene(assets, width, height);
 
-		// Use property file
-		Properties properties = new Properties();
-		
-		// Try to load the given prop file
-		properties.load(assets.open(mapPropAssetPath));
-		
 		// Load the char array
 		char[][] map = assets.loadAsset(mapAssetPath, GridLoader.LOADER, true)
 				.get();
@@ -52,7 +62,7 @@ public final class GameRoutines implements GridConstants {
 		/*
 		 * Compare max spawn points with the player count.
 		 */
-		if (ids.length > maxSpawns) {
+		if (playerIds.size() > maxSpawns) {
 			throw new IllegalArgumentException("Too many players");
 		}
 
@@ -60,18 +70,24 @@ public final class GameRoutines implements GridConstants {
 		GridLoader.generate(map, System.nanoTime());
 
 		// Put the new sound
-		scene.soundManager().putSound(GridConstants.EXP_SOUND_NAME,
-				"assets/sounds/exp.wav");
+		scene.soundManager().putSound(EXP_SOUND_NAME,
+				properties.getProperty(EXP_SOUND_NAME));
 
-		/*
-		 * Register global resources.
-		 */
-		scene.addProp(GridConstants.BOMB_IMAGE,
-				assets.loadImage("assets/images/bomb.png", true));
+		// Register the global bomb image
+		scene.addProp(BOMB_IMAGE,
+				assets.loadImage(properties.getProperty(BOMB_IMAGE), true));
+
+		// Parse the width and height of the sprite
+		int spriteWidth = Integer.parseInt(properties
+				.getProperty(EXP_SPRITE_WIDTH));
+		int spriteHeight = Integer.parseInt(properties
+				.getProperty(EXP_SPRITE_HEIGHT));
+
+		// Register the global explosion content
 		scene.addProp(
-				GridConstants.EXP_SPRITE,
-				new Sprite(assets.loadImage("assets/images/animated/boom.png",
-						true), 5, 5));
+				EXP_SPRITE,
+				new Sprite(assets.loadImage(properties.getProperty(EXP_SPRITE),
+						true), spriteWidth, spriteHeight));
 
 		// Parse and setup map
 		GraphicsEntity grid = GridLoader.parse(map, scene, broadcastingTime);
@@ -80,10 +96,23 @@ public final class GameRoutines implements GridConstants {
 		List<Point> spawnPoints = GridLoader.find(map, GridConstants.SPAWN);
 
 		int i = 0;
-		for (long id : ids) {
+		
+		/*
+		 * For all requested players.
+		 */
+		for (Entry<Long, Char> entry : playerIds.entrySet()) {
+
 			// Create new player as knight
 			GraphicsEntity player = GridRoutines.createRemoteDwarf(assets,
 					"Session-" + id);
+
+//			
+//			switch(entry.getValue()) {
+//			case Dwarf: break;
+//			case Dwarf: break;
+//			case Dwarf: break;
+//			case Dwarf: break;
+//			}
 
 			refs.add(player.registrationKey());
 

@@ -14,10 +14,15 @@ public interface GridConstants {
 		Up, Down, Right, Left, PlaceBomb
 	}
 
+	String MAP_WIDTH_PROP = "width";
+	String MAP_HEIGHT_PROP = "height";
+
 	String BROADCASTER_NAME = "broadcaster";
 	String BOMB_IMAGE = "bomb_image";
 	String EXP_SOUND_NAME = "exp_sound";
 	String EXP_SPRITE = "exp_sprite";
+	String EXP_SPRITE_WIDTH = "exp_sprite_columns";
+	String EXP_SPRITE_HEIGHT = "exp_sprite_rows";
 
 	int BACKGROUND_ORDER = -10;
 	int EXPLOSION_ORDER = 100000;

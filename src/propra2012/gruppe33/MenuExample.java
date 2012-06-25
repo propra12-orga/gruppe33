@@ -73,6 +73,8 @@ public class MenuExample {
 		Button backButton = new MenuButton(selectedA, deselectedA, desc2, font,
 				"Back", false);
 
+		Button t = new Button(selectedA, deselectedA, desc2, font, "Test");
+
 		// Create a new text field
 		final TextField tf = new TextField(desc2, tinyFont);
 		tf.background().imageResource(deselectedA);
@@ -86,12 +88,16 @@ public class MenuExample {
 		tf2.position().set(0, -1.2f);
 
 		rootButton.container().attach(tf2, tf, backButton);
-		rootButton.containerVisible(false);
+		rootButton.guiContainerVisible(false);
 
 		rootButton.scale().set(0.5f, 0.5f);
 		rootButton.position().set(0.75f, 0.8f);
 		rootButton.select();
-		scene.attach(rootButton);
+
+		t.scale().set(0.5f, 0.5f);
+		t.position().set(0.5f, 0.5f);
+
+		scene.attach(t, rootButton);
 
 		processor.root(scene);
 		processor.start(60);

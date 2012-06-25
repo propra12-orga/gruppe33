@@ -149,10 +149,10 @@ public class GuiEntity extends GuiListener {
 		GuiEntity guiParent = guiParent();
 
 		// Hide container
-		guiParent.containerVisible(false);
+		guiParent.guiContainerVisible(false);
 
-		// Make the gui parent visible
-		guiParent.thisVisible(true);
+		// Show all siblings and this entity
+		guiParent.guiSiblingsVisible(true);
 
 		// Should the parent be selected ?
 		if (selectParent) {
@@ -173,11 +173,11 @@ public class GuiEntity extends GuiListener {
 			deselect();
 		}
 
-		// Hide this entity
-		thisVisible(false);
+		// Hide all siblings and this entity
+		guiSiblingsVisible(false);
 
 		// Make container visible
-		containerVisible(true);
+		guiContainerVisible(true);
 
 		// Check range
 		if (selectionIndex >= 0 && selectionIndex < container.children().size()) {
@@ -204,7 +204,7 @@ public class GuiEntity extends GuiListener {
 	 *            otherwise false.
 	 * @return this for chaining.
 	 */
-	public GuiEntity thisVisible(boolean visible) {
+	public GuiEntity guiVisible(boolean visible) {
 		Iterator<Entity> ptr = new FilteredIterator<Entity>(new EntityFilter() {
 
 			/**
@@ -228,14 +228,25 @@ public class GuiEntity extends GuiListener {
 		return this;
 	}
 
-	/**
-	 * @param visible
-	 *            If true the container of this entity (+ components) will be
-	 *            visible, otherwise false.
-	 * @return this for chaining.
-	 */
-	public GuiEntity containerVisible(boolean visible) {
-		EntityRoutines.visible(container.childIterator(true, true), visible);
+	public GuiEntity guiSiblingsVisible(boolean visible) {
+		Iterator<Entity> itr = siblingIterator(false);
+		while (itr.hasNext()) {
+			Entity e = itr.next();
+			if (e instanceof GuiEntity) {
+				((GuiEntity) e).guiVisible(visible);
+			}
+		}
+		return this;
+	}
+
+	public GuiEntity guiContainerVisible(boolean visible) {
+		Iterator<Entity> itr = container.childIterator(false, false);
+		while (itr.hasNext()) {
+			Entity e = itr.next();
+			if (e instanceof GuiEntity) {
+				((GuiEntity) e).guiVisible(visible);
+			}
+		}
 		return this;
 	}
 
