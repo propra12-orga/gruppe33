@@ -8,9 +8,12 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Random;
+import java.util.Set;
+import java.util.UUID;
 
 import propra2012.gruppe33.bomberman.graphics.rendering.scenegraph.grid.transform.DeltaPositionBroadcaster;
 
@@ -62,12 +65,14 @@ public final class GridLoader implements GridConstants {
 	 *            The scene.
 	 * @param broadcastTime
 	 *            The time of broadcasting the positions.
+	 * @param seed
+	 *            The item generation seed.
 	 * @return a graphics entity which contains the parsed map.
 	 * @throws Exception
 	 *             If an exception occurs.
 	 */
 	public static GraphicsEntity parse(char[][] map, Scene scene,
-			float broadcastTime) throws Exception {
+			float broadcastTime, long seed) throws Exception {
 
 		if (map == null) {
 			throw new NullPointerException("map");
@@ -152,6 +157,9 @@ public final class GridLoader implements GridConstants {
 		// The barriers
 		GraphicsEntity solids = new GraphicsEntity();
 
+		// The list which contains all breakable nodes
+		List<GraphicsEntity> breakableNodes = new ArrayList<GraphicsEntity>();
+
 		for (int y = 0; y < ry; y++) {
 			for (int x = 0; x < rx; x++) {
 
@@ -215,9 +223,81 @@ public final class GridLoader implements GridConstants {
 						// Not solid ? Well, maybe a breakable component ?
 						fieldNode.attach(new RenderedImage(breakable).centered(
 								true).tag(BREAKABLE_TAG));
+
+						// Add the breakable node!
+						breakableNodes.add((GraphicsEntity) fieldNode);
 					}
 				}
 			}
+		}
+
+		// Create new field chooser using the seed
+		Random fieldChooser = new Random(seed);
+
+		// Used to store all used fields
+		Set<Integer> usedFields = new HashSet<Integer>();
+
+		/*
+		 * The Bomb-increase item!
+		 */
+		for (int i = 0; i < breakableNodes.size() / 5; i++) {
+
+			// Choose next field
+			int nextField = fieldChooser.nextInt(breakableNodes.size());
+
+			// Skip used fields!
+			if (!usedFields.add(nextField)) {
+				continue;
+			}
+
+			// The node
+			GraphicsEntity node = breakableNodes.get(nextField);
+
+			// There MUST BE a breakable child!
+			node.childAt(0).attach(new Entity() {
+
+				/**
+				 * 
+				 */
+				private static final long serialVersionUID = 1L;
+
+				private final UUID uuid = UUID.randomUUID();
+
+				/*
+				 * (non-Javadoc)
+				 * 
+				 * @see
+				 * com.indyforge.twod.engine.graphics.rendering.scenegraph.Entity
+				 * #
+				 * onParentDetached(com.indyforge.twod.engine.graphics.rendering
+				 * .scenegraph.Entity,
+				 * com.indyforge.twod.engine.graphics.rendering
+				 * .scenegraph.Entity)
+				 */
+				@Override
+				protected void onParentDetached(Entity parent, Entity child) {
+					super.onParentDetached(parent, child);
+
+					// Create a new bomb image
+					RenderedImage bombImage = new RenderedImage(
+							((GraphicsEntity) parent).findScene().imageProp(
+									GridConstants.DEFAULT_BOMB_BAG_IMAGE))
+							.centered(true);
+
+					// Use the same reg key
+					bombImage.registrationKey(uuid);
+
+					// Scale a bit
+					bombImage.scale().set(0.6f, 0.6f);
+
+					// Set bomb order + tag
+					bombImage.index(GridRoutines.BOMB_INDEX).tag(
+							GridConstants.BREAKABLE_TAG);
+
+					// Attach to the node
+					parent.attach(bombImage);
+				}
+			});
 		}
 
 		// Create a static root
@@ -228,7 +308,7 @@ public final class GridLoader implements GridConstants {
 
 		// Merge to rendered entity
 		scene.attach(scene.renderedOpaqueEntity(Color.white, staticRoot).index(
-				BACKGROUND_ORDER));
+				BACKGROUND_INDEX));
 
 		// Attach the grid holder
 		scene.attach(gridHolder);

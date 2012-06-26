@@ -6,9 +6,9 @@ import java.util.UUID;
 import com.indyforge.twod.engine.graphics.rendering.scenegraph.Entity;
 
 /**
+ * An abstact One-To-Many entity change.
  * 
- * @author Kr0e
- * 
+ * @author Christopher Probst
  * @param <T>
  * @param <V>
  */

@@ -19,11 +19,12 @@ public abstract class Vector2fPath extends Path<Vector2f> {
 	/*
 	 * (non-Javadoc)
 	 * 
-	 * @see com.indyforge.twod.engine.graphics.rendering.scenegraph.transform.
-	 * EntityReachable#reachTarget(float)
+	 * @see
+	 * com.indyforge.twod.engine.graphics.rendering.scenegraph.transform.EntityTask
+	 * #updateTask(float)
 	 */
 	@Override
-	protected boolean reachTarget(float tpf) {
+	protected boolean updateTask(float tpf) {
 
 		// Calc the amount
 		float amount = veloctiy() * tpf;
@@ -56,7 +57,7 @@ public abstract class Vector2fPath extends Path<Vector2f> {
 
 		// Already reached...
 		if (destination().equals(Vector2f.zero())) {
-			reached = true;
+			finished = true;
 		}
 	}
 }

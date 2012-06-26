@@ -14,6 +14,8 @@ import com.indyforge.twod.engine.graphics.rendering.scenegraph.SceneProcessor;
  * An abstact Many-To-Many entity change.
  * 
  * @author Christopher Probst
+ * @param <T>
+ * @param <V>
  */
 public abstract class ManyToMany<T extends Entity, V> implements
 		Change<SceneProcessor> {

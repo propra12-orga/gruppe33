@@ -8,7 +8,7 @@ import com.indyforge.twod.engine.graphics.rendering.scenegraph.GraphicsEntity;
  * 
  * @param <D>
  */
-public abstract class Path<D> extends EntityReachable<D, GraphicsEntity> {
+public abstract class Path<D> extends EntityTask<D, GraphicsEntity> {
 
 	/**
 	 * 
@@ -22,9 +22,7 @@ public abstract class Path<D> extends EntityReachable<D, GraphicsEntity> {
 	/*
 	 * (non-Javadoc)
 	 * 
-	 * @see
-	 * com.indyforge.twod.engine.graphics.rendering.scenegraph.transform.Reachable
-	 * #cancel()
+	 * @see com.indyforge.twod.engine.util.task.CancellableTask#cancel()
 	 */
 	@Override
 	public void cancel() {

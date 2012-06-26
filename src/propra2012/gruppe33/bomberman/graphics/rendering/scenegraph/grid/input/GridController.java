@@ -15,7 +15,7 @@ import com.indyforge.twod.engine.graphics.rendering.scenegraph.math.MathExt;
 import com.indyforge.twod.engine.graphics.rendering.scenegraph.math.Vector2f;
 import com.indyforge.twod.engine.graphics.rendering.scenegraph.math.Vector2f.Direction;
 import com.indyforge.twod.engine.graphics.rendering.scenegraph.network.input.InputChange;
-import com.indyforge.twod.engine.util.FilteredIterator;
+import com.indyforge.twod.engine.util.iteration.FilteredIterator;
 
 /**
  * This class manages the grid movement. If you attach this entity to an entity

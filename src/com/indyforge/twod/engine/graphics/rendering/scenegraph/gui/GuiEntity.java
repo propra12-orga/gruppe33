@@ -8,8 +8,8 @@ import com.indyforge.twod.engine.graphics.rendering.scenegraph.EntityFilter;
 import com.indyforge.twod.engine.graphics.rendering.scenegraph.EntityRoutines;
 import com.indyforge.twod.engine.graphics.rendering.scenegraph.GraphicsEntity;
 import com.indyforge.twod.engine.graphics.rendering.scenegraph.Scene;
-import com.indyforge.twod.engine.util.FilteredIterator;
-import com.indyforge.twod.engine.util.Task;
+import com.indyforge.twod.engine.util.iteration.FilteredIterator;
+import com.indyforge.twod.engine.util.task.Task;
 
 /**
  * Represents a gui entity. Gui entities can be "selected" by using the defaults
@@ -128,10 +128,16 @@ public class GuiEntity extends GuiListener {
 			this.select = select;
 		}
 
+		/*
+		 * (non-Javadoc)
+		 * 
+		 * @see com.indyforge.twod.engine.util.task.Task#update(float)
+		 */
 		@Override
-		public void run() {
+		public boolean update(float tpf) {
 			deselect.deselect();
 			select.select();
+			return true;
 		}
 	}
 
@@ -189,9 +195,15 @@ public class GuiEntity extends GuiListener {
 				 */
 				private static final long serialVersionUID = 1L;
 
+				/*
+				 * (non-Javadoc)
+				 * 
+				 * @see com.indyforge.twod.engine.util.task.Task#update(float)
+				 */
 				@Override
-				public void run() {
+				public boolean update(float tpf) {
 					((GuiEntity) container().childAt(selectionIndex)).select();
+					return true;
 				}
 			});
 		}

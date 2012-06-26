@@ -29,10 +29,11 @@ public abstract class Vector2fTarget extends Target<Vector2f> {
 	/*
 	 * (non-Javadoc)
 	 * 
-	 * @see com.indyforge.twod.engine.graphics.rendering.scenegraph.transform.
-	 * EntityReachable#reachTarget(float)
+	 * @see
+	 * com.indyforge.twod.engine.graphics.rendering.scenegraph.transform.EntityTask
+	 * #updateTask(float)
 	 */
-	protected boolean reachTarget(float tpf) {
+	protected boolean updateTask(float tpf) {
 
 		// Get the position and the destination
 		Vector2f position = state(), destination = destination();
@@ -72,7 +73,7 @@ public abstract class Vector2fTarget extends Target<Vector2f> {
 	 * (non-Javadoc)
 	 * 
 	 * @see com.indyforge.twod.engine.graphics.rendering.scenegraph.transform.
-	 * EntityReachable#addToState(java.lang.Object)
+	 * EntityTask#addToState(java.lang.Object)
 	 */
 	protected void addToState(Vector2f state) {
 		controlled().position().addLocal(state);

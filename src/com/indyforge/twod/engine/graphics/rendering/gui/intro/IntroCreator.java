@@ -6,19 +6,18 @@ import java.awt.image.BufferedImage;
 import java.io.File;
 
 import com.indyforge.twod.engine.graphics.ImageDesc;
+import com.indyforge.twod.engine.graphics.rendering.scenegraph.Entity;
 import com.indyforge.twod.engine.graphics.rendering.scenegraph.RenderedImage;
 import com.indyforge.twod.engine.graphics.rendering.scenegraph.Scene;
 import com.indyforge.twod.engine.graphics.rendering.scenegraph.gui.Label;
 import com.indyforge.twod.engine.graphics.rendering.scenegraph.math.Vector2f;
-import com.indyforge.twod.engine.graphics.rendering.scenegraph.transform.Pause;
 import com.indyforge.twod.engine.graphics.rendering.scenegraph.transform.PositionPath;
-import com.indyforge.twod.engine.graphics.rendering.scenegraph.transform.PositionTarget;
-import com.indyforge.twod.engine.graphics.rendering.scenegraph.transform.ReachableQueue;
 import com.indyforge.twod.engine.graphics.rendering.scenegraph.transform.TransformMotor;
 import com.indyforge.twod.engine.resources.Resource;
 import com.indyforge.twod.engine.resources.TransientSystemFontResource;
 import com.indyforge.twod.engine.resources.assets.Asset;
 import com.indyforge.twod.engine.resources.assets.AssetManager;
+import com.indyforge.twod.engine.util.task.Pause;
 
 public class IntroCreator {
 
@@ -78,13 +77,15 @@ public class IntroCreator {
 		hello3.position().x = -1.5f;
 		hello3.position().y = 0.5f;
 
-		// The target queue
-		ReachableQueue positions = new ReachableQueue();
+		Entity positions = new Entity();
 
-		positions.reachables().offer(new Pause(2f));
+		positions.taskQueue().tasks().offer(new Pause(2f));
 
-		positions.reachables().offer(
-				new PositionPath(hello, Vector2f.west().scaleLocal(1f), 3));
+		positions
+				.taskQueue()
+				.tasks()
+				.offer(new PositionPath(hello, Vector2f.west().scaleLocal(1f),
+						3));
 
 		// positions.reachables().offer(
 		// new PositionTarget(hello, new Vector2f(0.5f, 0.5f), 1.5f));

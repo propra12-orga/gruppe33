@@ -10,7 +10,7 @@ import com.indyforge.twod.engine.graphics.rendering.scenegraph.Scene;
 import com.indyforge.twod.engine.graphics.rendering.scenegraph.SceneProcessor;
 
 /**
- * An abstact One-To-Many entity change.
+ * An abstact many-entity change.
  * 
  * @author Christopher Probst
  */

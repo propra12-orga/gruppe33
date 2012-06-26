@@ -35,8 +35,8 @@ import com.indyforge.foxnet.rmi.transport.network.Broadcaster;
 import com.indyforge.foxnet.rmi.transport.network.ConnectionManager;
 import com.indyforge.twod.engine.graphics.GraphicsRoutines;
 import com.indyforge.twod.engine.resources.assets.AssetManager;
-import com.indyforge.twod.engine.util.Task;
-import com.indyforge.twod.engine.util.TaskQueue;
+import com.indyforge.twod.engine.util.task.Task;
+import com.indyforge.twod.engine.util.task.TaskQueue;
 
 /**
  * This class supports active rendering which is the most performant way to
@@ -791,9 +791,15 @@ public final class SceneProcessor implements Changeable<SceneProcessor>,
 				 */
 				private static final long serialVersionUID = 1L;
 
+				/*
+				 * (non-Javadoc)
+				 * 
+				 * @see com.indyforge.twod.engine.util.task.Task#update(float)
+				 */
 				@Override
-				public void run() {
+				public boolean update(float tpf) {
 					applyChange(change);
+					return true;
 				}
 			});
 		}
@@ -866,9 +872,15 @@ public final class SceneProcessor implements Changeable<SceneProcessor>,
 				 */
 				private static final long serialVersionUID = 1L;
 
+				/*
+				 * (non-Javadoc)
+				 * 
+				 * @see com.indyforge.twod.engine.util.task.Task#update(float)
+				 */
 				@Override
-				public void run() {
+				public boolean update(float tpf) {
 					shutdownRequest(shutdownRequested);
+					return true;
 				}
 			});
 		}
@@ -930,14 +942,17 @@ public final class SceneProcessor implements Changeable<SceneProcessor>,
 		// Save the current thread
 		lastProcessorThread = Thread.currentThread();
 
-		// Execute all pending tasks
-		taskQueue.run();
-
 		// Do the time stuff...
 		lastTime = lastTime == -1 ? System.currentTimeMillis() : curTime;
 
 		// Get active time
 		curTime = System.currentTimeMillis();
+
+		// The passed time
+		float tpf = (curTime - lastTime) * 0.001f;
+
+		// Execute all pending tasks
+		taskQueue.update(tpf);
 
 		// If root is null we cannot process...
 		if (root == null) {
@@ -987,7 +1002,7 @@ public final class SceneProcessor implements Changeable<SceneProcessor>,
 					g2d.clearRect(0, 0, w, h);
 
 					// Simulate the scene
-					root.simulate(g2d, w, h, curTime - lastTime);
+					root.simulate(g2d, w, h, tpf);
 
 					// Scene is processed now
 					processed = true;
@@ -1027,7 +1042,7 @@ public final class SceneProcessor implements Changeable<SceneProcessor>,
 		 */
 		if (!processed) {
 			// Simulate the scene without drawing
-			root.simulate(null, -1, -1, curTime - lastTime);
+			root.simulate(null, -1, -1, tpf);
 		}
 
 		/*
@@ -1093,12 +1108,18 @@ public final class SceneProcessor implements Changeable<SceneProcessor>,
 			 */
 			private static final long serialVersionUID = 1L;
 
+			/*
+			 * (non-Javadoc)
+			 * 
+			 * @see com.indyforge.twod.engine.util.task.Task#update(float)
+			 */
 			@Override
-			public void run() {
+			public boolean update(float tpf) {
 				if (root != null) {
 					// Clear keyboard
 					root.clearKeyboardState();
 				}
+				return true;
 			}
 		});
 	}
@@ -1118,11 +1139,17 @@ public final class SceneProcessor implements Changeable<SceneProcessor>,
 			 */
 			private static final long serialVersionUID = 1L;
 
+			/*
+			 * (non-Javadoc)
+			 * 
+			 * @see com.indyforge.twod.engine.util.task.Task#update(float)
+			 */
 			@Override
-			public void run() {
+			public boolean update(float tpf) {
 				if (root != null) {
 					root.pressed(e.getKeyCode(), Boolean.TRUE);
 				}
+				return true;
 			}
 		});
 	}
@@ -1141,11 +1168,17 @@ public final class SceneProcessor implements Changeable<SceneProcessor>,
 			 */
 			private static final long serialVersionUID = 1L;
 
+			/*
+			 * (non-Javadoc)
+			 * 
+			 * @see com.indyforge.twod.engine.util.task.Task#update(float)
+			 */
 			@Override
-			public void run() {
+			public boolean update(float tpf) {
 				if (root != null) {
 					root.pressed(e.getKeyCode(), Boolean.FALSE);
 				}
+				return true;
 			}
 		});
 	}

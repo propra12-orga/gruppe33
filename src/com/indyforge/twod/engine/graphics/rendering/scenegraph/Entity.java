@@ -14,18 +14,18 @@ import java.util.Set;
 import java.util.TreeMap;
 import java.util.UUID;
 
-import com.indyforge.twod.engine.graphics.rendering.scenegraph.util.ChildIterator;
-import com.indyforge.twod.engine.graphics.rendering.scenegraph.util.ParentIterator;
-import com.indyforge.twod.engine.graphics.rendering.scenegraph.util.RecursiveChildIterator;
-import com.indyforge.twod.engine.graphics.rendering.scenegraph.util.RootFilter;
-import com.indyforge.twod.engine.graphics.rendering.scenegraph.util.SiblingIterator;
-import com.indyforge.twod.engine.util.ArrayIterator;
-import com.indyforge.twod.engine.util.Filter;
-import com.indyforge.twod.engine.util.FilteredIterator;
-import com.indyforge.twod.engine.util.IterationRoutines;
-import com.indyforge.twod.engine.util.SerializableIterable;
-import com.indyforge.twod.engine.util.Task;
-import com.indyforge.twod.engine.util.TaskQueue;
+import com.indyforge.twod.engine.graphics.rendering.scenegraph.util.iteration.ChildIterator;
+import com.indyforge.twod.engine.graphics.rendering.scenegraph.util.iteration.ParentIterator;
+import com.indyforge.twod.engine.graphics.rendering.scenegraph.util.iteration.RecursiveChildIterator;
+import com.indyforge.twod.engine.graphics.rendering.scenegraph.util.iteration.RootFilter;
+import com.indyforge.twod.engine.graphics.rendering.scenegraph.util.iteration.SiblingIterator;
+import com.indyforge.twod.engine.util.iteration.ArrayIterator;
+import com.indyforge.twod.engine.util.iteration.Filter;
+import com.indyforge.twod.engine.util.iteration.FilteredIterator;
+import com.indyforge.twod.engine.util.iteration.IterationRoutines;
+import com.indyforge.twod.engine.util.iteration.SerializableIterable;
+import com.indyforge.twod.engine.util.task.Task;
+import com.indyforge.twod.engine.util.task.TaskQueue;
 
 /**
  * 
@@ -250,44 +250,49 @@ public class Entity implements Comparable<Entity>, Iterable<Entity>,
 			case Attached:
 
 				// Convert
-				Entity child = (Entity) params[0];
+				Entity parentPtr = (Entity) params[0],
+				childPtr = (Entity) params[1];
 
 				// Invoke default event
-				onEntityAttached(source, child);
+				onEntityAttached(parentPtr, childPtr);
 
 				// Evaluate the other events...
-				if (this == source) {
-					onChildAttached(source, child);
-				} else if (this == child) {
-					onAttached(source, child);
-				} else if (parent == child) {
-					onParentAttached(source, child);
+				if (this == parentPtr) {
+					onChildAttached(parentPtr, childPtr);
+				} else if (this == childPtr) {
+					onAttached(parentPtr, childPtr);
+				} else if (parent == childPtr) {
+					onParentAttached(parentPtr, childPtr);
 				}
 				break;
 			case Detached:
 				// Convert
-				child = (Entity) params[0];
+				parentPtr = (Entity) params[0];
+				childPtr = (Entity) params[1];
 
 				// Invoke default event
-				onEntityDetached(source, child);
+				onEntityDetached(parentPtr, childPtr);
 
 				// Evaluate the other events...
-				if (this == source) {
-					onChildDetached(source, child);
-				} else if (this == child) {
-					onDetached(source, child);
-				} else if (parent == child) {
-					onParentDetached(source, child);
+				if (this == parentPtr) {
+					onChildDetached(parentPtr, childPtr);
+				} else if (this == childPtr) {
+					onDetached(parentPtr, childPtr);
+				} else if (parent == childPtr) {
+					onParentDetached(parentPtr, childPtr);
 				}
 				break;
 
 			case Update:
 
-				// Execute all taskQueue of this entity
-				taskQueue.run();
+				// The tpf
+				float tpf = (Float) params[0];
+
+				// Execute all tasks of this entity
+				taskQueue.update(tpf);
 
 				// Invoke callback method
-				onUpdate((Float) params[0]);
+				onUpdate(tpf);
 			}
 		}
 	}
@@ -949,9 +954,9 @@ public class Entity implements Comparable<Entity>, Iterable<Entity>,
 			clearCachedChildren();
 
 			// Fire the attached event for this entity
-			fireEvent(EntityEvent.Attached, child);
+			fireEvent(EntityEvent.Attached, this, child);
 			// Fire the attached event for the child
-			child.fireEvent(EntityEvent.Attached, child);
+			child.fireEvent(EntityEvent.Attached, this, child);
 
 			return this;
 		} else {
@@ -1212,9 +1217,9 @@ public class Entity implements Comparable<Entity>, Iterable<Entity>,
 			clearCachedChildren();
 
 			// Fire the detached event for this entity
-			fireEvent(EntityEvent.Detached, child);
+			fireEvent(EntityEvent.Detached, this, child);
 			// Fire the detached event for the child
-			child.fireEvent(EntityEvent.Detached, child);
+			child.fireEvent(EntityEvent.Detached, this, child);
 
 			return true;
 		} else {

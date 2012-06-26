@@ -19,7 +19,7 @@ public class PositionPath extends Vector2fPath {
 	 * (non-Javadoc)
 	 * 
 	 * @see com.indyforge.twod.engine.graphics.rendering.scenegraph.transform.
-	 * EntityReachable#addToState(java.lang.Object)
+	 * EntityTask#addToState(java.lang.Object)
 	 */
 	@Override
 	protected void addToState(Vector2f state) {

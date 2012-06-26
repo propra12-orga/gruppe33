@@ -2,9 +2,9 @@ package com.indyforge.twod.engine.graphics.rendering.scenegraph.transform;
 
 import com.indyforge.twod.engine.graphics.rendering.scenegraph.Entity;
 import com.indyforge.twod.engine.graphics.rendering.scenegraph.GraphicsEntity;
-import com.indyforge.twod.engine.util.FilteredIterator;
-import com.indyforge.twod.engine.util.IterationRoutines;
-import com.indyforge.twod.engine.util.TypeFilter;
+import com.indyforge.twod.engine.util.iteration.FilteredIterator;
+import com.indyforge.twod.engine.util.iteration.IterationRoutines;
+import com.indyforge.twod.engine.util.iteration.TypeFilter;
 
 /**
  * Represents an abstract target. A target is basically something which can be
@@ -16,7 +16,7 @@ import com.indyforge.twod.engine.util.TypeFilter;
  * @param <D>
  *            The destination type.
  */
-public abstract class Target<D> extends EntityReachable<D, GraphicsEntity> {
+public abstract class Target<D> extends EntityTask<D, GraphicsEntity> {
 
 	/**
 	 * 
@@ -85,9 +85,7 @@ public abstract class Target<D> extends EntityReachable<D, GraphicsEntity> {
 	/*
 	 * (non-Javadoc)
 	 * 
-	 * @see
-	 * com.indyforge.twod.engine.graphics.rendering.scenegraph.transform.Reachable
-	 * #cancel()
+	 * @see com.indyforge.twod.engine.util.task.CancellableTask#cancel()
 	 */
 	@Override
 	public void cancel() {

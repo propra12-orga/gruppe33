@@ -86,6 +86,9 @@ public final class Game implements GridConstants, Serializable {
 
 	public SceneProcessor serverGame(SceneProcessor sceneProcessor)
 			throws Exception {
+		if (sceneProcessor == null) {
+			throw new NullPointerException("sceneProcessor");
+		}
 		return serverGame(sceneProcessor, assetBundle, mapPropAssetPath,
 				broadcastUpdateTime);
 	}
@@ -93,6 +96,10 @@ public final class Game implements GridConstants, Serializable {
 	public SceneProcessor serverGame(SceneProcessor sceneProcessor,
 			String assetBundle, String mapPropAssetPath,
 			float broadcastUpdateTime) throws Exception {
+		if (sceneProcessor == null) {
+			throw new NullPointerException("sceneProcessor");
+		}
+
 		// Check network mode
 		if (!sceneProcessor.hasAdminSessionServer()) {
 			throw new IllegalArgumentException("The scene processor "
@@ -187,9 +194,21 @@ public final class Game implements GridConstants, Serializable {
 		scene.soundManager().putSound(EXP_SOUND_NAME,
 				properties.getProperty(EXP_SOUND_NAME));
 
-		// Register the global bomb image
-		scene.addProp(BOMB_IMAGE,
-				assets.loadImage(properties.getProperty(BOMB_IMAGE), true));
+		// Register the global bomb images
+		scene.addProp(DEFAULT_BOMB_IMAGE, assets.loadImage(
+				properties.getProperty(DEFAULT_BOMB_IMAGE), true));
+		scene.addProp(DEFAULT_BOMB_BAG_IMAGE, assets.loadImage(
+				properties.getProperty(DEFAULT_BOMB_BAG_IMAGE), true));
+
+		scene.addProp(NUKE_BOMB_IMAGE,
+				assets.loadImage(properties.getProperty(NUKE_BOMB_IMAGE), true));
+		scene.addProp(NUKE_BOMB_BAG_IMAGE, assets.loadImage(
+				properties.getProperty(NUKE_BOMB_BAG_IMAGE), true));
+
+		scene.addProp(TIME_BOMB_IMAGE,
+				assets.loadImage(properties.getProperty(TIME_BOMB_IMAGE), true));
+		scene.addProp(TIME_BOMB_BAG_IMAGE, assets.loadImage(
+				properties.getProperty(TIME_BOMB_BAG_IMAGE), true));
 
 		// Parse the width and height of the sprite
 		int spriteWidth = Integer.parseInt(properties
@@ -204,7 +223,8 @@ public final class Game implements GridConstants, Serializable {
 						true), spriteWidth, spriteHeight));
 
 		// Parse and setup map
-		GraphicsEntity grid = GridLoader.parse(map, scene, broadcastUpdateTime);
+		GraphicsEntity grid = GridLoader.parse(map, scene, broadcastUpdateTime,
+				System.nanoTime());
 
 		// The spawn points
 		List<Point> spawnPoints = GridLoader.find(map, GridConstants.SPAWN);

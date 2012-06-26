@@ -417,7 +417,7 @@ public class Scene extends GraphicsEntity {
 	 * @return this scene for chaining.
 	 */
 	public final Scene simulate(Graphics2D graphics, int width, int height,
-			long tpf) {
+			float tpf) {
 
 		// Remove the discarded single keyboard state
 		if (singleDiscardedKeyboardState != null) {
@@ -428,10 +428,10 @@ public class Scene extends GraphicsEntity {
 		}
 
 		// Only update if tpf is > 0
-		if (tpf > 0) {
+		if (tpf >= 0) {
 
 			// Update the complete scene
-			update(tpf * 0.001f);
+			update(tpf);
 		}
 
 		// Render if graphics exists and dimension is correct

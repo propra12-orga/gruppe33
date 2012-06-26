@@ -124,10 +124,10 @@ public final class AnimationRoutines {
 						dieSpeed, 5, 4, 13)).loop(true).paused(true);
 		santa.add(
 				santaSprite.newAnimationFromRange(DIE_PREFIX + "south",
-						dieSpeed, 8, 6, 13)).loop(true).paused(true);
+						dieSpeed, 8, 5, 13)).loop(true).paused(true);
 		santa.add(
 				santaSprite.newAnimationFromRange(DIE_PREFIX + "west",
-						dieSpeed, 1, 8, 13)).loop(true).paused(true);
+						dieSpeed, 1, 7, 13)).loop(true).paused(true);
 		santa.add(
 				santaSprite.newAnimationFromRange(DIE_PREFIX + "east",
 						dieSpeed, 2, 3, 13)).loop(true).paused(true);
