@@ -1,10 +1,11 @@
 package propra2012.gruppe33.bomberman.graphics.rendering.scenegraph.grid.bomb;
 
 import java.awt.Point;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
 
-import propra2012.gruppe33.bomberman.graphics.rendering.scenegraph.grid.Game;
+import propra2012.gruppe33.bomberman.Game;
 import propra2012.gruppe33.bomberman.graphics.rendering.scenegraph.grid.GridConstants;
 import propra2012.gruppe33.bomberman.graphics.rendering.scenegraph.grid.GridRoutines;
 
@@ -16,8 +17,9 @@ import com.indyforge.twod.engine.graphics.rendering.scenegraph.SceneProcessor;
 import com.indyforge.twod.engine.graphics.rendering.scenegraph.math.Grid;
 import com.indyforge.twod.engine.graphics.rendering.scenegraph.math.Vector2f;
 import com.indyforge.twod.engine.graphics.rendering.scenegraph.network.entity.DetachEntityChange;
-import com.indyforge.twod.engine.graphics.rendering.scenegraph.network.entity.Many;
+import com.indyforge.twod.engine.graphics.rendering.scenegraph.network.entity.OneToMany;
 import com.indyforge.twod.engine.graphics.rendering.scenegraph.network.scene.SceneChange;
+import com.indyforge.twod.engine.graphics.rendering.scenegraph.network.sound.PlaySound;
 import com.indyforge.twod.engine.graphics.rendering.scenegraph.timeout.DetachOnTimeout;
 import com.indyforge.twod.engine.graphics.rendering.scenegraph.timeout.Timeout;
 import com.indyforge.twod.engine.graphics.rendering.scenegraph.transform.TransformMotor;
@@ -27,83 +29,110 @@ import com.indyforge.twod.engine.graphics.rendering.scenegraph.transform.Transfo
  * @author Christopher Probst
  * 
  */
-public final class Bomb extends Many<GraphicsEntity> {
+public final class Bomb extends OneToMany<GraphicsEntity, BombDesc> {
 
 	/**
 	 * 
 	 */
 	private static final long serialVersionUID = 1L;
-	public UUID bombreg, play;
-	public int range = 3;
 
 	/*
 	 * (non-Javadoc)
 	 * 
-	 * @see com.indyforge.twod.engine.graphics.rendering.scenegraph.network.
-	 * Many
-	 * #apply(com.indyforge.twod.engine.graphics.rendering.scenegraph.Entity)
+	 * @see
+	 * com.indyforge.twod.engine.graphics.rendering.scenegraph.network.entity
+	 * .OneToMany
+	 * #apply(com.indyforge.twod.engine.graphics.rendering.scenegraph.Entity,
+	 * java.lang.Object)
 	 */
 	@Override
-	protected void apply(final GraphicsEntity entity) {
+	protected void apply(final GraphicsEntity entity, BombDesc value) {
 
 		// Get scene
 		final Scene scene = entity.findScene();
 
+		// Create a new bomb image
 		RenderedImage bombImage = new RenderedImage(
 				scene.imageProp(GridConstants.BOMB_IMAGE)).centered(true);
-		bombImage.registrationKey(bombreg);
+
+		// Use the same reg key
+		bombImage.registrationKey(value.bombImage());
+
+		// Scale a bit
 		bombImage.scale().set(0.3f, 0.3f);
+
+		// Set bomb order + tag
 		bombImage.index(GridRoutines.BOMB_ORDER).tag(GridConstants.BOMB_TAG);
+
+		// Scale velocity...
 		bombImage.attach(new TransformMotor().scaleVelocity(new Vector2f(0.1f,
 				0.1f)));
+
+		// Attach to the node
 		entity.attach(bombImage);
 
-		// Destroy after 3 seconds and spawn explosion!
-		bombImage.attach(new Timeout(3f).attach(new DetachOnTimeout()));
-
 		/*
-		 * Create explosion maker!
+		 * The server handles the destruction of the bomb!
 		 */
-		bombImage.attach(new Entity() {
+		if (scene.processor().hasAdminSessionServer()) {
 
-			/**
-			 * 
+			// Detach after the given delay!
+			bombImage.attach(new Timeout(value.delay())
+					.attach(new DetachOnTimeout()));
+
+			/*
+			 * Handle the destruction!
 			 */
-			private static final long serialVersionUID = 1L;
+			bombImage.attach(new Entity() {
 
-			@SuppressWarnings("unchecked")
-			@Override
-			protected void onParentDetached(Entity parent, Entity child) {
-				super.onParentDetached(parent, child);
+				/**
+				 * 
+				 */
+				private static final long serialVersionUID = 1L;
 
-				if (scene.processor() == null) {
-					return;
-				}
+				/*
+				 * (non-Javadoc)
+				 * 
+				 * @see
+				 * com.indyforge.twod.engine.graphics.rendering.scenegraph.Entity
+				 * #
+				 * onParentDetached(com.indyforge.twod.engine.graphics.rendering
+				 * .scenegraph.Entity,
+				 * com.indyforge.twod.engine.graphics.rendering
+				 * .scenegraph.Entity)
+				 */
+				@Override
+				protected void onParentDetached(Entity parent, Entity child) {
+					super.onParentDetached(parent, child);
 
-				if (scene.processor().hasAdminSessionServer()) {
-					scene.registry().get(play).prop("BS", BombSpawner.class)
-							.addBomb();
-				}
+					if (scene.processor() == null) {
+						return;
+					}
 
-				// Lookup grid
-				Grid grid = entity.parent().typeProp(Grid.class);
+					scene.registry().get(value().player())
+							.prop("BS", BombSpawner.class).addBomb();
 
-				List<Point> points = GridRoutines.bombRange(entity,
-						GridRoutines.EXP_RANGE_FILTER, range);
+					// Lookup grid
+					Grid grid = entity.parent().typeProp(Grid.class);
 
-				DetachEntityChange c = new DetachEntityChange();
+					List<Point> points = GridRoutines.bombRange(entity,
+							GridRoutines.EXP_RANGE_FILTER, value().range());
 
-				for (Point point : points) {
-					// Create a new bomb
-					GraphicsEntity bomb = GridRoutines.createExplosion(
-							scene.spriteProp(GridConstants.EXP_SPRITE), 33);
+					// Destroy the bomb image
+					DetachEntityChange c = new DetachEntityChange();
+					c.entities().add(value().bombImage());
 
-					Entity node = entity.parent().childAt(grid.index(point));
+					// The ids of the bombs will be stored here
+					List<UUID> destroyedFields = new ArrayList<UUID>(points
+							.size());
 
-					/*
-					 * Server mode ?
-					 */
-					if (scene.processor().hasAdminSessionServer()) {
+					for (Point point : points) {
+
+						Entity node = entity.parent()
+								.childAt(grid.index(point));
+
+						// Add the reg key
+						destroyedFields.add(node.registrationKey());
 
 						// Destroy breakable objects on both sides!
 						for (Entity ptr : node) {
@@ -146,18 +175,33 @@ public final class Bomb extends Many<GraphicsEntity> {
 						}
 					}
 
-					node.attach(bomb);
-				}
-
-				if (!c.entities().isEmpty()) {
 					scene.processor().adminSessionServer().composite()
 							.queueChange(c, true);
-				}
 
-				// Play a sound
-				scene.soundManager().playSound(GridConstants.EXP_SOUND_NAME,
-						true);
-			}
-		});
+					/*
+					 * Spawn explosions!
+					 */
+					scene.processor().adminSessionServer().composite()
+							.queueChange(new Explosion(destroyedFields), true);
+
+					/*
+					 * Play a single sound on each client.
+					 */
+					scene.processor()
+							.adminSessionServer()
+							.broadcast()
+							.queueChange(
+									new PlaySound(GridConstants.EXP_SOUND_NAME),
+									true);
+				}
+			});
+		}
+	}
+
+	public Bomb() {
+	}
+
+	public Bomb(List<UUID> registrationKeys) {
+		super(registrationKeys);
 	}
 }

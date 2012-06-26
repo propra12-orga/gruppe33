@@ -1,4 +1,4 @@
-package propra2012.gruppe33.bomberman.graphics.rendering.scenegraph.grid;
+package propra2012.gruppe33.bomberman;
 
 import java.awt.Point;
 import java.io.File;
@@ -11,6 +11,9 @@ import java.util.Map.Entry;
 import java.util.Properties;
 import java.util.UUID;
 
+import propra2012.gruppe33.bomberman.graphics.rendering.scenegraph.grid.GridConstants;
+import propra2012.gruppe33.bomberman.graphics.rendering.scenegraph.grid.GridLoader;
+import propra2012.gruppe33.bomberman.graphics.rendering.scenegraph.grid.GridRoutines;
 import propra2012.gruppe33.bomberman.graphics.rendering.scenegraph.grid.input.InputActivator;
 import propra2012.gruppe33.bomberman.graphics.rendering.scenegraph.grid.transform.DeltaPositionBroadcaster;
 

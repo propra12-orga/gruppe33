@@ -4,24 +4,12 @@ import java.io.IOException;
 import java.net.InetSocketAddress;
 import java.util.Scanner;
 
-import propra2012.gruppe33.bomberman.graphics.rendering.scenegraph.grid.Game;
+import propra2012.gruppe33.bomberman.Game;
 
 import com.indyforge.twod.engine.graphics.rendering.scenegraph.SceneProcessor;
 import com.indyforge.twod.engine.graphics.rendering.scenegraph.SceneProcessor.NetworkMode;
 
 public class ServerApp {
-
-	public static void newServer() throws IOException, InterruptedException {
-
-		Process p = Runtime
-				.getRuntime()
-				.exec("java -Djava.awt.headless=True propra2012.gruppe33.networktest.ServerApp");
-
-		while (true) {
-			int i = p.getErrorStream().read();
-			System.out.write(i);
-		}
-	}
 
 	/**
 	 * @param args
@@ -43,7 +31,7 @@ public class ServerApp {
 			Thread.sleep(1000);
 
 			synchronized (serverProcessor.adminSessionServer()) {
-				if (serverProcessor.adminSessionServer().sessionCount() != 2) {
+				if (serverProcessor.adminSessionServer().sessionCount() == 2) {
 					serverProcessor.adminSessionServer().acceptingSessions(
 							false);
 					break;

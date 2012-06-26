@@ -1,7 +1,6 @@
 package propra2012.gruppe33.bomberman.graphics.rendering.scenegraph.grid.bomb;
 
 import java.util.Map;
-import java.util.UUID;
 
 import propra2012.gruppe33.bomberman.graphics.rendering.scenegraph.grid.GridConstants.Input;
 import propra2012.gruppe33.bomberman.graphics.rendering.scenegraph.grid.GridRoutines;
@@ -22,11 +21,26 @@ public final class BombSpawner extends Entity {
 	 */
 	private static final long serialVersionUID = 1L;
 
+	// The spawn flag
 	private boolean spawn = false;
 
+	// The number of remaining bombs
 	private int bombs = 3;
+
+	// The range of the bombs
 	private int range = 4;
 
+	// The delay of each bomb
+	private float delay = 3;
+
+	/*
+	 * (non-Javadoc)
+	 * 
+	 * @see
+	 * com.indyforge.twod.engine.graphics.rendering.scenegraph.Entity#onEvent
+	 * (com.indyforge.twod.engine.graphics.rendering.scenegraph.Entity,
+	 * java.lang.Object, java.lang.Object[])
+	 */
 	@SuppressWarnings("unchecked")
 	@Override
 	protected void onEvent(Entity source, Object event, Object... params) {
@@ -54,15 +68,11 @@ public final class BombSpawner extends Entity {
 	}
 
 	public BombSpawner addBomb() {
-		bombs++;
-		return this;
+		return addBombs(1);
 	}
 
 	public BombSpawner removeBomb() {
-		if (bombs > 0) {
-			bombs--;
-		}
-		return this;
+		return removeBombs(1);
 	}
 
 	public BombSpawner bombs(int bombs) {
@@ -73,33 +83,73 @@ public final class BombSpawner extends Entity {
 		return this;
 	}
 
+	public boolean isSpawn() {
+		return spawn;
+	}
+
+	public BombSpawner spawn(boolean spawn) {
+		this.spawn = spawn;
+		return this;
+	}
+
+	public int range() {
+		return range;
+	}
+
+	public BombSpawner range(int range) {
+		if (range < 0) {
+			throw new IllegalArgumentException("Range must be >= 0");
+		}
+		this.range = range;
+		return this;
+	}
+
+	public float delay() {
+		return delay;
+	}
+
+	public BombSpawner delay(float delay) {
+		if (delay < 0) {
+			throw new IllegalArgumentException("Delay must be >= 0");
+		}
+		this.delay = delay;
+		return this;
+	}
+
+	/*
+	 * (non-Javadoc)
+	 * 
+	 * @see
+	 * com.indyforge.twod.engine.graphics.rendering.scenegraph.Entity#onUpdate
+	 * (float)
+	 */
 	@Override
 	protected void onUpdate(float tpf) {
 		super.onUpdate(tpf);
 
+		// Get parent
 		GraphicsEntity node = ((GraphicsEntity) parent().parent());
+
+		/*
+		 * If the field is bombable, there are remaining bombs and the spawn
+		 * flag is set.
+		 */
 		if (spawn && GridRoutines.isFieldBombable(node) && bombs > 0) {
-			UUID u = UUID.randomUUID();
 
 			// Create bomb for the given field
-			Bomb bombA = new Bomb();
-			bombA.range = range;
-			bombA.entities().add(node.registrationKey());
-			bombA.bombreg = u;
-			bombA.play = parent().registrationKey();
+			Bomb bomb = new Bomb();
+			bomb.entities().add(node.registrationKey());
+			bomb.value(new BombDesc().delay(delay).range(range)
+					.randomBombImage().player(parent().registrationKey()));
 
-			Bomb bombB = new Bomb();
-			bombB.range = range;
-			bombB.entities().add(node.registrationKey());
-			bombB.bombreg = u;
-			bombs--;
+			// Remove a bomb
+			removeBomb();
 
 			// Apply global change
-			node.findSceneProcessor().adminSessionServer().broadcast()
-					.queueChange(bombB, true);
-			node.findSceneProcessor().adminSessionServer().local()
-					.queueChange(bombA, true);
+			node.findSceneProcessor().adminSessionServer().composite()
+					.queueChange(bomb, true);
 
+			// Deactivate spawning
 			spawn = false;
 		}
 	}
