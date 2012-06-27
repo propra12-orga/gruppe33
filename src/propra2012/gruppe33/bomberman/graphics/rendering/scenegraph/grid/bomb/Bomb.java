@@ -51,9 +51,12 @@ public final class Bomb extends OneToMany<GraphicsEntity, BombDesc> implements
 		// Get scene
 		final Scene scene = entity.findScene();
 
+		// Get the bomb type
+		final BombType bombType = value.bombType();
+
 		// Create a new bomb image
 		RenderedImage bombImage = new RenderedImage(
-				scene.imageProp(GridConstants.DEFAULT_BOMB_IMAGE))
+				scene.imageProp(GridRoutines.bombTypeToAsset(bombType)))
 				.centered(true);
 
 		// Use the same reg key
@@ -63,7 +66,7 @@ public final class Bomb extends OneToMany<GraphicsEntity, BombDesc> implements
 		bombImage.scale().set(0.3f, 0.3f);
 
 		// Set bomb order + tag
-		bombImage.index(GridRoutines.BOMB_INDEX).tag(GridConstants.BOMB_TAG);
+		bombImage.index(ITEM_INDEX).tag(BOMB_TAG);
 
 		// Scale velocity...
 		bombImage.attach(new TransformMotor().scaleVelocity(new Vector2f(0.1f,
@@ -107,27 +110,28 @@ public final class Bomb extends OneToMany<GraphicsEntity, BombDesc> implements
 				protected void onParentDetached(Entity parent, Entity child) {
 					super.onParentDetached(parent, child);
 
-					if (scene.processor() == null
-							|| !scene.processor().hasAdminSessionServer()) {
-						return;
-					}
-
 					// Get the server instance
 					AdminSessionServer<SceneProcessor> server = scene
 							.processor().adminSessionServer();
 
-					// Respawn bomb
+					// Lookup player entity
 					Entity playerEntity = scene.registry()
 							.get(value().player());
 
 					// Bombspawner valid ??
 					if (playerEntity != null) {
-						playerEntity.prop("BS", BombSpawner.class).addBomb();
+						// Respawn bomb
+						BombSpawner sp = playerEntity.prop("BS",
+								BombSpawner.class);
+
+						// Increase the bomb count
+						sp.addBombs(bombType, 1);
 					}
 
 					// Lookup grid
 					Grid grid = entity.parent().typeProp(Grid.class);
 
+					// Calc the explosion range
 					List<Point> points = GridRoutines.bombRange(entity,
 							GridRoutines.EXP_RANGE_FILTER, value().range());
 
@@ -179,8 +183,8 @@ public final class Bomb extends OneToMany<GraphicsEntity, BombDesc> implements
 										.add(ptr.registrationKey());
 
 								// Queue the kill
-								server.composite().queueChange(playerKill,
-										false);
+								server.composite()
+										.queueChange(playerKill, true);
 
 								// Get player list
 								List<UUID> players = (List<UUID>) scene

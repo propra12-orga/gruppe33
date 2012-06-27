@@ -13,8 +13,8 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.Random;
 import java.util.Set;
-import java.util.UUID;
 
+import propra2012.gruppe33.bomberman.graphics.rendering.scenegraph.grid.bomb.BombType;
 import propra2012.gruppe33.bomberman.graphics.rendering.scenegraph.grid.transform.DeltaPositionBroadcaster;
 
 import com.indyforge.twod.engine.graphics.rendering.scenegraph.Entity;
@@ -22,6 +22,7 @@ import com.indyforge.twod.engine.graphics.rendering.scenegraph.GraphicsEntity;
 import com.indyforge.twod.engine.graphics.rendering.scenegraph.RenderedImage;
 import com.indyforge.twod.engine.graphics.rendering.scenegraph.Scene;
 import com.indyforge.twod.engine.graphics.rendering.scenegraph.math.Grid;
+import com.indyforge.twod.engine.graphics.rendering.scenegraph.math.MathExt;
 import com.indyforge.twod.engine.resources.assets.Asset;
 import com.indyforge.twod.engine.resources.assets.AssetLoader;
 import com.indyforge.twod.engine.resources.assets.AssetManager;
@@ -72,12 +73,26 @@ public final class GridLoader implements GridConstants {
 	 *             If an exception occurs.
 	 */
 	public static GraphicsEntity parse(char[][] map, Scene scene,
-			float broadcastTime, long seed) throws Exception {
+			float broadcastTime, long seed, float defBombCount,
+			float nukeBombCount, float timeBombCount) throws Exception {
 
 		if (map == null) {
 			throw new NullPointerException("map");
 		} else if (scene == null) {
 			throw new NullPointerException("scene");
+		}
+
+		/*
+		 * Clamp all bomb counts.
+		 */
+		defBombCount = MathExt.clamp(defBombCount, 0, 1);
+		nukeBombCount = MathExt.clamp(nukeBombCount, 0, 1);
+		timeBombCount = MathExt.clamp(timeBombCount, 0, 1);
+
+		// Check the values
+		if (defBombCount + nukeBombCount + timeBombCount > 1) {
+			throw new IllegalArgumentException("The sum of all bomb counts "
+					+ "is > 1. Please choose appropriate values.");
 		}
 
 		// Calc the dim
@@ -237,10 +252,15 @@ public final class GridLoader implements GridConstants {
 		// Used to store all used fields
 		Set<Integer> usedFields = new HashSet<Integer>();
 
+		// Truncate everything
+		int defBombs = (int) (breakableNodes.size() * defBombCount);
+		int nukeBombs = (int) (breakableNodes.size() * nukeBombCount);
+		int timeBombs = (int) (breakableNodes.size() * timeBombCount);
+
 		/*
-		 * The Bomb-increase item!
+		 * The def bombs.
 		 */
-		for (int i = 0; i < breakableNodes.size() / 5; i++) {
+		for (int i = 0, bombs = defBombs + nukeBombs + timeBombs; i < bombs; i++) {
 
 			// Choose next field
 			int nextField = fieldChooser.nextInt(breakableNodes.size());
@@ -250,54 +270,16 @@ public final class GridLoader implements GridConstants {
 				continue;
 			}
 
-			// The node
-			GraphicsEntity node = breakableNodes.get(nextField);
+			// Determine the bomb type
+			BombType type = BombType.Default;
+			if (i >= defBombs + nukeBombs) {
+				type = BombType.Time;
+			} else if (i >= defBombs) {
+				type = BombType.Nuke;
+			}
 
-			// There MUST BE a breakable child!
-			node.childAt(0).attach(new Entity() {
-
-				/**
-				 * 
-				 */
-				private static final long serialVersionUID = 1L;
-
-				private final UUID uuid = UUID.randomUUID();
-
-				/*
-				 * (non-Javadoc)
-				 * 
-				 * @see
-				 * com.indyforge.twod.engine.graphics.rendering.scenegraph.Entity
-				 * #
-				 * onParentDetached(com.indyforge.twod.engine.graphics.rendering
-				 * .scenegraph.Entity,
-				 * com.indyforge.twod.engine.graphics.rendering
-				 * .scenegraph.Entity)
-				 */
-				@Override
-				protected void onParentDetached(Entity parent, Entity child) {
-					super.onParentDetached(parent, child);
-
-					// Create a new bomb image
-					RenderedImage bombImage = new RenderedImage(
-							((GraphicsEntity) parent).findScene().imageProp(
-									GridConstants.DEFAULT_BOMB_BAG_IMAGE))
-							.centered(true);
-
-					// Use the same reg key
-					bombImage.registrationKey(uuid);
-
-					// Scale a bit
-					bombImage.scale().set(0.6f, 0.6f);
-
-					// Set bomb order + tag
-					bombImage.index(GridRoutines.BOMB_INDEX).tag(
-							GridConstants.BREAKABLE_TAG);
-
-					// Attach to the node
-					parent.attach(bombImage);
-				}
-			});
+			// Create new default bomb item
+			GridRoutines.createBombItem(breakableNodes.get(nextField), type);
 		}
 
 		// Create a static root

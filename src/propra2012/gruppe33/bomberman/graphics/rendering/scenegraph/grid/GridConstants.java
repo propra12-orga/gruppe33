@@ -1,5 +1,7 @@
 package propra2012.gruppe33.bomberman.graphics.rendering.scenegraph.grid;
 
+import com.indyforge.twod.engine.graphics.rendering.scenegraph.math.Vector2f;
+
 /**
  * 
  * Here we store the grid constants.
@@ -11,8 +13,10 @@ package propra2012.gruppe33.bomberman.graphics.rendering.scenegraph.grid;
 public interface GridConstants {
 
 	enum Input {
-		Up, Down, Right, Left, PlaceBomb
+		Up, Down, Right, Left, PlaceBomb, BombUp, BombDown
 	}
+
+	Vector2f ITEM_SCALE = new Vector2f(0.6f, 0.6f);
 
 	String MAP_NAME_KEY = "map";
 	String MAP_WIDTH_PROP = "width";
@@ -35,7 +39,7 @@ public interface GridConstants {
 
 	int BACKGROUND_INDEX = -10;
 	int EXPLOSION_INDEX = 100000;
-	int BOMB_INDEX = -1;
+	int ITEM_INDEX = -1;
 
 	String BOMB_TAG = "bomb";
 	String BREAKABLE_TAG = "breakable";

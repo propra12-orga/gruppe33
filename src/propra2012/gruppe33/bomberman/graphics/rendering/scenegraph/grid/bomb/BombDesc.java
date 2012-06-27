@@ -15,9 +15,23 @@ public final class BombDesc implements Serializable {
 	 */
 	private static final long serialVersionUID = 1L;
 
+	// The bomb type of this bomb
+	private BombType bombType = BombType.Default;
 	private UUID bombImage, player;
 	private int range;
 	private float delay;
+
+	public BombType bombType() {
+		return bombType;
+	}
+
+	public BombDesc bombType(BombType bombType) {
+		if (bombType == null) {
+			throw new NullPointerException("bombType");
+		}
+		this.bombType = bombType;
+		return this;
+	}
 
 	public UUID bombImage() {
 		return bombImage;

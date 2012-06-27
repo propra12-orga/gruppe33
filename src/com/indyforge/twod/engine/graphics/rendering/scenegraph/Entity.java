@@ -809,6 +809,32 @@ public class Entity implements Comparable<Entity>, Iterable<Entity>,
 	}
 
 	/**
+	 * @see IterationRoutines#next(Iterator)
+	 * @see Entity#findSiblings(EntityFilter, boolean)
+	 */
+	public Entity findSibling(Filter<? super Entity> entityFilter,
+			boolean includeParent) {
+		return IterationRoutines
+				.next(findSiblings(entityFilter, includeParent));
+	}
+
+	/**
+	 * Returns a filtered sibling iterator.
+	 * 
+	 * @param entityFilter
+	 *            The entity filter.
+	 * @param includeParent
+	 *            If true, the parent of the siblings will be part of the
+	 *            iteration, too.
+	 * @return an iterator.
+	 */
+	public Iterator<Entity> findSiblings(Filter<? super Entity> entityFilter,
+			boolean includeParent) {
+		return new FilteredIterator<Entity>(entityFilter,
+				siblingIterator(includeParent));
+	}
+
+	/**
 	 * @return the event-to-iterable map. An entity must declare the event types
 	 *         here first to be able to fire them.
 	 */

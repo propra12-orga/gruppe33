@@ -51,7 +51,7 @@ public final class PlayerKill extends Many<GraphicsEntity> implements
 		parent.attach(ra);
 
 		// Use the free tag and the bomb index
-		ra.tag(FREE_TAG).index(BOMB_INDEX);
+		ra.tag(FREE_TAG).index(ITEM_INDEX);
 
 		// Set animation
 		ra.animationName(ra.animationName().replace("run_", "die_"));

@@ -49,7 +49,7 @@ public final class Game implements GridConstants, Serializable {
 	 */
 	private String assetBundle = "scenes/default.zip",
 			mapPropAssetPath = "assets/maps/smallmap.prop";
-	private float broadcastUpdateTime = 0.01f;
+	private float broadcastUpdateTime = 0.015f;
 
 	public String assetBundle() {
 		return assetBundle;
@@ -224,7 +224,7 @@ public final class Game implements GridConstants, Serializable {
 
 		// Parse and setup map
 		GraphicsEntity grid = GridLoader.parse(map, scene, broadcastUpdateTime,
-				System.nanoTime());
+				System.nanoTime(), 0.2f, 0.2f, 0.2f);
 
 		// The spawn points
 		List<Point> spawnPoints = GridLoader.find(map, GridConstants.SPAWN);
