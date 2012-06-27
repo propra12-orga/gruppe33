@@ -99,6 +99,44 @@ public class Bot implements AIProcessor {
 
 	}
 
+	/**
+	 * After a successful execution of dijkstra algorithm distance and count may
+	 * be wrong for the next one. This method resets them on default values.
+	 */
+	private void reinitialize() {
+		for (int y = 0; y < map.length; y++) {
+			for (int x = 0; x < map[0].length; x++) {
+				map[y][x].setDistance(1000);
+				map[y][x].setCount(0);
+			}
+		}
+	}
+
+	/**
+	 * Generates the path from the "goal pathfinder" to the "start pathfinder"
+	 * by using the number of steps needed to get there.
+	 * 
+	 * @param goal
+	 *            This Pathfinder is thelocation that the bot should walk to
+	 *            from his current location.
+	 * @return the path from current location to the goal location.
+	 */
+	private Point[] getPath(Pathfinder goal) {
+		int i = 0;
+		path = new Point[goal.getCount()];
+		while (goal.getPredecessor() != goal) {
+			path[path.length - i - 1] = goal;
+			goal = goal.getPredecessor();
+			i++;
+		}
+		path[0] = goal;
+		return path;
+	}
+
+	// Alte Funktionen die evtl. noch brauchbar sind, werden vor abschluss
+	// gelöscht. Ebenso wird die gesammte Dokumentation vor abschluss auf
+	// Englisch umgestellt!
+	//
 	// public void initialize(int[][][] fields) {
 	// for (int y = 0; y < fields.length; y++) {
 	// for (int x = 0; x < fields[0].length; x++) {
@@ -121,11 +159,5 @@ public class Bot implements AIProcessor {
 	// }
 	// map[start.y][start.x].setDistance(0);
 	//
-	// }
-	//
-	// private LinkedList getPath(Pathfinder goal) {
-	// path = new LinkedList<Pathfinder>();
-	//
-	// return path;
 	// }
 }

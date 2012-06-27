@@ -3,7 +3,7 @@ package propra2012.gruppe33.bomberman.ai.ninja;
 import java.awt.Point;
 
 /**
- * This class is a utility abstract data type and uses the Dijkstraalgorithm to
+ * This class is a utility abstract data type and uses the Dijkstra algorithm to
  * get the closest path to all other pathfinders in the grid from a certain
  * start parthfinder.
  * 
@@ -29,6 +29,13 @@ public class Pathfinder extends Point {
 	 * dijkstra has not completely run jet. Mainly used in dijkstra.
 	 */
 	private float distance;
+
+	/**
+	 * The number of pathfinders that are needed to reach this from the
+	 * "start pathfinder". Like distance it may be not correct if dijkstra is
+	 * not complete.
+	 */
+	private int count;
 
 	/**
 	 * Used in dijkstra to check whether the pathfinder already were checked by
@@ -67,6 +74,7 @@ public class Pathfinder extends Point {
 		this.distance = 1000;
 		this.x = x;
 		this.y = y;
+		this.count = 0;
 	}
 
 	/**
@@ -140,13 +148,16 @@ public class Pathfinder extends Point {
 			if (next.getDistance() > speed) {
 				next.setDistance(speed);
 				next.setPredecessor(this);
+				next.setCount(count + 1);
 			}
 			next.dijkstra(speed);
 			next = this.lowestUncheckedConnection();
 		}
 	}
-	
-	
+
+	public int count(Pathfinder x) {
+		return 0;
+	}
 
 	/*
 	 * __________________________________________________________________________________________
@@ -239,6 +250,14 @@ public class Pathfinder extends Point {
 
 	public void setSpeedWest(float speedWest) {
 		this.speedWest = speedWest;
+	}
+
+	public int getCount() {
+		return count;
+	}
+
+	public void setCount(int count) {
+		this.count = count;
 	}
 
 }
