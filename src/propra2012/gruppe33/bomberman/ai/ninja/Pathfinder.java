@@ -2,24 +2,80 @@ package propra2012.gruppe33.bomberman.ai.ninja;
 
 import java.awt.Point;
 
-public class Pathfinder {
+/**
+ * This class is a utility abstract data type and uses the Dijkstraalgorithm to
+ * get the closest path to all other pathfinders in the grid from a certain
+ * start parthfinder.
+ * 
+ * @author Malte
+ * 
+ */
+public class Pathfinder extends Point {
+
+	/**
+	 * Is now serializable.
+	 */
+	private static final long serialVersionUID = 1L;
+
+	/**
+	 * This variable points at another pathfinder. If the dijkstra algorithm has
+	 * checked all pathfinders one simply can follow the path that is pointed by
+	 * the "goal pathfinder" to the "start pathfinder".
+	 */
 	private Pathfinder predecessor;
-	private int distance;
+
+	/**
+	 * The distance from the "start pathfinder" to this. May be not correct if
+	 * dijkstra has not completely run jet. Mainly used in dijkstra.
+	 */
+	private float distance;
+
+	/**
+	 * Used in dijkstra to check whether the pathfinder already were checked by
+	 * dijkstra.
+	 */
 	private boolean visited;
-	private Pathfinder north;
-	private int speedNorth;
-	private Pathfinder east;
-	private int speedEast;
-	private Pathfinder south;
-	private int speedSouth;
-	private Pathfinder west;
-	private int speedWest;
+
+	/**
+	 * Simply indicates what speed is used. It get's accommodated by
+	 * lowestUncheckedConnection and is used by dijkstra. Thus it does not need
+	 * Getter and Setter.
+	 */
 	private char indicator;
 
-	public Pathfinder() {
+	/*
+	 * The following variables are used to connect the grid and point on another
+	 * pathfinder or determine the speed in the given direction. If their is no
+	 * pathfinder in the given direction, this points on itself and the speed is
+	 * 0. in the further documentary i will refer to them as connections.
+	 */
+	private Pathfinder north;
+	private float speedNorth;
+	private Pathfinder east;
+	private float speedEast;
+	private Pathfinder south;
+	private float speedSouth;
+	private Pathfinder west;
+	private float speedWest;
+
+	/**
+	 * Default constructor. Sets the Distance to 1000, because this value should
+	 * never be reached in the game and is therefore used as a default value.
+	 * Before running dijkstra distance should always be set to 1000.
+	 */
+	public Pathfinder(int x, int y) {
 		this.distance = 1000;
+		this.x = x;
+		this.y = y;
 	}
 
+	/**
+	 * Just a lot of if-checks whether their is an unchecked Connection to
+	 * another pathfinder. Used in dijkstra.
+	 * 
+	 * @return this if their is no unchecked connection. Else return the
+	 *         connection with the lowest speed.
+	 */
 	public Pathfinder lowestUncheckedConnection() {
 		if ((north != this) && (!north.isVisited())
 				&& (speedNorth <= speedEast) && (speedNorth <= speedSouth)
@@ -45,9 +101,27 @@ public class Pathfinder {
 			return this;
 	}
 
-	public void dijkstra(int wayTillHere) {
+	/**
+	 * This method is a recursive implementation of the dijkstra algorithm. It
+	 * checks all connections of this, whether their distance to this plus the
+	 * distance from the "start pathfinder" is lower than their current
+	 * distance. If thats the case it, changes their predecessor to this and
+	 * accommodates the speed.
+	 * 
+	 * @param wayTillHere
+	 *            describes the distance of the "start pathfinder" till the
+	 *            pathfinder from where dijkstra is started.
+	 */
+	public void dijkstra(float wayTillHere) {
+		// First: Set visited to true. Otherwise lowestUncheckedConnection could
+		// find this by mistake.
+		visited = true;
+
+		// The Pathfinder that will be the next for dijkstra.
 		Pathfinder next = this.lowestUncheckedConnection();
-		int speed = 0;
+		float speed = 0;
+
+		// Checks all connections. Up to four times.
 		while (next != this) {
 			switch (indicator) {
 			case 'n':
@@ -70,8 +144,14 @@ public class Pathfinder {
 			next.dijkstra(speed);
 			next = this.lowestUncheckedConnection();
 		}
-		visited = true;
 	}
+	
+	
+
+	/*
+	 * __________________________________________________________________________________________
+	 * From here on only Getters and Setters for variables.
+	 */
 
 	public Pathfinder getPredecessor() {
 		return predecessor;
@@ -81,11 +161,11 @@ public class Pathfinder {
 		this.predecessor = predecessor;
 	}
 
-	public int getDistance() {
+	public float getDistance() {
 		return distance;
 	}
 
-	public void setDistance(int distance) {
+	public void setDistance(float distance) {
 		this.distance = distance;
 	}
 
@@ -105,11 +185,11 @@ public class Pathfinder {
 		this.north = north;
 	}
 
-	public int getSpeedNorth() {
+	public float getSpeedNorth() {
 		return speedNorth;
 	}
 
-	public void setSpeedNorth(int speedNorth) {
+	public void setSpeedNorth(float speedNorth) {
 		this.speedNorth = speedNorth;
 	}
 
@@ -121,11 +201,11 @@ public class Pathfinder {
 		this.east = east;
 	}
 
-	public int getSpeedEast() {
+	public float getSpeedEast() {
 		return speedEast;
 	}
 
-	public void setSpeedEast(int speedEast) {
+	public void setSpeedEast(float speedEast) {
 		this.speedEast = speedEast;
 	}
 
@@ -137,11 +217,11 @@ public class Pathfinder {
 		this.south = south;
 	}
 
-	public int getSpeedSouth() {
+	public float getSpeedSouth() {
 		return speedSouth;
 	}
 
-	public void setSpeedSouth(int speedSouth) {
+	public void setSpeedSouth(float speedSouth) {
 		this.speedSouth = speedSouth;
 	}
 
@@ -153,11 +233,11 @@ public class Pathfinder {
 		this.west = west;
 	}
 
-	public int getSpeedWest() {
+	public float getSpeedWest() {
 		return speedWest;
 	}
 
-	public void setSpeedWest(int speedWest) {
+	public void setSpeedWest(float speedWest) {
 		this.speedWest = speedWest;
 	}
 
