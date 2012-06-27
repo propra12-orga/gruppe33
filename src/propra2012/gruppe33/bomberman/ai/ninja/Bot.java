@@ -29,6 +29,12 @@ public class Bot implements AIProcessor {
 	private Point[] path;
 
 	/**
+	 * The position the bot is standing on. May only be accommodated by the
+	 * method positionChanged().
+	 */
+	private Point position;
+
+	/**
 	 * The method that actually guides the bot.
 	 */
 	@Override
@@ -87,6 +93,26 @@ public class Bot implements AIProcessor {
 			}
 		}
 
+		if ((positionChanged(aiControl.activePosition()))
+				&& (aiControl.hasFieldChanged())) {
+			reinitialize();
+			map[position.y][position.x].dijkstra(0);
+
+			// checks where is aen enemy player and moves the bot to this
+			// position.
+
+			for (int y = 0; y < aiControl.fields().length; y++) {
+				for (int x = 0; x < aiControl.fields()[y].length; x++) {
+					for (int z = 0; z < aiControl.fields()[x][y].length; z++) {
+						if (aiControl.fields()[x][y][z] == 3) {
+							getPath(map[y][x]);
+						}
+					}
+				}
+			}
+
+		}
+
 		/*
 		 * from here on: further implementation
 		 * 
@@ -133,10 +159,28 @@ public class Bot implements AIProcessor {
 		return path;
 	}
 
+	/**
+	 * Controls whether the position on the map of the bot has changed since the
+	 * last call.
+	 * 
+	 * @param activePosition
+	 *            the actual position of the bot. Can only be determined by
+	 *            aiControl. May be differ from this.position.
+	 * @return true if the position has changed or false if not.
+	 */
+	private Boolean positionChanged(Point activePosition) {
+		if (position != activePosition) {
+			position = activePosition;
+			return true;
+		} else {
+			return false;
+		}
+	}
+
 	// Alte Funktionen die evtl. noch brauchbar sind, werden vor abschluss
 	// gelöscht. Ebenso wird die gesammte Dokumentation vor abschluss auf
 	// Englisch umgestellt!
-	//
+
 	// public void initialize(int[][][] fields) {
 	// for (int y = 0; y < fields.length; y++) {
 	// for (int x = 0; x < fields[0].length; x++) {

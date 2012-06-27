@@ -118,7 +118,8 @@ public class Pathfinder extends Point {
 	 * 
 	 * @param wayTillHere
 	 *            describes the distance of the "start pathfinder" till the
-	 *            pathfinder from where dijkstra is started.
+	 *            pathfinder from where dijkstra is started. Dijkstra may be
+	 *            started with the value of wayTillHere=0.
 	 */
 	public void dijkstra(float wayTillHere) {
 		// First: Set visited to true. Otherwise lowestUncheckedConnection could
