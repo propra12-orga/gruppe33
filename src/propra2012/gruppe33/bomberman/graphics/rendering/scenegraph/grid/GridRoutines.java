@@ -506,7 +506,7 @@ public final class GridRoutines implements GridConstants {
 				bombImage.scale().set(ITEM_SCALE);
 
 				// Set bomb order + tag
-				bombImage.index(ITEM_INDEX).tag(FREE_TAG);
+				bombImage.index(ITEM_INDEX).tag(FREE_TAG).tag(BREAKABLE_TAG);
 
 				// Attach to the node
 				parent.attach(bombImage);

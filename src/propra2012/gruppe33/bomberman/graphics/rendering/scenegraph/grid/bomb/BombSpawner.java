@@ -197,7 +197,7 @@ public final class BombSpawner extends GraphicsEntity {
 		if (findSibling(new TypeFilter(GridRemoteInput.class), false) != null) {
 			original.setFont(new Font("Arial", Font.BOLD, 36));
 			original.setColor(Color.black);
-			original.drawString("Bomb type: " + activeBombType, 0, 20);
+			original.drawString("Bomb type: " + activeBombType, 0, 30);
 			original.drawString("Bombs: " + activeBombs(), 0, 60);
 		}
 	}

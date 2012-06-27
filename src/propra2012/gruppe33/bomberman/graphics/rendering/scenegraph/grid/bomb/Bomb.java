@@ -169,7 +169,7 @@ public final class Bomb extends OneToMany<GraphicsEntity, BombDesc> implements
 							} else if (ptr.tagged(BOMB_TAG)) {
 
 								/*
-								 * Recursive bomb mangement!
+								 * Recursive bomb management!
 								 */
 								ptr.detach();
 
