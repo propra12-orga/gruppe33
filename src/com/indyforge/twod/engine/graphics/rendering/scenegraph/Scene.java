@@ -1,19 +1,15 @@
 package com.indyforge.twod.engine.graphics.rendering.scenegraph;
 
 import java.awt.Color;
-import java.awt.Component;
 import java.awt.Dimension;
 import java.awt.Graphics;
 import java.awt.Graphics2D;
 import java.awt.Image;
 import java.awt.Transparency;
-import java.awt.event.FocusEvent;
-import java.awt.event.FocusListener;
-import java.awt.event.KeyEvent;
-import java.awt.event.KeyListener;
-import java.util.HashMap;
-import java.util.Map;
+import java.util.HashSet;
+import java.util.Set;
 
+import com.indyforge.twod.engine.graphics.ImageDesc;
 import com.indyforge.twod.engine.graphics.rendering.scenegraph.math.Vector2f;
 import com.indyforge.twod.engine.resources.TransientRenderedEntity;
 import com.indyforge.twod.engine.resources.assets.AssetManager;
@@ -34,7 +30,7 @@ import com.indyforge.twod.engine.sound.SoundManager;
  * @see GraphicsEntity
  * @see Vector2f
  */
-public class Scene extends GraphicsEntity implements KeyListener, FocusListener {
+public class Scene extends GraphicsEntity {
 
 	/**
 	 * 
@@ -46,7 +42,8 @@ public class Scene extends GraphicsEntity implements KeyListener, FocusListener 
 	 * 
 	 * IMPORTANT: This attribute is not serialized!
 	 */
-	private transient Map<Integer, Boolean> keyboardState;
+	private transient Set<Integer> keyboardState, singleKeyboardState,
+			singleDiscardedKeyboardState;
 
 	// The asset manager of this scene
 	private final AssetManager assetManager;
@@ -60,23 +57,45 @@ public class Scene extends GraphicsEntity implements KeyListener, FocusListener 
 	// The ratio of this entity
 	private final float ratio;
 
-	/**
-	 * @return the keyboard state. If this map does not exist yet it will be
-	 *         created.
-	 */
-	private Map<Integer, Boolean> getKeyboardState() {
-		if (keyboardState == null) {
-			keyboardState = new HashMap<Integer, Boolean>();
-		}
-		return keyboardState;
-	}
-
 	/*
 	 * The processor which processes this scene.
 	 * 
 	 * IMPORTANT: This attribute is transient.
 	 */
 	transient SceneProcessor processor = null;
+
+	/**
+	 * @return the single discarded keyboard state. If the set does not exist
+	 *         yet it will be created.
+	 */
+	private Set<Integer> singleDiscardedKeyboardState() {
+		if (singleDiscardedKeyboardState == null) {
+			singleDiscardedKeyboardState = new HashSet<Integer>();
+		}
+		return singleDiscardedKeyboardState;
+	}
+
+	/**
+	 * @return the single keyboard state. If the set does not exist yet it will
+	 *         be created.
+	 */
+	private Set<Integer> singleKeyboardState() {
+		if (singleKeyboardState == null) {
+			singleKeyboardState = new HashSet<Integer>();
+		}
+		return singleKeyboardState;
+	}
+
+	/**
+	 * @return the keyboard state. If the set does not exist yet it will be
+	 *         created.
+	 */
+	private Set<Integer> keyboardState() {
+		if (keyboardState == null) {
+			keyboardState = new HashSet<Integer>();
+		}
+		return keyboardState;
+	}
 
 	/**
 	 * Creates a new scene without an asset manager.
@@ -146,57 +165,6 @@ public class Scene extends GraphicsEntity implements KeyListener, FocusListener 
 	}
 
 	/**
-	 * Connect to an awt component.
-	 * 
-	 * @param component
-	 *            The component which should manages this scene with events.
-	 * @return this scene for chaining.
-	 */
-	public Scene connectTo(Component component) {
-		if (component != null) {
-			// Add listener
-			component.addKeyListener(this);
-			component.addFocusListener(this);
-		}
-		return this;
-	}
-
-	/**
-	 * Disconnect from an awt component.
-	 * 
-	 * @param component
-	 *            The component which manages this scene with events.
-	 * @return this scene for chaining.
-	 */
-	public Scene disconnectFrom(Component component) {
-		if (component != null) {
-			component.removeKeyListener(this);
-			component.removeFocusListener(this);
-		}
-		return this;
-	}
-
-	/*
-	 * (non-Javadoc)
-	 * 
-	 * @see java.awt.event.FocusListener#focusGained(java.awt.event.FocusEvent)
-	 */
-	@Override
-	public void focusGained(FocusEvent e) {
-	}
-
-	/*
-	 * (non-Javadoc)
-	 * 
-	 * @see java.awt.event.FocusListener#focusLost(java.awt.event.FocusEvent)
-	 */
-	@Override
-	public void focusLost(FocusEvent e) {
-		// Clear keyboard
-		clearKeyboardState();
-	}
-
-	/**
 	 * Clears the keyboard state.
 	 * 
 	 * @return this scene for chaining.
@@ -210,6 +178,60 @@ public class Scene extends GraphicsEntity implements KeyListener, FocusListener 
 	}
 
 	/**
+	 * Sets the pressed flag for the given key code.
+	 * 
+	 * @param vk
+	 *            The virtual key code.
+	 * @param pressed
+	 *            The pressed flag.
+	 * @return this for chaining.
+	 */
+	public Scene pressed(int vk, boolean pressed) {
+
+		// Add or remove the key code
+		if (pressed) {
+			// Already exists ?
+			if (keyboardState().add(vk)) {
+
+				// This key was not pressed yet!
+				singleKeyboardState().add(vk);
+			}
+		} else {
+			/*
+			 * Remove from all maps!
+			 */
+			if (keyboardState != null) {
+				keyboardState.remove(vk);
+			}
+			if (singleKeyboardState != null) {
+				singleKeyboardState.remove(vk);
+			}
+			if (singleDiscardedKeyboardState != null) {
+				singleDiscardedKeyboardState.remove(vk);
+			}
+		}
+
+		return this;
+	}
+
+	/**
+	 * Returns a given key's pressed status. If this method returns true for a
+	 * given key code the key must be released and pressed again before this
+	 * method returns true again for the given key code.
+	 * 
+	 * @param vk
+	 *            The keycode you want to check. (KeyEvent.VK_****)
+	 * @return true if the key is pressed otherwise false.
+	 */
+	public boolean isSinglePressed(int vk) {
+		if (singleKeyboardState != null && singleKeyboardState.contains(vk)) {
+			singleDiscardedKeyboardState().add(vk);
+			return true;
+		}
+		return false;
+	}
+
+	/**
 	 * Returns a given key's pressed status.
 	 * 
 	 * @param vk
@@ -217,37 +239,7 @@ public class Scene extends GraphicsEntity implements KeyListener, FocusListener 
 	 * @return true if the key is pressed otherwise false.
 	 */
 	public boolean isPressed(int vk) {
-		Boolean pressed = keyboardState != null ? keyboardState.get(vk) : null;
-		return pressed != null ? pressed : false;
-	}
-
-	/*
-	 * (non-Javadoc)
-	 * 
-	 * @see java.awt.event.KeyListener#keyPressed(java.awt.event.KeyEvent)
-	 */
-	@Override
-	public void keyPressed(KeyEvent e) {
-		getKeyboardState().put(e.getKeyCode(), Boolean.TRUE);
-	}
-
-	/*
-	 * (non-Javadoc)
-	 * 
-	 * @see java.awt.event.KeyListener#keyReleased(java.awt.event.KeyEvent)
-	 */
-	@Override
-	public void keyReleased(KeyEvent e) {
-		getKeyboardState().put(e.getKeyCode(), Boolean.FALSE);
-	}
-
-	/*
-	 * (non-Javadoc)
-	 * 
-	 * @see java.awt.event.KeyListener#keyTyped(java.awt.event.KeyEvent)
-	 */
-	@Override
-	public void keyTyped(KeyEvent e) {
+		return keyboardState != null && keyboardState.contains(vk);
 	}
 
 	/**
@@ -315,7 +307,8 @@ public class Scene extends GraphicsEntity implements KeyListener, FocusListener 
 
 		// Bundle to entity and store as rendered transient entity
 		TransientRenderedEntity renderedEntity = new TransientRenderedEntity(
-				this, transparency, bgColor, graphicsEntity);
+				new ImageDesc().width(width).height(height)
+						.transparency(transparency), bgColor, graphicsEntity);
 
 		// Create a new entity
 		RenderedImage root = new RenderedImage(renderedEntity);
@@ -424,13 +417,21 @@ public class Scene extends GraphicsEntity implements KeyListener, FocusListener 
 	 * @return this scene for chaining.
 	 */
 	public final Scene simulate(Graphics2D graphics, int width, int height,
-			long tpf) {
+			float tpf) {
+
+		// Remove the discarded single keyboard state
+		if (singleDiscardedKeyboardState != null) {
+			for (Integer vk : singleDiscardedKeyboardState) {
+				singleKeyboardState.remove(vk);
+			}
+			singleDiscardedKeyboardState.clear();
+		}
 
 		// Only update if tpf is > 0
-		if (tpf > 0) {
+		if (tpf >= 0) {
 
 			// Update the complete scene
-			update(tpf * 0.001f);
+			update(tpf);
 		}
 
 		// Render if graphics exists and dimension is correct

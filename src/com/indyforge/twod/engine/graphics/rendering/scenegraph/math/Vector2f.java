@@ -1,10 +1,7 @@
 package com.indyforge.twod.engine.graphics.rendering.scenegraph.math;
 
 import java.awt.Point;
-import java.io.Externalizable;
-import java.io.IOException;
-import java.io.ObjectInput;
-import java.io.ObjectOutput;
+import java.io.Serializable;
 
 import com.indyforge.twod.engine.graphics.rendering.scenegraph.Entity;
 
@@ -15,7 +12,12 @@ import com.indyforge.twod.engine.graphics.rendering.scenegraph.Entity;
  * @author Christopher Probst
  * @see Entity
  */
-public final class Vector2f implements Externalizable {
+public final class Vector2f implements Serializable {
+
+	/**
+	 * 
+	 */
+	private static final long serialVersionUID = 1L;
 
 	/**
 	 * 
@@ -66,7 +68,7 @@ public final class Vector2f implements Externalizable {
 		}
 
 		// Return the lerp vector
-		return start.add(end.sub(start).scale(Mathf.clamp(time, 0f, 1f)));
+		return start.add(end.sub(start).scale(MathExt.clamp(time, 0f, 1f)));
 	}
 
 	/**
@@ -97,7 +99,7 @@ public final class Vector2f implements Externalizable {
 		float time = maxDelta / dist.length();
 
 		// Return a lerped value
-		return start.add(dist.scale(Mathf.clamp(time, 0f, 1f)));
+		return start.add(dist.scale(MathExt.clamp(time, 0f, 1f)));
 	}
 
 	/**
@@ -178,31 +180,6 @@ public final class Vector2f implements Externalizable {
 	public Vector2f(float x, float y) {
 		this.x = x;
 		this.y = y;
-	}
-
-	/*
-	 * (non-Javadoc)
-	 * 
-	 * @see java.io.Externalizable#readExternal(java.io.ObjectInput)
-	 */
-	@Override
-	public void readExternal(ObjectInput in) throws IOException,
-			ClassNotFoundException {
-		// Read both components
-		x = in.readFloat();
-		y = in.readFloat();
-	}
-
-	/*
-	 * (non-Javadoc)
-	 * 
-	 * @see java.io.Externalizable#writeExternal(java.io.ObjectOutput)
-	 */
-	@Override
-	public void writeExternal(ObjectOutput out) throws IOException {
-		// Write both components
-		out.writeFloat(x);
-		out.writeFloat(y);
 	}
 
 	/**
@@ -456,7 +433,7 @@ public final class Vector2f implements Externalizable {
 	 */
 	public Direction nearestDirection() {
 
-		if (Mathf.equals(x, y)) {
+		if (MathExt.equals(x, y)) {
 			return Direction.Undefined;
 		} else if (Math.abs(x) > Math.abs(y)) {
 			return x > 0.0f ? Direction.East : Direction.West;
@@ -500,8 +477,8 @@ public final class Vector2f implements Externalizable {
 			throw new NullPointerException("threshold");
 		}
 
-		return Mathf.equals(x, other.x, threshold.x)
-				&& Mathf.equals(y, other.y, threshold.y);
+		return MathExt.equals(x, other.x, threshold.x)
+				&& MathExt.equals(y, other.y, threshold.y);
 	}
 
 	/*
@@ -522,11 +499,11 @@ public final class Vector2f implements Externalizable {
 		}
 		Vector2f other = (Vector2f) obj;
 
-		if (!Mathf.equals(x, other.x)) {
+		if (!MathExt.equals(x, other.x)) {
 			return false;
 		}
 
-		if (!Mathf.equals(y, other.y)) {
+		if (!MathExt.equals(y, other.y)) {
 			return false;
 		}
 

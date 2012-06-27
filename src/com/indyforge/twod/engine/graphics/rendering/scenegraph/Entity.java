@@ -6,6 +6,7 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.LinkedHashSet;
+import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.NavigableMap;
@@ -13,19 +14,22 @@ import java.util.Set;
 import java.util.TreeMap;
 import java.util.UUID;
 
-import com.indyforge.twod.engine.graphics.rendering.scenegraph.util.ChildIterator;
-import com.indyforge.twod.engine.graphics.rendering.scenegraph.util.ParentIterator;
-import com.indyforge.twod.engine.graphics.rendering.scenegraph.util.RecursiveChildIterator;
-import com.indyforge.twod.engine.graphics.rendering.scenegraph.util.RootFilter;
-import com.indyforge.twod.engine.graphics.rendering.scenegraph.util.SiblingIterator;
-import com.indyforge.twod.engine.util.ArrayIterator;
-import com.indyforge.twod.engine.util.FilteredIterator;
-import com.indyforge.twod.engine.util.IterationRoutines;
-import com.indyforge.twod.engine.util.SerializableIterable;
+import com.indyforge.twod.engine.graphics.rendering.scenegraph.util.iteration.ChildIterator;
+import com.indyforge.twod.engine.graphics.rendering.scenegraph.util.iteration.ParentIterator;
+import com.indyforge.twod.engine.graphics.rendering.scenegraph.util.iteration.RecursiveChildIterator;
+import com.indyforge.twod.engine.graphics.rendering.scenegraph.util.iteration.RootFilter;
+import com.indyforge.twod.engine.graphics.rendering.scenegraph.util.iteration.SiblingIterator;
+import com.indyforge.twod.engine.util.iteration.ArrayIterator;
+import com.indyforge.twod.engine.util.iteration.Filter;
+import com.indyforge.twod.engine.util.iteration.FilteredIterator;
+import com.indyforge.twod.engine.util.iteration.IterationRoutines;
+import com.indyforge.twod.engine.util.iteration.SerializableIterable;
+import com.indyforge.twod.engine.util.task.Task;
+import com.indyforge.twod.engine.util.task.TaskQueue;
 
 /**
  * 
- * An entity is basically a node of tree. Each entity (node) can have multiple
+ * An entity is basically a node of a tree. Each entity (node) can have multiple
  * children which are sorted by their indeces. This ensures modifiable event
  * ordering. The entity-tree-concept is the key feature for processing
  * hierarchically ordered data.
@@ -156,6 +160,11 @@ public class Entity implements Comparable<Entity>, Iterable<Entity>,
 	private final Map<Object, Object> props = new HashMap<Object, Object>();
 
 	/*
+	 * Each entity can execute taskQueue before processing the update event.
+	 */
+	private final TaskQueue taskQueue = new TaskQueue(new LinkedList<Task>());
+
+	/*
 	 * Used to cache children iterations.
 	 */
 	private List<Entity> cachedChildren = null;
@@ -241,39 +250,49 @@ public class Entity implements Comparable<Entity>, Iterable<Entity>,
 			case Attached:
 
 				// Convert
-				Entity child = (Entity) params[0];
+				Entity parentPtr = (Entity) params[0],
+				childPtr = (Entity) params[1];
 
 				// Invoke default event
-				onAttached(source, child);
+				onEntityAttached(parentPtr, childPtr);
 
 				// Evaluate the other events...
-				if (this == source) {
-					onChildAttached(child);
-				} else if (this == child) {
-					onAttached();
-				} else if (parent == child) {
-					onParentAttached();
+				if (this == parentPtr) {
+					onChildAttached(parentPtr, childPtr);
+				} else if (this == childPtr) {
+					onAttached(parentPtr, childPtr);
+				} else if (parent == childPtr) {
+					onParentAttached(parentPtr, childPtr);
 				}
 				break;
 			case Detached:
 				// Convert
-				child = (Entity) params[0];
+				parentPtr = (Entity) params[0];
+				childPtr = (Entity) params[1];
 
 				// Invoke default event
-				onDetached(source, child);
+				onEntityDetached(parentPtr, childPtr);
 
 				// Evaluate the other events...
-				if (this == source) {
-					onChildDetached(child);
-				} else if (this == child) {
-					onDetached();
-				} else if (parent == child) {
-					onParentDetached();
+				if (this == parentPtr) {
+					onChildDetached(parentPtr, childPtr);
+				} else if (this == childPtr) {
+					onDetached(parentPtr, childPtr);
+				} else if (parent == childPtr) {
+					onParentDetached(parentPtr, childPtr);
 				}
 				break;
 
 			case Update:
-				onUpdate((Float) params[0]);
+
+				// The tpf
+				float tpf = (Float) params[0];
+
+				// Execute all tasks of this entity
+				taskQueue.update(tpf);
+
+				// Invoke callback method
+				onUpdate(tpf);
 			}
 		}
 	}
@@ -288,7 +307,7 @@ public class Entity implements Comparable<Entity>, Iterable<Entity>,
 	 * @param child
 	 *            The child which has been attached.
 	 */
-	protected void onAttached(Entity parent, Entity child) {
+	protected void onEntityAttached(Entity parent, Entity child) {
 
 	}
 
@@ -296,8 +315,13 @@ public class Entity implements Comparable<Entity>, Iterable<Entity>,
 	 * OVERRIDE FOR CUSTOM BEHAVIOUR.
 	 * 
 	 * This method is called when this entity was attached to an entity.
+	 * 
+	 * @param parent
+	 *            The parent which attached the given child.
+	 * @param child
+	 *            The child which has been attached.
 	 */
-	protected void onAttached() {
+	protected void onAttached(Entity parent, Entity child) {
 	}
 
 	/**
@@ -305,10 +329,12 @@ public class Entity implements Comparable<Entity>, Iterable<Entity>,
 	 * 
 	 * This method is called when a child is attached to this entity.
 	 * 
+	 * @param parent
+	 *            The parent which attached the given child.
 	 * @param child
 	 *            The child which has been attached.
 	 */
-	protected void onChildAttached(Entity child) {
+	protected void onChildAttached(Entity parent, Entity child) {
 
 	}
 
@@ -317,8 +343,13 @@ public class Entity implements Comparable<Entity>, Iterable<Entity>,
 	 * 
 	 * This method is called when the parent of this entity was attached to an
 	 * entity.
+	 * 
+	 * @param parent
+	 *            The parent which attached the given child.
+	 * @param child
+	 *            The child which has been attached.
 	 */
-	protected void onParentAttached() {
+	protected void onParentAttached(Entity parent, Entity child) {
 	}
 
 	/**
@@ -331,15 +362,20 @@ public class Entity implements Comparable<Entity>, Iterable<Entity>,
 	 * @param child
 	 *            The child which has been detached.
 	 */
-	protected void onDetached(Entity parent, Entity child) {
+	protected void onEntityDetached(Entity parent, Entity child) {
 	}
 
 	/**
 	 * OVERRIDE FOR CUSTOM BEHAVIOUR.
 	 * 
 	 * This method is called when this entity was detached from an entity.
+	 * 
+	 * @param parent
+	 *            The parent which detached the given child.
+	 * @param child
+	 *            The child which has been detached.
 	 */
-	protected void onDetached() {
+	protected void onDetached(Entity parent, Entity child) {
 	}
 
 	/**
@@ -347,10 +383,12 @@ public class Entity implements Comparable<Entity>, Iterable<Entity>,
 	 * 
 	 * This method is called when a child is detached from this entity.
 	 * 
+	 * @param parent
+	 *            The parent which detached the given child.
 	 * @param child
 	 *            The child which has been detached.
 	 */
-	protected void onChildDetached(Entity child) {
+	protected void onChildDetached(Entity parent, Entity child) {
 
 	}
 
@@ -359,8 +397,13 @@ public class Entity implements Comparable<Entity>, Iterable<Entity>,
 	 * 
 	 * This method is called when the parent of this entity was detached from an
 	 * entity.
+	 * 
+	 * @param parent
+	 *            The parent which detached the given child.
+	 * @param child
+	 *            The child which has been detached.
 	 */
-	protected void onParentDetached() {
+	protected void onParentDetached(Entity parent, Entity child) {
 	}
 
 	/**
@@ -385,6 +428,13 @@ public class Entity implements Comparable<Entity>, Iterable<Entity>,
 		 * Very important! Put this entity into the own map!
 		 */
 		registry.put(registrationKey, this);
+	}
+
+	/**
+	 * @return the task queue.
+	 */
+	public TaskQueue taskQueue() {
+		return taskQueue;
 	}
 
 	/**
@@ -704,8 +754,84 @@ public class Entity implements Comparable<Entity>, Iterable<Entity>,
 	 *         entity is a root entity).
 	 */
 	public Entity root() {
-		return IterationRoutines.next(new FilteredIterator<Entity>(
-				RootFilter.INSTANCE, parentIterator(true)));
+		return findParent(RootFilter.INSTANCE, true);
+	}
+
+	/**
+	 * @see IterationRoutines#next(Iterator)
+	 * @see Entity#findParents(EntityFilter, boolean)
+	 */
+	public Entity findParent(Filter<? super Entity> entityFilter,
+			boolean includeThis) {
+		return IterationRoutines.next(findParents(entityFilter, includeThis));
+	}
+
+	/**
+	 * Returns a filtered parent iterator.
+	 * 
+	 * @param entityFilter
+	 *            The entity filter.
+	 * @param includeThis
+	 *            If true, this entity will be part of the iteration, too.
+	 * @return an iterator.
+	 */
+	public Iterator<Entity> findParents(Filter<? super Entity> entityFilter,
+			boolean includeThis) {
+		return new FilteredIterator<Entity>(entityFilter,
+				parentIterator(includeThis));
+	}
+
+	/**
+	 * @see IterationRoutines#next(Iterator)
+	 * @see Entity#findChildren(EntityFilter, boolean, boolean)
+	 */
+	public Entity findChild(Filter<? super Entity> entityFilter,
+			boolean includeThis, boolean recursive) {
+		return IterationRoutines.next(findChildren(entityFilter, includeThis,
+				recursive));
+	}
+
+	/**
+	 * Returns a filtered children iterator.
+	 * 
+	 * @param entityFilter
+	 *            The entity filter.
+	 * @param includeThis
+	 *            If true, this entity will be part of the iteration, too.
+	 * @param recursive
+	 *            If true, the sub-children will be part of the iteration, too.
+	 * @return an iterator.
+	 */
+	public Iterator<Entity> findChildren(Filter<? super Entity> entityFilter,
+			boolean includeThis, boolean recursive) {
+		return new FilteredIterator<Entity>(entityFilter, childIterator(
+				includeThis, recursive));
+	}
+
+	/**
+	 * @see IterationRoutines#next(Iterator)
+	 * @see Entity#findSiblings(EntityFilter, boolean)
+	 */
+	public Entity findSibling(Filter<? super Entity> entityFilter,
+			boolean includeParent) {
+		return IterationRoutines
+				.next(findSiblings(entityFilter, includeParent));
+	}
+
+	/**
+	 * Returns a filtered sibling iterator.
+	 * 
+	 * @param entityFilter
+	 *            The entity filter.
+	 * @param includeParent
+	 *            If true, the parent of the siblings will be part of the
+	 *            iteration, too.
+	 * @return an iterator.
+	 */
+	public Iterator<Entity> findSiblings(Filter<? super Entity> entityFilter,
+			boolean includeParent) {
+		return new FilteredIterator<Entity>(entityFilter,
+				siblingIterator(includeParent));
 	}
 
 	/**
@@ -854,9 +980,9 @@ public class Entity implements Comparable<Entity>, Iterable<Entity>,
 			clearCachedChildren();
 
 			// Fire the attached event for this entity
-			fireEvent(EntityEvent.Attached, child);
+			fireEvent(EntityEvent.Attached, this, child);
 			// Fire the attached event for the child
-			child.fireEvent(EntityEvent.Attached, child);
+			child.fireEvent(EntityEvent.Attached, this, child);
 
 			return this;
 		} else {
@@ -1117,9 +1243,9 @@ public class Entity implements Comparable<Entity>, Iterable<Entity>,
 			clearCachedChildren();
 
 			// Fire the detached event for this entity
-			fireEvent(EntityEvent.Detached, child);
+			fireEvent(EntityEvent.Detached, this, child);
 			// Fire the detached event for the child
-			child.fireEvent(EntityEvent.Detached, child);
+			child.fireEvent(EntityEvent.Detached, this, child);
 
 			return true;
 		} else {

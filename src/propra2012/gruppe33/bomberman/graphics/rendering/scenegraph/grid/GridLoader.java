@@ -1,20 +1,28 @@
 package propra2012.gruppe33.bomberman.graphics.rendering.scenegraph.grid;
 
 import java.awt.Color;
+import java.awt.Point;
 import java.awt.image.BufferedImage;
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
+import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Random;
+import java.util.Set;
+
+import propra2012.gruppe33.bomberman.graphics.rendering.scenegraph.grid.bomb.BombType;
+import propra2012.gruppe33.bomberman.graphics.rendering.scenegraph.grid.transform.DeltaPositionBroadcaster;
 
 import com.indyforge.twod.engine.graphics.rendering.scenegraph.Entity;
 import com.indyforge.twod.engine.graphics.rendering.scenegraph.GraphicsEntity;
 import com.indyforge.twod.engine.graphics.rendering.scenegraph.RenderedImage;
 import com.indyforge.twod.engine.graphics.rendering.scenegraph.Scene;
 import com.indyforge.twod.engine.graphics.rendering.scenegraph.math.Grid;
+import com.indyforge.twod.engine.graphics.rendering.scenegraph.math.MathExt;
 import com.indyforge.twod.engine.resources.assets.Asset;
 import com.indyforge.twod.engine.resources.assets.AssetLoader;
 import com.indyforge.twod.engine.resources.assets.AssetManager;
@@ -27,16 +35,65 @@ import com.indyforge.twod.engine.resources.assets.AssetManager;
  */
 public final class GridLoader implements GridConstants {
 
+	public static List<Point> find(char[][] map, char sign) {
+		if (map == null) {
+			throw new NullPointerException("map");
+		}
+
+		// Calc the dim
+		int rx = map[0].length, ry = map.length;
+
+		// Create new array list
+		List<Point> points = new ArrayList<Point>();
+
+		for (int y = 0; y < ry; y++) {
+			for (int x = 0; x < rx; x++) {
+				if (map[y][x] == sign) {
+					points.add(new Point(x, y));
+				}
+			}
+		}
+
+		return points;
+	}
+
 	/**
 	 * Parses the given char array to setup the scene.
 	 * 
 	 * @param map
+	 *            The map.
 	 * @param scene
-	 * @return
+	 *            The scene.
+	 * @param broadcastTime
+	 *            The time of broadcasting the positions.
+	 * @param seed
+	 *            The item generation seed.
+	 * @return a graphics entity which contains the parsed map.
 	 * @throws Exception
+	 *             If an exception occurs.
 	 */
-	public static GraphicsEntity parse(char[][] map, Scene scene)
-			throws Exception {
+	public static GraphicsEntity parse(char[][] map, Scene scene,
+			float broadcastTime, long seed, float defBombCount,
+			float nukeBombCount, float timeBombCount) throws Exception {
+
+		if (map == null) {
+			throw new NullPointerException("map");
+		} else if (scene == null) {
+			throw new NullPointerException("scene");
+		}
+
+		/*
+		 * Clamp all bomb counts.
+		 */
+		defBombCount = MathExt.clamp(defBombCount, 0, 1);
+		nukeBombCount = MathExt.clamp(nukeBombCount, 0, 1);
+		timeBombCount = MathExt.clamp(timeBombCount, 0, 1);
+
+		// Check the values
+		if (defBombCount + nukeBombCount + timeBombCount > 1) {
+			throw new IllegalArgumentException("The sum of all bomb counts "
+					+ "is > 1. Please choose appropriate values.");
+		}
 
 		// Calc the dim
 		int rx = map[0].length, ry = map.length;
@@ -60,6 +117,16 @@ public final class GridLoader implements GridConstants {
 
 		// Attach grid to holder
 		gridHolder.attach(gridEntity);
+
+		// Create new broadcaster
+		DeltaPositionBroadcaster broadcaster = new DeltaPositionBroadcaster(
+				broadcastTime);
+
+		// Attach the broadcaster
+		scene.attach(broadcaster);
+
+		// Add broadcaster
+		scene.addProp(BROADCASTER_NAME, broadcaster);
 
 		/*
 		 * The breakable image.
@@ -104,6 +171,9 @@ public final class GridLoader implements GridConstants {
 
 		// The barriers
 		GraphicsEntity solids = new GraphicsEntity();
+
+		// The list which contains all breakable nodes
+		List<GraphicsEntity> breakableNodes = new ArrayList<GraphicsEntity>();
 
 		for (int y = 0; y < ry; y++) {
 			for (int x = 0; x < rx; x++) {
@@ -168,9 +238,48 @@ public final class GridLoader implements GridConstants {
 						// Not solid ? Well, maybe a breakable component ?
 						fieldNode.attach(new RenderedImage(breakable).centered(
 								true).tag(BREAKABLE_TAG));
+
+						// Add the breakable node!
+						breakableNodes.add((GraphicsEntity) fieldNode);
 					}
 				}
 			}
+		}
+
+		// Create new field chooser using the seed
+		Random fieldChooser = new Random(seed);
+
+		// Used to store all used fields
+		Set<Integer> usedFields = new HashSet<Integer>();
+
+		// Truncate everything
+		int defBombs = (int) (breakableNodes.size() * defBombCount);
+		int nukeBombs = (int) (breakableNodes.size() * nukeBombCount);
+		int timeBombs = (int) (breakableNodes.size() * timeBombCount);
+
+		/*
+		 * The def bombs.
+		 */
+		for (int i = 0, bombs = defBombs + nukeBombs + timeBombs; i < bombs; i++) {
+
+			// Choose next field
+			int nextField = fieldChooser.nextInt(breakableNodes.size());
+
+			// Skip used fields!
+			if (!usedFields.add(nextField)) {
+				continue;
+			}
+
+			// Determine the bomb type
+			BombType type = BombType.Default;
+			if (i >= defBombs + nukeBombs) {
+				type = BombType.Time;
+			} else if (i >= defBombs) {
+				type = BombType.Nuke;
+			}
+
+			// Create new default bomb item
+			GridRoutines.createBombItem(breakableNodes.get(nextField), type);
 		}
 
 		// Create a static root
@@ -181,7 +290,7 @@ public final class GridLoader implements GridConstants {
 
 		// Merge to rendered entity
 		scene.attach(scene.renderedOpaqueEntity(Color.white, staticRoot).index(
-				BACKGROUND_ORDER));
+				BACKGROUND_INDEX));
 
 		// Attach the grid holder
 		scene.attach(gridHolder);
@@ -286,8 +395,8 @@ public final class GridLoader implements GridConstants {
 		Random ran = new Random(seed);
 		for (int y = 1; y < map.length - 1; y++) {
 			for (int x = 1; x < map[0].length - 1; x++) {
-				if (!nextTo(map, x, y, START) && map[y][x] != SOLID
-						&& map[y][x] != START) {
+				if (!nextTo(map, x, y, SPAWN) && map[y][x] != SOLID
+						&& map[y][x] != SPAWN) {
 					if (ran.nextInt(10 - nextToCount(map, x, y)) > 2) {
 						map[y][x] += BREAKABLE_OFFSET;
 					}

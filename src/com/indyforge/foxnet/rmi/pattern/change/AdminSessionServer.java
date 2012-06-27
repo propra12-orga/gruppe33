@@ -1,5 +1,6 @@
 package com.indyforge.foxnet.rmi.pattern.change;
 
+import java.util.List;
 import java.util.Map;
 
 /**
@@ -13,19 +14,19 @@ import java.util.Map;
 public interface AdminSessionServer<T> extends SessionServer<T> {
 
 	/**
-	 * @return the changeable broadcast.
+	 * @return the changeable broadcast queue.
 	 */
-	Changeable<T> broadcast();
+	ChangeableQueue<T> broadcast();
 
 	/**
-	 * @return the changeable local.
+	 * @return the changeable local queue.
 	 */
-	Changeable<T> local();
+	ChangeableQueue<T> local();
 
 	/**
-	 * @return the composite (local & broadcast) changeable object.
+	 * @return the composite (local & broadcast) changeable queue.
 	 */
-	Changeable<T> composite();
+	ChangeableQueue<T> composite();
 
 	/**
 	 * @return the accepting-sessions flag.
@@ -51,9 +52,14 @@ public interface AdminSessionServer<T> extends SessionServer<T> {
 	int sessionCount();
 
 	/**
+	 * @return the session map.
+	 */
+	Map<Long, Session<T>> sessionMap();
+
+	/**
 	 * @return the sessions.
 	 */
-	Map<Long, Session<T>> sessions();
+	List<Session<T>> sessions();
 
 	/**
 	 * @param id

@@ -154,7 +154,7 @@ public final class Asset<T> implements Resource<T> {
 	/*
 	 * (non-Javadoc)
 	 * 
-	 * @see propra2012.gruppe33.graphics.rendering.util.Resource#get()
+	 * @see com.indyforge.twod.engine.resources.Resource#get()
 	 */
 	@Override
 	public T get() {

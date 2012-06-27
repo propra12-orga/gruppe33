@@ -1,10 +1,20 @@
 package propra2012.gruppe33.bomberman.graphics.rendering.scenegraph.grid.transform;
 
+import java.util.ArrayList;
+import java.util.LinkedHashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.Map.Entry;
+import java.util.UUID;
+
+import propra2012.gruppe33.bomberman.Game;
+
 import com.indyforge.twod.engine.graphics.rendering.scenegraph.Entity;
 import com.indyforge.twod.engine.graphics.rendering.scenegraph.GraphicsEntity;
 import com.indyforge.twod.engine.graphics.rendering.scenegraph.Scene;
 import com.indyforge.twod.engine.graphics.rendering.scenegraph.math.Vector2f;
-import com.indyforge.twod.engine.graphics.rendering.scenegraph.network.transform.PositionChange;
+import com.indyforge.twod.engine.util.task.Pause;
+import com.indyforge.twod.engine.util.task.Task;
 
 /**
  * Broadcasts the position changes (delta) of the parent which must be a
@@ -20,71 +30,127 @@ public final class DeltaPositionBroadcaster extends Entity {
 	 */
 	private static final long serialVersionUID = 1L;
 
+	// The observed entities
+	private final Map<UUID, Vector2f> entities = new LinkedHashMap<UUID, Vector2f>();
+
+	// The message
+	private final ManyPositionsToMany message = new ManyPositionsToMany();
+
+	// Tells the passed time
+	private float timePassed = Float.MAX_VALUE;
+
 	// The update delay
 	private final float updateDelay;
-
-	/*
-	 * (non-Javadoc)
-	 * 
-	 * @see
-	 * com.indyforge.twod.engine.graphics.rendering.scenegraph.Entity#onAttached
-	 * ()
-	 */
-	@Override
-	protected void onAttached() {
-		super.onAttached();
-
-		// Parent changed...
-		oldPosition = null;
-
-		// Reset time...
-		timePassed = 0;
-	}
-
-	private Vector2f oldPosition;
-	private float timePassed;
 
 	@Override
 	protected void onUpdate(float tpf) {
 		super.onUpdate(tpf);
 
-		if (parent() instanceof GraphicsEntity) {
-
-			// Convert to graphic entity
-			GraphicsEntity graphicsParent = (GraphicsEntity) parent();
-
-			// Find the scene
-			Scene scene = graphicsParent.findScene();
-
-			// Calc the absolute position
-			Vector2f absolutePosition = graphicsParent.position().add(
-					((GraphicsEntity) graphicsParent.parent()).position());
-
-			// Check for null...
-			if (oldPosition == null) {
-				oldPosition = new Vector2f(absolutePosition);
-			}
+		if (parent() instanceof Scene) {
+			// Convert to scene
+			final Scene scene = (Scene) parent();
 
 			// Server mode ?
 			if (scene.processor().hasAdminSessionServer()
-			// If update delay passed or if this is the first update!
-					&& (timePassed >= updateDelay || oldPosition == null)
+					&& timePassed >= updateDelay) {
+
+				// Are there any entities left ??
+				if (entities.size() <= 1) {
+
+					scene.processor().taskQueue().tasks().add(new Pause(3f));
+					scene.processor().taskQueue().tasks().add(new Task() {
+
+						/**
+						 * 
+						 */
+						private static final long serialVersionUID = 1L;
+
+						/*
+						 * (non-Javadoc)
+						 * 
+						 * @see
+						 * com.indyforge.twod.engine.util.task.Task#update(float
+						 * )
+						 */
+						@Override
+						public boolean update(float tpf) {
+
+							/*
+							 * Initiate new server game!
+							 */
+							try {
+								scene.typeProp(Game.class).serverGame(
+										scene.processor());
+							} catch (Exception e) {
+								e.printStackTrace();
+							}
+
+							return true;
+						}
+					});
+
+					// Detach this broadcaster!
+					detach();
+
+					return;
+				}
+
+				// Clear old
+				message.entityMap().clear();
+
+				// Used to remove uuids later...
+				List<UUID> removed = null;
+
+				// Go through all observed entities
+				for (Entry<UUID, Vector2f> entity : entities.entrySet()) {
+
+					// Lookup entity
+					GraphicsEntity ptr = (GraphicsEntity) scene.registry().get(
+							entity.getKey());
+
+					// Add old uuid to remove list!
+					if (ptr == null) {
+						if (removed == null) {
+							removed = new ArrayList<UUID>();
+						}
+						removed.add(entity.getKey());
+
+						// Continue...
+						continue;
+					}
+
+					// Calc the absolute position
+					Vector2f absolutePosition = ptr.position().add(
+							((GraphicsEntity) ptr.parent()).position());
+
 					// If positions are not equal
-					&& !absolutePosition.equals(oldPosition)) {
+					if (!absolutePosition.equals(entity.getValue())) {
+						// Calc the absolute delta position
+						Vector2f delta = absolutePosition
+								.sub(entity.getValue());
 
-				// Calc the absolute delta position
-				Vector2f delta = absolutePosition.sub(oldPosition);
+						// Save!
+						entity.getValue().set(absolutePosition);
 
-				// Save!
-				oldPosition.set(absolutePosition);
+						// Put delta vector
+						message.entityMap().put(entity.getKey(), delta);
+					}
+				}
 
-				// Create a translation change
-				PositionChange translation = new PositionChange(delta, true,
-						graphicsParent.registrationKey());
+				// Delete old entities
+				if (removed != null) {
+					for (UUID entity : removed) {
+						entities.remove(entity);
+					}
+				}
 
-				// Broadcast the change
-				scene.processor().adminSessionServer().broadcast()
-						.applyChange(translation);
+				// Send if not empty!
+				if (!message.entityMap().isEmpty()) {
+
+					// Broadcast the change
+					scene.processor().adminSessionServer().broadcast()
+							.queueChange(message, true);
+				}
 
 				// Reset time
 				timePassed = 0;
@@ -101,6 +167,17 @@ public final class DeltaPositionBroadcaster extends Entity {
 	 *            The update delay.
 	 */
 	public DeltaPositionBroadcaster(float updateDelay) {
-		this.updateDelay = Math.abs(updateDelay);
+		this.updateDelay = updateDelay;
+	}
+
+	/**
+	 * @return the update delay.
+	 */
+	public float updateDelay() {
+		return updateDelay;
+	}
+
+	public Map<UUID, Vector2f> entities() {
+		return entities;
 	}
 }

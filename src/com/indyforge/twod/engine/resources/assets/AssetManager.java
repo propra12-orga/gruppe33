@@ -1,5 +1,6 @@
 package com.indyforge.twod.engine.resources.assets;
 
+import java.awt.Font;
 import java.awt.GraphicsEnvironment;
 import java.awt.image.BufferedImage;
 import java.io.File;
@@ -46,6 +47,23 @@ public final class AssetManager implements Serializable {
 		return GraphicsEnvironment.isHeadless();
 	}
 
+	/*
+	 * The font loader.
+	 */
+	private static final AssetLoader<Font> FONT_LOADER = new AssetLoader<Font>() {
+
+		/**
+		 * 
+		 */
+		private static final long serialVersionUID = 1L;
+
+		@Override
+		public Font loadAsset(AssetManager assetManager, String assetPath)
+				throws Exception {
+			return Font.createFont(Font.TRUETYPE_FONT,
+					assetManager.open(assetPath));
+		}
+	};
 	/*
 	 * The byte array loader.
 	 */
@@ -232,6 +250,19 @@ public final class AssetManager implements Serializable {
 			throws Exception {
 		return loadAsset(assetPath, optimized ? OPTIMIZED_IMAGE_LOADER
 				: IMAGE_LOADER, false);
+	}
+
+	/**
+	 * Loads a font.
+	 * 
+	 * @param assetPath
+	 *            The asset path of the asset.
+	 * @return an asset containing the font.
+	 * @throws Exception
+	 *             If an exception occurs.
+	 */
+	public Asset<Font> loadFont(String assetPath) throws Exception {
+		return loadAsset(assetPath, FONT_LOADER, false);
 	}
 
 	/**

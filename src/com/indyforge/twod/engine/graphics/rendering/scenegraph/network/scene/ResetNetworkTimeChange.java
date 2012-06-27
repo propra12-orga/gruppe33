@@ -8,7 +8,7 @@ import com.indyforge.twod.engine.graphics.rendering.scenegraph.SceneProcessor;
  * 
  * @author Christopher Probst
  */
-public final class ResetNetworkTimeChange implements Change<SceneProcessor>{
+public final class ResetNetworkTimeChange implements Change<SceneProcessor> {
 
 	/**
 	 * 

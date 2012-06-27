@@ -10,9 +10,9 @@ import com.indyforge.twod.engine.graphics.rendering.scenegraph.math.Vector2f;
 import com.indyforge.twod.engine.graphics.sprite.Sprite;
 import com.indyforge.twod.engine.resources.assets.Asset;
 import com.indyforge.twod.engine.resources.assets.AssetManager;
-import com.indyforge.twod.engine.util.FilteredIterator;
-import com.indyforge.twod.engine.util.IterationRoutines;
-import com.indyforge.twod.engine.util.TypeFilter;
+import com.indyforge.twod.engine.util.iteration.FilteredIterator;
+import com.indyforge.twod.engine.util.iteration.IterationRoutines;
+import com.indyforge.twod.engine.util.iteration.TypeFilter;
 
 /**
  * 
@@ -150,8 +150,7 @@ public class GraphicsEntity extends Entity {
 	 *         or null if there is no scene at all.
 	 */
 	public Scene findScene() {
-		return (Scene) IterationRoutines.next(new FilteredIterator<Entity>(
-				new TypeFilter(Scene.class, true), parentIterator(true)));
+		return (Scene) findParent(new TypeFilter(Scene.class), true);
 	}
 
 	/**

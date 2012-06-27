@@ -3,20 +3,24 @@ package propra2012.gruppe33.bomberman.graphics.rendering.scenegraph.grid;
 import java.awt.Point;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.UUID;
 
 import propra2012.gruppe33.bomberman.graphics.rendering.scenegraph.grid.bomb.BombSpawner;
+import propra2012.gruppe33.bomberman.graphics.rendering.scenegraph.grid.bomb.BombType;
 import propra2012.gruppe33.bomberman.graphics.rendering.scenegraph.grid.input.GridController;
-import propra2012.gruppe33.bomberman.graphics.rendering.scenegraph.grid.transform.DeltaPositionBroadcaster;
 import propra2012.gruppe33.bomberman.graphics.sprite.AnimationRoutines;
 
 import com.indyforge.twod.engine.graphics.rendering.scenegraph.Entity;
 import com.indyforge.twod.engine.graphics.rendering.scenegraph.EntityFilter;
 import com.indyforge.twod.engine.graphics.rendering.scenegraph.GraphicsEntity;
+import com.indyforge.twod.engine.graphics.rendering.scenegraph.RenderedImage;
+import com.indyforge.twod.engine.graphics.rendering.scenegraph.Scene;
 import com.indyforge.twod.engine.graphics.rendering.scenegraph.animation.RenderedAnimation;
 import com.indyforge.twod.engine.graphics.rendering.scenegraph.animation.RenderedAnimation.AnimationEvent;
 import com.indyforge.twod.engine.graphics.rendering.scenegraph.math.Grid;
 import com.indyforge.twod.engine.graphics.rendering.scenegraph.math.Vector2f;
 import com.indyforge.twod.engine.graphics.rendering.scenegraph.math.Vector2f.Direction;
+import com.indyforge.twod.engine.graphics.rendering.scenegraph.network.entity.DetachEntityChange;
 import com.indyforge.twod.engine.graphics.rendering.scenegraph.network.input.InputChange;
 import com.indyforge.twod.engine.graphics.sprite.Animation;
 import com.indyforge.twod.engine.graphics.sprite.AnimationBundle;
@@ -246,7 +250,7 @@ public final class GridRoutines implements GridConstants {
 		// Create an entity using the animation
 		RenderedAnimation renderedAnimation = new RenderedAnimation();
 		renderedAnimation.tag(FREE_TAG).tag(EXPLOSION_TAG)
-				.index(EXPLOSION_ORDER);
+				.index(EXPLOSION_INDEX);
 		renderedAnimation.animationBundle().add(animation);
 		renderedAnimation.animationName("explosion");
 
@@ -279,7 +283,58 @@ public final class GridRoutines implements GridConstants {
 	}
 
 	/**
-	 * Creates a new local knight player.
+	 * Creates a new remote dwarf player.
+	 * 
+	 * @param assetManager
+	 *            The asset manager to load the dwarf.
+	 * @param name
+	 *            The name of the player.
+	 * @return the created dwarf.
+	 * @throws Exception
+	 *             If an error occurs.
+	 */
+	public static GraphicsEntity createRemoteDwarf(AssetManager assetManager,
+			String name) throws Exception {
+		return createRemoteGridPlayer(name,
+				AnimationRoutines.createDwarf(assetManager, 35, 35));
+	}
+
+	/**
+	 * Creates a new remote wizard player.
+	 * 
+	 * @param assetManager
+	 *            The asset manager to load the wizard.
+	 * @param name
+	 *            The name of the player.
+	 * @return the created wizard.
+	 * @throws Exception
+	 *             If an error occurs.
+	 */
+	public static GraphicsEntity createRemoteWizard(AssetManager assetManager,
+			String name) throws Exception {
+		return createRemoteGridPlayer(name,
+				AnimationRoutines.createWizard(assetManager, 35, 35));
+	}
+
+	/**
+	 * Creates a new remote santa player.
+	 * 
+	 * @param assetManager
+	 *            The asset manager to load the santa.
+	 * @param name
+	 *            The name of the player.
+	 * @return the created santa.
+	 * @throws Exception
+	 *             If an error occurs.
+	 */
+	public static GraphicsEntity createRemoteSanta(AssetManager assetManager,
+			String name) throws Exception {
+		return createRemoteGridPlayer(name,
+				AnimationRoutines.createSanta(assetManager, 35, 35));
+	}
+
+	/**
+	 * Creates a new remote knight player.
 	 * 
 	 * @param assetManager
 	 *            The asset manager to load the knight.
@@ -289,10 +344,174 @@ public final class GridRoutines implements GridConstants {
 	 * @throws Exception
 	 *             If an error occurs.
 	 */
-	public static GraphicsEntity createLocalKnight(AssetManager assetManager,
+	public static GraphicsEntity createRemoteKnight(AssetManager assetManager,
 			String name) throws Exception {
-		return createLocalGridPlayer(name,
+		return createRemoteGridPlayer(name,
 				AnimationRoutines.createKnight(assetManager, 35, 35));
+	}
+
+	/**
+	 * Translates the bomb type to an asset path.
+	 * 
+	 * @param bombType
+	 *            The bomb type.
+	 * @return the asset path.
+	 */
+	public static String bombTypeToAsset(BombType bombType) {
+		if (bombType == null) {
+			throw new NullPointerException("bombType");
+		}
+		switch (bombType) {
+		case Default:
+			return DEFAULT_BOMB_IMAGE;
+		case Nuke:
+			return NUKE_BOMB_IMAGE;
+		case Time:
+			return TIME_BOMB_IMAGE;
+		default:
+			throw new IllegalStateException("Unknown bomb state: " + bombType);
+		}
+	}
+
+	/**
+	 * Translates the bomb bag type to an asset path.
+	 * 
+	 * @param bombType
+	 *            The bomb type.
+	 * @return the asset path.
+	 */
+	public static String bombBagTypeToAsset(BombType bombType) {
+		if (bombType == null) {
+			throw new NullPointerException("bombType");
+		}
+		switch (bombType) {
+		case Default:
+			return DEFAULT_BOMB_BAG_IMAGE;
+		case Nuke:
+			return NUKE_BOMB_BAG_IMAGE;
+		case Time:
+			return TIME_BOMB_BAG_IMAGE;
+		default:
+			throw new IllegalStateException("Unknown bomb state: " + bombType);
+		}
+	}
+
+	/**
+	 * Hides a bomb behind the first breakable entity at the given node.
+	 * 
+	 * @param node
+	 *            The node.
+	 * @param bombType
+	 *            The bomb type.
+	 */
+	public static void createBombItem(GraphicsEntity node,
+			final BombType bombType) {
+		if (node == null) {
+			throw new NullPointerException("node");
+		} else if (bombType == null) {
+			throw new NullPointerException("bombType");
+		} else if (node.children().size() <= 0) {
+			throw new IllegalStateException("The given node does not "
+					+ "contain any children");
+		} else if (!node.childAt(0).tagged(BREAKABLE_TAG)) {
+			throw new IllegalStateException("The first entity at this "
+					+ "point is not tagged as breakable");
+		}
+
+		// There MUST BE a breakable child!
+		node.childAt(0).attach(new Entity() {
+
+			/**
+			 * 
+			 */
+			private static final long serialVersionUID = 1L;
+
+			private final UUID uuid = UUID.randomUUID();
+
+			/*
+			 * (non-Javadoc)
+			 * 
+			 * @see
+			 * com.indyforge.twod.engine.graphics.rendering.scenegraph.Entity #
+			 * onParentDetached(com.indyforge.twod.engine.graphics.rendering
+			 * .scenegraph.Entity, com.indyforge.twod.engine.graphics.rendering
+			 * .scenegraph.Entity)
+			 */
+			@Override
+			protected void onParentDetached(final Entity parent, Entity child) {
+				super.onParentDetached(parent, child);
+
+				// Create a new bomb image
+				RenderedImage bombImage = new RenderedImage(
+						((GraphicsEntity) parent).findScene().imageProp(
+								bombBagTypeToAsset(bombType))) {
+
+					/**
+					 * 
+					 */
+					private static final long serialVersionUID = 1L;
+
+					/*
+					 * (non-Javadoc)
+					 * 
+					 * @see
+					 * com.indyforge.twod.engine.graphics.rendering.scenegraph
+					 * .Entity
+					 * #onEntityAttached(com.indyforge.twod.engine.graphics
+					 * .rendering.scenegraph.Entity,
+					 * com.indyforge.twod.engine.graphics
+					 * .rendering.scenegraph.Entity)
+					 */
+					@Override
+					protected void onEntityAttached(Entity p, Entity c) {
+
+						// Find the scene
+						Scene scene = findScene();
+
+						/*
+						 * Sibling added ?
+						 */
+						if (parent == p
+								&& scene.processor().hasAdminSessionServer()) {
+							if (c.tagged(PLAYER_TAG)) {
+
+								// Get bomb spawner object
+								BombSpawner sp = c
+										.prop("BS", BombSpawner.class);
+
+								// Increase the bomb count
+								sp.addBombs(bombType, 1);
+
+								// Remove the bomb bag
+								DetachEntityChange dec = new DetachEntityChange();
+								dec.entities().add(registrationKey());
+
+								// Queue the change
+								scene.processor().adminSessionServer()
+										.broadcast().queueChange(dec, true);
+
+								// Apply direct on server side !
+								scene.processor().adminSessionServer().local()
+										.applyChange(dec);
+							}
+						}
+					}
+
+				}.centered(true);
+
+				// Use the same reg key
+				bombImage.registrationKey(uuid);
+
+				// Scale a bit
+				bombImage.scale().set(ITEM_SCALE);
+
+				// Set bomb order + tag
+				bombImage.index(ITEM_INDEX).tag(FREE_TAG).tag(BREAKABLE_TAG);
+
+				// Attach to the node
+				parent.attach(bombImage);
+			}
+		});
 	}
 
 	/**
@@ -304,7 +523,7 @@ public final class GridRoutines implements GridConstants {
 	 *            The char-animation bundle.
 	 * @return the created player entity.
 	 */
-	public static GraphicsEntity createLocalGridPlayer(String name,
+	public static GraphicsEntity createRemoteGridPlayer(String name,
 			AnimationBundle charAniBundle) {
 		if (name == null) {
 			throw new NullPointerException("name");
@@ -334,14 +553,14 @@ public final class GridRoutines implements GridConstants {
 		Entity movement = new GridController().attach(AnimationRoutines
 				.createGridControllerAnimationHandler(charAni));
 
+		// The animation
 		player.addProp("ANI", charAni);
 
 		// Create new bomb spawner
 		BombSpawner bs = new BombSpawner();
 
 		// Attach remaining stuff
-		player.attach(charAni, movement, new DeltaPositionBroadcaster(0.025f),
-				bs);
+		player.attach(charAni, movement, bs);
 
 		player.addProp("BS", bs);
 

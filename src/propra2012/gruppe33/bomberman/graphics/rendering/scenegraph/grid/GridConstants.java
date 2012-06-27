@@ -1,5 +1,7 @@
 package propra2012.gruppe33.bomberman.graphics.rendering.scenegraph.grid;
 
+import com.indyforge.twod.engine.graphics.rendering.scenegraph.math.Vector2f;
+
 /**
  * 
  * Here we store the grid constants.
@@ -11,17 +13,33 @@ package propra2012.gruppe33.bomberman.graphics.rendering.scenegraph.grid;
 public interface GridConstants {
 
 	enum Input {
-		Up, Down, Right, Left, PlaceBomb
+		Up, Down, Right, Left, PlaceBomb, BombUp, BombDown
 	}
 
-	String EXP_SOUND_NAME = "boom";
+	Vector2f ITEM_SCALE = new Vector2f(0.6f, 0.6f);
 
-	String BOMB_IMAGE = "bomb_image";
+	String MAP_NAME_KEY = "map";
+	String MAP_WIDTH_PROP = "width";
+	String MAP_HEIGHT_PROP = "height";
+
+	String BROADCASTER_NAME = "broadcaster";
+	String DEFAULT_BOMB_IMAGE = "default_bomb_image";
+	String DEFAULT_BOMB_BAG_IMAGE = "default_bomb_bag_image";
+	String NUKE_BOMB_IMAGE = "nuke_bomb_image";
+	String NUKE_BOMB_BAG_IMAGE = "nuke_bomb_bag_image";
+	String TIME_BOMB_IMAGE = "time_bomb_image";
+	String TIME_BOMB_BAG_IMAGE = "time_bomb_bag_image";
+
+	String EXP_SOUND_NAME = "exp_sound";
 	String EXP_SPRITE = "exp_sprite";
+	String EXP_SPRITE_WIDTH = "exp_sprite_columns";
+	String EXP_SPRITE_HEIGHT = "exp_sprite_rows";
+	String SESSIONS_KEY = "sessions";
+	String PLAYERS_KEY = "players";
 
-	int BACKGROUND_ORDER = -10;
-	int EXPLOSION_ORDER = 100000;
-	int BOMB_ORDER = -1;
+	int BACKGROUND_INDEX = -10;
+	int EXPLOSION_INDEX = 100000;
+	int ITEM_INDEX = -1;
 
 	String BOMB_TAG = "bomb";
 	String BREAKABLE_TAG = "breakable";
@@ -40,7 +58,7 @@ public interface GridConstants {
 	char DOWN_LEFT_CORNER = '[';
 	char DOWN_RIGHT_CORNER = ']';
 
-	char START = 's';
+	char SPAWN = 's';
 
 	/**
 	 * Free fields use the defined default speed. To configure field with a

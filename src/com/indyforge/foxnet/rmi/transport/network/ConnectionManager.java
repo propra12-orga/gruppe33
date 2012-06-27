@@ -43,7 +43,6 @@ import org.jboss.netty.bootstrap.ServerBootstrap;
 import org.jboss.netty.channel.Channel;
 import org.jboss.netty.channel.ChannelFactory;
 import org.jboss.netty.channel.ChannelFuture;
-import org.jboss.netty.channel.ChannelFutureListener;
 import org.jboss.netty.channel.ChannelHandler.Sharable;
 import org.jboss.netty.channel.ChannelHandlerContext;
 import org.jboss.netty.channel.ChannelPipeline;
@@ -56,17 +55,19 @@ import org.jboss.netty.channel.group.ChannelGroup;
 import org.jboss.netty.channel.group.DefaultChannelGroup;
 import org.jboss.netty.channel.socket.nio.NioClientSocketChannelFactory;
 import org.jboss.netty.channel.socket.nio.NioServerSocketChannelFactory;
+import org.jboss.netty.handler.codec.compression.ZlibDecoder;
+import org.jboss.netty.handler.codec.compression.ZlibEncoder;
+import org.jboss.netty.handler.codec.serialization.ClassResolvers;
+import org.jboss.netty.handler.codec.serialization.ObjectDecoder;
+import org.jboss.netty.handler.codec.serialization.ObjectEncoder;
 import org.jboss.netty.util.internal.ExecutorUtil;
 
 import com.indyforge.foxnet.rmi.InvokerManager;
 import com.indyforge.foxnet.rmi.binding.registry.StaticRegistry;
-import com.indyforge.foxnet.rmi.transport.network.handler.codec.Deserializer;
-import com.indyforge.foxnet.rmi.transport.network.handler.codec.Serializer;
 import com.indyforge.foxnet.rmi.transport.network.handler.invocation.InvokerHandler;
 import com.indyforge.foxnet.rmi.transport.network.handler.lookup.LookupHandler;
 import com.indyforge.foxnet.rmi.transport.network.handler.reqres.ReqResHandler;
 import com.indyforge.foxnet.rmi.transport.network.handler.setup.SetupHandler;
-import com.indyforge.foxnet.rmi.util.Future;
 
 /**
  * @author Christopher Probst
@@ -214,25 +215,24 @@ public final class ConnectionManager implements ChannelPipelineFactory {
 		}
 	}
 
-	public InvokerManager openClient(String host, int port) throws IOException {
-		return InvokerHandler.of(openClientAsync(
-				new InetSocketAddress(host, port)).awaitUninterruptibly()
-				.getChannel());
+	public InvokerManager openClient(SocketAddress socketAddress)
+			throws IOException {
+		// Get future
+		ChannelFuture connectFuture = openClientAsync(socketAddress);
+
+		// Await!
+		connectFuture.awaitUninterruptibly();
+
+		if (!connectFuture.isSuccess()) {
+			throw new IOException("Connection failed", connectFuture.getCause());
+		}
+
+		// Extract handler
+		return InvokerHandler.of(connectFuture.getChannel());
 	}
 
-	public Future openClientAsync(String host, int port) {
-		final Future future = new Future();
-		openClientAsync(new InetSocketAddress(host, port)).addListener(
-				new ChannelFutureListener() {
-
-					@Override
-					public void operationComplete(ChannelFuture arg0)
-							throws Exception {
-
-						future.complete(arg0.getChannel(), arg0.getCause());
-					}
-				});
-		return future;
+	public InvokerManager openClient(String host, int port) throws IOException {
+		return openClient(new InetSocketAddress(host, port));
 	}
 
 	public ChannelFuture openClientAsync(SocketAddress socketAddress) {
@@ -265,14 +265,22 @@ public final class ConnectionManager implements ChannelPipelineFactory {
 		// Used to identify the channel
 		channelPipeline.addLast("id_handler", identificationHandler);
 
+		// Add good compression
+		channelPipeline.addLast("in_com", new ZlibDecoder());
+		channelPipeline.addLast("out_com", new ZlibEncoder(9));
+
 		// Add config manager
 		channelPipeline.addLast("cfg", SetupHandler.INSTANCE);
 
 		// Use the default decoder
-		channelPipeline.addLast("obj_decoder", new Deserializer());
+		channelPipeline.addLast(
+				"obj_decoder",
+				new ObjectDecoder(Integer.MAX_VALUE, ClassResolvers
+						.weakCachingResolver(Thread.currentThread()
+								.getContextClassLoader())));
 
 		// Use the default encoder
-		channelPipeline.addLast("obj_encoder", new Serializer());
+		channelPipeline.addLast("obj_encoder", new ObjectEncoder(1024));
 
 		// The request response handler
 		channelPipeline.addLast("reqres", ReqResHandler.INSTANCE);

@@ -1,6 +1,9 @@
 package com.indyforge.foxnet.rmi.pattern.change.impl;
 
+import java.util.ArrayList;
+import java.util.Collections;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.concurrent.atomic.AtomicLong;
 
@@ -9,6 +12,7 @@ import com.indyforge.foxnet.rmi.RemoteInterfaces;
 import com.indyforge.foxnet.rmi.pattern.change.AdminSessionServer;
 import com.indyforge.foxnet.rmi.pattern.change.Change;
 import com.indyforge.foxnet.rmi.pattern.change.Changeable;
+import com.indyforge.foxnet.rmi.pattern.change.ChangeableQueue;
 import com.indyforge.foxnet.rmi.pattern.change.Session;
 import com.indyforge.foxnet.rmi.pattern.change.SessionServer;
 import com.indyforge.foxnet.rmi.util.Future;
@@ -23,28 +27,29 @@ public final class DefaultSessionServer<T> implements AdminSessionServer<T> {
 	// The maps which store the sessions
 	private final Map<Long, Session<T>> sessions = new HashMap<Long, Session<T>>();
 
+	// The cached session map
+	private Map<Long, Session<T>> cachedSessionMap;
+
+	// The cached sessions
+	private List<Session<T>> cachedSessions;
+
 	// The accepting sessions flag
 	private boolean acceptingSessions = true;
 
-	// The changeable local and broadcast
-	private final Changeable<T> local, broadcast = new Changeable<T>() {
-		@Override
-		public void applyChange(Change<T> change) {
-			for (Session<T> session : sessions.values()) {
-				try {
-					session.client().applyChange(change);
-				} catch (Exception e) {
-					e.printStackTrace();
+	// The changeable local, broadcast and composite queue
+	private final ChangeableQueue<T> local,
+			broadcast = new DefaultChangeableQueue<T>(new Changeable<T>() {
+				@Override
+				public void applyChange(Change<T> change) {
+					for (Session<T> session : sessions()) {
+						try {
+							session.client().applyChange(change);
+						} catch (Exception e) {
+							e.printStackTrace();
+						}
+					}
 				}
-			}
-		}
-	}, composite = new Changeable<T>() {
-		@Override
-		public void applyChange(Change<T> change) {
-			local.applyChange(change);
-			broadcast.applyChange(change);
-		}
-	};
+			}), composite;
 
 	/**
 	 * Creates a new session server using the changeable local.
@@ -52,11 +57,16 @@ public final class DefaultSessionServer<T> implements AdminSessionServer<T> {
 	 * @param local
 	 *            The local.
 	 */
+	@SuppressWarnings("unchecked")
 	public DefaultSessionServer(Changeable<T> local) {
 		if (local == null) {
 			throw new NullPointerException("local");
 		}
-		this.local = local;
+		// Create new local changeable queue
+		this.local = new DefaultChangeableQueue<T>(local);
+
+		// Create a new composite changeable
+		composite = new CompositeChangeableQueue<T>(this.local, broadcast);
 	}
 
 	/*
@@ -119,13 +129,30 @@ public final class DefaultSessionServer<T> implements AdminSessionServer<T> {
 
 		// Put into map
 		sessions.put(id, s);
+
+		// Clear caches
+		cachedSessionMap = null;
+		cachedSessions = null;
+
+		// Register remover!
 		Invoker.of(changeable).manager().closeFuture()
 				.add(new FutureCallback() {
 
 					@Override
 					public void completed(Future future) throws Exception {
-						// Remove after disconnect
-						sessions.remove(id);
+
+						/*
+						 * Synchronize with this server!
+						 */
+						synchronized (DefaultSessionServer.this) {
+
+							// Remove after disconnect
+							sessions.remove(id);
+
+							// Clear caches
+							cachedSessionMap = null;
+							cachedSessions = null;
+						}
 					}
 				});
 
@@ -149,7 +176,7 @@ public final class DefaultSessionServer<T> implements AdminSessionServer<T> {
 	 * @see com.indyforge.foxnet.rmi.pattern.change.AdminSessionServer#local()
 	 */
 	@Override
-	public Changeable<T> local() {
+	public ChangeableQueue<T> local() {
 		return local;
 	}
 
@@ -160,7 +187,7 @@ public final class DefaultSessionServer<T> implements AdminSessionServer<T> {
 	 * com.indyforge.foxnet.rmi.pattern.change.AdminSessionServer#broadcast()
 	 */
 	@Override
-	public Changeable<T> broadcast() {
+	public ChangeableQueue<T> broadcast() {
 		return broadcast;
 	}
 
@@ -171,7 +198,7 @@ public final class DefaultSessionServer<T> implements AdminSessionServer<T> {
 	 * com.indyforge.foxnet.rmi.pattern.change.AdminSessionServer#composite()
 	 */
 	@Override
-	public Changeable<T> composite() {
+	public ChangeableQueue<T> composite() {
 		return composite;
 	}
 
@@ -181,9 +208,9 @@ public final class DefaultSessionServer<T> implements AdminSessionServer<T> {
 	 * @see com.indyforge.foxnet.rmi.pattern.change.AdminSessionServer#names()
 	 */
 	@Override
-	public synchronized Map<Long, String> names() {
+	public Map<Long, String> names() {
 		Map<Long, String> ptr = new HashMap<Long, String>();
-		for (Session<T> session : sessions.values()) {
+		for (Session<T> session : sessions()) {
 			ptr.put(session.id(), session.name());
 		}
 		return ptr;
@@ -193,11 +220,31 @@ public final class DefaultSessionServer<T> implements AdminSessionServer<T> {
 	 * (non-Javadoc)
 	 * 
 	 * @see
+	 * com.indyforge.foxnet.rmi.pattern.change.AdminSessionServer#sessionMap()
+	 */
+	@Override
+	public synchronized Map<Long, Session<T>> sessionMap() {
+		if (cachedSessionMap == null) {
+			cachedSessionMap = Collections
+					.unmodifiableMap(new HashMap<Long, Session<T>>(sessions));
+		}
+		return cachedSessionMap;
+	}
+
+	/*
+	 * (non-Javadoc)
+	 * 
+	 * @see
 	 * com.indyforge.foxnet.rmi.pattern.change.AdminSessionServer#sessions()
 	 */
 	@Override
-	public synchronized Map<Long, Session<T>> sessions() {
-		return new HashMap<Long, Session<T>>(sessions);
+	public synchronized List<Session<T>> sessions() {
+		if (cachedSessions == null) {
+			cachedSessions = Collections
+					.unmodifiableList(new ArrayList<Session<T>>(sessions
+							.values()));
+		}
+		return cachedSessions;
 	}
 
 	/*
@@ -206,11 +253,10 @@ public final class DefaultSessionServer<T> implements AdminSessionServer<T> {
 	 * @see
 	 * com.indyforge.foxnet.rmi.pattern.change.AdminSessionServer#closeAll()
 	 */
-	@SuppressWarnings("unchecked")
 	@Override
-	public synchronized void closeAll() {
-		for (Object session : sessions.values().toArray()) {
-			Invoker.of(((Session<T>) session).client()).manager().close();
+	public void closeAll() {
+		for (Session<T> session : sessions()) {
+			Invoker.of(session.client()).manager().close();
 		}
 	}
 }

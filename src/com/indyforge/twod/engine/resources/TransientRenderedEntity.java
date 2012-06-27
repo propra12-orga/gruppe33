@@ -7,8 +7,8 @@ import java.io.IOException;
 import java.io.ObjectInputStream;
 
 import com.indyforge.twod.engine.graphics.GraphicsRoutines;
+import com.indyforge.twod.engine.graphics.ImageDesc;
 import com.indyforge.twod.engine.graphics.rendering.scenegraph.GraphicsEntity;
-import com.indyforge.twod.engine.graphics.rendering.scenegraph.Scene;
 import com.indyforge.twod.engine.resources.assets.AssetManager;
 
 /**
@@ -33,7 +33,7 @@ public final class TransientRenderedEntity implements Resource<Image> {
 	 * The transient resource.
 	 */
 	private transient Image resource;
-	private final int width, height, transparency;
+	private final ImageDesc imageDesc;
 	private final Color background;
 	private final GraphicsEntity graphicsEntity;
 
@@ -41,15 +41,18 @@ public final class TransientRenderedEntity implements Resource<Image> {
 	 * Renders the graphics entity to an image.
 	 */
 	private void createResource() {
-		// Create resource
-		resource = graphicsEntity.renderTo(GraphicsRoutines.clear(
-				GraphicsRoutines.createImage(width, height, transparency),
-				background));
+		if (!AssetManager.isHeadless()) {
+			// Create resource
+			resource = graphicsEntity.renderTo(GraphicsRoutines.clear(
+					GraphicsRoutines.createImage(imageDesc), background));
 
-		// Check resource
-		if (resource == null) {
-			throw new IllegalStateException("The resource is null. "
-					+ "Please check your code.");
+			// Check resource
+			if (resource == null) {
+				throw new IllegalStateException("The resource is null. "
+						+ "Please check your code.");
+			}
+		} else {
+			resource = null;
 		}
 	}
 
@@ -62,68 +65,42 @@ public final class TransientRenderedEntity implements Resource<Image> {
 		// Restore all vars
 		in.defaultReadObject();
 
-		if (!AssetManager.isHeadless()) {
-			// Recreate the resource
-			createResource();
-		}
-	}
-
-	/**
-	 * Creates a transient rendered graphics entity using the given parameters.
-	 * 
-	 * @param scene
-	 *            The width and height of the scene will be used.
-	 * @param transparency
-	 *            The transparency of the rendered image.
-	 * @param background
-	 *            The background of the rendered image.
-	 * @param graphicsEntity
-	 *            The graphics entity which is rendered into an image.
-	 */
-	public TransientRenderedEntity(Scene scene, int transparency,
-			Color background, GraphicsEntity graphicsEntity) {
-		this(scene.width(), scene.height(), transparency, background,
-				graphicsEntity);
+		// Recreate the resource
+		createResource();
 	}
 
 	/**
 	 * Creates a transient rendered entity using the given parameters.
 	 * 
-	 * @param width
-	 *            The width of the rendered image.
-	 * @param height
-	 *            The height of the rendered image.
-	 * @param transparency
-	 *            The transparency of the rendered image.
+	 * @param imageDesc
+	 *            The image description.
 	 * @param background
 	 *            The background of the rendered image.
 	 * @param graphicsEntity
 	 *            The graphics entity which is rendered into an image.
 	 */
-	public TransientRenderedEntity(int width, int height, int transparency,
-			Color background, GraphicsEntity graphicsEntity) {
+	public TransientRenderedEntity(ImageDesc imageDesc, Color background,
+			GraphicsEntity graphicsEntity) {
 
 		if (graphicsEntity == null) {
 			throw new NullPointerException("graphicsEntity");
+		} else if (imageDesc == null) {
+			throw new NullPointerException("imageDesc");
 		}
 
 		// Save
-		this.width = width;
-		this.height = height;
-		this.transparency = transparency;
+		this.imageDesc = imageDesc;
 		this.background = background;
 		this.graphicsEntity = graphicsEntity;
 
-		if (!AssetManager.isHeadless()) {
-			// Just create the resource
-			createResource();
-		}
+		// Just create the resource
+		createResource();
 	}
 
 	/*
 	 * (non-Javadoc)
 	 * 
-	 * @see propra2012.gruppe33.resources.Resource#get()
+	 * @see com.indyforge.twod.engine.resources.Resource#get()
 	 */
 	@Override
 	public Image get() {

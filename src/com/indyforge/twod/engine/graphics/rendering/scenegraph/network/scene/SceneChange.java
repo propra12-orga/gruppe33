@@ -32,7 +32,8 @@ public final class SceneChange implements Change<SceneProcessor> {
 	/*
 	 * (non-Javadoc)
 	 * 
-	 * @see com.indyforge.foxnet.rmi.pattern.change.Change#apply(java.lang.Object)
+	 * @see
+	 * com.indyforge.foxnet.rmi.pattern.change.Change#apply(java.lang.Object)
 	 */
 	@Override
 	public void apply(SceneProcessor ctx) {

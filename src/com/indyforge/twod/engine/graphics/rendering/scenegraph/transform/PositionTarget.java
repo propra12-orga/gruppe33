@@ -32,7 +32,7 @@ public class PositionTarget extends Vector2fTarget {
 	}
 
 	public PositionTarget(GraphicsEntity controlled, Vector2f target,
-			float velocity, boolean includeParentState) {
-		super(controlled, target, velocity, includeParentState);
+			float velocity) {
+		super(controlled, target, velocity);
 	}
 }

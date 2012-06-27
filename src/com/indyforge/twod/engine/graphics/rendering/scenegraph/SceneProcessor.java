@@ -8,11 +8,17 @@ import java.awt.Graphics2D;
 import java.awt.Toolkit;
 import java.awt.event.ComponentAdapter;
 import java.awt.event.ComponentEvent;
+import java.awt.event.FocusEvent;
+import java.awt.event.FocusListener;
+import java.awt.event.KeyEvent;
+import java.awt.event.KeyListener;
 import java.awt.image.BufferStrategy;
 import java.awt.image.BufferedImage;
 import java.io.IOException;
 import java.lang.reflect.InvocationTargetException;
-import java.util.concurrent.BlockingQueue;
+import java.net.InetSocketAddress;
+import java.net.SocketAddress;
+import java.util.List;
 import java.util.concurrent.LinkedBlockingDeque;
 
 import com.indyforge.foxnet.rmi.InvokerManager;
@@ -20,12 +26,17 @@ import com.indyforge.foxnet.rmi.LookupException;
 import com.indyforge.foxnet.rmi.pattern.change.AdminSessionServer;
 import com.indyforge.foxnet.rmi.pattern.change.Change;
 import com.indyforge.foxnet.rmi.pattern.change.Changeable;
+import com.indyforge.foxnet.rmi.pattern.change.ChangeableQueue;
 import com.indyforge.foxnet.rmi.pattern.change.Session;
 import com.indyforge.foxnet.rmi.pattern.change.SessionServer;
+import com.indyforge.foxnet.rmi.pattern.change.impl.DefaultChangeableQueue;
 import com.indyforge.foxnet.rmi.pattern.change.impl.DefaultSessionServer;
+import com.indyforge.foxnet.rmi.transport.network.Broadcaster;
 import com.indyforge.foxnet.rmi.transport.network.ConnectionManager;
 import com.indyforge.twod.engine.graphics.GraphicsRoutines;
 import com.indyforge.twod.engine.resources.assets.AssetManager;
+import com.indyforge.twod.engine.util.task.Task;
+import com.indyforge.twod.engine.util.task.TaskQueue;
 
 /**
  * This class supports active rendering which is the most performant way to
@@ -39,14 +50,33 @@ import com.indyforge.twod.engine.resources.assets.AssetManager;
  * @author Christopher Probst
  * @see Scene
  */
-public final class SceneProcessor implements Changeable<SceneProcessor> {
+public final class SceneProcessor implements Changeable<SceneProcessor>,
+		KeyListener, FocusListener {
+
+	/**
+	 * @see Broadcaster#receiveBroadcast(int, int, int)
+	 */
+	public static List<Object> receiveBroadcast(int port, int maxResults,
+			int timeoutmillies) throws IOException, ClassNotFoundException {
+		return Broadcaster.receiveBroadcast(port, maxResults, timeoutmillies);
+	}
+
+	/**
+	 * @see Broadcaster#receiveBroadcast(SocketAddress, int, int)
+	 */
+	public static List<Object> receiveBroadcast(SocketAddress target,
+			int maxResults, int timeoutmillies) throws IOException,
+			ClassNotFoundException {
+		return Broadcaster.receiveBroadcast(target, maxResults, timeoutmillies);
+	}
 
 	public static final String REMOTE_NAME = "session_server";
 
 	/*
 	 * Used for tasks which should be processed in the main thread.
 	 */
-	private BlockingQueue<Runnable> tasks = new LinkedBlockingDeque<Runnable>();
+	private final TaskQueue taskQueue = new TaskQueue(
+			new LinkedBlockingDeque<Task>());
 
 	/*
 	 * ************************************************************************
@@ -70,10 +100,20 @@ public final class SceneProcessor implements Changeable<SceneProcessor> {
 	private NetworkMode networkMode;
 
 	/*
+	 * The message broadcaster.
+	 */
+	private Broadcaster broadcaster;
+
+	/*
 	 * Will be set by the server to "reset" the network time. The user can
 	 * calculate the active network time using this timestamp.
 	 */
 	private long networkInitTimestamp = -1;
+
+	/*
+	 * This flag is used for applying queued changes.
+	 */
+	private boolean synchronousQueue = false;
 
 	/*
 	 * ************************************************************************
@@ -90,6 +130,12 @@ public final class SceneProcessor implements Changeable<SceneProcessor> {
 	 * Here we can store the session of this scene processor.
 	 */
 	private Session<SceneProcessor> session;
+
+	/*
+	 * The changeable session instances.
+	 */
+	private ChangeableQueue<SceneProcessor> changeableClient;
+	private ChangeableQueue<SceneProcessor> changeableServer;
 
 	/*
 	 * ************************************************************************
@@ -173,7 +219,7 @@ public final class SceneProcessor implements Changeable<SceneProcessor> {
 	}
 
 	/**
-	 * Creates a new offline scene processor (Use only in headless mode).
+	 * Creates a new offline scene processor.
 	 * 
 	 */
 	public SceneProcessor() {
@@ -196,8 +242,7 @@ public final class SceneProcessor implements Changeable<SceneProcessor> {
 	}
 
 	/**
-	 * Creates a new scene processor using the given network mode (Use only in
-	 * headless mode).
+	 * Creates a new scene processor using the given network mode.
 	 * 
 	 * @param networkMode
 	 *            The network mode of this processor.
@@ -275,12 +320,16 @@ public final class SceneProcessor implements Changeable<SceneProcessor> {
 				}
 			});
 
+			// Add listener
+			canvas.addKeyListener(this);
+			canvas.addFocusListener(this);
+
 			/*
 			 * Create a new frame using this scene processor.
 			 */
 			try {
-				frame = GraphicsRoutines
-						.createFrame(this, title, width, height);
+				frame = title != null && width > 0 && height > 0 ? GraphicsRoutines
+						.createFrame(this, title, width, height) : null;
 			} catch (Exception e1) {
 				throw new RuntimeException("Failed to create scene processor "
 						+ "frame. Reason: " + e1.getMessage(), e1);
@@ -348,15 +397,15 @@ public final class SceneProcessor implements Changeable<SceneProcessor> {
 	 */
 	public boolean hasNetworkResources() {
 		synchronized (netLock) {
-			return connectionManager != null ? !connectionManager.isDisposed()
-					: false;
+			return (connectionManager != null ? !connectionManager.isDisposed()
+					: false) || broadcaster != null;
 		}
 	}
 
 	/**
-	 * Resets the network. All active connections will be terminated and
-	 * internal bindings will be removed. Please note that the network is still
-	 * able to work after this method.
+	 * Resets the network. All active connections (broadcasting is not affected
+	 * by this method) will be terminated and internal bindings will be removed.
+	 * Please note that the network is still able to work after this method.
 	 * <p>
 	 * If you want to DESTROY the active network please use
 	 * {@link SceneProcessor#releaseNetworkResources()}.
@@ -377,6 +426,8 @@ public final class SceneProcessor implements Changeable<SceneProcessor> {
 				// Reset client stuff
 				invokerManager = null;
 				session = null;
+				changeableClient = null;
+				changeableServer = null;
 			}
 		}
 	}
@@ -387,11 +438,14 @@ public final class SceneProcessor implements Changeable<SceneProcessor> {
 	 */
 	public void releaseNetworkResources() {
 		synchronized (netLock) {
-			if (connectionManager != null) {
-				connectionManager.dispose();
-				connectionManager = null;
+			if (hasNetworkResources()) {
+				if (connectionManager != null) {
+					connectionManager.dispose();
+					connectionManager = null;
+				}
 				networkMode = NetworkMode.Offline;
 				networkInitTimestamp = -1;
+				closeBroadcaster();
 
 				// Delete server stuff
 				adminSessionServer = null;
@@ -399,6 +453,8 @@ public final class SceneProcessor implements Changeable<SceneProcessor> {
 				// Delete client stuff
 				invokerManager = null;
 				session = null;
+				changeableClient = null;
+				changeableServer = null;
 			}
 		}
 	}
@@ -418,6 +474,41 @@ public final class SceneProcessor implements Changeable<SceneProcessor> {
 	 * Connects to the given server. If the scene processor is already
 	 * connected, the old connection will be cancelled first.
 	 * 
+	 * @param socketAddress
+	 *            The host address.
+	 * @return this for chaining;
+	 * @throws IOException
+	 *             If the connection attempt failed.
+	 */
+	public SceneProcessor openClient(SocketAddress socketAddress)
+			throws IOException {
+		synchronized (netLock) {
+			if (networkMode != NetworkMode.Client) {
+				throw new IllegalStateException("Wrong network mode");
+			} else if (invokerManager != null) {
+				// Reset the network
+				resetNetwork();
+			}
+			try {
+				// Try to open the connection
+				invokerManager = connectionManager.openClient(socketAddress);
+			} catch (IOException e) {
+				/*
+				 * Reset the network if the connection failed.
+				 */
+				resetNetwork();
+
+				// Throw again!
+				throw e;
+			}
+			return this;
+		}
+	}
+
+	/**
+	 * Connects to the given server. If the scene processor is already
+	 * connected, the old connection will be cancelled first.
+	 * 
 	 * @param host
 	 *            The host address.
 	 * @param port
@@ -427,17 +518,7 @@ public final class SceneProcessor implements Changeable<SceneProcessor> {
 	 *             If the connection attempt failed.
 	 */
 	public SceneProcessor openClient(String host, int port) throws IOException {
-		synchronized (netLock) {
-			if (networkMode != NetworkMode.Client) {
-				throw new IllegalStateException("Wrong network mode");
-			} else if (invokerManager != null) {
-				// Reset the network
-				resetNetwork();
-			}
-			// Try to open the connection
-			invokerManager = connectionManager.openClient(host, port);
-			return this;
-		}
+		return openClient(new InetSocketAddress(host, port));
 	}
 
 	/**
@@ -450,6 +531,30 @@ public final class SceneProcessor implements Changeable<SceneProcessor> {
 			}
 			// Init the local network time
 			networkInitTimestamp = System.currentTimeMillis();
+		}
+	}
+
+	/**
+	 * @return the synchronous queue flag.
+	 */
+	public boolean isSynchronousQueue() {
+		synchronized (netLock) {
+			return synchronousQueue;
+		}
+	}
+
+	/**
+	 * Sets the synchronous queue flag.
+	 * 
+	 * @param synchronousQueue
+	 *            If true, the queued changes will be applied synchronously,
+	 *            otherwise they are applies asynchronously.
+	 * @return this for chaining.
+	 */
+	public SceneProcessor synchronousQueue(boolean synchronousQueue) {
+		synchronized (netLock) {
+			this.synchronousQueue = synchronousQueue;
+			return this;
 		}
 	}
 
@@ -499,6 +604,69 @@ public final class SceneProcessor implements Changeable<SceneProcessor> {
 	}
 
 	/**
+	 * Opens a broadcaster.
+	 * 
+	 * @param port
+	 *            The broadcasting port.
+	 * @param message
+	 *            The broadcasted message.
+	 * @return this for chaining.
+	 * @throws IOException
+	 *             If an IO exception occurs.
+	 */
+	public SceneProcessor openBroadcaster(int port, Object message)
+			throws IOException {
+		synchronized (netLock) {
+			if (networkMode == NetworkMode.Offline) {
+				throw new IllegalStateException("Wrong network mode");
+			} else if (broadcaster != null) {
+				closeBroadcaster();
+			}
+
+			// Try to create a new broadcaster
+			broadcaster = new Broadcaster(port, message);
+
+			// Start the broadcaster
+			broadcaster.start();
+
+			return this;
+		}
+	}
+
+	/**
+	 * @return true if this scene processor has broadcaster, otherwise false.
+	 */
+	public boolean hasBroadcaster() {
+		synchronized (netLock) {
+			return broadcaster != null;
+		}
+	}
+
+	/**
+	 * Closes the broadcaster.
+	 * 
+	 * @return this for chaining.
+	 */
+	public SceneProcessor closeBroadcaster() {
+		synchronized (netLock) {
+			if (broadcaster != null) {
+				broadcaster.interrupt();
+			}
+			broadcaster = null;
+			return this;
+		}
+	}
+
+	/**
+	 * @return the broadcaster.
+	 */
+	public Broadcaster broadcaster() {
+		synchronized (netLock) {
+			return broadcaster;
+		}
+	}
+
+	/**
 	 * Links this scene processor with a session server.
 	 * 
 	 * @param name
@@ -525,7 +693,20 @@ public final class SceneProcessor implements Changeable<SceneProcessor> {
 			/*
 			 * Open a session for this scene processor and save it.
 			 */
-			return session = server.openSession(this, name);
+			if ((session = server.openSession(this, name)) != null) {
+
+				/*
+				 * Init both changeable instances.
+				 */
+				changeableClient = new DefaultChangeableQueue<SceneProcessor>(
+						session.client());
+				changeableServer = new DefaultChangeableQueue<SceneProcessor>(
+						session.server());
+
+				return session;
+			} else {
+				throw new IllegalStateException("Null session returned");
+			}
 		}
 	}
 
@@ -567,6 +748,24 @@ public final class SceneProcessor implements Changeable<SceneProcessor> {
 	}
 
 	/**
+	 * @return the changeable client (client-side).
+	 */
+	public ChangeableQueue<SceneProcessor> changeableClient() {
+		synchronized (netLock) {
+			return changeableClient;
+		}
+	}
+
+	/**
+	 * @return the changeable server (client-side).
+	 */
+	public ChangeableQueue<SceneProcessor> changeableServer() {
+		synchronized (netLock) {
+			return changeableServer;
+		}
+	}
+
+	/**
 	 * @return the scene root.
 	 */
 	public Scene root() {
@@ -576,20 +775,31 @@ public final class SceneProcessor implements Changeable<SceneProcessor> {
 	/*
 	 * (non-Javadoc)
 	 * 
-	 * @see com.indyforge.twod.engine.graphics.rendering.scenegraph.Changeable#
-	 * applyChange
-	 * (com.indyforge.twod.engine.graphics.rendering.scenegraph.Change)
+	 * @see
+	 * com.indyforge.foxnet.rmi.pattern.change.Changeable#applyChange(com.indyforge
+	 * .foxnet.rmi.pattern.change.Change)
 	 */
 	@Override
 	public void applyChange(final Change<SceneProcessor> change) {
 		if (Thread.currentThread().equals(lastProcessorThread)) {
 			change.apply(this);
 		} else {
-			tasks().offer(new Runnable() {
+			taskQueue.tasks().offer(new Task() {
 
+				/**
+				 * 
+				 */
+				private static final long serialVersionUID = 1L;
+
+				/*
+				 * (non-Javadoc)
+				 * 
+				 * @see com.indyforge.twod.engine.util.task.Task#update(float)
+				 */
 				@Override
-				public void run() {
+				public boolean update(float tpf) {
 					applyChange(change);
+					return true;
 				}
 			});
 		}
@@ -600,11 +810,11 @@ public final class SceneProcessor implements Changeable<SceneProcessor> {
 	 * 
 	 * @param root
 	 *            The root scene.
+	 * @return this for chaining.
 	 */
-	public void root(Scene root) {
+	public SceneProcessor root(Scene root) {
 		// Remove old link
 		if (this.root != null) {
-			this.root.disconnectFrom(canvas);
 			this.root.processor = null;
 		}
 
@@ -613,8 +823,6 @@ public final class SceneProcessor implements Changeable<SceneProcessor> {
 
 		// Connect if not null...
 		if (root != null) {
-			// Connect the input
-			root.connectTo(canvas);
 
 			// Set processor
 			root.processor = this;
@@ -622,15 +830,15 @@ public final class SceneProcessor implements Changeable<SceneProcessor> {
 			// The time must be resetted.
 			resetTime();
 		}
+
+		return this;
 	}
 
 	/**
-	 * The returned queue is thread-safe.
-	 * 
-	 * @return the task queue.
+	 * @return the task deque.
 	 */
-	public BlockingQueue<Runnable> tasks() {
-		return tasks;
+	public TaskQueue taskQueue() {
+		return taskQueue;
 	}
 
 	/**
@@ -657,11 +865,22 @@ public final class SceneProcessor implements Changeable<SceneProcessor> {
 		if (Thread.currentThread().equals(lastProcessorThread)) {
 			this.shutdownRequested = shutdownRequested;
 		} else {
-			tasks().offer(new Runnable() {
+			taskQueue.tasks().offer(new Task() {
 
+				/**
+				 * 
+				 */
+				private static final long serialVersionUID = 1L;
+
+				/*
+				 * (non-Javadoc)
+				 * 
+				 * @see com.indyforge.twod.engine.util.task.Task#update(float)
+				 */
 				@Override
-				public void run() {
+				public boolean update(float tpf) {
 					shutdownRequest(shutdownRequested);
+					return true;
 				}
 			});
 		}
@@ -685,36 +904,24 @@ public final class SceneProcessor implements Changeable<SceneProcessor> {
 	}
 
 	/**
-	 * Processes all pending tasks. BE VERY CAREFUL with this method. It should
-	 * only be called in the game thread. Otherwise you will loose
-	 * thread-safety.
-	 */
-	public void processTasks() {
-		// Tmp var
-		Runnable task;
-
-		// Process all tasks
-		while ((task = tasks.poll()) != null) {
-			task.run();
-		}
-	}
-
-	/**
 	 * Starts the game loop. This method blocks until shutdown is requested or
 	 * an exception is thrown. This method {@link SceneProcessor#dispose()
 	 * disposes} this scene processor when returning.
 	 * 
 	 * @param maxFPS
 	 *            The maximum frames per second. A value < 1 means no max.
+	 * @return this for chaining.
 	 * @throws Exception
 	 *             If some kind of error occurs.
 	 */
-	public void start(int maxFps) throws Exception {
+	public SceneProcessor start(int maxFps) throws Exception {
 		try {
 			while (!isShutdownRequested()) {
 				// Process the whole scene!
 				process(maxFps);
 			}
+
+			return this;
 		} finally {
 
 			// Dispose the scene processor
@@ -735,14 +942,17 @@ public final class SceneProcessor implements Changeable<SceneProcessor> {
 		// Save the current thread
 		lastProcessorThread = Thread.currentThread();
 
-		// Process all pending tasks
-		processTasks();
-
 		// Do the time stuff...
 		lastTime = lastTime == -1 ? System.currentTimeMillis() : curTime;
 
 		// Get active time
 		curTime = System.currentTimeMillis();
+
+		// The passed time
+		float tpf = (curTime - lastTime) * 0.001f;
+
+		// Execute all pending tasks
+		taskQueue.update(tpf);
 
 		// If root is null we cannot process...
 		if (root == null) {
@@ -792,7 +1002,7 @@ public final class SceneProcessor implements Changeable<SceneProcessor> {
 					g2d.clearRect(0, 0, w, h);
 
 					// Simulate the scene
-					root.simulate(g2d, w, h, curTime - lastTime);
+					root.simulate(g2d, w, h, tpf);
 
 					// Scene is processed now
 					processed = true;
@@ -832,16 +1042,40 @@ public final class SceneProcessor implements Changeable<SceneProcessor> {
 		 */
 		if (!processed) {
 			// Simulate the scene without drawing
-			root.simulate(null, -1, -1, curTime - lastTime);
+			root.simulate(null, -1, -1, tpf);
+		}
+
+		/*
+		 * Send all queued changes if not offline...
+		 */
+		synchronized (netLock) {
+			if (networkMode != NetworkMode.Offline) {
+				if (synchronousQueue) {
+					if (hasAdminSessionServer()) {
+						adminSessionServer.composite().applyQueuedChanges();
+					} else if (hasSession()) {
+						changeableClient.applyQueuedChanges();
+						changeableServer.applyQueuedChanges();
+					}
+				} else {
+					if (hasAdminSessionServer()) {
+						adminSessionServer.composite().applyQueuedChangesLater(
+								null);
+					} else if (hasSession()) {
+						changeableClient.applyQueuedChangesLater(null);
+						changeableServer.applyQueuedChangesLater(null);
+					}
+				}
+			}
 		}
 
 		// Check!
 		if (maxFPS > 0) {
 			// Calc the frame duration
-			int frameDuration = (int) (System.currentTimeMillis() - curTime);
+			long frameDuration = System.currentTimeMillis() - curTime;
 
 			// Calc the minimum duration
-			int minDuration = 1000 / maxFPS;
+			long minDuration = 1000 / maxFPS;
 
 			// Wait a bit
 			if (frameDuration < minDuration) {
@@ -849,5 +1083,112 @@ public final class SceneProcessor implements Changeable<SceneProcessor> {
 				Thread.sleep(minDuration - frameDuration);
 			}
 		}
+	}
+
+	/*
+	 * (non-Javadoc)
+	 * 
+	 * @see java.awt.event.FocusListener#focusGained(java.awt.event.FocusEvent)
+	 */
+	@Override
+	public void focusGained(FocusEvent e) {
+	}
+
+	/*
+	 * (non-Javadoc)
+	 * 
+	 * @see java.awt.event.FocusListener#focusLost(java.awt.event.FocusEvent)
+	 */
+	@Override
+	public void focusLost(FocusEvent e) {
+		taskQueue.tasks().offer(new Task() {
+
+			/**
+			 * 
+			 */
+			private static final long serialVersionUID = 1L;
+
+			/*
+			 * (non-Javadoc)
+			 * 
+			 * @see com.indyforge.twod.engine.util.task.Task#update(float)
+			 */
+			@Override
+			public boolean update(float tpf) {
+				if (root != null) {
+					// Clear keyboard
+					root.clearKeyboardState();
+				}
+				return true;
+			}
+		});
+	}
+
+	/*
+	 * (non-Javadoc)
+	 * 
+	 * @see java.awt.event.KeyListener#keyPressed(java.awt.event.KeyEvent)
+	 */
+	@Override
+	public void keyPressed(final KeyEvent e) {
+
+		taskQueue.tasks().offer(new Task() {
+
+			/**
+			 * 
+			 */
+			private static final long serialVersionUID = 1L;
+
+			/*
+			 * (non-Javadoc)
+			 * 
+			 * @see com.indyforge.twod.engine.util.task.Task#update(float)
+			 */
+			@Override
+			public boolean update(float tpf) {
+				if (root != null) {
+					root.pressed(e.getKeyCode(), Boolean.TRUE);
+				}
+				return true;
+			}
+		});
+	}
+
+	/*
+	 * (non-Javadoc)
+	 * 
+	 * @see java.awt.event.KeyListener#keyReleased(java.awt.event.KeyEvent)
+	 */
+	@Override
+	public void keyReleased(final KeyEvent e) {
+		taskQueue.tasks().offer(new Task() {
+
+			/**
+			 * 
+			 */
+			private static final long serialVersionUID = 1L;
+
+			/*
+			 * (non-Javadoc)
+			 * 
+			 * @see com.indyforge.twod.engine.util.task.Task#update(float)
+			 */
+			@Override
+			public boolean update(float tpf) {
+				if (root != null) {
+					root.pressed(e.getKeyCode(), Boolean.FALSE);
+				}
+				return true;
+			}
+		});
+	}
+
+	/*
+	 * (non-Javadoc)
+	 * 
+	 * @see java.awt.event.KeyListener#keyTyped(java.awt.event.KeyEvent)
+	 */
+	@Override
+	public void keyTyped(KeyEvent e) {
 	}
 }

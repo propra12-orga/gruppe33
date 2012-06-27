@@ -40,12 +40,21 @@ public final class GridRemoteInput extends GraphicsEntity {
 		tmp.put(Input.Down, scene.isPressed(KeyEvent.VK_DOWN));
 		tmp.put(Input.Left, scene.isPressed(KeyEvent.VK_LEFT));
 		tmp.put(Input.Right, scene.isPressed(KeyEvent.VK_RIGHT));
-		tmp.put(Input.PlaceBomb, scene.isPressed(KeyEvent.VK_SPACE));
+		tmp.put(Input.PlaceBomb, scene.isSinglePressed(KeyEvent.VK_SPACE));
+		tmp.put(Input.BombUp, scene.isSinglePressed(KeyEvent.VK_X));
+		tmp.put(Input.BombDown, scene.isSinglePressed(KeyEvent.VK_Y));
 
 		if (scene.processor().hasSession() && !tmp.equals(inputMap)) {
 			inputMap.putAll(tmp);
-			scene.processor().session().server()
-					.applyChange(new GridInputChange(peerKey, tmp));
+
+			GridInputChange ch = new GridInputChange(Input.class);
+			ch.entities().add(peerKey);
+			ch.inputMap().putAll(tmp);
+
+			/*
+			 * Do NOT queue. This event should be send directly!
+			 */
+			scene.processor().changeableServer().applyChangeLater(ch, null);
 		}
 	}
 }
