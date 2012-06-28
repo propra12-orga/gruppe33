@@ -3,7 +3,9 @@ package propra2012.gruppe33.bomberman.graphics.rendering.scenegraph.grid.items;
 import java.awt.Color;
 import java.awt.Font;
 import java.awt.Graphics2D;
+import java.util.Deque;
 import java.util.EnumMap;
+import java.util.LinkedList;
 import java.util.Map;
 
 import propra2012.gruppe33.bomberman.GameRoutines;
@@ -43,6 +45,9 @@ public final class ItemSpawner extends GraphicsEntity {
 	private final Map<CollectableItem, Boolean> spawnItems = new EnumMap<CollectableItem, Boolean>(
 			CollectableItem.class);
 
+	// The input queue!
+	private final Deque<Map<Input, Boolean>> inputQueue = new LinkedList<Map<Input, Boolean>>();
+
 	/*
 	 * (non-Javadoc)
 	 * 
@@ -59,17 +64,8 @@ public final class ItemSpawner extends GraphicsEntity {
 			// The input map
 			Map<Input, Boolean> input = (Map<Input, Boolean>) params[0];
 
-			// Parse the input
-			spawnItems.put(CollectableItem.DefaultBomb,
-					input.get(Input.PlaceDefaultBomb));
-			spawnItems.put(CollectableItem.NukeBomb,
-					input.get(Input.PlaceNukeBomb));
-			spawnItems.put(CollectableItem.FastBomb,
-					input.get(Input.PlaceFastBomb));
-			spawnItems.put(CollectableItem.Palisade,
-					input.get(Input.PlacePalisade));
-			spawnItems.put(CollectableItem.ShieldPotion,
-					input.get(Input.ActivateShield));
+			// Offer next input
+			inputQueue.offer(input);
 		}
 	}
 
@@ -168,6 +164,25 @@ public final class ItemSpawner extends GraphicsEntity {
 	protected void onUpdate(float tpf) {
 		super.onUpdate(tpf);
 
+		// Poll next
+		Map<Input, Boolean> input = inputQueue.poll();
+
+		// Process NOW
+		if (input != null) {
+
+			// Parse the input
+			spawnItems.put(CollectableItem.DefaultBomb,
+					input.get(Input.PlaceDefaultBomb));
+			spawnItems.put(CollectableItem.NukeBomb,
+					input.get(Input.PlaceNukeBomb));
+			spawnItems.put(CollectableItem.FastBomb,
+					input.get(Input.PlaceFastBomb));
+			spawnItems.put(CollectableItem.Palisade,
+					input.get(Input.PlacePalisade));
+			spawnItems.put(CollectableItem.ShieldPotion,
+					input.get(Input.ActivateShield));
+		}
+
 		// Get parent
 		GraphicsEntity node = ((GraphicsEntity) parent().parent());
 
@@ -210,6 +225,10 @@ public final class ItemSpawner extends GraphicsEntity {
 					// Apply global change
 					node.findSceneProcessor().adminSessionServer().composite()
 							.queueChange(bomb, true);
+
+					// Clean up
+					removeItems(item, 1);
+					spawnItems.put(item, false);
 				}
 			} else {
 				item = CollectableItem.Palisade;
@@ -236,12 +255,12 @@ public final class ItemSpawner extends GraphicsEntity {
 					// Apply global change
 					node.findSceneProcessor().adminSessionServer().composite()
 							.queueChange(sp, true);
+
+					// Clean up
+					removeItems(item, 1);
+					spawnItems.put(item, false);
 				}
 			}
-
-			// Clean up
-			removeItems(item, 1);
-			spawnItems.put(item, false);
 		}
 
 		/*

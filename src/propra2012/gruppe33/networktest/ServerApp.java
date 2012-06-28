@@ -20,9 +20,9 @@ public class ServerApp {
 		SceneProcessor serverProcessor = new SceneProcessor(NetworkMode.Server)
 				.openServer(1337);
 
-		// Start broadcasting the address
-		serverProcessor.openBroadcaster(1338, new InetSocketAddress("kr0e-pc",
-				1337));
+//		// Start broadcasting the address
+//		serverProcessor.openBroadcaster(1338, new InetSocketAddress("kr0e-pc",
+//				1337));
 
 		// Wait for two players
 		while (true) {
