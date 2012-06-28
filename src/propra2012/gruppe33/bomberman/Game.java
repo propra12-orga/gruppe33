@@ -11,9 +11,7 @@ import java.util.Map.Entry;
 import java.util.Properties;
 import java.util.UUID;
 
-import propra2012.gruppe33.bomberman.graphics.rendering.scenegraph.grid.GridConstants;
 import propra2012.gruppe33.bomberman.graphics.rendering.scenegraph.grid.GridLoader;
-import propra2012.gruppe33.bomberman.graphics.rendering.scenegraph.grid.GridRoutines;
 import propra2012.gruppe33.bomberman.graphics.rendering.scenegraph.grid.input.InputActivator;
 import propra2012.gruppe33.bomberman.graphics.rendering.scenegraph.grid.transform.DeltaPositionBroadcaster;
 
@@ -33,7 +31,7 @@ import com.indyforge.twod.engine.resources.assets.AssetManager;
  * @author Christopher Probst
  * 
  */
-public final class Game implements GridConstants, Serializable {
+public final class Game implements GameConstants, Serializable {
 
 	/**
 	 * 
@@ -47,7 +45,7 @@ public final class Game implements GridConstants, Serializable {
 	/*
 	 * 
 	 */
-	private String assetBundle = "scenes/default.zip",
+	private String assetBundle = "res/default.zip",
 			mapPropAssetPath = "assets/maps/smallmap.prop";
 	private float broadcastUpdateTime = 0.015f;
 
@@ -205,10 +203,27 @@ public final class Game implements GridConstants, Serializable {
 		scene.addProp(NUKE_BOMB_BAG_IMAGE, assets.loadImage(
 				properties.getProperty(NUKE_BOMB_BAG_IMAGE), true));
 
-		scene.addProp(TIME_BOMB_IMAGE,
-				assets.loadImage(properties.getProperty(TIME_BOMB_IMAGE), true));
-		scene.addProp(TIME_BOMB_BAG_IMAGE, assets.loadImage(
-				properties.getProperty(TIME_BOMB_BAG_IMAGE), true));
+		scene.addProp(FAST_BOMB_IMAGE,
+				assets.loadImage(properties.getProperty(FAST_BOMB_IMAGE), true));
+		scene.addProp(FAST_BOMB_BAG_IMAGE, assets.loadImage(
+				properties.getProperty(FAST_BOMB_BAG_IMAGE), true));
+
+		scene.addProp(PALISADE_HORI_IMAGE, assets.loadImage(
+				properties.getProperty(PALISADE_HORI_IMAGE), true));
+		scene.addProp(PALISADE_VERT_IMAGE, assets.loadImage(
+				properties.getProperty(PALISADE_VERT_IMAGE), true));
+		scene.addProp(PALISADE_BAG_IMAGE, assets.loadImage(
+				properties.getProperty(PALISADE_BAG_IMAGE), true));
+
+		scene.addProp(SHIELD_IMAGE,
+				assets.loadImage(properties.getProperty(SHIELD_IMAGE), true));
+		scene.addProp(SHIELD_POTION_IMAGE, assets.loadImage(
+				properties.getProperty(SHIELD_POTION_IMAGE), true));
+
+		scene.addProp(SLOW_SHROOM_IMAGE, assets.loadImage(
+				properties.getProperty(SLOW_SHROOM_IMAGE), true));
+		scene.addProp(FAST_SHROOM_IMAGE, assets.loadImage(
+				properties.getProperty(FAST_SHROOM_IMAGE), true));
 
 		// Parse the width and height of the sprite
 		int spriteWidth = Integer.parseInt(properties
@@ -224,10 +239,10 @@ public final class Game implements GridConstants, Serializable {
 
 		// Parse and setup map
 		GraphicsEntity grid = GridLoader.parse(map, scene, broadcastUpdateTime,
-				System.nanoTime(), 0.2f, 0.2f, 0.2f);
+				System.nanoTime(), 0.2f, 0.2f, 0.2f, 0.1f, 0.1f, 0.1f, 0.1f);
 
 		// The spawn points
-		List<Point> spawnPoints = GridLoader.find(map, GridConstants.SPAWN);
+		List<Point> spawnPoints = GridLoader.find(map, GameConstants.SPAWN);
 
 		int i = 0;
 
@@ -244,19 +259,19 @@ public final class Game implements GridConstants, Serializable {
 			 */
 			switch (entry.getValue()) {
 			case Dwarf:
-				player = GridRoutines.createRemoteDwarf(assets,
+				player = GameRoutines.createRemoteDwarf(assets,
 						String.valueOf(entry.getKey()));
 				break;
 			case Knight:
-				player = GridRoutines.createRemoteKnight(assets,
+				player = GameRoutines.createRemoteKnight(assets,
 						String.valueOf(entry.getKey()));
 				break;
 			case Santa:
-				player = GridRoutines.createRemoteSanta(assets,
+				player = GameRoutines.createRemoteSanta(assets,
 						String.valueOf(entry.getKey()));
 				break;
 			case Wizard:
-				player = GridRoutines.createRemoteWizard(assets,
+				player = GameRoutines.createRemoteWizard(assets,
 						String.valueOf(entry.getKey()));
 				break;
 			default:
@@ -269,7 +284,7 @@ public final class Game implements GridConstants, Serializable {
 			/*
 			 * Register to delta position broadcaster.
 			 */
-			scene.prop(GridConstants.BROADCASTER_NAME,
+			scene.prop(GameConstants.BROADCASTER_NAME,
 					DeltaPositionBroadcaster.class)
 					.entities()
 					.put(player.registrationKey(),

@@ -4,10 +4,10 @@ import java.awt.Graphics;
 import java.awt.Graphics2D;
 import java.awt.Image;
 import java.awt.geom.AffineTransform;
-import java.awt.image.BufferedImage;
 
 import com.indyforge.twod.engine.graphics.rendering.scenegraph.math.Vector2f;
 import com.indyforge.twod.engine.graphics.sprite.Sprite;
+import com.indyforge.twod.engine.resources.Resource;
 import com.indyforge.twod.engine.resources.assets.Asset;
 import com.indyforge.twod.engine.resources.assets.AssetManager;
 import com.indyforge.twod.engine.util.iteration.FilteredIterator;
@@ -323,8 +323,8 @@ public class GraphicsEntity extends Entity {
 	 * @return the image of the given key or null.
 	 */
 	@SuppressWarnings("unchecked")
-	public Asset<BufferedImage> imageProp(Object key) {
-		return (Asset<BufferedImage>) prop(key, Asset.class);
+	public Resource<? extends Image> imageProp(Object key) {
+		return (Resource<? extends Image>) prop(key, Asset.class);
 	}
 
 	/**

@@ -1,7 +1,5 @@
 package propra2012.gruppe33.bomberman.graphics.rendering.scenegraph.grid.input;
 
-import propra2012.gruppe33.bomberman.graphics.rendering.scenegraph.grid.GridConstants.Input;
-
 import com.indyforge.twod.engine.graphics.rendering.scenegraph.GraphicsEntity;
 import com.indyforge.twod.engine.graphics.rendering.scenegraph.network.input.InputChange;
 
@@ -10,7 +8,7 @@ import com.indyforge.twod.engine.graphics.rendering.scenegraph.network.input.Inp
  * @author Christopher Probst
  * 
  */
-public class GridInputChange extends InputChange<Input, GraphicsEntity> {
+public final class GridInputChange extends InputChange<Input, GraphicsEntity> {
 
 	/**
 	 * 
