@@ -245,7 +245,7 @@ public final class GameRoutines implements GameConstants {
 		}
 
 		// The new palisade
-		RenderedImage palisade = new RenderedImage();
+		RenderedImage palisade = new RenderedImage().centered(true);
 
 		// A palisade is breakable!
 		palisade.tag(BREAKABLE_TAG);

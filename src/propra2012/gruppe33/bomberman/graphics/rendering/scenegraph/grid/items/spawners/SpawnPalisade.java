@@ -6,7 +6,6 @@ import java.util.UUID;
 import propra2012.gruppe33.bomberman.GameRoutines;
 
 import com.indyforge.twod.engine.graphics.rendering.scenegraph.GraphicsEntity;
-import com.indyforge.twod.engine.graphics.rendering.scenegraph.math.Vector2f.Direction;
 import com.indyforge.twod.engine.graphics.rendering.scenegraph.network.entity.OneToMany;
 
 /**
@@ -14,7 +13,8 @@ import com.indyforge.twod.engine.graphics.rendering.scenegraph.network.entity.On
  * @author Christopher Probst
  * 
  */
-public final class SpawnPalisade extends OneToMany<GraphicsEntity, Direction> {
+public final class SpawnPalisade extends
+		OneToMany<GraphicsEntity, PalisadeDesc> {
 
 	/**
 	 * 
@@ -31,10 +31,11 @@ public final class SpawnPalisade extends OneToMany<GraphicsEntity, Direction> {
 	 * java.lang.Object)
 	 */
 	@Override
-	protected void apply(GraphicsEntity entity, Direction value) {
+	protected void apply(GraphicsEntity entity, PalisadeDesc value) {
 
 		// Attach the palisade
-		entity.attach(GameRoutines.createPalisade(entity.findScene(), value));
+		entity.attach(GameRoutines.createPalisade(entity.findScene(),
+				value.direction()).registrationKey(value.itemEntity()));
 	}
 
 	public SpawnPalisade() {

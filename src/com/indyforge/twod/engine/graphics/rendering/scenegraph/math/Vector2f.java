@@ -265,6 +265,27 @@ public final class Vector2f implements Serializable {
 	}
 
 	/**
+	 * Swaps both components of this vector.
+	 * 
+	 * @return this for chaining.
+	 */
+	public Vector2f swapLocal() {
+		float ptr = x;
+		x = y;
+		y = ptr;
+		return this;
+	}
+
+	/**
+	 * Swaps both components and returns a new vector which contains the result.
+	 * 
+	 * @return a new result vector.
+	 */
+	public Vector2f swap() {
+		return new Vector2f(this).swapLocal();
+	}
+
+	/**
 	 * Scales this vector by multiplying it with a scalar.
 	 * 
 	 * @param scalar
@@ -366,7 +387,7 @@ public final class Vector2f implements Serializable {
 	 * @return a new vector which contains the inverse of this vector.
 	 */
 	public Vector2f invert() {
-		return new Vector2f(this).invert();
+		return new Vector2f(this).invertLocal();
 	}
 
 	/**

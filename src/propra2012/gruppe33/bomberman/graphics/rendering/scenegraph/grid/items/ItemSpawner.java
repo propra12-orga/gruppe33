@@ -11,6 +11,9 @@ import propra2012.gruppe33.bomberman.graphics.rendering.scenegraph.grid.input.Gr
 import propra2012.gruppe33.bomberman.graphics.rendering.scenegraph.grid.input.Input;
 import propra2012.gruppe33.bomberman.graphics.rendering.scenegraph.grid.items.bomb.Bomb;
 import propra2012.gruppe33.bomberman.graphics.rendering.scenegraph.grid.items.bomb.BombDesc;
+import propra2012.gruppe33.bomberman.graphics.rendering.scenegraph.grid.items.spawners.PalisadeDesc;
+import propra2012.gruppe33.bomberman.graphics.rendering.scenegraph.grid.items.spawners.SpawnPalisade;
+import propra2012.gruppe33.bomberman.graphics.rendering.scenegraph.grid.movement.GridMovement;
 
 import com.indyforge.foxnet.rmi.pattern.change.Session;
 import com.indyforge.twod.engine.graphics.rendering.scenegraph.Entity;
@@ -167,31 +170,77 @@ public final class ItemSpawner extends GraphicsEntity {
 		// Get parent
 		GraphicsEntity node = ((GraphicsEntity) parent().parent());
 
-		CollectableItem item = CollectableItem.DefaultBomb;
+		// Collect spawn requests
+		int defBomb = spawnItems.get(CollectableItem.DefaultBomb) ? 1 : 0, nukeBomb = spawnItems
+				.get(CollectableItem.NukeBomb) ? 1 : 0, fastBomb = spawnItems
+				.get(CollectableItem.FastBomb) ? 1 : 0, pali = spawnItems
+				.get(CollectableItem.Palisade) ? 1 : 0;
 
-		// Bombable ?
-		if (GameRoutines.isFieldBombable(node)
-		// Spawn ?
-				&& spawnItems.get(item)
-				// Enough bombs ?
-				&& items.get(item) > 0) {
+		// The item...
+		CollectableItem item;
 
-			// Create bomb for the given field
-			Bomb bomb = new Bomb();
-			bomb.entities().add(node.registrationKey());
-			bomb.value(new BombDesc().delay(GameRoutines.bombDelay(item))
-					.range(GameRoutines.bombRange(item)).bomb(item)
-					.randomBombImage().player(parent().registrationKey()));
+		if (defBomb + nukeBomb + fastBomb + pali == 1) {
 
-			// Remove a bomb
+			if (pali == 0) {
+				if (nukeBomb == 1) {
+					item = CollectableItem.NukeBomb;
+				} else if (fastBomb == 1) {
+					item = CollectableItem.FastBomb;
+				} else {
+					item = CollectableItem.DefaultBomb;
+				}
+
+				// Bombable ?
+				if (GameRoutines.isFieldBombable(node)
+				// Spawn ?
+						&& spawnItems.get(item)
+						// Enough bombs ?
+						&& items.get(item) > 0) {
+
+					// Create bomb for the given field
+					Bomb bomb = new Bomb();
+					bomb.entities().add(node.registrationKey());
+					bomb.value((BombDesc) new BombDesc()
+							.player(parent().registrationKey())
+							.delay(GameRoutines.bombDelay(item))
+							.range(GameRoutines.bombRange(item)).item(item)
+							.randomItemEntity());
+
+					// Apply global change
+					node.findSceneProcessor().adminSessionServer().composite()
+							.queueChange(bomb, true);
+				}
+			} else {
+				item = CollectableItem.Palisade;
+
+				// Bombable (Pali...) ?
+				if (GameRoutines.isFieldBombable(node)
+				// Spawn ?
+						&& spawnItems.get(item)
+						// Enough items ?
+						&& items.get(item) > 0) {
+
+					// Create new spawn-paliside request
+					SpawnPalisade sp = new SpawnPalisade();
+					sp.entities().add(node.registrationKey());
+
+					// Set the nearest direction
+					sp.value((PalisadeDesc) new PalisadeDesc()
+							.direction(
+									parent().typeProp(GridMovement.class)
+											.direction().vector().swapLocal()
+											.nearestDirection()).item(item)
+							.randomItemEntity());
+
+					// Apply global change
+					node.findSceneProcessor().adminSessionServer().composite()
+							.queueChange(sp, true);
+				}
+			}
+
+			// Clean up
 			removeItems(item, 1);
-
-			// Apply global change
-			node.findSceneProcessor().adminSessionServer().composite()
-					.queueChange(bomb, true);
-
-			// Deactivate spawning
-			spawnItems.put(CollectableItem.DefaultBomb, false);
+			spawnItems.put(item, false);
 		}
 	}
 }

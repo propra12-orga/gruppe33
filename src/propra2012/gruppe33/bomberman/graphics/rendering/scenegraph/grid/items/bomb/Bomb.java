@@ -55,14 +55,14 @@ public final class Bomb extends OneToMany<GraphicsEntity, BombDesc> implements
 		final Scene scene = entity.findScene();
 
 		// Get the bomb
-		final CollectableItem bomb = value.bomb();
+		final CollectableItem bomb = value.item();
 
 		// Create a new bomb image
 		RenderedImage bombImage = new RenderedImage(
 				scene.imageProp(GameRoutines.bombToAsset(bomb))).centered(true);
 
 		// Use the same reg key
-		bombImage.registrationKey(value.bombImage());
+		bombImage.registrationKey(value.itemEntity());
 
 		// Scale a bit
 		bombImage.scale().set(BOMB_SCALE);
@@ -141,7 +141,7 @@ public final class Bomb extends OneToMany<GraphicsEntity, BombDesc> implements
 					DetachEntityChange entityDetacher = new DetachEntityChange();
 
 					// Destroy the bomb image
-					entityDetacher.entities().add(value().bombImage());
+					entityDetacher.entities().add(value().itemEntity());
 
 					// The ids of the bombs will be stored here
 					List<UUID> destroyedFields = new ArrayList<UUID>(points
