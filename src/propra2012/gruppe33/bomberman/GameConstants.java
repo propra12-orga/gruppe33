@@ -71,6 +71,7 @@ public interface GameConstants {
 	String PLAYER_TAG = "player";
 	String FREE_TAG = "free";
 	String EXPLOSION_TAG = "explosion";
+	String SHIELD_TAG = "shield";
 
 	char UP_BARRIER = 'u';
 	char DOWN_BARRIER = 'd';

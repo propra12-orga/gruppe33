@@ -177,23 +177,41 @@ public final class Bomb extends OneToMany<GraphicsEntity, BombDesc> implements
 
 							} else if (ptr.tagged(PLAYER_TAG)) {
 
-								// Create new player kill
-								SpawnDead playerKill = new SpawnDead();
+								boolean shield = false;
 
-								// Use the active player
-								playerKill.entities()
-										.add(ptr.registrationKey());
+								/*
+								 * Search the entity for a shield.
+								 */
+								for (Entity subChild : ptr) {
+									if (subChild.tagged(SHIELD_TAG)) {
+										shield = true;
+										entityDetacher.entities().add(
+												subChild.registrationKey());
+										break;
+									}
+								}
 
-								// Queue the kill
-								server.composite()
-										.queueChange(playerKill, true);
+								// Had the player a shield ?
+								if (!shield) {
 
-								// Get player list
-								List<UUID> players = (List<UUID>) scene
-										.prop(PLAYERS_KEY);
+									// Create new player kill
+									SpawnDead playerKill = new SpawnDead();
 
-								// Remove from player list directly!
-								players.remove(ptr.registrationKey());
+									// Use the active player
+									playerKill.entities().add(
+											ptr.registrationKey());
+
+									// Queue the kill
+									server.composite().queueChange(playerKill,
+											true);
+
+									// Get player list
+									List<UUID> players = (List<UUID>) scene
+											.prop(PLAYERS_KEY);
+
+									// Remove from player list directly!
+									players.remove(ptr.registrationKey());
+								}
 							}
 						}
 					}

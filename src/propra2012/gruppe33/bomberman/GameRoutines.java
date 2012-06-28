@@ -249,8 +249,8 @@ public final class GameRoutines implements GameConstants {
 		final RenderedImage shield = new RenderedImage().centered(true)
 				.imageResource(scene.imageProp(SHIELD_IMAGE));
 
-		// Set index
-		shield.index(SHIELD_INDEX);
+		// Set index + tag
+		shield.index(SHIELD_INDEX).tag(SHIELD_TAG);
 
 		// Register delete procedure!
 		if (scene.processor().hasAdminSessionServer()) {
