@@ -14,7 +14,7 @@ public interface GameConstants {
 
 	Vector2f BOMB_SCALE = new Vector2f(0.4f, 0.4f);
 	Vector2f BOMB_SCALE_VELOCITY = new Vector2f(0.1f, 0.1f);
-	
+
 	Vector2f ITEM_SCALE = new Vector2f(0.6f, 0.6f);
 	Vector2f PLAYER_SCALE = new Vector2f(1.5f, 1.5f);
 
@@ -48,19 +48,22 @@ public interface GameConstants {
 	String PALISADE_HORI_IMAGE = "palisade_hori_image";
 	String PALISADE_VERT_IMAGE = "palisade_vert_image";
 	String PALISADE_BAG_IMAGE = "palisade_bag_image";
+	// ************ ITEMS END
 
+	// ************ PERM - ITEMS START
 	String SHIELD_IMAGE = "shield_image";
 	String SHIELD_POTION_IMAGE = "shield_potion_image";
 
 	String SLOW_SHROOM_IMAGE = "slow_shroom_image";
 	String FAST_SHROOM_IMAGE = "fast_shroom_image";
-	// ************ ITEMS END
+	// ************ PERM - ITEMS END
 
 	String SESSIONS_KEY = "sessions";
 	String PLAYERS_KEY = "players";
 
 	int BACKGROUND_INDEX = -10;
 	int EXPLOSION_INDEX = 100000;
+	int SHIELD_INDEX = 100;
 	int ITEM_INDEX = -1;
 
 	String BOMB_TAG = "bomb";

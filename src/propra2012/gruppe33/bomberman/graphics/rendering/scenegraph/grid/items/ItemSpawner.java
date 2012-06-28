@@ -13,6 +13,7 @@ import propra2012.gruppe33.bomberman.graphics.rendering.scenegraph.grid.items.bo
 import propra2012.gruppe33.bomberman.graphics.rendering.scenegraph.grid.items.bomb.BombDesc;
 import propra2012.gruppe33.bomberman.graphics.rendering.scenegraph.grid.items.spawners.PalisadeDesc;
 import propra2012.gruppe33.bomberman.graphics.rendering.scenegraph.grid.items.spawners.SpawnPalisade;
+import propra2012.gruppe33.bomberman.graphics.rendering.scenegraph.grid.items.spawners.SpawnShield;
 import propra2012.gruppe33.bomberman.graphics.rendering.scenegraph.grid.movement.GridMovement;
 
 import com.indyforge.foxnet.rmi.pattern.change.Session;
@@ -241,6 +242,55 @@ public final class ItemSpawner extends GraphicsEntity {
 			// Clean up
 			removeItems(item, 1);
 			spawnItems.put(item, false);
+		}
+
+		/*
+		 * The shield potion.
+		 */
+		if (spawnItems.get(CollectableItem.ShieldPotion)
+				&& items.get(CollectableItem.ShieldPotion) > 0) {
+
+			// Add the node
+			SpawnShield ss = new SpawnShield();
+			ss.entities().add(parent().registrationKey());
+
+			// Register the item
+			ss.value(new ItemDesc().randomItemEntity().item(
+					CollectableItem.ShieldPotion));
+
+			// Apply global change
+			node.findSceneProcessor().adminSessionServer().composite()
+					.queueChange(ss, true);
+
+			// Clean up
+			removeItems(CollectableItem.ShieldPotion, 1);
+			spawnItems.put(CollectableItem.ShieldPotion, false);
+		}
+
+		// Get both shroom states
+		int fastShrooms = items.get(CollectableItem.FastShroom), slowShrooms = items
+				.get(CollectableItem.SlowShroom);
+
+		// Anything changed ?
+		if (fastShrooms != 0 || slowShrooms != 0) {
+			// Calc the total shroom
+			int totalShroom = fastShrooms - slowShrooms;
+
+			// Get the movement
+			GridMovement movement = parent().typeProp(GridMovement.class);
+
+			// Get the old value
+			float vm = movement.velocityMultiplier();
+
+			// Increase the value
+			vm += totalShroom * 0.2f;
+
+			// Write back
+			movement.velocityMultiplier(vm);
+
+			// Update!
+			removeItems(CollectableItem.FastShroom, Integer.MIN_VALUE);
+			removeItems(CollectableItem.SlowShroom, Integer.MIN_VALUE);
 		}
 	}
 }

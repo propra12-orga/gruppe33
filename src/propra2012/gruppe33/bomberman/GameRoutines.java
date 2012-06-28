@@ -22,6 +22,7 @@ import com.indyforge.twod.engine.graphics.rendering.scenegraph.math.Vector2f;
 import com.indyforge.twod.engine.graphics.rendering.scenegraph.math.Vector2f.Direction;
 import com.indyforge.twod.engine.graphics.rendering.scenegraph.network.entity.DetachEntityChange;
 import com.indyforge.twod.engine.graphics.rendering.scenegraph.network.input.InputChange;
+import com.indyforge.twod.engine.graphics.rendering.scenegraph.timeout.Timeout;
 import com.indyforge.twod.engine.graphics.sprite.Animation;
 import com.indyforge.twod.engine.graphics.sprite.AnimationBundle;
 import com.indyforge.twod.engine.graphics.sprite.Sprite;
@@ -237,6 +238,43 @@ public final class GameRoutines implements GameConstants {
 		}
 
 		return distance;
+	}
+
+	public static RenderedImage createShield(final Scene scene) {
+		if (scene == null) {
+			throw new NullPointerException("scene");
+		}
+
+		// The shield
+		final RenderedImage shield = new RenderedImage().centered(true)
+				.imageResource(scene.imageProp(SHIELD_IMAGE));
+
+		// Set index
+		shield.index(SHIELD_INDEX);
+
+		// Register delete procedure!
+		if (scene.processor().hasAdminSessionServer()) {
+			shield.attach(new Timeout(10) {
+
+				/**
+				 * 
+				 */
+				private static final long serialVersionUID = 1L;
+
+				@Override
+				protected void onTimeout(Timeout timeout) {
+					super.onTimeout(timeout);
+
+					DetachEntityChange dec = new DetachEntityChange();
+					dec.entities().add(shield.registrationKey());
+
+					scene.processor().adminSessionServer().composite()
+							.queueChange(dec, true);
+				}
+			});
+		}
+
+		return shield;
 	}
 
 	public static RenderedImage createPalisade(Scene scene, Direction direction) {
