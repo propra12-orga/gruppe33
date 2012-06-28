@@ -81,8 +81,8 @@ public final class GridMovement extends Entity {
 		// Calc direction
 		int dir = negative ? -1 : 1;
 
-		// Calc the max velocity using tpf, maxSpeed and the local multiplier
-		float maxMovement = tpf * maxSpeed * velocityMultiplier,
+		// Calc the max velocity using tpf, maxSpeed
+		float maxMovement = tpf * maxSpeed,
 
 		// Calc the movement based on the grid
 		movement = dir
@@ -246,8 +246,8 @@ public final class GridMovement extends Entity {
 					+ " does not have a speed property.");
 		}
 
-		// Reduce boxing...
-		float maxSpeed = maxSpeedObj.floatValue();
+		// Calc the max speed
+		float maxSpeed = maxSpeedObj.floatValue() * velocityMultiplier;
 
 		// Init the input flags
 		boolean north = hasInputFor(Direction.North), south = hasInputFor(Direction.South), west = hasInputFor(Direction.West), east = hasInputFor(Direction.East);

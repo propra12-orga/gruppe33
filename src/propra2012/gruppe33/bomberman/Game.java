@@ -239,7 +239,7 @@ public final class Game implements GameConstants, Serializable {
 
 		// Parse and setup map
 		GraphicsEntity grid = GridLoader.parse(map, scene, broadcastUpdateTime,
-				System.nanoTime(), 0.2f, 0.2f, 0.2f, 0.1f, 0.1f, 0.1f, 0.1f);
+				System.nanoTime(), 0, 0, 0, 0, 0, 0.5f, 0.5f);
 
 		// The spawn points
 		List<Point> spawnPoints = GridLoader.find(map, GameConstants.SPAWN);

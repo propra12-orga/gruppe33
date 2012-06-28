@@ -292,6 +292,7 @@ public final class ItemSpawner extends GraphicsEntity {
 
 		// Anything changed ?
 		if (fastShrooms != 0 || slowShrooms != 0) {
+
 			// Calc the total shroom
 			int totalShroom = fastShrooms - slowShrooms;
 
