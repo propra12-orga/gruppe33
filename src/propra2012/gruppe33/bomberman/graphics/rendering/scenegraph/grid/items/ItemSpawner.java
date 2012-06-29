@@ -74,16 +74,18 @@ public final class ItemSpawner extends GraphicsEntity implements GameConstants {
 		items.put(CollectableItem.FastBomb, 0);
 		items.put(CollectableItem.Palisade, 0);
 		items.put(CollectableItem.ShieldPotion, 0);
-		items.put(CollectableItem.SlowShroom, 0);
-		items.put(CollectableItem.FastShroom, 0);
+		items.put(CollectableItem.Speed, START_SPEED_ITEMS);
 
 		spawnItems.put(CollectableItem.DefaultBomb, Boolean.FALSE);
 		spawnItems.put(CollectableItem.NukeBomb, Boolean.FALSE);
 		spawnItems.put(CollectableItem.FastBomb, Boolean.FALSE);
 		spawnItems.put(CollectableItem.Palisade, Boolean.FALSE);
 		spawnItems.put(CollectableItem.ShieldPotion, Boolean.FALSE);
-		spawnItems.put(CollectableItem.SlowShroom, Boolean.FALSE);
-		spawnItems.put(CollectableItem.FastShroom, Boolean.FALSE);
+		spawnItems.put(CollectableItem.Speed, Boolean.FALSE);
+	}
+
+	public float speedPercentage() {
+		return items.get(CollectableItem.Speed) / (float) START_SPEED_ITEMS;
 	}
 
 	/**
@@ -146,12 +148,6 @@ public final class ItemSpawner extends GraphicsEntity implements GameConstants {
 		 * Update item counts!
 		 */
 		for (CollectableItem item : CollectableItem.values()) {
-
-			// Ignore the shrooms
-			if (item == CollectableItem.FastShroom
-					|| item == CollectableItem.SlowShroom) {
-				continue;
-			}
 
 			// Set the text of the gui
 			scene.prop(item, Text.class).text(items.get(item).toString());
@@ -279,31 +275,32 @@ public final class ItemSpawner extends GraphicsEntity implements GameConstants {
 			spawnItems.put(CollectableItem.ShieldPotion, false);
 		}
 
-		// Get both shroom states
-		int fastShrooms = items.get(CollectableItem.FastShroom), slowShrooms = items
-				.get(CollectableItem.SlowShroom);
-
-		// Anything changed ?
-		if (fastShrooms != 0 || slowShrooms != 0) {
-
-			// Calc the total shroom
-			int totalShroom = fastShrooms - slowShrooms;
-
-			// Get the movement
-			GridMovement movement = parent().typeProp(GridMovement.class);
-
-			// Get the old value
-			float vm = movement.velocityMultiplier();
-
-			// Increase the value
-			vm += totalShroom * 0.2f;
-
-			// Write back
-			movement.velocityMultiplier(vm);
-
-			// Update!
-			removeItems(CollectableItem.FastShroom, Integer.MIN_VALUE, false);
-			removeItems(CollectableItem.SlowShroom, Integer.MIN_VALUE, false);
-		}
+		// // Get both shroom states
+		// int fastShrooms = items.get(CollectableItem.FastShroom), slowShrooms
+		// = items
+		// .get(CollectableItem.SlowShroom);
+		//
+		// // Anything changed ?
+		// if (fastShrooms != 0 || slowShrooms != 0) {
+		//
+		// // Calc the total shroom
+		// int totalShroom = fastShrooms - slowShrooms;
+		//
+		// // Get the movement
+		// GridMovement movement = parent().typeProp(GridMovement.class);
+		//
+		// // Get the old value
+		// float vm = movement.velocityMultiplier();
+		//
+		// // Increase the value
+		// vm += totalShroom * 0.2f;
+		//
+		// // Write back
+		// movement.velocityMultiplier(vm);
+		//
+		// // Update!
+		// removeItems(CollectableItem.FastShroom, Integer.MIN_VALUE, false);
+		// removeItems(CollectableItem.SlowShroom, Integer.MIN_VALUE, false);
+		// }
 	}
 }

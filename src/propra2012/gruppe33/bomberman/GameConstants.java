@@ -12,6 +12,8 @@ import com.indyforge.twod.engine.graphics.rendering.scenegraph.math.Vector2f;
  */
 public interface GameConstants {
 
+	int START_SPEED_ITEMS = 5;
+	
 	Vector2f BOMB_SCALE = new Vector2f(0.4f, 0.4f);
 	Vector2f BOMB_SCALE_VELOCITY = new Vector2f(0.1f, 0.1f);
 
@@ -70,12 +72,14 @@ public interface GameConstants {
 	String PALISADE_HORI_IMAGE = "palisade_hori_image";
 	String PALISADE_VERT_IMAGE = "palisade_vert_image";
 	String PALISADE_BAG_IMAGE = "palisade_bag_image";
-	// ************ ITEMS END
 
-	// ************ PERM - ITEMS START
 	String SHIELD_IMAGE = "shield_image";
 	String SHIELD_POTION_IMAGE = "shield_potion_image";
 
+	// ************ ITEMS END
+
+	// ************ PERM - ITEMS START
+	String SPEED_IMAGE = "speed_image";
 	String SLOW_SHROOM_IMAGE = "slow_shroom_image";
 	String FAST_SHROOM_IMAGE = "fast_shroom_image";
 	// ************ PERM - ITEMS END

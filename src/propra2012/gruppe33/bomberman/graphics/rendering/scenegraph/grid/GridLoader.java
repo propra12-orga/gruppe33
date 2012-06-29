@@ -266,7 +266,7 @@ public final class GridLoader implements GameConstants {
 			// Create new default bomb item
 			GameRoutines.createItem(breakableNodes.remove(fieldChooser
 					.nextInt(breakableNodes.size())),
-					CollectableItem.DefaultBomb);
+					CollectableItem.DefaultBomb, 1);
 		}
 
 		/*
@@ -276,7 +276,8 @@ public final class GridLoader implements GameConstants {
 
 			// Create new nuke bomb item
 			GameRoutines.createItem(breakableNodes.remove(fieldChooser
-					.nextInt(breakableNodes.size())), CollectableItem.NukeBomb);
+					.nextInt(breakableNodes.size())), CollectableItem.NukeBomb,
+					1);
 		}
 
 		/*
@@ -286,7 +287,8 @@ public final class GridLoader implements GameConstants {
 
 			// Create new time bomb item
 			GameRoutines.createItem(breakableNodes.remove(fieldChooser
-					.nextInt(breakableNodes.size())), CollectableItem.FastBomb);
+					.nextInt(breakableNodes.size())), CollectableItem.FastBomb,
+					1);
 		}
 
 		/*
@@ -297,7 +299,7 @@ public final class GridLoader implements GameConstants {
 			// Create new shield item
 			GameRoutines.createItem(breakableNodes.remove(fieldChooser
 					.nextInt(breakableNodes.size())),
-					CollectableItem.ShieldPotion);
+					CollectableItem.ShieldPotion, 1);
 		}
 
 		/*
@@ -307,7 +309,8 @@ public final class GridLoader implements GameConstants {
 
 			// Create new palisade item
 			GameRoutines.createItem(breakableNodes.remove(fieldChooser
-					.nextInt(breakableNodes.size())), CollectableItem.Palisade);
+					.nextInt(breakableNodes.size())), CollectableItem.Palisade,
+					1);
 		}
 
 		/*
@@ -316,9 +319,10 @@ public final class GridLoader implements GameConstants {
 		for (int i = 0; i < slowShrooms; i++) {
 
 			// Create new shroom item
-			GameRoutines.createItem(breakableNodes.remove(fieldChooser
-					.nextInt(breakableNodes.size())),
-					CollectableItem.SlowShroom);
+			GameRoutines
+					.createItem(breakableNodes.remove(fieldChooser
+							.nextInt(breakableNodes.size())),
+							CollectableItem.Speed, -1);
 		}
 
 		/*
@@ -328,8 +332,7 @@ public final class GridLoader implements GameConstants {
 
 			// Create new shroom item
 			GameRoutines.createItem(breakableNodes.remove(fieldChooser
-					.nextInt(breakableNodes.size())),
-					CollectableItem.FastShroom);
+					.nextInt(breakableNodes.size())), CollectableItem.Speed, 1);
 		}
 
 		// Create a static root

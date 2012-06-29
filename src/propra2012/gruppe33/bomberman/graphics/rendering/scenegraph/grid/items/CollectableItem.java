@@ -8,5 +8,5 @@ package propra2012.gruppe33.bomberman.graphics.rendering.scenegraph.grid.items;
  * 
  */
 public enum CollectableItem {
-	DefaultBomb, NukeBomb, FastBomb, ShieldPotion, Palisade, SlowShroom, FastShroom
+	DefaultBomb, NukeBomb, FastBomb, ShieldPotion, Palisade, Speed
 }

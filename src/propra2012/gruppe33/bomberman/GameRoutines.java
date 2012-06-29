@@ -508,10 +508,8 @@ public final class GameRoutines implements GameConstants {
 			return PALISADE_HORI_IMAGE;
 		case ShieldPotion:
 			return SHIELD_POTION_IMAGE;
-		case SlowShroom:
-			return SLOW_SHROOM_IMAGE;
-		case FastShroom:
-			return FAST_SHROOM_IMAGE;
+		case Speed:
+			return SPEED_IMAGE;
 		default:
 			return null;
 		}
@@ -522,9 +520,11 @@ public final class GameRoutines implements GameConstants {
 	 * 
 	 * @param item
 	 *            The item.
+	 * @param count
+	 *            The item count.
 	 * @return the asset path or null.
 	 */
-	public static String itemToBagAsset(CollectableItem item) {
+	public static String itemToBagAsset(CollectableItem item, int count) {
 		if (item == null) {
 			throw new NullPointerException("item");
 		}
@@ -539,10 +539,8 @@ public final class GameRoutines implements GameConstants {
 			return PALISADE_BAG_IMAGE;
 		case ShieldPotion:
 			return SHIELD_POTION_IMAGE;
-		case SlowShroom:
-			return SLOW_SHROOM_IMAGE;
-		case FastShroom:
-			return FAST_SHROOM_IMAGE;
+		case Speed:
+			return count >= 0 ? FAST_SHROOM_IMAGE : SLOW_SHROOM_IMAGE;
 		default:
 			return null;
 		}
@@ -555,9 +553,11 @@ public final class GameRoutines implements GameConstants {
 	 *            The node.
 	 * @param item
 	 *            The item.
+	 * @param count
+	 *            The item count.
 	 */
 	public static void createItem(GraphicsEntity node,
-			final CollectableItem item) {
+			final CollectableItem item, final int count) {
 		if (node == null) {
 			throw new NullPointerException("node");
 		} else if (item == null) {
@@ -571,7 +571,7 @@ public final class GameRoutines implements GameConstants {
 		}
 
 		// Lookup bag asset
-		final String bagAsset = itemToBagAsset(item);
+		final String bagAsset = itemToBagAsset(item, count);
 
 		// Check the asset!
 		if (bagAsset == null) {
@@ -639,7 +639,7 @@ public final class GameRoutines implements GameConstants {
 								ItemSpawner sp = c.typeProp(ItemSpawner.class);
 
 								// Increase the item count
-								sp.addItems(item, 1, true);
+								sp.addItems(item, count, true);
 
 								// Remove the item bag
 								DetachEntityChange dec = new DetachEntityChange();

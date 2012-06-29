@@ -48,8 +48,7 @@ public final class SyncItemCount extends Many<ItemSpawner> implements
 			if (!down) {
 
 				switch (item) {
-				case FastShroom:
-				case SlowShroom:
+				case Speed:
 					name = EAT_SOUND;
 					break;
 				case ShieldPotion:
@@ -62,8 +61,7 @@ public final class SyncItemCount extends Many<ItemSpawner> implements
 
 				// Pickup/Eat sound
 				entity.findScene().soundManager().playSound(name, true);
-			} else if (item != CollectableItem.FastShroom
-					|| item != CollectableItem.SlowShroom) {
+			} else if (item != CollectableItem.Speed) {
 
 				// Which sound should be played ???
 				name = item == CollectableItem.ShieldPotion ? SHIELD_ON_SOUND

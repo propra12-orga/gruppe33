@@ -7,6 +7,7 @@ import java.util.Map;
 
 import propra2012.gruppe33.bomberman.GameRoutines;
 import propra2012.gruppe33.bomberman.graphics.rendering.scenegraph.grid.input.Input;
+import propra2012.gruppe33.bomberman.graphics.rendering.scenegraph.grid.items.ItemSpawner;
 
 import com.indyforge.twod.engine.graphics.rendering.scenegraph.Entity;
 import com.indyforge.twod.engine.graphics.rendering.scenegraph.GraphicsEntity;
@@ -37,11 +38,6 @@ public final class GridMovement extends Entity {
 	 * priority.
 	 */
 	private float lv = 0, lh = 0;
-
-	/*
-	 * Used to change the velocity per entity.
-	 */
-	private float velocityMultiplier = 1.0f;
 
 	// A local movement var
 	private final Vector2f movement = Vector2f.zero();
@@ -247,7 +243,9 @@ public final class GridMovement extends Entity {
 		}
 
 		// Calc the max speed
-		float maxSpeed = maxSpeedObj.floatValue() * velocityMultiplier;
+		float maxSpeed = maxSpeedObj.floatValue()
+				* controlledParent.typeProp(ItemSpawner.class)
+						.speedPercentage();
 
 		// Init the input flags
 		boolean north = hasInputFor(Direction.North), south = hasInputFor(Direction.South), west = hasInputFor(Direction.West), east = hasInputFor(Direction.East);
@@ -430,22 +428,5 @@ public final class GridMovement extends Entity {
 	 */
 	public boolean isMoving() {
 		return moving;
-	}
-
-	/**
-	 * @return the velocity multiplier.
-	 */
-	public float velocityMultiplier() {
-		return velocityMultiplier;
-	}
-
-	/**
-	 * Sets the velocity multiplier.
-	 * 
-	 * @param velocityMultiplier
-	 *            The new multiplier you want to set.
-	 */
-	public void velocityMultiplier(float velocityMultiplier) {
-		this.velocityMultiplier = velocityMultiplier;
 	}
 }

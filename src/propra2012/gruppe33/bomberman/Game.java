@@ -261,6 +261,8 @@ public final class Game implements GameConstants, Serializable {
 		scene.addProp(SHIELD_POTION_IMAGE, assets.loadImage(
 				properties.getProperty(SHIELD_POTION_IMAGE), true));
 
+		scene.addProp(SPEED_IMAGE,
+				assets.loadImage(properties.getProperty(SPEED_IMAGE), true));
 		scene.addProp(SLOW_SHROOM_IMAGE, assets.loadImage(
 				properties.getProperty(SLOW_SHROOM_IMAGE), true));
 		scene.addProp(FAST_SHROOM_IMAGE, assets.loadImage(
@@ -342,12 +344,6 @@ public final class Game implements GameConstants, Serializable {
 				.transparency(Transparency.TRANSLUCENT);
 
 		for (CollectableItem item : CollectableItem.values()) {
-
-			// Ignore the shrooms
-			if (item == CollectableItem.FastShroom
-					|| item == CollectableItem.SlowShroom) {
-				continue;
-			}
 
 			// Load the item holder
 			RenderedImage itemHolder = new RenderedImage(
