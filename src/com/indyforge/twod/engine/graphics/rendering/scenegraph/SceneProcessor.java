@@ -16,8 +16,10 @@ import java.awt.image.BufferStrategy;
 import java.awt.image.BufferedImage;
 import java.io.IOException;
 import java.lang.reflect.InvocationTargetException;
+import java.net.InetAddress;
 import java.net.InetSocketAddress;
 import java.net.SocketAddress;
+import java.net.UnknownHostException;
 import java.util.List;
 import java.util.concurrent.LinkedBlockingDeque;
 
@@ -604,9 +606,42 @@ public final class SceneProcessor implements Changeable<SceneProcessor>,
 	}
 
 	/**
+	 * 
+	 * Opens a broadcaster using all known ip addresses of this computer.
+	 * 
+	 * @param broadcastPort
+	 *            The broadcasting port.
+	 * @param networkPort
+	 *            The network port.
+	 * @return this for chaining.
+	 * @throws UnknownHostException
+	 *             If an host exception occurs.
+	 * @throws IOException
+	 *             If an IO exception occurs.
+	 */
+	public SceneProcessor openBroadcaster(int broadcastPort, int networkPort)
+			throws UnknownHostException, IOException {
+
+		// At first get all addresses
+		InetAddress[] addresses = InetAddress.getAllByName(InetAddress
+				.getLocalHost().getHostName());
+
+		// Create new array of inet socket addresses
+		InetSocketAddress[] inetAddresses = new InetSocketAddress[addresses.length];
+
+		// Copy
+		for (int i = 0; i < addresses.length; i++) {
+			inetAddresses[i] = new InetSocketAddress(addresses[i], networkPort);
+		}
+
+		// Open broadcaster
+		return openBroadcaster(broadcastPort, inetAddresses);
+	}
+
+	/**
 	 * Opens a broadcaster.
 	 * 
-	 * @param port
+	 * @param broadcastPort
 	 *            The broadcasting port.
 	 * @param message
 	 *            The broadcasted message.
@@ -614,7 +649,7 @@ public final class SceneProcessor implements Changeable<SceneProcessor>,
 	 * @throws IOException
 	 *             If an IO exception occurs.
 	 */
-	public SceneProcessor openBroadcaster(int port, Object message)
+	public SceneProcessor openBroadcaster(int broadcastPort, Object message)
 			throws IOException {
 		synchronized (netLock) {
 			if (networkMode == NetworkMode.Offline) {
@@ -624,7 +659,7 @@ public final class SceneProcessor implements Changeable<SceneProcessor>,
 			}
 
 			// Try to create a new broadcaster
-			broadcaster = new Broadcaster(port, message);
+			broadcaster = new Broadcaster(broadcastPort, message);
 
 			// Start the broadcaster
 			broadcaster.start();

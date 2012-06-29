@@ -274,33 +274,5 @@ public final class ItemSpawner extends GraphicsEntity implements GameConstants {
 			removeItems(CollectableItem.ShieldPotion, 1, true);
 			spawnItems.put(CollectableItem.ShieldPotion, false);
 		}
-
-		// // Get both shroom states
-		// int fastShrooms = items.get(CollectableItem.FastShroom), slowShrooms
-		// = items
-		// .get(CollectableItem.SlowShroom);
-		//
-		// // Anything changed ?
-		// if (fastShrooms != 0 || slowShrooms != 0) {
-		//
-		// // Calc the total shroom
-		// int totalShroom = fastShrooms - slowShrooms;
-		//
-		// // Get the movement
-		// GridMovement movement = parent().typeProp(GridMovement.class);
-		//
-		// // Get the old value
-		// float vm = movement.velocityMultiplier();
-		//
-		// // Increase the value
-		// vm += totalShroom * 0.2f;
-		//
-		// // Write back
-		// movement.velocityMultiplier(vm);
-		//
-		// // Update!
-		// removeItems(CollectableItem.FastShroom, Integer.MIN_VALUE, false);
-		// removeItems(CollectableItem.SlowShroom, Integer.MIN_VALUE, false);
-		// }
 	}
 }

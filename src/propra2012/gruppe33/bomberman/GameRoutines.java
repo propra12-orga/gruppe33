@@ -308,7 +308,7 @@ public final class GameRoutines implements GameConstants {
 		RenderedImage palisade = new RenderedImage().centered(true);
 
 		// A palisade is breakable!
-		palisade.tag(BREAKABLE_TAG);
+		palisade.tag(BREAKABLE_TAG).index(ITEM_INDEX);
 
 		// Switch direction
 		switch (direction) {
