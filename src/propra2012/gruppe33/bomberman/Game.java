@@ -441,7 +441,6 @@ public final class Game implements GameConstants, Serializable {
 			// Place to spawn
 			grid.childAt(grid.typeProp(Grid.class).index(spawnPoints.get(i++)))
 					.attach(player);
-
 		}
 
 		// Store the player refs

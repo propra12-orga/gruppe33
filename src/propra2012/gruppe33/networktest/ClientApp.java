@@ -1,8 +1,5 @@
 package propra2012.gruppe33.networktest;
 
-import java.net.InetSocketAddress;
-import java.util.List;
-
 import com.indyforge.foxnet.rmi.InvokerManager;
 import com.indyforge.foxnet.rmi.pattern.change.Session;
 import com.indyforge.foxnet.rmi.util.Future;
@@ -19,17 +16,17 @@ public class ClientApp {
 				NetworkMode.Client, "Bomberman", 640, 1024);
 
 		// At first try to receive the server list
-		List<Object> msg = SceneProcessor.receiveBroadcast(1338, 1, 10000);
+		// List<Object> msg = SceneProcessor.receiveBroadcast(1338, 1, 10000);
 
 		// Stop rendering if hidden...
 		sceneProcessor.onlyRenderWithFocus(false);
 
 		// Simply use the first address
-		InetSocketAddress addr = ((InetSocketAddress[]) msg.get(0))[0];
+		// InetSocketAddress addr = ((InetSocketAddress[]) msg.get(0))[0];
 
 		// Connect the scene
-		Session<SceneProcessor> session = sceneProcessor.openClient(
-				addr.getHostName(), addr.getPort()).linkClient("Kr0e");
+		Session<SceneProcessor> session = sceneProcessor.openClient("Kr0e-PC",
+				1337).linkClient("Kr0e");
 
 		// Get the invoker manager
 		InvokerManager man = InvokerManager.of(session);

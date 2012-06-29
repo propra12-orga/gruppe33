@@ -708,27 +708,27 @@ public final class GameRoutines implements GameConstants {
 		charAni.animationName(AnimationRoutines.RUN_PREFIX
 				+ Direction.North.toString().toLowerCase());
 
-		// Create grid movement
-		GridMovement movement = new GridMovement();
-
-		// Do the animation!
-		movement.attach(AnimationRoutines
-				.createGridControllerAnimationHandler(charAni));
-
 		// Create new item spawner
 		ItemSpawner itemSpawner = new ItemSpawner();
 
+		// Create grid movement
+		GridMovement movement = new GridMovement();
+
 		// Attach remaining stuff
-		player.attach(charAni, movement, itemSpawner);
+		player.attach(
+				charAni,
+				movement,
+				AnimationRoutines.createGridControllerAnimationHandler(charAni),
+				itemSpawner);
 
 		// Add the animation
 		player.addTypeProp(charAni);
 
-		// Add the item spawner
-		player.addTypeProp(itemSpawner);
-
 		// Add the movement!
 		player.addTypeProp(movement);
+
+		// Add the item spawner
+		player.addTypeProp(itemSpawner);
 
 		// Set scale
 		player.scale().set(PLAYER_SCALE);

@@ -7,6 +7,7 @@ import java.util.Map;
 
 import propra2012.gruppe33.bomberman.GameConstants;
 import propra2012.gruppe33.bomberman.GameRoutines;
+import propra2012.gruppe33.bomberman.graphics.rendering.scenegraph.grid.input.GridRemoteInput;
 import propra2012.gruppe33.bomberman.graphics.rendering.scenegraph.grid.input.Input;
 import propra2012.gruppe33.bomberman.graphics.rendering.scenegraph.grid.items.bomb.Bomb;
 import propra2012.gruppe33.bomberman.graphics.rendering.scenegraph.grid.items.bomb.BombDesc;
@@ -143,6 +144,12 @@ public final class ItemSpawner extends GraphicsEntity implements GameConstants {
 
 		// Get the scene
 		Scene scene = findScene();
+
+		// Input/server-less entities will be ignored!
+		if ((parent().typeProp(GridRemoteInput.class) == null && scene
+				.processor().hasSession())) {
+			return;
+		}
 
 		/*
 		 * Update item counts!
