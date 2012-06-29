@@ -33,7 +33,7 @@ public abstract class InputChange<E extends Enum<E>, T extends Entity> extends
 	/**
 	 * Represents the maximal number of parallel input states.
 	 */
-	public static final int USED_BITS = 8;
+	public static final int USED_BITS = 16;
 
 	// The enum type
 	private final Class<E> enumType;
@@ -72,19 +72,19 @@ public abstract class InputChange<E extends Enum<E>, T extends Entity> extends
 			}
 		}
 
-		// Write as byte
-		s.write(inputState);
+		// Write as short
+		s.writeShort(inputState);
 	}
 
 	private void readObject(ObjectInputStream s) throws IOException,
 			ClassNotFoundException {
 		s.defaultReadObject();
 
-		// Recreate enm map
+		// Recreate enum map
 		inputMap = new EnumMap<E, Boolean>(enumType);
 
 		// Read the input state
-		int inputState = s.read();
+		int inputState = s.readShort();
 
 		// The offset
 		int offset = 0;

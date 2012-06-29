@@ -17,7 +17,14 @@ public final class InputActivator extends Many<Entity> {
 
 	@Override
 	protected void apply(Entity entity) {
+
+		// Create new grid remote inpute
+		GridRemoteInput gri = new GridRemoteInput(entity.registrationKey());
+
 		// Attach the remote view!
-		entity.attach(new GridRemoteInput(entity.registrationKey()));
+		entity.attach(gri);
+
+		// Attach as type prop
+		entity.addTypeProp(gri);
 	}
 }

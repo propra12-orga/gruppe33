@@ -44,7 +44,7 @@ public final class Animation implements Serializable {
 	// The step counter
 	private int step;
 
-	// Time vars
+	// FastBomb vars
 	private transient long timeStamp;
 
 	/*

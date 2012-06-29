@@ -262,12 +262,35 @@ public final class ConnectionManager implements ChannelPipelineFactory {
 		// Setup the pipeline
 		ChannelPipeline channelPipeline = Channels.pipeline();
 
+//		channelPipeline.addLast("t", new SimpleChannelHandler() {
+//
+//			long d = System.currentTimeMillis();
+//			int count = 0;
+//
+//			@Override
+//			public void writeRequested(ChannelHandlerContext ctx, MessageEvent e)
+//					throws Exception {
+//
+//				synchronized (ctx) {
+//					count += ((ChannelBuffer) e.getMessage()).readableBytes();
+//
+//					if (System.currentTimeMillis() - d > 1000) {
+//						System.out.println(count + " Bytes/s");
+//						count = 0;
+//						d = System.currentTimeMillis();
+//					}
+//				}
+//
+//				super.writeRequested(ctx, e);
+//			}
+//		});
+
 		// Used to identify the channel
 		channelPipeline.addLast("id_handler", identificationHandler);
 
 		// Add good compression
 		channelPipeline.addLast("in_com", new ZlibDecoder());
-		channelPipeline.addLast("out_com", new ZlibEncoder(9));
+		channelPipeline.addLast("out_com", new ZlibEncoder(1));
 
 		// Add config manager
 		channelPipeline.addLast("cfg", SetupHandler.INSTANCE);
@@ -280,7 +303,7 @@ public final class ConnectionManager implements ChannelPipelineFactory {
 								.getContextClassLoader())));
 
 		// Use the default encoder
-		channelPipeline.addLast("obj_encoder", new ObjectEncoder(1024));
+		channelPipeline.addLast("obj_encoder", new ObjectEncoder(0xFFFF));
 
 		// The request response handler
 		channelPipeline.addLast("reqres", ReqResHandler.INSTANCE);

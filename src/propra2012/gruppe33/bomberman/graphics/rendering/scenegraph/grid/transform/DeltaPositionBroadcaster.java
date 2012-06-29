@@ -8,6 +8,7 @@ import java.util.Map.Entry;
 import java.util.UUID;
 
 import propra2012.gruppe33.bomberman.Game;
+import propra2012.gruppe33.bomberman.GameConstants;
 
 import com.indyforge.twod.engine.graphics.rendering.scenegraph.Entity;
 import com.indyforge.twod.engine.graphics.rendering.scenegraph.GraphicsEntity;
@@ -23,7 +24,8 @@ import com.indyforge.twod.engine.util.task.Task;
  * @author Christopher Probst
  * 
  */
-public final class DeltaPositionBroadcaster extends Entity {
+public final class DeltaPositionBroadcaster extends Entity implements
+		GameConstants {
 
 	/**
 	 * 
@@ -38,6 +40,9 @@ public final class DeltaPositionBroadcaster extends Entity {
 
 	// Tells the passed time
 	private float timePassed = Float.MAX_VALUE;
+
+	// The minimal number of players
+	private final int minPlayers;
 
 	// The update delay
 	private final float updateDelay;
@@ -55,7 +60,7 @@ public final class DeltaPositionBroadcaster extends Entity {
 					&& timePassed >= updateDelay) {
 
 				// Are there any entities left ??
-				if (entities.size() <= 1) {
+				if (entities.size() < minPlayers) {
 
 					scene.processor().taskQueue().tasks().add(new Pause(3f));
 					scene.processor().taskQueue().tasks().add(new Task() {
@@ -79,7 +84,8 @@ public final class DeltaPositionBroadcaster extends Entity {
 							 * Initiate new server game!
 							 */
 							try {
-								scene.typeProp(Game.class).serverGame(
+								// Get the game
+								scene.prop(NEXT, Game.class).serverGame(
 										scene.processor());
 							} catch (Exception e) {
 								e.printStackTrace();
@@ -166,8 +172,20 @@ public final class DeltaPositionBroadcaster extends Entity {
 	 * @param updateDelay
 	 *            The update delay.
 	 */
-	public DeltaPositionBroadcaster(float updateDelay) {
+	public DeltaPositionBroadcaster(float updateDelay, int minPlayers) {
+		if (minPlayers < 1) {
+			throw new IllegalArgumentException("minPlayers must be >= 1");
+		}
+
 		this.updateDelay = updateDelay;
+		this.minPlayers = minPlayers;
+	}
+
+	/**
+	 * @return the minimal number of players.
+	 */
+	public int minPlayers() {
+		return minPlayers;
 	}
 
 	/**

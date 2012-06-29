@@ -117,7 +117,7 @@ public interface AIControl {
 	 * @return Liefert true zurueck falls sich das Feld in IRGENDEINERWEISE
 	 *         geaendert hat. Das betrifft jede Kleinigkeit wie z.B. das Setzen
 	 *         einer Bombe, das Aufnehmen eines Items, das Verschwinden einer
-	 *         Explosion etc.
+	 *         SpawnExplosion etc.
 	 */
 	boolean hasFieldChanged();
 

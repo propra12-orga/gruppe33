@@ -209,7 +209,7 @@ public class Future {
 									+ "out during synchronization"));
 						}
 					} else {
-						// Default wait
+						// DefaultBomb wait
 						lock.wait();
 					}
 				} catch (InterruptedException e) {

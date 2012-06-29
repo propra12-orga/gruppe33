@@ -19,10 +19,12 @@ import javax.sound.sampled.AudioInputStream;
 import javax.sound.sampled.AudioSystem;
 import javax.sound.sampled.Clip;
 import javax.sound.sampled.DataLine;
+import javax.sound.sampled.FloatControl;
 import javax.sound.sampled.LineEvent;
 import javax.sound.sampled.LineEvent.Type;
 import javax.sound.sampled.LineListener;
 
+import com.indyforge.twod.engine.graphics.rendering.scenegraph.math.MathExt;
 import com.indyforge.twod.engine.resources.assets.Asset;
 import com.indyforge.twod.engine.resources.assets.AssetManager;
 
@@ -60,6 +62,11 @@ public final class SoundManager implements Serializable {
 	 * Used to create / start the clips.
 	 */
 	private transient ExecutorService soundExecutor;
+
+	/*
+	 * The default volume.
+	 */
+	private float defaultVolume = 0.4f;
 
 	/**
 	 * Creates the current sounds other stuff.
@@ -118,6 +125,24 @@ public final class SoundManager implements Serializable {
 	}
 
 	/**
+	 * @return the default volume.
+	 */
+	public float defaultVolume() {
+		return defaultVolume;
+	}
+
+	/**
+	 * 
+	 * @param defaultVolume
+	 *            The default volume.
+	 * @return this for chaining.
+	 */
+	public SoundManager defaultVolume(float defaultVolume) {
+		this.defaultVolume = defaultVolume;
+		return this;
+	}
+
+	/**
 	 * Uses the given input stream to read the complete sound data and puts it
 	 * into the map using the given name.
 	 * 
@@ -150,7 +175,8 @@ public final class SoundManager implements Serializable {
 	}
 
 	/**
-	 * Creates a new clip using the given sound data.
+	 * Creates a new clip using the given sound data and the
+	 * {@link SoundManager#defaultVolume(float) default volume}.
 	 * 
 	 * @param name
 	 *            The name of the sound.
@@ -160,6 +186,23 @@ public final class SoundManager implements Serializable {
 	 *         does not exist, or headless mode, or...)
 	 */
 	public Future<Clip> playSound(final String name, final boolean start) {
+		return playSound(name, defaultVolume, start);
+	}
+
+	/**
+	 * Creates a new clip using the given sound data.
+	 * 
+	 * @param name
+	 *            The name of the sound.
+	 * @param start
+	 *            If true the clip will be started directly.
+	 * @param volume
+	 *            The volume between 0.0f and 1.0f.
+	 * @return the future which will retrieve the new clip or null (If sound
+	 *         does not exist, or headless mode, or...)
+	 */
+	public Future<Clip> playSound(final String name, final float volume,
+			final boolean start) {
 
 		// No executor ?
 		if (soundExecutor == null) {
@@ -200,6 +243,14 @@ public final class SoundManager implements Serializable {
 
 					// Open with binary data
 					clip.open(ais);
+
+					// Get the gain control
+					FloatControl gainControl = (FloatControl) clip
+							.getControl(FloatControl.Type.MASTER_GAIN);
+
+					// Set the volume
+					gainControl.setValue((float) (Math.log(MathExt.clamp(
+							volume, 0, 1)) / Math.log(10.0) * 20.0));
 
 					// Add into set
 					currentSounds.add(clip);

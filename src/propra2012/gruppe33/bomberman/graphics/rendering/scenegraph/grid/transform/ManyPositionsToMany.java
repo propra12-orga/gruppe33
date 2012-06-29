@@ -3,7 +3,7 @@ package propra2012.gruppe33.bomberman.graphics.rendering.scenegraph.grid.transfo
 import java.util.Map;
 import java.util.UUID;
 
-import propra2012.gruppe33.bomberman.graphics.rendering.scenegraph.grid.GridRoutines;
+import propra2012.gruppe33.bomberman.GameRoutines;
 
 import com.indyforge.twod.engine.graphics.rendering.scenegraph.GraphicsEntity;
 import com.indyforge.twod.engine.graphics.rendering.scenegraph.math.Vector2f;
@@ -28,7 +28,7 @@ public final class ManyPositionsToMany extends
 		entity.position().addLocal(value);
 
 		// Rearragne
-		GridRoutines.rearrangeGridNode((GraphicsEntity) entity.parent());
+		GameRoutines.rearrangeGridNode((GraphicsEntity) entity.parent());
 	}
 
 	public ManyPositionsToMany(Map<UUID, Vector2f> entityMap) {

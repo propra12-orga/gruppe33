@@ -1,6 +1,9 @@
 package propra2012.gruppe33.bomberman;
 
+import java.awt.Color;
+import java.awt.Font;
 import java.awt.Point;
+import java.awt.Transparency;
 import java.io.File;
 import java.io.Serializable;
 import java.util.HashMap;
@@ -11,21 +14,26 @@ import java.util.Map.Entry;
 import java.util.Properties;
 import java.util.UUID;
 
-import propra2012.gruppe33.bomberman.graphics.rendering.scenegraph.grid.GridConstants;
 import propra2012.gruppe33.bomberman.graphics.rendering.scenegraph.grid.GridLoader;
-import propra2012.gruppe33.bomberman.graphics.rendering.scenegraph.grid.GridRoutines;
 import propra2012.gruppe33.bomberman.graphics.rendering.scenegraph.grid.input.InputActivator;
+import propra2012.gruppe33.bomberman.graphics.rendering.scenegraph.grid.items.CollectableItem;
 import propra2012.gruppe33.bomberman.graphics.rendering.scenegraph.grid.transform.DeltaPositionBroadcaster;
 
 import com.indyforge.foxnet.rmi.pattern.change.AdminSessionServer;
+import com.indyforge.twod.engine.graphics.ImageDesc;
 import com.indyforge.twod.engine.graphics.rendering.scenegraph.GraphicsEntity;
+import com.indyforge.twod.engine.graphics.rendering.scenegraph.RenderedImage;
 import com.indyforge.twod.engine.graphics.rendering.scenegraph.Scene;
 import com.indyforge.twod.engine.graphics.rendering.scenegraph.SceneProcessor;
+import com.indyforge.twod.engine.graphics.rendering.scenegraph.Text;
+import com.indyforge.twod.engine.graphics.rendering.scenegraph.Text.Alignment;
 import com.indyforge.twod.engine.graphics.rendering.scenegraph.math.Grid;
 import com.indyforge.twod.engine.graphics.rendering.scenegraph.math.Vector2f;
 import com.indyforge.twod.engine.graphics.rendering.scenegraph.network.scene.ResetNetworkTimeChange;
 import com.indyforge.twod.engine.graphics.rendering.scenegraph.network.scene.SceneChange;
 import com.indyforge.twod.engine.graphics.sprite.Sprite;
+import com.indyforge.twod.engine.resources.Resource;
+import com.indyforge.twod.engine.resources.TransientSystemFontResource;
 import com.indyforge.twod.engine.resources.assets.AssetManager;
 
 /**
@@ -33,7 +41,7 @@ import com.indyforge.twod.engine.resources.assets.AssetManager;
  * @author Christopher Probst
  * 
  */
-public final class Game implements GridConstants, Serializable {
+public final class Game implements GameConstants, Serializable {
 
 	/**
 	 * 
@@ -47,7 +55,7 @@ public final class Game implements GridConstants, Serializable {
 	/*
 	 * 
 	 */
-	private String assetBundle = "scenes/default.zip",
+	private String assetBundle = "res/default.zip",
 			mapPropAssetPath = "assets/maps/smallmap.prop";
 	private float broadcastUpdateTime = 0.015f;
 
@@ -72,16 +80,18 @@ public final class Game implements GridConstants, Serializable {
 	/**
 	 * @return the broadcastUpdateTime
 	 */
-	public float getBroadcastUpdateTime() {
+	public float broadcastUpdateTime() {
 		return broadcastUpdateTime;
 	}
 
 	/**
 	 * @param broadcastUpdateTime
 	 *            the broadcastUpdateTime to set
+	 * @return this for chaining.
 	 */
-	public void setBroadcastUpdateTime(float broadcastUpdateTime) {
+	public Game boadcastUpdateTime(float broadcastUpdateTime) {
 		this.broadcastUpdateTime = broadcastUpdateTime;
+		return this;
 	}
 
 	public SceneProcessor serverGame(SceneProcessor sceneProcessor)
@@ -150,9 +160,19 @@ public final class Game implements GridConstants, Serializable {
 		return sceneProcessor;
 	}
 
+	public Game copy() {
+		return new Game().assetBundle(assetBundle)
+				.mapPropAssetPath(mapPropAssetPath)
+				.boadcastUpdateTime(broadcastUpdateTime);
+	}
+
 	public Scene serverGameScene(List<UUID> refs, float broadcastUpdateTime,
 			String assetBundle, String mapPropAssetPath,
 			Map<Long, Char> playerIds) throws Exception {
+
+		if (playerIds == null || playerIds.isEmpty()) {
+			throw new IllegalArgumentException("No players ids provided");
+		}
 
 		// Delete old refs...
 		refs.clear();
@@ -171,7 +191,7 @@ public final class Game implements GridConstants, Serializable {
 		int height = Integer.parseInt(properties.getProperty(MAP_HEIGHT_PROP));
 
 		// Create new scene with the given assets
-		Scene scene = new Scene(assets, width, height);
+		Scene scene = new Scene(assets, Math.round(width * 5 / 4f), height);
 
 		// Load the char array
 		char[][] map = assets.loadAsset(properties.getProperty(MAP_NAME_KEY),
@@ -190,11 +210,30 @@ public final class Game implements GridConstants, Serializable {
 		// Generate the map randomally
 		GridLoader.generate(map, System.nanoTime());
 
-		// Put the new sound
-		scene.soundManager().putSound(EXP_SOUND_NAME,
-				properties.getProperty(EXP_SOUND_NAME));
+		// Put the new sounds
+		scene.soundManager().putSound(EXP_SOUND,
+				properties.getProperty(EXP_SOUND));
+		scene.soundManager().putSound(EAT_SOUND,
+				properties.getProperty(EAT_SOUND));
+		scene.soundManager().putSound(GLASS_SOUND,
+				properties.getProperty(GLASS_SOUND));
+		scene.soundManager().putSound(SHIELD_ON_SOUND,
+				properties.getProperty(SHIELD_ON_SOUND));
+		scene.soundManager().putSound(SHIELD_OFF_SOUND,
+				properties.getProperty(SHIELD_OFF_SOUND));
+		scene.soundManager().putSound(PICKUP_SOUND,
+				properties.getProperty(PICKUP_SOUND));
+		scene.soundManager().putSound(PLACE_SOUND,
+				properties.getProperty(PLACE_SOUND));
 
-		// Register the global bomb images
+		// Preload the next game map
+		scene.addProp(NEXT,
+				copy().mapPropAssetPath(properties.getProperty(NEXT)));
+
+		// Register the global resources
+		scene.addProp(ITEM_INTERFACE,
+				assets.loadImage(properties.getProperty(ITEM_INTERFACE), true));
+
 		scene.addProp(DEFAULT_BOMB_IMAGE, assets.loadImage(
 				properties.getProperty(DEFAULT_BOMB_IMAGE), true));
 		scene.addProp(DEFAULT_BOMB_BAG_IMAGE, assets.loadImage(
@@ -205,10 +244,56 @@ public final class Game implements GridConstants, Serializable {
 		scene.addProp(NUKE_BOMB_BAG_IMAGE, assets.loadImage(
 				properties.getProperty(NUKE_BOMB_BAG_IMAGE), true));
 
-		scene.addProp(TIME_BOMB_IMAGE,
-				assets.loadImage(properties.getProperty(TIME_BOMB_IMAGE), true));
-		scene.addProp(TIME_BOMB_BAG_IMAGE, assets.loadImage(
-				properties.getProperty(TIME_BOMB_BAG_IMAGE), true));
+		scene.addProp(FAST_BOMB_IMAGE,
+				assets.loadImage(properties.getProperty(FAST_BOMB_IMAGE), true));
+		scene.addProp(FAST_BOMB_BAG_IMAGE, assets.loadImage(
+				properties.getProperty(FAST_BOMB_BAG_IMAGE), true));
+
+		scene.addProp(PALISADE_HORI_IMAGE, assets.loadImage(
+				properties.getProperty(PALISADE_HORI_IMAGE), true));
+		scene.addProp(PALISADE_VERT_IMAGE, assets.loadImage(
+				properties.getProperty(PALISADE_VERT_IMAGE), true));
+		scene.addProp(PALISADE_BAG_IMAGE, assets.loadImage(
+				properties.getProperty(PALISADE_BAG_IMAGE), true));
+
+		scene.addProp(SHIELD_IMAGE,
+				assets.loadImage(properties.getProperty(SHIELD_IMAGE), true));
+		scene.addProp(SHIELD_POTION_IMAGE, assets.loadImage(
+				properties.getProperty(SHIELD_POTION_IMAGE), true));
+
+		scene.addProp(SPEED_IMAGE,
+				assets.loadImage(properties.getProperty(SPEED_IMAGE), true));
+		scene.addProp(SLOW_SHROOM_IMAGE, assets.loadImage(
+				properties.getProperty(SLOW_SHROOM_IMAGE), true));
+		scene.addProp(FAST_SHROOM_IMAGE, assets.loadImage(
+				properties.getProperty(FAST_SHROOM_IMAGE), true));
+
+		scene.addProp(BREAKABLE_IMAGE,
+				assets.loadImage(properties.getProperty(BREAKABLE_IMAGE), true));
+		scene.addProp(SOLID_IMAGE,
+				assets.loadImage(properties.getProperty(SOLID_IMAGE), true));
+		scene.addProp(GROUND_IMAGE,
+				assets.loadImage(properties.getProperty(GROUND_IMAGE), true));
+		scene.addProp(ESCAPE_IMAGE,
+				assets.loadImage(properties.getProperty(ESCAPE_IMAGE), true));
+
+		scene.addProp(CORNER_LD_IMAGE,
+				assets.loadImage(properties.getProperty(CORNER_LD_IMAGE), true));
+		scene.addProp(CORNER_LU_IMAGE,
+				assets.loadImage(properties.getProperty(CORNER_LU_IMAGE), true));
+		scene.addProp(CORNER_RD_IMAGE,
+				assets.loadImage(properties.getProperty(CORNER_RD_IMAGE), true));
+		scene.addProp(CORNER_RU_IMAGE,
+				assets.loadImage(properties.getProperty(CORNER_RU_IMAGE), true));
+
+		scene.addProp(WALL_D_IMAGE,
+				assets.loadImage(properties.getProperty(WALL_D_IMAGE), true));
+		scene.addProp(WALL_U_IMAGE,
+				assets.loadImage(properties.getProperty(WALL_U_IMAGE), true));
+		scene.addProp(WALL_R_IMAGE,
+				assets.loadImage(properties.getProperty(WALL_R_IMAGE), true));
+		scene.addProp(WALL_L_IMAGE,
+				assets.loadImage(properties.getProperty(WALL_L_IMAGE), true));
 
 		// Parse the width and height of the sprite
 		int spriteWidth = Integer.parseInt(properties
@@ -223,11 +308,89 @@ public final class Game implements GridConstants, Serializable {
 						true), spriteWidth, spriteHeight));
 
 		// Parse and setup map
-		GraphicsEntity grid = GridLoader.parse(map, scene, broadcastUpdateTime,
-				System.nanoTime(), 0.2f, 0.2f, 0.2f);
+		GraphicsEntity grid = GridLoader.parse(map, scene, width, height,
+				broadcastUpdateTime, System.nanoTime(),
+				playerIds.size() == 1 ? 1 : 2, 0.2f, 0.2f, 0.2f, 0.1f, 0.1f,
+				0.1f, 0.1f);
+
+		/*
+		 * ********************************************************************
+		 * SETUP THE ITEM INTERFACE STUFF.
+		 * ********************************************************************
+		 */
+
+		// Load the item interface
+		RenderedImage itemInterface = new RenderedImage(
+				scene.imageProp(ITEM_INTERFACE));
+
+		// Set the correct scale
+		itemInterface.scale().set(width * 0.25f, height);
+
+		// Move the interface to the right
+		itemInterface.position().x = width;
+
+		// Attach the item interface
+		scene.attach(itemInterface);
+
+		// The counter
+		int counter = 0;
+
+		// Create a new font
+		Resource<Font> font = new TransientSystemFontResource("Verdana",
+				Font.BOLD, 36);
+
+		// Used to create the text
+		ImageDesc countTextDesc = new ImageDesc().width(64).height(64)
+				.transparency(Transparency.TRANSLUCENT);
+
+		for (CollectableItem item : CollectableItem.values()) {
+
+			// Load the item holder
+			RenderedImage itemHolder = new RenderedImage(
+					scene.imageProp(GameRoutines.itemToAsset(item)));
+
+			// Set scale
+			itemHolder.scale().scaleLocal(width * 0.10f);
+
+			// Set position
+			itemHolder.position().set(width * 1.075f,
+					width * 0.05f + width * 0.11f * counter++);
+
+			// Attach to scene
+			scene.attach(itemHolder);
+
+			// Create a new text object
+			Text text = new Text(countTextDesc);
+
+			// Shift down a bit
+			text.position().y += 0.3f;
+
+			// Center alignment
+			text.alignment(Alignment.Right);
+
+			// Set the font
+			text.fontResource(font);
+
+			// Use red color
+			text.textColor(Color.RED);
+
+			// Init with X
+			text.text("X");
+
+			// Simply attach
+			itemHolder.attach(text);
+
+			// Add the text as prop
+			scene.addProp(item, text);
+		}
+		/*
+		 * ********************************************************************
+		 * INTERFACE STUFF FINISHED
+		 * ********************************************************************
+		 */
 
 		// The spawn points
-		List<Point> spawnPoints = GridLoader.find(map, GridConstants.SPAWN);
+		List<Point> spawnPoints = GridLoader.find(map, GameConstants.SPAWN);
 
 		int i = 0;
 
@@ -244,19 +407,19 @@ public final class Game implements GridConstants, Serializable {
 			 */
 			switch (entry.getValue()) {
 			case Dwarf:
-				player = GridRoutines.createRemoteDwarf(assets,
+				player = GameRoutines.createRemoteDwarf(assets,
 						String.valueOf(entry.getKey()));
 				break;
 			case Knight:
-				player = GridRoutines.createRemoteKnight(assets,
+				player = GameRoutines.createRemoteKnight(assets,
 						String.valueOf(entry.getKey()));
 				break;
 			case Santa:
-				player = GridRoutines.createRemoteSanta(assets,
+				player = GameRoutines.createRemoteSanta(assets,
 						String.valueOf(entry.getKey()));
 				break;
 			case Wizard:
-				player = GridRoutines.createRemoteWizard(assets,
+				player = GameRoutines.createRemoteWizard(assets,
 						String.valueOf(entry.getKey()));
 				break;
 			default:
@@ -269,7 +432,7 @@ public final class Game implements GridConstants, Serializable {
 			/*
 			 * Register to delta position broadcaster.
 			 */
-			scene.prop(GridConstants.BROADCASTER_NAME,
+			scene.prop(GameConstants.BROADCASTER_NAME,
 					DeltaPositionBroadcaster.class)
 					.entities()
 					.put(player.registrationKey(),
@@ -278,7 +441,6 @@ public final class Game implements GridConstants, Serializable {
 			// Place to spawn
 			grid.childAt(grid.typeProp(Grid.class).index(spawnPoints.get(i++)))
 					.attach(player);
-
 		}
 
 		// Store the player refs

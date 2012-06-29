@@ -1,20 +1,20 @@
 package propra2012.gruppe33.bomberman.graphics.rendering.scenegraph.grid;
 
 import java.awt.Color;
+import java.awt.Image;
 import java.awt.Point;
-import java.awt.image.BufferedImage;
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.util.ArrayList;
-import java.util.HashSet;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Random;
-import java.util.Set;
 
-import propra2012.gruppe33.bomberman.graphics.rendering.scenegraph.grid.bomb.BombType;
+import propra2012.gruppe33.bomberman.GameConstants;
+import propra2012.gruppe33.bomberman.GameRoutines;
+import propra2012.gruppe33.bomberman.graphics.rendering.scenegraph.grid.items.CollectableItem;
 import propra2012.gruppe33.bomberman.graphics.rendering.scenegraph.grid.transform.DeltaPositionBroadcaster;
 
 import com.indyforge.twod.engine.graphics.rendering.scenegraph.Entity;
@@ -23,7 +23,8 @@ import com.indyforge.twod.engine.graphics.rendering.scenegraph.RenderedImage;
 import com.indyforge.twod.engine.graphics.rendering.scenegraph.Scene;
 import com.indyforge.twod.engine.graphics.rendering.scenegraph.math.Grid;
 import com.indyforge.twod.engine.graphics.rendering.scenegraph.math.MathExt;
-import com.indyforge.twod.engine.resources.assets.Asset;
+import com.indyforge.twod.engine.graphics.rendering.scenegraph.math.Vector2f;
+import com.indyforge.twod.engine.resources.Resource;
 import com.indyforge.twod.engine.resources.assets.AssetLoader;
 import com.indyforge.twod.engine.resources.assets.AssetManager;
 
@@ -33,7 +34,7 @@ import com.indyforge.twod.engine.resources.assets.AssetManager;
  * 
  * @author Malte Schmidt
  */
-public final class GridLoader implements GridConstants {
+public final class GridLoader implements GameConstants {
 
 	public static List<Point> find(char[][] map, char sign) {
 		if (map == null) {
@@ -72,9 +73,11 @@ public final class GridLoader implements GridConstants {
 	 * @throws Exception
 	 *             If an exception occurs.
 	 */
-	public static GraphicsEntity parse(char[][] map, Scene scene,
-			float broadcastTime, long seed, float defBombCount,
-			float nukeBombCount, float timeBombCount) throws Exception {
+	public static GraphicsEntity parse(char[][] map, Scene scene, float w,
+			float h, float broadcastTime, long seed, int minPlayers,
+			float defBombChance, float nukeBombChance, float fastBombChance,
+			float paliChance, float shieldPotionChance, float slowShroomChance,
+			float fastShroomChance) throws Exception {
 
 		if (map == null) {
 			throw new NullPointerException("map");
@@ -83,15 +86,20 @@ public final class GridLoader implements GridConstants {
 		}
 
 		/*
-		 * Clamp all bomb counts.
+		 * Clamp all items chances.
 		 */
-		defBombCount = MathExt.clamp(defBombCount, 0, 1);
-		nukeBombCount = MathExt.clamp(nukeBombCount, 0, 1);
-		timeBombCount = MathExt.clamp(timeBombCount, 0, 1);
+		defBombChance = MathExt.clamp(defBombChance, 0, 1);
+		nukeBombChance = MathExt.clamp(nukeBombChance, 0, 1);
+		fastBombChance = MathExt.clamp(fastBombChance, 0, 1);
+		paliChance = MathExt.clamp(paliChance, 0, 1);
+		shieldPotionChance = MathExt.clamp(shieldPotionChance, 0, 1);
+		slowShroomChance = MathExt.clamp(slowShroomChance, 0, 1);
+		fastShroomChance = MathExt.clamp(fastShroomChance, 0, 1);
 
 		// Check the values
-		if (defBombCount + nukeBombCount + timeBombCount > 1) {
-			throw new IllegalArgumentException("The sum of all bomb counts "
+		if (defBombChance + nukeBombChance + fastBombChance + paliChance
+				+ shieldPotionChance + slowShroomChance + fastShroomChance > 1f + MathExt.kEpsilon) {
+			throw new IllegalArgumentException("The sum of all items chances "
 					+ "is > 1. Please choose appropriate values.");
 		}
 
@@ -99,7 +107,7 @@ public final class GridLoader implements GridConstants {
 		int rx = map[0].length, ry = map.length;
 
 		// Create a new grid entity
-		GraphicsEntity gridEntity = GridRoutines.createGridEntity(rx, ry);
+		GraphicsEntity gridEntity = GameRoutines.createGridEntity(rx, ry);
 
 		// Add shift
 		gridEntity.position().x += 0.5f;
@@ -112,15 +120,15 @@ public final class GridLoader implements GridConstants {
 		GraphicsEntity gridHolder = new GraphicsEntity();
 
 		// Set correct scale
-		gridHolder.scale(scene.sizeAsVector().scale(
-				grid.sizeAsVector().invertLocal()));
+		gridHolder.scale(new Vector2f(w, h).scale(grid.sizeAsVector()
+				.invertLocal()));
 
 		// Attach grid to holder
 		gridHolder.attach(gridEntity);
 
 		// Create new broadcaster
 		DeltaPositionBroadcaster broadcaster = new DeltaPositionBroadcaster(
-				broadcastTime);
+				broadcastTime, minPlayers);
 
 		// Attach the broadcaster
 		scene.attach(broadcaster);
@@ -131,40 +139,29 @@ public final class GridLoader implements GridConstants {
 		/*
 		 * The breakable image.
 		 */
-		Asset<BufferedImage> breakable = scene.assetManager().loadImage(
-				"assets/images/break.png", true);
+		Resource<? extends Image> breakable = scene.imageProp(BREAKABLE_IMAGE);
 
 		/*
 		 * The solid image.
 		 */
-		Asset<BufferedImage> solidImage = scene.assetManager().loadImage(
-				"assets/images/solid.png", true);
+		Resource<? extends Image> solidImage = scene.imageProp(SOLID_IMAGE);
 
 		/*
 		 * The ground image.
 		 */
-		Asset<BufferedImage> groundImage = scene.assetManager().loadImage(
-				"assets/images/ground.jpg", true);
+		Resource<? extends Image> groundImage = scene.imageProp(GROUND_IMAGE);
 
 		/*
 		 * Load all components!
 		 */
-		Asset<BufferedImage> wallUP = scene.assetManager().loadImage(
-				"assets/images/walls/wallUP.png", true);
-		Asset<BufferedImage> wallDOWN = scene.assetManager().loadImage(
-				"assets/images/walls/wallDOWN.png", true);
-		Asset<BufferedImage> wallLEFT = scene.assetManager().loadImage(
-				"assets/images/walls/wallLEFT.png", true);
-		Asset<BufferedImage> wallRIGHT = scene.assetManager().loadImage(
-				"assets/images/walls/wallRIGHT.png", true);
-		Asset<BufferedImage> ulc = scene.assetManager().loadImage(
-				"assets/images/walls/cornerLU.png", true);
-		Asset<BufferedImage> urc = scene.assetManager().loadImage(
-				"assets/images/walls/cornerRU.png", true);
-		Asset<BufferedImage> dlc = scene.assetManager().loadImage(
-				"assets/images/walls/cornerLD.png", true);
-		Asset<BufferedImage> drc = scene.assetManager().loadImage(
-				"assets/images/walls/cornerRD.png", true);
+		Resource<? extends Image> wallUP = scene.imageProp(WALL_U_IMAGE);
+		Resource<? extends Image> wallDOWN = scene.imageProp(WALL_D_IMAGE);
+		Resource<? extends Image> wallLEFT = scene.imageProp(WALL_L_IMAGE);
+		Resource<? extends Image> wallRIGHT = scene.imageProp(WALL_R_IMAGE);
+		Resource<? extends Image> ulc = scene.imageProp(CORNER_LU_IMAGE);
+		Resource<? extends Image> urc = scene.imageProp(CORNER_RU_IMAGE);
+		Resource<? extends Image> dlc = scene.imageProp(CORNER_LD_IMAGE);
+		Resource<? extends Image> drc = scene.imageProp(CORNER_RD_IMAGE);
 
 		// The ground
 		GraphicsEntity ground = new GraphicsEntity();
@@ -173,7 +170,7 @@ public final class GridLoader implements GridConstants {
 		GraphicsEntity solids = new GraphicsEntity();
 
 		// The list which contains all breakable nodes
-		List<GraphicsEntity> breakableNodes = new ArrayList<GraphicsEntity>();
+		List<GraphicsEntity> breakableNodes = new LinkedList<GraphicsEntity>();
 
 		for (int y = 0; y < ry; y++) {
 			for (int x = 0; x < rx; x++) {
@@ -249,37 +246,93 @@ public final class GridLoader implements GridConstants {
 		// Create new field chooser using the seed
 		Random fieldChooser = new Random(seed);
 
-		// Used to store all used fields
-		Set<Integer> usedFields = new HashSet<Integer>();
-
 		// Truncate everything
-		int defBombs = (int) (breakableNodes.size() * defBombCount);
-		int nukeBombs = (int) (breakableNodes.size() * nukeBombCount);
-		int timeBombs = (int) (breakableNodes.size() * timeBombCount);
+		int defBombs = (int) (breakableNodes.size() * defBombChance);
+		int nukeBombs = (int) (breakableNodes.size() * nukeBombChance);
+		int fastBombs = (int) (breakableNodes.size() * fastBombChance);
+
+		int palis = (int) (breakableNodes.size() * paliChance);
+
+		int shieldPotions = (int) (breakableNodes.size() * shieldPotionChance);
+
+		int slowShrooms = (int) (breakableNodes.size() * slowShroomChance);
+		int fastShrooms = (int) (breakableNodes.size() * fastShroomChance);
 
 		/*
 		 * The def bombs.
 		 */
-		for (int i = 0, bombs = defBombs + nukeBombs + timeBombs; i < bombs; i++) {
-
-			// Choose next field
-			int nextField = fieldChooser.nextInt(breakableNodes.size());
-
-			// Skip used fields!
-			if (!usedFields.add(nextField)) {
-				continue;
-			}
-
-			// Determine the bomb type
-			BombType type = BombType.Default;
-			if (i >= defBombs + nukeBombs) {
-				type = BombType.Time;
-			} else if (i >= defBombs) {
-				type = BombType.Nuke;
-			}
+		for (int i = 0; i < defBombs; i++) {
 
 			// Create new default bomb item
-			GridRoutines.createBombItem(breakableNodes.get(nextField), type);
+			GameRoutines.createItem(breakableNodes.remove(fieldChooser
+					.nextInt(breakableNodes.size())),
+					CollectableItem.DefaultBomb, 1);
+		}
+
+		/*
+		 * The nuke bombs.
+		 */
+		for (int i = 0; i < nukeBombs; i++) {
+
+			// Create new nuke bomb item
+			GameRoutines.createItem(breakableNodes.remove(fieldChooser
+					.nextInt(breakableNodes.size())), CollectableItem.NukeBomb,
+					1);
+		}
+
+		/*
+		 * The time bombs.
+		 */
+		for (int i = 0; i < fastBombs; i++) {
+
+			// Create new time bomb item
+			GameRoutines.createItem(breakableNodes.remove(fieldChooser
+					.nextInt(breakableNodes.size())), CollectableItem.FastBomb,
+					1);
+		}
+
+		/*
+		 * The shield potions.
+		 */
+		for (int i = 0; i < shieldPotions; i++) {
+
+			// Create new shield item
+			GameRoutines.createItem(breakableNodes.remove(fieldChooser
+					.nextInt(breakableNodes.size())),
+					CollectableItem.ShieldPotion, 1);
+		}
+
+		/*
+		 * The palisade item.
+		 */
+		for (int i = 0; i < palis; i++) {
+
+			// Create new palisade item
+			GameRoutines.createItem(breakableNodes.remove(fieldChooser
+					.nextInt(breakableNodes.size())), CollectableItem.Palisade,
+					1);
+		}
+
+		/*
+		 * The s-shroom item.
+		 */
+		for (int i = 0; i < slowShrooms; i++) {
+
+			// Create new shroom item
+			GameRoutines
+					.createItem(breakableNodes.remove(fieldChooser
+							.nextInt(breakableNodes.size())),
+							CollectableItem.Speed, -1);
+		}
+
+		/*
+		 * The f-shroom item.
+		 */
+		for (int i = 0; i < fastShrooms; i++) {
+
+			// Create new shroom item
+			GameRoutines.createItem(breakableNodes.remove(fieldChooser
+					.nextInt(breakableNodes.size())), CollectableItem.Speed, 1);
 		}
 
 		// Create a static root
