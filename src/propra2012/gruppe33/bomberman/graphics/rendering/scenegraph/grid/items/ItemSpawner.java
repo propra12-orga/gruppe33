@@ -5,6 +5,7 @@ import java.util.EnumMap;
 import java.util.LinkedList;
 import java.util.Map;
 
+import propra2012.gruppe33.bomberman.GameConstants;
 import propra2012.gruppe33.bomberman.GameRoutines;
 import propra2012.gruppe33.bomberman.graphics.rendering.scenegraph.grid.input.Input;
 import propra2012.gruppe33.bomberman.graphics.rendering.scenegraph.grid.items.bomb.Bomb;
@@ -27,7 +28,7 @@ import com.indyforge.twod.engine.graphics.rendering.scenegraph.network.input.Inp
  * @author Christopher Probst
  * 
  */
-public final class ItemSpawner extends GraphicsEntity {
+public final class ItemSpawner extends GraphicsEntity implements GameConstants {
 
 	/**
 	 * 
@@ -92,11 +93,13 @@ public final class ItemSpawner extends GraphicsEntity {
 		return items;
 	}
 
-	public ItemSpawner removeItems(CollectableItem item, int count) {
-		return addItems(item, -count);
+	public ItemSpawner removeItems(CollectableItem item, int count,
+			boolean playSound) {
+		return addItems(item, -count, playSound);
 	}
 
-	public ItemSpawner addItems(final CollectableItem item, final int count) {
+	public ItemSpawner addItems(final CollectableItem item, final int count,
+			boolean playSound) {
 		int value = items.get(item) + count;
 		items.put(item, value < 0 ? 0 : value);
 
@@ -110,8 +113,8 @@ public final class ItemSpawner extends GraphicsEntity {
 
 			// Create item count sync
 			SyncItemCount syncItemCount = new SyncItemCount();
-			syncItemCount.item(item).count(items.get(item)).entities()
-					.add(registrationKey());
+			syncItemCount.item(item).playSound(playSound)
+					.count(items.get(item)).entities().add(registrationKey());
 
 			// Get session
 			Session<SceneProcessor> session = proc.adminSessionServer()
@@ -217,7 +220,7 @@ public final class ItemSpawner extends GraphicsEntity {
 							.queueChange(bomb, true);
 
 					// Clean up
-					removeItems(item, 1);
+					removeItems(item, 1, true);
 					spawnItems.put(item, false);
 				}
 			} else {
@@ -247,7 +250,7 @@ public final class ItemSpawner extends GraphicsEntity {
 							.queueChange(sp, true);
 
 					// Clean up
-					removeItems(item, 1);
+					removeItems(item, 1, true);
 					spawnItems.put(item, false);
 				}
 			}
@@ -272,7 +275,7 @@ public final class ItemSpawner extends GraphicsEntity {
 					.queueChange(ss, true);
 
 			// Clean up
-			removeItems(CollectableItem.ShieldPotion, 1);
+			removeItems(CollectableItem.ShieldPotion, 1, true);
 			spawnItems.put(CollectableItem.ShieldPotion, false);
 		}
 
@@ -299,8 +302,8 @@ public final class ItemSpawner extends GraphicsEntity {
 			movement.velocityMultiplier(vm);
 
 			// Update!
-			removeItems(CollectableItem.FastShroom, Integer.MIN_VALUE);
-			removeItems(CollectableItem.SlowShroom, Integer.MIN_VALUE);
+			removeItems(CollectableItem.FastShroom, Integer.MIN_VALUE, false);
+			removeItems(CollectableItem.SlowShroom, Integer.MIN_VALUE, false);
 		}
 	}
 }

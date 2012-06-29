@@ -80,16 +80,18 @@ public final class Game implements GameConstants, Serializable {
 	/**
 	 * @return the broadcastUpdateTime
 	 */
-	public float getBroadcastUpdateTime() {
+	public float broadcastUpdateTime() {
 		return broadcastUpdateTime;
 	}
 
 	/**
 	 * @param broadcastUpdateTime
 	 *            the broadcastUpdateTime to set
+	 * @return this for chaining.
 	 */
-	public void setBroadcastUpdateTime(float broadcastUpdateTime) {
+	public Game boadcastUpdateTime(float broadcastUpdateTime) {
 		this.broadcastUpdateTime = broadcastUpdateTime;
+		return this;
 	}
 
 	public SceneProcessor serverGame(SceneProcessor sceneProcessor)
@@ -158,9 +160,19 @@ public final class Game implements GameConstants, Serializable {
 		return sceneProcessor;
 	}
 
+	public Game copy() {
+		return new Game().assetBundle(assetBundle)
+				.mapPropAssetPath(mapPropAssetPath)
+				.boadcastUpdateTime(broadcastUpdateTime);
+	}
+
 	public Scene serverGameScene(List<UUID> refs, float broadcastUpdateTime,
 			String assetBundle, String mapPropAssetPath,
 			Map<Long, Char> playerIds) throws Exception {
+
+		if (playerIds == null || playerIds.isEmpty()) {
+			throw new IllegalArgumentException("No players ids provided");
+		}
 
 		// Delete old refs...
 		refs.clear();
@@ -198,11 +210,27 @@ public final class Game implements GameConstants, Serializable {
 		// Generate the map randomally
 		GridLoader.generate(map, System.nanoTime());
 
-		// Put the new sound
-		scene.soundManager().putSound(EXP_SOUND_NAME,
-				properties.getProperty(EXP_SOUND_NAME));
+		// Put the new sounds
+		scene.soundManager().putSound(EXP_SOUND,
+				properties.getProperty(EXP_SOUND));
+		scene.soundManager().putSound(EAT_SOUND,
+				properties.getProperty(EAT_SOUND));
+		scene.soundManager().putSound(GLASS_SOUND,
+				properties.getProperty(GLASS_SOUND));
+		scene.soundManager().putSound(SHIELD_ON_SOUND,
+				properties.getProperty(SHIELD_ON_SOUND));
+		scene.soundManager().putSound(SHIELD_OFF_SOUND,
+				properties.getProperty(SHIELD_OFF_SOUND));
+		scene.soundManager().putSound(PICKUP_SOUND,
+				properties.getProperty(PICKUP_SOUND));
+		scene.soundManager().putSound(PLACE_SOUND,
+				properties.getProperty(PLACE_SOUND));
 
-		// Register the global images
+		// Preload the next game map
+		scene.addProp(NEXT,
+				copy().mapPropAssetPath(properties.getProperty(NEXT)));
+
+		// Register the global resources
 		scene.addProp(ITEM_INTERFACE,
 				assets.loadImage(properties.getProperty(ITEM_INTERFACE), true));
 
@@ -238,6 +266,33 @@ public final class Game implements GameConstants, Serializable {
 		scene.addProp(FAST_SHROOM_IMAGE, assets.loadImage(
 				properties.getProperty(FAST_SHROOM_IMAGE), true));
 
+		scene.addProp(BREAKABLE_IMAGE,
+				assets.loadImage(properties.getProperty(BREAKABLE_IMAGE), true));
+		scene.addProp(SOLID_IMAGE,
+				assets.loadImage(properties.getProperty(SOLID_IMAGE), true));
+		scene.addProp(GROUND_IMAGE,
+				assets.loadImage(properties.getProperty(GROUND_IMAGE), true));
+		scene.addProp(ESCAPE_IMAGE,
+				assets.loadImage(properties.getProperty(ESCAPE_IMAGE), true));
+
+		scene.addProp(CORNER_LD_IMAGE,
+				assets.loadImage(properties.getProperty(CORNER_LD_IMAGE), true));
+		scene.addProp(CORNER_LU_IMAGE,
+				assets.loadImage(properties.getProperty(CORNER_LU_IMAGE), true));
+		scene.addProp(CORNER_RD_IMAGE,
+				assets.loadImage(properties.getProperty(CORNER_RD_IMAGE), true));
+		scene.addProp(CORNER_RU_IMAGE,
+				assets.loadImage(properties.getProperty(CORNER_RU_IMAGE), true));
+
+		scene.addProp(WALL_D_IMAGE,
+				assets.loadImage(properties.getProperty(WALL_D_IMAGE), true));
+		scene.addProp(WALL_U_IMAGE,
+				assets.loadImage(properties.getProperty(WALL_U_IMAGE), true));
+		scene.addProp(WALL_R_IMAGE,
+				assets.loadImage(properties.getProperty(WALL_R_IMAGE), true));
+		scene.addProp(WALL_L_IMAGE,
+				assets.loadImage(properties.getProperty(WALL_L_IMAGE), true));
+
 		// Parse the width and height of the sprite
 		int spriteWidth = Integer.parseInt(properties
 				.getProperty(EXP_SPRITE_WIDTH));
@@ -252,8 +307,9 @@ public final class Game implements GameConstants, Serializable {
 
 		// Parse and setup map
 		GraphicsEntity grid = GridLoader.parse(map, scene, width, height,
-				broadcastUpdateTime, System.nanoTime(), 0.2f, 0.2f, 0.2f, 0.1f,
-				0.1f, 0.1f, 0.1f);
+				broadcastUpdateTime, System.nanoTime(),
+				playerIds.size() == 1 ? 1 : 2, 0.2f, 0.2f, 0.2f, 0.1f, 0.1f,
+				0.1f, 0.1f);
 
 		/*
 		 * ********************************************************************

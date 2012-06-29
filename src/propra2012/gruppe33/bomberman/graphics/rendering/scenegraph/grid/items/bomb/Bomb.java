@@ -127,7 +127,7 @@ public final class Bomb extends OneToMany<GraphicsEntity, BombDesc> implements
 								.typeProp(ItemSpawner.class);
 
 						// Increase the bomb count
-						sp.addItems(bomb, 1);
+						sp.addItems(bomb, 1, false);
 					}
 
 					// Lookup grid
@@ -231,7 +231,7 @@ public final class Bomb extends OneToMany<GraphicsEntity, BombDesc> implements
 					 * Play a single sound on each client.
 					 */
 					server.broadcast().queueChange(
-							new PlaySound(GameConstants.EXP_SOUND_NAME), true);
+							new PlaySound(GameConstants.EXP_SOUND), true);
 				}
 			});
 		}

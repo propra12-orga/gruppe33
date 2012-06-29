@@ -246,8 +246,30 @@ public final class GameRoutines implements GameConstants {
 		}
 
 		// The shield
-		final RenderedImage shield = new RenderedImage().centered(true)
-				.imageResource(scene.imageProp(SHIELD_IMAGE));
+		final RenderedImage shield = new RenderedImage() {
+			/**
+			 * 
+			 */
+			private static final long serialVersionUID = 1L;
+
+			/*
+			 * (non-Javadoc)
+			 * 
+			 * @see
+			 * com.indyforge.twod.engine.graphics.rendering.scenegraph.Entity
+			 * #onDetached
+			 * (com.indyforge.twod.engine.graphics.rendering.scenegraph.Entity,
+			 * com.indyforge.twod.engine.graphics.rendering.scenegraph.Entity)
+			 */
+			@Override
+			protected void onDetached(Entity parent, Entity child) {
+
+				// Deactive sound
+				if (scene.processor().hasSession()) {
+					scene.soundManager().playSound(SHIELD_OFF_SOUND, true);
+				}
+			}
+		}.centered(true).imageResource(scene.imageProp(SHIELD_IMAGE));
 
 		// Set index + tag
 		shield.index(SHIELD_INDEX).tag(SHIELD_TAG);
@@ -617,7 +639,7 @@ public final class GameRoutines implements GameConstants {
 								ItemSpawner sp = c.typeProp(ItemSpawner.class);
 
 								// Increase the item count
-								sp.addItems(item, 1);
+								sp.addItems(item, 1, true);
 
 								// Remove the item bag
 								DetachEntityChange dec = new DetachEntityChange();

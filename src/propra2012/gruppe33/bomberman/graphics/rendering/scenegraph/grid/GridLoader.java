@@ -1,8 +1,8 @@
 package propra2012.gruppe33.bomberman.graphics.rendering.scenegraph.grid;
 
 import java.awt.Color;
+import java.awt.Image;
 import java.awt.Point;
-import java.awt.image.BufferedImage;
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStream;
@@ -24,7 +24,7 @@ import com.indyforge.twod.engine.graphics.rendering.scenegraph.Scene;
 import com.indyforge.twod.engine.graphics.rendering.scenegraph.math.Grid;
 import com.indyforge.twod.engine.graphics.rendering.scenegraph.math.MathExt;
 import com.indyforge.twod.engine.graphics.rendering.scenegraph.math.Vector2f;
-import com.indyforge.twod.engine.resources.assets.Asset;
+import com.indyforge.twod.engine.resources.Resource;
 import com.indyforge.twod.engine.resources.assets.AssetLoader;
 import com.indyforge.twod.engine.resources.assets.AssetManager;
 
@@ -74,9 +74,9 @@ public final class GridLoader implements GameConstants {
 	 *             If an exception occurs.
 	 */
 	public static GraphicsEntity parse(char[][] map, Scene scene, float w,
-			float h, float broadcastTime, long seed, float defBombChance,
-			float nukeBombChance, float fastBombChance, float paliChance,
-			float shieldPotionChance, float slowShroomChance,
+			float h, float broadcastTime, long seed, int minPlayers,
+			float defBombChance, float nukeBombChance, float fastBombChance,
+			float paliChance, float shieldPotionChance, float slowShroomChance,
 			float fastShroomChance) throws Exception {
 
 		if (map == null) {
@@ -128,7 +128,7 @@ public final class GridLoader implements GameConstants {
 
 		// Create new broadcaster
 		DeltaPositionBroadcaster broadcaster = new DeltaPositionBroadcaster(
-				broadcastTime);
+				broadcastTime, minPlayers);
 
 		// Attach the broadcaster
 		scene.attach(broadcaster);
@@ -139,40 +139,29 @@ public final class GridLoader implements GameConstants {
 		/*
 		 * The breakable image.
 		 */
-		Asset<BufferedImage> breakable = scene.assetManager().loadImage(
-				"assets/images/break.png", true);
+		Resource<? extends Image> breakable = scene.imageProp(BREAKABLE_IMAGE);
 
 		/*
 		 * The solid image.
 		 */
-		Asset<BufferedImage> solidImage = scene.assetManager().loadImage(
-				"assets/images/solid.png", true);
+		Resource<? extends Image> solidImage = scene.imageProp(SOLID_IMAGE);
 
 		/*
 		 * The ground image.
 		 */
-		Asset<BufferedImage> groundImage = scene.assetManager().loadImage(
-				"assets/images/ground.jpg", true);
+		Resource<? extends Image> groundImage = scene.imageProp(GROUND_IMAGE);
 
 		/*
 		 * Load all components!
 		 */
-		Asset<BufferedImage> wallUP = scene.assetManager().loadImage(
-				"assets/images/walls/wallUP.png", true);
-		Asset<BufferedImage> wallDOWN = scene.assetManager().loadImage(
-				"assets/images/walls/wallDOWN.png", true);
-		Asset<BufferedImage> wallLEFT = scene.assetManager().loadImage(
-				"assets/images/walls/wallLEFT.png", true);
-		Asset<BufferedImage> wallRIGHT = scene.assetManager().loadImage(
-				"assets/images/walls/wallRIGHT.png", true);
-		Asset<BufferedImage> ulc = scene.assetManager().loadImage(
-				"assets/images/walls/cornerLU.png", true);
-		Asset<BufferedImage> urc = scene.assetManager().loadImage(
-				"assets/images/walls/cornerRU.png", true);
-		Asset<BufferedImage> dlc = scene.assetManager().loadImage(
-				"assets/images/walls/cornerLD.png", true);
-		Asset<BufferedImage> drc = scene.assetManager().loadImage(
-				"assets/images/walls/cornerRD.png", true);
+		Resource<? extends Image> wallUP = scene.imageProp(WALL_U_IMAGE);
+		Resource<? extends Image> wallDOWN = scene.imageProp(WALL_D_IMAGE);
+		Resource<? extends Image> wallLEFT = scene.imageProp(WALL_L_IMAGE);
+		Resource<? extends Image> wallRIGHT = scene.imageProp(WALL_R_IMAGE);
+		Resource<? extends Image> ulc = scene.imageProp(CORNER_LU_IMAGE);
+		Resource<? extends Image> urc = scene.imageProp(CORNER_RU_IMAGE);
+		Resource<? extends Image> dlc = scene.imageProp(CORNER_LD_IMAGE);
+		Resource<? extends Image> drc = scene.imageProp(CORNER_RD_IMAGE);
 
 		// The ground
 		GraphicsEntity ground = new GraphicsEntity();

@@ -24,12 +24,30 @@ public interface GameConstants {
 
 	String BROADCASTER_NAME = "broadcaster";
 
+	/*
+	 * The next map!
+	 */
+	String NEXT = "next";
+
+	// ************ SOUND START
+	String EXP_SOUND = "exp_sound";
+	String EAT_SOUND = "eat_sound";
+
+	String SHIELD_ON_SOUND = "shield_on_sound";
+	String SHIELD_OFF_SOUND = "shield_off_sound";
+
+	String PICKUP_SOUND = "pickup_sound";
+	String PLACE_SOUND = "place_sound";
+
+	String GLASS_SOUND = "glass_sound";
+
+	// ************ SOUND END
+
 	// ************ ITEMS GUI START
 	String ITEM_INTERFACE = "item_interface";
 	// ************ ITEMS GUI END
 
 	// ************ ITEMS START
-	String EXP_SOUND_NAME = "exp_sound";
 	String EXP_SPRITE = "exp_sprite";
 	String EXP_SPRITE_WIDTH = "exp_sprite_columns";
 	String EXP_SPRITE_HEIGHT = "exp_sprite_rows";
@@ -62,6 +80,27 @@ public interface GameConstants {
 	String FAST_SHROOM_IMAGE = "fast_shroom_image";
 	// ************ PERM - ITEMS END
 
+	// ************ NATURE START
+
+	String BREAKABLE_IMAGE = "breakable_image";
+	String SOLID_IMAGE = "solid_image";
+	String GROUND_IMAGE = "ground_image";
+	String ESCAPE_IMAGE = "escape_image";
+
+	// ************ NATURE END
+
+	// ************ WALLS START
+	String CORNER_LD_IMAGE = "corner_ld_image";
+	String CORNER_LU_IMAGE = "corner_lu_image";
+	String CORNER_RD_IMAGE = "corner_rd_image";
+	String CORNER_RU_IMAGE = "corner_ru_image";
+
+	String WALL_D_IMAGE = "wall_d_image";
+	String WALL_U_IMAGE = "wall_u_image";
+	String WALL_L_IMAGE = "wall_l_image";
+	String WALL_R_IMAGE = "wall_r_image";
+	// ************ WALLS END
+
 	String SESSIONS_KEY = "sessions";
 	String PLAYERS_KEY = "players";
 
@@ -76,6 +115,10 @@ public interface GameConstants {
 	String FREE_TAG = "free";
 	String EXPLOSION_TAG = "explosion";
 	String SHIELD_TAG = "shield";
+
+	/**
+	 * MAP FILE CONSTANTS!
+	 */
 
 	char UP_BARRIER = 'u';
 	char DOWN_BARRIER = 'd';
