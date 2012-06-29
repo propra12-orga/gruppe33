@@ -23,6 +23,7 @@ import com.indyforge.twod.engine.graphics.rendering.scenegraph.RenderedImage;
 import com.indyforge.twod.engine.graphics.rendering.scenegraph.Scene;
 import com.indyforge.twod.engine.graphics.rendering.scenegraph.math.Grid;
 import com.indyforge.twod.engine.graphics.rendering.scenegraph.math.MathExt;
+import com.indyforge.twod.engine.graphics.rendering.scenegraph.math.Vector2f;
 import com.indyforge.twod.engine.resources.assets.Asset;
 import com.indyforge.twod.engine.resources.assets.AssetLoader;
 import com.indyforge.twod.engine.resources.assets.AssetManager;
@@ -72,8 +73,8 @@ public final class GridLoader implements GameConstants {
 	 * @throws Exception
 	 *             If an exception occurs.
 	 */
-	public static GraphicsEntity parse(char[][] map, Scene scene,
-			float broadcastTime, long seed, float defBombChance,
+	public static GraphicsEntity parse(char[][] map, Scene scene, float w,
+			float h, float broadcastTime, long seed, float defBombChance,
 			float nukeBombChance, float fastBombChance, float paliChance,
 			float shieldPotionChance, float slowShroomChance,
 			float fastShroomChance) throws Exception {
@@ -119,8 +120,8 @@ public final class GridLoader implements GameConstants {
 		GraphicsEntity gridHolder = new GraphicsEntity();
 
 		// Set correct scale
-		gridHolder.scale(scene.sizeAsVector().scale(
-				grid.sizeAsVector().invertLocal()));
+		gridHolder.scale(new Vector2f(w, h).scale(grid.sizeAsVector()
+				.invertLocal()));
 
 		// Attach grid to holder
 		gridHolder.attach(gridEntity);

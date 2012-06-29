@@ -59,7 +59,7 @@ public final class Bomb extends OneToMany<GraphicsEntity, BombDesc> implements
 
 		// Create a new bomb image
 		RenderedImage bombImage = new RenderedImage(
-				scene.imageProp(GameRoutines.bombToAsset(bomb))).centered(true);
+				scene.imageProp(GameRoutines.itemToAsset(bomb))).centered(true);
 
 		// Use the same reg key
 		bombImage.registrationKey(value.itemEntity());

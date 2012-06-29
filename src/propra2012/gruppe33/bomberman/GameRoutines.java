@@ -465,46 +465,31 @@ public final class GameRoutines implements GameConstants {
 	}
 
 	/**
-	 * Translates the bomb to an asset path.
+	 * Translates the item to an asset path.
 	 * 
-	 * @param bomb
-	 *            The bomb.
+	 * @param item
+	 *            The item.
 	 * @return the asset path or null.
 	 */
-	public static String bombToAsset(CollectableItem bomb) {
-		if (bomb == null) {
-			throw new NullPointerException("bomb");
+	public static String itemToAsset(CollectableItem item) {
+		if (item == null) {
+			throw new NullPointerException("item");
 		}
-		switch (bomb) {
+		switch (item) {
 		case DefaultBomb:
 			return DEFAULT_BOMB_IMAGE;
 		case NukeBomb:
 			return NUKE_BOMB_IMAGE;
 		case FastBomb:
 			return FAST_BOMB_IMAGE;
-		default:
-			return null;
-		}
-	}
-
-	/**
-	 * Translates the bomb bag to an asset path.
-	 * 
-	 * @param bombBag
-	 *            The bomb bag.
-	 * @return the asset path or null.
-	 */
-	public static String bombBagToAsset(CollectableItem bombBag) {
-		if (bombBag == null) {
-			throw new NullPointerException("bombBag");
-		}
-		switch (bombBag) {
-		case DefaultBomb:
-			return DEFAULT_BOMB_BAG_IMAGE;
-		case NukeBomb:
-			return NUKE_BOMB_BAG_IMAGE;
-		case FastBomb:
-			return FAST_BOMB_BAG_IMAGE;
+		case Palisade:
+			return PALISADE_HORI_IMAGE;
+		case ShieldPotion:
+			return SHIELD_POTION_IMAGE;
+		case SlowShroom:
+			return SLOW_SHROOM_IMAGE;
+		case FastShroom:
+			return FAST_SHROOM_IMAGE;
 		default:
 			return null;
 		}

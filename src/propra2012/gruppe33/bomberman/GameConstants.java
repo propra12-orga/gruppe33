@@ -24,7 +24,11 @@ public interface GameConstants {
 
 	String BROADCASTER_NAME = "broadcaster";
 
-	// / ************ ITEMS START
+	// ************ ITEMS GUI START
+	String ITEM_INTERFACE = "item_interface";
+	// ************ ITEMS GUI END
+
+	// ************ ITEMS START
 	String EXP_SOUND_NAME = "exp_sound";
 	String EXP_SPRITE = "exp_sprite";
 	String EXP_SPRITE_WIDTH = "exp_sprite_columns";

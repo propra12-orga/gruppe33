@@ -1,15 +1,11 @@
 package propra2012.gruppe33.bomberman.graphics.rendering.scenegraph.grid.items;
 
-import java.awt.Color;
-import java.awt.Font;
-import java.awt.Graphics2D;
 import java.util.Deque;
 import java.util.EnumMap;
 import java.util.LinkedList;
 import java.util.Map;
 
 import propra2012.gruppe33.bomberman.GameRoutines;
-import propra2012.gruppe33.bomberman.graphics.rendering.scenegraph.grid.input.GridRemoteInput;
 import propra2012.gruppe33.bomberman.graphics.rendering.scenegraph.grid.input.Input;
 import propra2012.gruppe33.bomberman.graphics.rendering.scenegraph.grid.items.bomb.Bomb;
 import propra2012.gruppe33.bomberman.graphics.rendering.scenegraph.grid.items.bomb.BombDesc;
@@ -21,9 +17,10 @@ import propra2012.gruppe33.bomberman.graphics.rendering.scenegraph.grid.movement
 import com.indyforge.foxnet.rmi.pattern.change.Session;
 import com.indyforge.twod.engine.graphics.rendering.scenegraph.Entity;
 import com.indyforge.twod.engine.graphics.rendering.scenegraph.GraphicsEntity;
+import com.indyforge.twod.engine.graphics.rendering.scenegraph.Scene;
 import com.indyforge.twod.engine.graphics.rendering.scenegraph.SceneProcessor;
+import com.indyforge.twod.engine.graphics.rendering.scenegraph.Text;
 import com.indyforge.twod.engine.graphics.rendering.scenegraph.network.input.InputChange;
-import com.indyforge.twod.engine.util.iteration.TypeFilter;
 
 /**
  * 
@@ -132,37 +129,30 @@ public final class ItemSpawner extends GraphicsEntity {
 	 * (non-Javadoc)
 	 * 
 	 * @see
-	 * com.indyforge.twod.engine.graphics.rendering.scenegraph.GraphicsEntity
-	 * #onRender(java.awt.Graphics2D, java.awt.Graphics2D)
-	 */
-	@Override
-	protected void onRender(Graphics2D original, Graphics2D transformed) {
-		super.onRender(original, transformed);
-
-		if (findSibling(new TypeFilter(GridRemoteInput.class), false) != null) {
-			original.setFont(new Font("Arial", Font.BOLD, 36));
-			original.setColor(Color.black);
-
-			int offset = 30;
-			for (CollectableItem item : CollectableItem.values()) {
-				original.drawString(item + "'s: ", 0, offset);
-				original.drawString(String.valueOf(items().get(item)), 280,
-						offset);
-				offset += 30;
-			}
-		}
-	}
-
-	/*
-	 * (non-Javadoc)
-	 * 
-	 * @see
 	 * com.indyforge.twod.engine.graphics.rendering.scenegraph.Entity#onUpdate
 	 * (float)
 	 */
 	@Override
 	protected void onUpdate(float tpf) {
 		super.onUpdate(tpf);
+
+		// Get the scene
+		Scene scene = findScene();
+
+		/*
+		 * Update item counts!
+		 */
+		for (CollectableItem item : CollectableItem.values()) {
+
+			// Ignore the shrooms
+			if (item == CollectableItem.FastShroom
+					|| item == CollectableItem.SlowShroom) {
+				continue;
+			}
+
+			// Set the text of the gui
+			scene.prop(item, Text.class).text(items.get(item).toString());
+		}
 
 		// Poll next
 		Map<Input, Boolean> input = inputQueue.poll();

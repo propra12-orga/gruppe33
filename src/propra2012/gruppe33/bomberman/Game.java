@@ -1,6 +1,9 @@
 package propra2012.gruppe33.bomberman;
 
+import java.awt.Color;
+import java.awt.Font;
 import java.awt.Point;
+import java.awt.Transparency;
 import java.io.File;
 import java.io.Serializable;
 import java.util.HashMap;
@@ -13,17 +16,24 @@ import java.util.UUID;
 
 import propra2012.gruppe33.bomberman.graphics.rendering.scenegraph.grid.GridLoader;
 import propra2012.gruppe33.bomberman.graphics.rendering.scenegraph.grid.input.InputActivator;
+import propra2012.gruppe33.bomberman.graphics.rendering.scenegraph.grid.items.CollectableItem;
 import propra2012.gruppe33.bomberman.graphics.rendering.scenegraph.grid.transform.DeltaPositionBroadcaster;
 
 import com.indyforge.foxnet.rmi.pattern.change.AdminSessionServer;
+import com.indyforge.twod.engine.graphics.ImageDesc;
 import com.indyforge.twod.engine.graphics.rendering.scenegraph.GraphicsEntity;
+import com.indyforge.twod.engine.graphics.rendering.scenegraph.RenderedImage;
 import com.indyforge.twod.engine.graphics.rendering.scenegraph.Scene;
 import com.indyforge.twod.engine.graphics.rendering.scenegraph.SceneProcessor;
+import com.indyforge.twod.engine.graphics.rendering.scenegraph.Text;
+import com.indyforge.twod.engine.graphics.rendering.scenegraph.Text.Alignment;
 import com.indyforge.twod.engine.graphics.rendering.scenegraph.math.Grid;
 import com.indyforge.twod.engine.graphics.rendering.scenegraph.math.Vector2f;
 import com.indyforge.twod.engine.graphics.rendering.scenegraph.network.scene.ResetNetworkTimeChange;
 import com.indyforge.twod.engine.graphics.rendering.scenegraph.network.scene.SceneChange;
 import com.indyforge.twod.engine.graphics.sprite.Sprite;
+import com.indyforge.twod.engine.resources.Resource;
+import com.indyforge.twod.engine.resources.TransientSystemFontResource;
 import com.indyforge.twod.engine.resources.assets.AssetManager;
 
 /**
@@ -169,7 +179,7 @@ public final class Game implements GameConstants, Serializable {
 		int height = Integer.parseInt(properties.getProperty(MAP_HEIGHT_PROP));
 
 		// Create new scene with the given assets
-		Scene scene = new Scene(assets, width, height);
+		Scene scene = new Scene(assets, Math.round(width * 5 / 4f), height);
 
 		// Load the char array
 		char[][] map = assets.loadAsset(properties.getProperty(MAP_NAME_KEY),
@@ -192,7 +202,10 @@ public final class Game implements GameConstants, Serializable {
 		scene.soundManager().putSound(EXP_SOUND_NAME,
 				properties.getProperty(EXP_SOUND_NAME));
 
-		// Register the global bomb images
+		// Register the global images
+		scene.addProp(ITEM_INTERFACE,
+				assets.loadImage(properties.getProperty(ITEM_INTERFACE), true));
+
 		scene.addProp(DEFAULT_BOMB_IMAGE, assets.loadImage(
 				properties.getProperty(DEFAULT_BOMB_IMAGE), true));
 		scene.addProp(DEFAULT_BOMB_BAG_IMAGE, assets.loadImage(
@@ -238,8 +251,91 @@ public final class Game implements GameConstants, Serializable {
 						true), spriteWidth, spriteHeight));
 
 		// Parse and setup map
-		GraphicsEntity grid = GridLoader.parse(map, scene, broadcastUpdateTime,
-				System.nanoTime(), 0, 0, 0, 0, 0, 0.5f, 0.5f);
+		GraphicsEntity grid = GridLoader.parse(map, scene, width, height,
+				broadcastUpdateTime, System.nanoTime(), 0.2f, 0.2f, 0.2f, 0.1f,
+				0.1f, 0.1f, 0.1f);
+
+		/*
+		 * ********************************************************************
+		 * SETUP THE ITEM INTERFACE STUFF.
+		 * ********************************************************************
+		 */
+
+		// Load the item interface
+		RenderedImage itemInterface = new RenderedImage(
+				scene.imageProp(ITEM_INTERFACE));
+
+		// Set the correct scale
+		itemInterface.scale().set(width * 0.25f, height);
+
+		// Move the interface to the right
+		itemInterface.position().x = width;
+
+		// Attach the item interface
+		scene.attach(itemInterface);
+
+		// The counter
+		int counter = 0;
+
+		// Create a new font
+		Resource<Font> font = new TransientSystemFontResource("Verdana",
+				Font.BOLD, 36);
+
+		// Used to create the text
+		ImageDesc countTextDesc = new ImageDesc().width(64).height(64)
+				.transparency(Transparency.TRANSLUCENT);
+
+		for (CollectableItem item : CollectableItem.values()) {
+
+			// Ignore the shrooms
+			if (item == CollectableItem.FastShroom
+					|| item == CollectableItem.SlowShroom) {
+				continue;
+			}
+
+			// Load the item holder
+			RenderedImage itemHolder = new RenderedImage(
+					scene.imageProp(GameRoutines.itemToAsset(item)));
+
+			// Set scale
+			itemHolder.scale().scaleLocal(width * 0.10f);
+
+			// Set position
+			itemHolder.position().set(width * 1.075f,
+					width * 0.05f + width * 0.11f * counter++);
+
+			// Attach to scene
+			scene.attach(itemHolder);
+
+			// Create a new text object
+			Text text = new Text(countTextDesc);
+
+			// Shift down a bit
+			text.position().y += 0.3f;
+
+			// Center alignment
+			text.alignment(Alignment.Right);
+
+			// Set the font
+			text.fontResource(font);
+
+			// Use red color
+			text.textColor(Color.RED);
+
+			// Init with X
+			text.text("X");
+
+			// Simply attach
+			itemHolder.attach(text);
+
+			// Add the text as prop
+			scene.addProp(item, text);
+		}
+		/*
+		 * ********************************************************************
+		 * INTERFACE STUFF FINISHED
+		 * ********************************************************************
+		 */
 
 		// The spawn points
 		List<Point> spawnPoints = GridLoader.find(map, GameConstants.SPAWN);
