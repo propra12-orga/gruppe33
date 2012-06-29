@@ -36,11 +36,6 @@ public class SpawnShield extends OneToMany<GraphicsEntity, ItemDesc> implements
 	protected void apply(GraphicsEntity entity, ItemDesc value) {
 		entity.attach(GameRoutines.createShield(entity.findScene())
 				.registrationKey(value.itemEntity()));
-
-		// Play only on client side
-		if (entity.findSceneProcessor().hasSession()) {
-			entity.findScene().soundManager().playSound(SHIELD_ON_SOUND, true);
-		}
 	}
 
 	public SpawnShield() {

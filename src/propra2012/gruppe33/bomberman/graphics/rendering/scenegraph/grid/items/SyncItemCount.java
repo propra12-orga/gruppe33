@@ -43,8 +43,9 @@ public final class SyncItemCount extends Many<ItemSpawner> implements
 		entity.items().put(item, count);
 
 		if (playSound) {
+			String name;
+
 			if (!down) {
-				String name;
 
 				switch (item) {
 				case FastShroom:
@@ -63,8 +64,13 @@ public final class SyncItemCount extends Many<ItemSpawner> implements
 				entity.findScene().soundManager().playSound(name, true);
 			} else if (item != CollectableItem.FastShroom
 					|| item != CollectableItem.SlowShroom) {
+
+				// Which sound should be played ???
+				name = item == CollectableItem.ShieldPotion ? SHIELD_ON_SOUND
+						: PLACE_SOUND;
+
 				// PLACE sound
-				entity.findScene().soundManager().playSound(PLACE_SOUND, true);
+				entity.findScene().soundManager().playSound(name, true);
 			}
 		}
 	}
