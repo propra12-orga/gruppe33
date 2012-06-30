@@ -57,7 +57,7 @@ public final class Game implements GameConstants, Serializable {
 	 */
 	private String assetBundle = "res/default.zip",
 			mapPropAssetPath = "assets/maps/smallmap.prop";
-	private float broadcastUpdateTime = 0.015f;
+	private float broadcastUpdateTime = 0.040f;
 
 	public String assetBundle() {
 		return assetBundle;
