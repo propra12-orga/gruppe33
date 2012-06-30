@@ -1,5 +1,7 @@
 package propra2012.gruppe33.bomberman.ai;
 
+import java.io.Serializable;
+
 /**
  * 
  * Dieses Interface muss von der KI implementiert werden.
@@ -9,7 +11,7 @@ package propra2012.gruppe33.bomberman.ai;
  * @author (IMPLEMENTED BY) Christopher Probst
  * @author (USED BY) Malte Schmidt
  */
-public interface AIProcessor {
+public interface AIProcessor extends Serializable {
 
 	/**
 	 * Diese Methode wird in gewissen Abstaenden aufgerufen. (Die Zeit ist nicht

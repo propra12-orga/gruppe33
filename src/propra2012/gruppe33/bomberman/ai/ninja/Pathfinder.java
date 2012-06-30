@@ -57,13 +57,13 @@ public class Pathfinder extends Point {
 	 * 0. in the further documentary i will refer to them as connections.
 	 */
 	private Pathfinder north;
-	private float speedNorth;
+	private float speedNorth = java.lang.Float.MAX_VALUE;
 	private Pathfinder east;
-	private float speedEast;
+	private float speedEast = java.lang.Float.MAX_VALUE;
 	private Pathfinder south;
-	private float speedSouth;
+	private float speedSouth = java.lang.Float.MAX_VALUE;
 	private Pathfinder west;
-	private float speedWest;
+	private float speedWest = java.lang.Float.MAX_VALUE;
 
 	/**
 	 * Default constructor. Sets the Distance to 1000, because this value should
@@ -85,6 +85,12 @@ public class Pathfinder extends Point {
 	 *         connection with the lowest speed.
 	 */
 	public Pathfinder lowestUncheckedConnection() {
+
+//		System.out.println(speedNorth);
+//		System.out.println(speedEast);
+//		System.out.println(speedSouth);
+//		System.out.println(speedWest);
+
 		if ((north != this) && (!north.isVisited())
 				&& (speedNorth <= speedEast) && (speedNorth <= speedSouth)
 				&& (speedNorth <= speedWest)) {
@@ -105,8 +111,9 @@ public class Pathfinder extends Point {
 				&& (speedWest <= speedSouth)) {
 			indicator = 'w';
 			return west;
-		} else
+		} else {
 			return this;
+		}
 	}
 
 	/**
@@ -128,6 +135,7 @@ public class Pathfinder extends Point {
 
 		// The Pathfinder that will be the next for dijkstra.
 		Pathfinder next = this.lowestUncheckedConnection();
+
 		float speed = 0;
 
 		// Checks all connections. Up to four times.
@@ -146,6 +154,7 @@ public class Pathfinder extends Point {
 				speed = wayTillHere + speedWest;
 				break;
 			}
+
 			if (next.getDistance() > speed) {
 				next.setDistance(speed);
 				next.setPredecessor(this);

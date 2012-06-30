@@ -1,6 +1,7 @@
 package propra2012.gruppe33.bomberman.ai;
 
 import java.awt.Point;
+import java.io.Serializable;
 
 /**
  * DIESES INTERFACE IST EIN ERSTER ENTWURF UND SOMIT NOCH NICHT FUER DEN
@@ -33,7 +34,7 @@ import java.awt.Point;
  * @author (IMPLEMENTED BY) Christopher Probst
  * @author (USED BY) Malte Schmidt
  */
-public interface AIControl {
+public interface AIControl extends Serializable {
 
 	/**
 	 * Repräsentiert einen absolut soliden Block (Unzerstörbar).

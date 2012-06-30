@@ -1,6 +1,7 @@
 package propra2012.gruppe33.bomberman.ai;
 
 import java.awt.Point;
+import java.util.Arrays;
 
 import propra2012.gruppe33.bomberman.GameRoutines;
 
@@ -58,7 +59,9 @@ public class DefaultAIControl implements AIControl {
 
 	@Override
 	public float edgeWeight(Point a, Point b) {
-		return GameRoutines.edgeWeight(gridEntity, a, b);
+		float ew = GameRoutines.edgeWeight(gridEntity, a, b);
+		// System.out.println(ew);
+		return ew;
 	}
 
 	@Override
@@ -85,7 +88,9 @@ public class DefaultAIControl implements AIControl {
 	@Override
 	public void setPath(Point... points) {
 
-		if (points == null) {
+		System.out.println("Set path!");
+
+		if (points == null || points.length == 0) {
 			pathAnimator.taskQueue().cancel();
 		} else {
 
@@ -93,10 +98,13 @@ public class DefaultAIControl implements AIControl {
 			points = new Point[tmp.length + 1];
 			points[0] = activePosition();
 			System.arraycopy(tmp, 0, points, 1, tmp.length);
+
+
+
 			for (int i = 0; i < points.length - 1; i++) {
 
 				PositionPath pp = new PositionPath(player, new Vector2f(
-						points[i]).add(new Vector2f(points[i + 1])), 3f) {
+						points[i + 1]).sub(new Vector2f(points[i])), 3f) {
 					@Override
 					protected boolean updateTask(float tpf) {
 						boolean res = super.updateTask(tpf);

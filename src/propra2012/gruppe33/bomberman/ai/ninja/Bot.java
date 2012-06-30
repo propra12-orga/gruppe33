@@ -1,8 +1,6 @@
 package propra2012.gruppe33.bomberman.ai.ninja;
 
 import java.awt.Point;
-import java.util.ArrayList;
-import java.util.LinkedList;
 
 import propra2012.gruppe33.bomberman.ai.AIControl;
 import propra2012.gruppe33.bomberman.ai.AIProcessor;
@@ -48,11 +46,11 @@ public class Bot implements AIProcessor {
 		 * and sets the speed.
 		 */
 		if (!initialized) {
-			map = new Pathfinder[aiControl.fields().length - 1][aiControl
-					.fields()[0].length - 1];
+			position = new Point(0, 0);
+			map = new Pathfinder[aiControl.fields().length][aiControl.fields()[0].length];
 			initialized = true;
 			for (int y = 0; y < map.length; y++) {
-				for (int x = 0; x < map.length; x++) {
+				for (int x = 0; x < map[0].length; x++) {
 					if (aiControl.fields()[y][x] != null) {
 						map[y][x] = new Pathfinder(x, y);
 					}
@@ -60,6 +58,11 @@ public class Bot implements AIProcessor {
 			}
 			for (int y = 0; y < map.length; y++) {
 				for (int x = 0; x < map[0].length; x++) {
+
+					if (map[y][x] == null) {
+						continue;
+					}
+
 					if ((y - 1 >= 0) && (map[y - 1][x] != null)) {
 						map[y][x].setNorth(map[y - 1][x]);
 						map[y][x].setSpeedNorth(aiControl.edgeWeight(map[y][x],
@@ -94,7 +97,7 @@ public class Bot implements AIProcessor {
 		}
 
 		if ((positionChanged(aiControl.activePosition()))
-				&& (aiControl.hasFieldChanged())) {
+				&& (aiControl.hasFieldChanged()) && aiControl.isResting()) {
 			reinitialize();
 			map[position.y][position.x].dijkstra(0);
 
@@ -103,9 +106,13 @@ public class Bot implements AIProcessor {
 
 			for (int y = 0; y < aiControl.fields().length; y++) {
 				for (int x = 0; x < aiControl.fields()[y].length; x++) {
-					for (int z = 0; z < aiControl.fields()[x][y].length; z++) {
-						if (aiControl.fields()[x][y][z] == 3) {
-							getPath(map[y][x]);
+
+					if (aiControl.fields()[x][y] != null) {
+						for (int z = 0; z < aiControl.fields()[x][y].length; z++) {
+							if (aiControl.fields()[x][y][z] == AIControl.PLAYER) {
+								aiControl.setPath(getPath(map[y][x]));
+								return;
+							}
 						}
 					}
 				}
@@ -132,6 +139,12 @@ public class Bot implements AIProcessor {
 	private void reinitialize() {
 		for (int y = 0; y < map.length; y++) {
 			for (int x = 0; x < map[0].length; x++) {
+				if (map[y][x] == null) {
+					continue;
+				}
+
+				map[y][x].setVisited(false);
+				map[y][x].setPredecessor(null);
 				map[y][x].setDistance(1000);
 				map[y][x].setCount(0);
 			}
@@ -150,7 +163,8 @@ public class Bot implements AIProcessor {
 	private Point[] getPath(Pathfinder goal) {
 		int i = 0;
 		path = new Point[goal.getCount()];
-		while (goal.getPredecessor() != goal) {
+
+		while (!goal.getPredecessor().equals(position)) {
 			path[path.length - i - 1] = goal;
 			goal = goal.getPredecessor();
 			i++;
@@ -169,7 +183,7 @@ public class Bot implements AIProcessor {
 	 * @return true if the position has changed or false if not.
 	 */
 	private Boolean positionChanged(Point activePosition) {
-		if (position != activePosition) {
+		if (!position.equals(activePosition)) {
 			position = activePosition;
 			return true;
 		} else {

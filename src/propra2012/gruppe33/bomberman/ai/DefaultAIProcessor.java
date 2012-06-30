@@ -1,8 +1,8 @@
 package propra2012.gruppe33.bomberman.ai;
 
-import com.indyforge.twod.engine.graphics.rendering.scenegraph.Entity;
+import com.indyforge.twod.engine.graphics.rendering.scenegraph.GraphicsEntity;
 
-public class DefaultAIProcessor extends Entity {
+public class DefaultAIProcessor extends GraphicsEntity {
 
 	/**
 	 * 
@@ -20,6 +20,8 @@ public class DefaultAIProcessor extends Entity {
 	protected void onUpdate(float tpf) {
 		super.onUpdate(tpf);
 
-		aiProcessor.process(tpf, aiControl);
+		if (findSceneProcessor().hasAdminSessionServer()) {
+			aiProcessor.process(tpf, aiControl);
+		}
 	}
 }

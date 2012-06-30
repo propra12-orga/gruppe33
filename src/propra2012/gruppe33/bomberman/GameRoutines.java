@@ -970,10 +970,9 @@ public final class GameRoutines implements GameConstants {
 					for (int y = 0; y < gridHeight; y++) {
 						for (int x = 0; x < gridWidth; x++) {
 
-//							System.out.print(aiField[y][x].length + ", ");
+							// System.out.print(aiField[y][x].length + ", ");
 
-							if (aiField[y][x].length == 1
-									&& aiField[y][x][0] == AIControl.SOLID) {
+							if (aiField[y][x] == null) {
 								continue;
 							}
 
@@ -1000,13 +999,13 @@ public final class GameRoutines implements GameConstants {
 								}
 							}
 						}
-						System.out.println();
+						// System.out.println();
 					}
 
-					System.out.println();
-					System.out.println();
-					System.out.println();
-					System.out.println();
+					// / System.out.println();
+					// System.out.println();
+					// System.out.println();
+					// System.out.println();
 				}
 			}
 		};

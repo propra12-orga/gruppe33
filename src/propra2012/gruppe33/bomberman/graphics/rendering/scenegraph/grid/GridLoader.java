@@ -14,7 +14,6 @@ import java.util.Random;
 
 import propra2012.gruppe33.bomberman.GameConstants;
 import propra2012.gruppe33.bomberman.GameRoutines;
-import propra2012.gruppe33.bomberman.ai.AIControl;
 import propra2012.gruppe33.bomberman.graphics.rendering.scenegraph.grid.items.CollectableItem;
 import propra2012.gruppe33.bomberman.graphics.rendering.scenegraph.grid.transform.DeltaPositionBroadcaster;
 
@@ -226,7 +225,7 @@ public final class GridLoader implements GameConstants {
 					solids.attach(solid);
 
 					// Fill with solid
-					gridEntity.typeProp(int[][][].class)[y][x] = new int[] { AIControl.SOLID };
+					gridEntity.typeProp(int[][][].class)[y][x] = null;
 				} else {
 					// Get the field entity
 					Entity fieldNode = gridEntity.childAt(grid.index(x, y));

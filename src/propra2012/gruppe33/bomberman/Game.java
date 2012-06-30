@@ -14,6 +14,9 @@ import java.util.Map.Entry;
 import java.util.Properties;
 import java.util.UUID;
 
+import propra2012.gruppe33.bomberman.ai.DefaultAIControl;
+import propra2012.gruppe33.bomberman.ai.DefaultAIProcessor;
+import propra2012.gruppe33.bomberman.ai.ninja.Bot;
 import propra2012.gruppe33.bomberman.graphics.rendering.scenegraph.grid.GridLoader;
 import propra2012.gruppe33.bomberman.graphics.rendering.scenegraph.grid.input.InputActivator;
 import propra2012.gruppe33.bomberman.graphics.rendering.scenegraph.grid.items.CollectableItem;
@@ -208,7 +211,7 @@ public final class Game implements GameConstants, Serializable {
 		}
 
 		// Generate the map randomally
-		GridLoader.generate(map, System.nanoTime());
+		//GridLoader.generate(map, System.nanoTime());
 
 		// Put the new sounds
 		scene.soundManager().putSound(EXP_SOUND,
@@ -462,7 +465,13 @@ public final class Game implements GameConstants, Serializable {
 				grid.typeProp(Grid.class).index(
 						spawnPoints.get(spawnPoints.size() - 1))).attach(
 				aiPlayer);
+		
+		Bot bot = new Bot();
 
+		DefaultAIProcessor proc = new DefaultAIProcessor(new DefaultAIControl(
+				aiPlayer), bot);
+		aiPlayer.attach(proc);
+		
 		/**
 		 * AI END
 		 */
