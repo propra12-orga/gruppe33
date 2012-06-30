@@ -432,8 +432,7 @@ public final class Game implements GameConstants, Serializable {
 			/*
 			 * Register to delta position broadcaster.
 			 */
-			scene.prop(GameConstants.BROADCASTER_NAME,
-					DeltaPositionBroadcaster.class)
+			scene.typeProp(DeltaPositionBroadcaster.class)
 					.entities()
 					.put(player.registrationKey(),
 							new Vector2f(spawnPoints.get(i)));

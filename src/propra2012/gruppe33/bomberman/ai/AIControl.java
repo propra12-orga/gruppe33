@@ -35,19 +35,59 @@ import java.awt.Point;
  */
 public interface AIControl {
 
-	int BOMB = 1;
-	int EXPLOSION = 2;
-	int ENEMY = 3;
+	/**
+	 * Repräsentiert einen absolut soliden Block (Unzerstörbar).
+	 */
+	int SOLID = 0;
 
 	/**
-	 * Diese Methode gibt das Kantengewicht (Wichtig fuer Pathfinding) oder auch
-	 * "Kantengeschwindigkeit" genannt zurueck. Mit anderen Worten die Methode
-	 * liefert die "maximale" Geschwindigkeit zwischen 2 Punkten zurueck. Hier
-	 * werden Modifikatoren wie "Speed"-Schuhe bereits mit eingerechnet.
+	 * Repräsentiert einen zerstörbaren Block.
+	 */
+	int BREAKABLE = 1;
+
+	/**
+	 * Repräsentiert eine gelegte Bombe.
+	 */
+	int BOMB = 2;
+
+	/**
+	 * Repräsentiert eine (gleich stattfindende) Explosion.
+	 */
+	int EXPLOSION = 3;
+
+	/**
+	 * Repräsentiert einen Spieler.
+	 */
+	int PLAYER = 4;
+
+	/**
+	 * Repräsentiert ein gutes, aufnehmbares Item.
+	 */
+	int GOOD_ITEM = 5;
+
+	/**
+	 * Repräsentiert ein schlechtes, aufnehmbares Item.
+	 */
+	int BAD_ITEM = 6;
+
+	boolean placeDefaultBomb();
+
+	boolean placeNukeBomb();
+
+	boolean placeFastBomb();
+
+	boolean placePalisade();
+
+	boolean useShield();
+
+	/**
+	 * Diese Methode gibt das Kantengewicht (Wichtig fuer Pathfinding) zurueck.
 	 * <p>
 	 * Wichtig: Feld A und Feld B muessen logischerweise aneinander liegen. Dies
 	 * wird ueberprueft. Falls ein Fehler hierbei auftritt wird eine Exception
 	 * intern geworfen.
+	 * <p>
+	 * 
 	 * 
 	 * @param a
 	 *            Feld A (Von...)
