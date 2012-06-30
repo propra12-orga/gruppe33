@@ -5,6 +5,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
 
+import propra2012.gruppe33.bomberman.ai.AIControl;
 import propra2012.gruppe33.bomberman.graphics.rendering.scenegraph.grid.items.CollectableItem;
 import propra2012.gruppe33.bomberman.graphics.rendering.scenegraph.grid.items.ItemSpawner;
 import propra2012.gruppe33.bomberman.graphics.rendering.scenegraph.grid.movement.GridMovement;
@@ -895,6 +896,35 @@ public final class GameRoutines implements GameConstants {
 		return node;
 	}
 
+	public static float edgeWeight(GraphicsEntity ge, Point a, Point b) {
+		if (a.distance(b) > 1.5) {
+			throw new IllegalArgumentException("Point b is too far");
+		}
+
+		// Lookup grid
+		Grid grid = ge.typeProp(Grid.class);
+
+		if (!grid.inside(a)) {
+			throw new IllegalArgumentException("a out of field");
+		} else if (!grid.inside(b)) {
+			throw new IllegalArgumentException("b out of field");
+		}
+
+		Entity ea = ge.childAt(grid.index(a));
+		Entity eb = ge.childAt(grid.index(b));
+
+		Float fa = ea.typeProp(Float.class);
+		Float fb = eb.typeProp(Float.class);
+
+		if (fa == null || fb == null) {
+			return Float.MAX_VALUE;
+		}
+
+		float avg = (fa + fb) / 2;
+
+		return 1f / avg;
+	}
+
 	/**
 	 * Creates a new grid entity which contains all nodes.
 	 * 
@@ -904,13 +934,85 @@ public final class GameRoutines implements GameConstants {
 	 *            The height of the grid.
 	 * @return the new grid entity.
 	 */
-	public static GraphicsEntity createGridEntity(int gridWidth, int gridHeight) {
+	public static GraphicsEntity createGridEntity(final int gridWidth,
+			final int gridHeight) {
 
 		// Create grid
 		final Grid grid = new Grid(gridWidth, gridHeight);
 
+		/*
+		 * The AI-Field used by the AI. Updated every frame!
+		 */
+		final int[][][] aiField = new int[gridHeight][gridWidth][0];
+
 		// Create a new grid entity
-		GraphicsEntity gridEntity = new GraphicsEntity();
+		GraphicsEntity gridEntity = new GraphicsEntity() {
+
+			/**
+			 * 
+			 */
+			private static final long serialVersionUID = 1L;
+
+			/*
+			 * (non-Javadoc)
+			 * 
+			 * @see
+			 * com.indyforge.twod.engine.graphics.rendering.scenegraph.Entity
+			 * #onUpdate(float)
+			 */
+			@Override
+			protected void onUpdate(float tpf) {
+				super.onUpdate(tpf);
+
+				if (findSceneProcessor().hasAdminSessionServer()) {
+
+					// Create nodes for each coords
+					for (int y = 0; y < gridHeight; y++) {
+						for (int x = 0; x < gridWidth; x++) {
+
+//							System.out.print(aiField[y][x].length + ", ");
+
+							if (aiField[y][x].length == 1
+									&& aiField[y][x][0] == AIControl.SOLID) {
+								continue;
+							}
+
+							// Get the node
+							GraphicsEntity node = (GraphicsEntity) childAt(grid
+									.index(x, y));
+
+							// Create new array to hold the children array
+							aiField[y][x] = new int[node.children().size()];
+
+							// The index
+							int i = 0;
+
+							// Check all children!
+							for (Entity child : node) {
+								if (child.tagged(PLAYER_TAG)) {
+									aiField[y][x][i++] = AIControl.PLAYER;
+								} else if (child.tagged(BREAKABLE_TAG)) {
+									aiField[y][x][i++] = AIControl.BREAKABLE;
+								} else if (child.tagged(BOMB_TAG)) {
+									aiField[y][x][i++] = AIControl.BOMB;
+								} else {
+									aiField[y][x][i++] = AIControl.GOOD_ITEM;
+								}
+							}
+						}
+						System.out.println();
+					}
+
+					System.out.println();
+					System.out.println();
+					System.out.println();
+					System.out.println();
+				}
+			}
+		};
+
+		// Simply put into props
+		gridEntity.addTypeProp(aiField);
 
 		// Add as type property
 		gridEntity.addTypeProp(grid);

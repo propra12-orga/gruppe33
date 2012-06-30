@@ -22,20 +22,16 @@ public class ServerApp {
 		// Wait for two players
 		while (true) {
 			System.out.println("Started ?");
-
 			Thread.sleep(1000);
-
 			synchronized (serverProcessor.adminSessionServer()) {
-				if (serverProcessor.adminSessionServer().sessionCount() == 3) {
+				if (serverProcessor.adminSessionServer().sessionCount() == 2) {
 					serverProcessor.adminSessionServer().acceptingSessions(
 							false);
 					break;
 				}
 			}
 		}
-
 		new Game().serverGame(serverProcessor);
-
 		serverProcessor.start(60);
 	}
 }

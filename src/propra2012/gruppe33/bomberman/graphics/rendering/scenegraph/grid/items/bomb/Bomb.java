@@ -70,6 +70,9 @@ public final class Bomb extends OneToMany<GraphicsEntity, BombDesc> implements
 		// Set bomb order + tag
 		bombImage.index(ITEM_INDEX).tag(BOMB_TAG);
 
+		// Add a type prop
+		bombImage.addTypeProp(value);
+
 		// Scale velocity...
 		bombImage.attach(new TransformMotor()
 				.scaleVelocity(BOMB_SCALE_VELOCITY));
