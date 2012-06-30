@@ -442,6 +442,31 @@ public final class Game implements GameConstants, Serializable {
 					.attach(player);
 		}
 
+		/**
+		 * AI TEST
+		 * 
+		 */
+		GraphicsEntity aiPlayer = GameRoutines
+				.createRemoteWizard(assets, "BOT");
+
+		/*
+		 * Register to delta position broadcaster.
+		 */
+		scene.typeProp(DeltaPositionBroadcaster.class)
+				.entities()
+				.put(aiPlayer.registrationKey(),
+						new Vector2f(spawnPoints.get(spawnPoints.size() - 1)));
+
+		// Place to spawn
+		grid.childAt(
+				grid.typeProp(Grid.class).index(
+						spawnPoints.get(spawnPoints.size() - 1))).attach(
+				aiPlayer);
+
+		/**
+		 * AI END
+		 */
+
 		// Store the player refs
 		scene.addProp(PLAYERS_KEY, new LinkedList<UUID>(refs));
 
