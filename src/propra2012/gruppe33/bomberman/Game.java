@@ -251,8 +251,11 @@ public final class Game implements GameConstants, Serializable {
 			protected void onUpdate(float tpf) {
 				super.onUpdate(tpf);
 
-				if (isPressed(KeyEvent.VK_ESCAPE)) {
-					throw new RuntimeException("SHUTDOWN REQUEST");
+				if (isSinglePressed(KeyEvent.VK_ESCAPE)) {
+					if (processor().hasSession()) {
+						// Simply terminate the connection
+						InvokerManager.of(processor().session()).close();
+					}
 				}
 			}
 		};

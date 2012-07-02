@@ -6,8 +6,6 @@ import java.awt.Transparency;
 import java.awt.image.BufferedImage;
 import java.io.File;
 
-import javax.swing.JOptionPane;
-
 import propra2012.gruppe33.networktest.ServerApp;
 
 import com.indyforge.foxnet.rmi.InvokerManager;
@@ -164,8 +162,6 @@ public class Gui {
 		Button backMainMPB = new MenuButton(selectedB, deselectedB, desc2,
 				font, "Back", false);
 
-		
-
 		Button connectB = new Button(selectedA, deselectedA, desc2, font,
 				"Connect") {
 
@@ -248,33 +244,34 @@ public class Gui {
 		Label usernameL = new Label(desc2, font);
 		usernameL.background().imageResource(deselectedA);
 		usernameL.text().text("Username");
-		
+
 		/*
 		 * HOST
 		 */
-		
-		
+
 		final TextField usernameHostTf = new TextField(desc1, font);
-		usernameTf.background().imageResource(deselectedA);
-		usernameTf.text().alignment(Alignment.Center).textColor(Color.WHITE);
-		
+		usernameHostTf.background().imageResource(deselectedA);
+		usernameHostTf.text().alignment(Alignment.Center)
+				.textColor(Color.WHITE);
+
 		final TextField playerSlotsTf = new TextField(desc1, font);
-		usernameTf.background().imageResource(deselectedA);
-		usernameTf.text().alignment(Alignment.Center).textColor(Color.WHITE);
+		playerSlotsTf.background().imageResource(deselectedA);
+		playerSlotsTf.text().alignment(Alignment.Center).textColor(Color.WHITE);
 
 		Button backHostMPB = new MenuButton(selectedB, deselectedB, desc2,
 				font, "Back", false);
 
-		Button hostStartB = new Button(selectedA, deselectedA, desc2, tinyFont, "Start Server") {
+		Button hostStartB = new Button(selectedA, deselectedA, desc2, font,
+				"Start") {
 
 			@Override
 			protected void onButtonPressed() {
 				super.onButtonPressed();
 
-				
-				Thread t = new Thread(new ServerApp());
-				t.setDaemon(true);
-				t.start();
+				// HERE SERVER START!!!
+				final ServerApp sa = new ServerApp(
+						Integer.parseInt(playerSlotsTf.text().text()));
+				sa.start();
 
 				// Connect the scene
 				Session<SceneProcessor> session;
@@ -300,6 +297,13 @@ public class Gui {
 
 								@Override
 								public boolean update(float tpf) {
+
+									try {
+										// SHUTDOWN THE SERVER
+										sa.processor().shutdownRequest(true);
+									} catch (Exception e) {
+										e.printStackTrace();
+									}
 
 									processor.networkMode(NetworkMode.Offline);
 									try {
@@ -332,27 +336,24 @@ public class Gui {
 			}
 		};
 
-		
-
 		Label nameL = new Label(desc2, font);
-		ipL.background().imageResource(deselectedA);
-		ipL.text().text("Username");
+		nameL.background().imageResource(deselectedA);
+		nameL.text().text("Username");
 
-		Label playerSlotL = new Label(desc2, tinyFont);
-		usernameL.background().imageResource(deselectedA);
-		usernameL.text().text("Player (2-4)");
-		
-		
+		Label playerSlotL = new Label(desc2, font);
+		playerSlotL.background().imageResource(deselectedA);
+		playerSlotL.text().text("Player (2-4)");
+
 		/*
 		 * MULTIPLAYERSELECTION
 		 */
-		
+
 		Button hostMainB = new MenuButton(selectedA, deselectedA, desc2, font,
 				"Host", true);
-		
-		Button connectMainB = new MenuButton(selectedA, deselectedA, desc2, font,
-				"Join", true);
-		
+
+		Button connectMainB = new MenuButton(selectedA, deselectedA, desc2,
+				font, "Join", true);
+
 		Button backMainB = new MenuButton(selectedB, deselectedB, desc2, font,
 				"Back", false);
 
@@ -374,7 +375,7 @@ public class Gui {
 
 		mpB.scale().set(0.3f, 0.3f);
 		mpB.position().set(0.4f, 0.3f);
-		mpB.container().attach(connectMainB,hostMainB,backMainB);
+		mpB.container().attach(connectMainB, hostMainB, backMainB);
 		mpB.guiContainerVisible(false);
 
 		optB.scale().set(0.3f, 0.3f);
@@ -427,73 +428,61 @@ public class Gui {
 		usernameL.position().set(-0.8f + offsetX, -0.6f + offsetY);
 		usernameL.scale().set(0.9f, 0.9f);
 
-		
-
 		backMainMPB.position().set(0.9f + offsetX, 2.0f + offsetY);
 		backMainMPB.scale().set(0.9f, 0.9f);
 		backMainMPB.rotation(-0.2f);
-		
-		
-	
-	
+
 		/*
-		 * MULTIPLAYERSELECTION
+		 * MULTIPLAYERSELECTION SETTINGS
 		 */
-		
-		hostMainB.position().set(1f,1f);
+
+		hostMainB.position().set(1f, 1f);
 		hostMainB.scale().set(0.9f, 0.9f);
-		hostMainB.container().attach(usernameHostTf,playerSlotsTf,hostStartB,backHostMPB,nameL,playerSlotL);
+		hostMainB.container().attach(usernameHostTf, playerSlotsTf, hostStartB,
+				backHostMPB, nameL, playerSlotL);
 		hostMainB.guiContainerVisible(false);
 
-		
-		backMainB.position().set(1.5f,2f);
+		backMainB.position().set(1.5f, 2f);
 		backMainB.scale().set(0.9f, 0.9f);
 		backMainB.rotation(-0.2f);
-		
-		connectMainB.position().set(-0.4f,0.5f);
+
+		connectMainB.position().set(-0.4f, 0.5f);
 		connectMainB.scale().set(0.9f, 0.9f);
 
-		
-		connectMainB.container().attach(usernameTf, ipTf, connectB, backMainMPB,
-				usernameL, ipL);
+		connectMainB.container().attach(usernameTf, ipTf, connectB,
+				backMainMPB, usernameL, ipL);
 		connectMainB.guiContainerVisible(false);
-		
+
 		/*
 		 * HOST SETTINGS
 		 */
 
-		
-
-		nameL.position().set(-2f  , -1f );
+		nameL.position().set(-2f, -1f);
 		nameL.scale().set(0.9f, 0.9f);
-		
-		usernameHostTf.position().set(-1f , -1f);
+
+		usernameHostTf.position().set(-1f, -1f);
 		usernameHostTf.scale().set(0.9f, 0.9f);
-		
-		playerSlotL.position().set(-0.8f , -0.6f );
+
+		playerSlotL.position().set(-2f, -0.3f);
 		playerSlotL.scale().set(0.9f, 0.9f);
-		
-		playerSlotsTf.position().set(0.1f , -0.6f );
+
+		playerSlotsTf.position().set(-1f, -0.3f);
 		playerSlotsTf.scale().set(0.9f, 0.9f);
 
-		hostStartB.position().set(-0.35f  , 0.8f );
+		hostStartB.position().set(-0.35f, 0.8f);
 		hostStartB.scale().set(0.9f, 0.9f);
 
-		
-
-		
-
-		hostStartB.position().set(-1f , 0f );
+		hostStartB.position().set(-1f, 0.5f);
 		hostStartB.scale().set(0.9f, 0.9f);
-		
-		backHostMPB.position().set(0f, 1.15f );
+
+		backHostMPB.position().set(0f, 1.15f);
 		backHostMPB.scale().set(0.9f, 0.9f);
 		backHostMPB.rotation(-0.2f);
 
 		/*
 		 * OPTIONS SETTINGS
 		 */
-		
+
 		backMainOPTB.scale().set(0.9f, 0.9f);
 		backMainOPTB.position().set(0f, 0f);
 
