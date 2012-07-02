@@ -88,6 +88,8 @@ public final class GridMovement extends Entity {
 								: Direction.South) : (negative ? Direction.West
 								: Direction.East));
 
+		System.out.println(Math.abs(movement));
+
 		// If movement != 0 -> We can move!
 		boolean canMove = !MathExt.equals(movement, 0);
 

@@ -1,6 +1,5 @@
 package propra2012.gruppe33.bomberman;
 
-
 import com.indyforge.twod.engine.graphics.rendering.scenegraph.SceneProcessor;
 import com.indyforge.twod.engine.graphics.rendering.scenegraph.SceneProcessor.NetworkMode;
 

@@ -18,6 +18,7 @@ import com.indyforge.twod.engine.graphics.rendering.scenegraph.Scene;
 import com.indyforge.twod.engine.graphics.rendering.scenegraph.animation.RenderedAnimation;
 import com.indyforge.twod.engine.graphics.rendering.scenegraph.animation.RenderedAnimation.AnimationEvent;
 import com.indyforge.twod.engine.graphics.rendering.scenegraph.math.Grid;
+import com.indyforge.twod.engine.graphics.rendering.scenegraph.math.MathExt;
 import com.indyforge.twod.engine.graphics.rendering.scenegraph.math.Vector2f;
 import com.indyforge.twod.engine.graphics.rendering.scenegraph.math.Vector2f.Direction;
 import com.indyforge.twod.engine.graphics.rendering.scenegraph.network.entity.DetachEntityChange;
@@ -233,11 +234,7 @@ public final class GameRoutines implements GameConstants {
 		}
 
 		// Limit the result
-		if (distance > max) {
-			distance = max;
-		}
-
-		return distance;
+		return MathExt.clamp(distance, 0, max);
 	}
 
 	public static RenderedImage createShield(final Scene scene) {

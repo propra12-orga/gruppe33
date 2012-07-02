@@ -39,7 +39,7 @@ public class Gui {
 
 		scene.soundManager().putSound("back", "assets/sounds/menu2.wav");
 
-		scene.soundManager().playSound("back", 0.3f, true);
+		//scene.soundManager().playSound("back", 0.3f, true);
 
 		scene.scale(scene.sizeAsVector());
 

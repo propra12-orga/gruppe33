@@ -7,6 +7,7 @@ import java.awt.Transparency;
 import java.awt.event.KeyEvent;
 import java.io.File;
 import java.io.Serializable;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
@@ -468,6 +469,11 @@ public final class Game implements GameConstants, Serializable {
 
 		// The spawn points
 		List<Point> spawnPoints = GridLoader.find(map, GameConstants.SPAWN);
+
+		/*
+		 * Shuffle all spawn points!
+		 */
+		Collections.shuffle(spawnPoints);
 
 		int i = 0;
 
