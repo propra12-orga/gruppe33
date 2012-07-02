@@ -248,7 +248,8 @@ public final class Game implements GameConstants, Serializable {
 		int height = Integer.parseInt(properties.getProperty(MAP_HEIGHT_PROP));
 
 		// Create new scene with the given assets
-		Scene scene = new Scene(assets, Math.round(width * 5 / 4f), height) {
+		Scene scene = new Scene(assets, Math.round(width + 0.25f * height),
+				height) {
 
 			/**
 			 * 
@@ -401,8 +402,11 @@ public final class Game implements GameConstants, Serializable {
 		RenderedImage itemInterface = new RenderedImage(
 				scene.imageProp(ITEM_INTERFACE));
 
+		// Calc the item holder width
+		float itemHolderWidth = height * 0.25f;
+
 		// Set the correct scale
-		itemInterface.scale().set(width * 0.25f, height);
+		itemInterface.scale().set(itemHolderWidth, height);
 
 		// Move the interface to the right
 		itemInterface.position().x = width;
@@ -428,11 +432,13 @@ public final class Game implements GameConstants, Serializable {
 					scene.imageProp(GameRoutines.itemToAsset(item)));
 
 			// Set scale
-			itemHolder.scale().scaleLocal(width * 0.10f);
+			itemHolder.scale().scaleLocal(itemHolderWidth * 0.5f);
 
 			// Set position
-			itemHolder.position().set(width * 1.075f,
-					width * 0.05f + width * 0.11f * counter++);
+			itemHolder.position().set(
+					width + itemHolderWidth * 0.25f,
+					(itemHolderWidth * 0.25f) + itemHolderWidth * 0.5f
+							* counter++);
 
 			// Attach to scene
 			scene.attach(itemHolder);
