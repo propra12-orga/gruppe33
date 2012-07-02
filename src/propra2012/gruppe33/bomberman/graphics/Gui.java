@@ -164,73 +164,7 @@ public class Gui {
 		Button backMainMPB = new MenuButton(selectedB, deselectedB, desc2,
 				font, "Back", false);
 
-		Button hostB = new Button(selectedA, deselectedA, desc2, font, "Host") {
-
-			@Override
-			protected void onButtonPressed() {
-				super.onButtonPressed();
-
-				JOptionPane.showInputDialog("How many players ?");
-				
-				Thread t = new Thread(new ServerApp());
-				t.setDaemon(true);
-				t.start();
-
-				// Connect the scene
-				Session<SceneProcessor> session;
-				try {
-					processor.networkMode(NetworkMode.Client);
-					session = processor.openClient("localhost", 1337)
-							.linkClient(usernameTf.text().text());
-
-					// Get the invoker manager
-					InvokerManager man = InvokerManager.of(session);
-
-					man.closeFuture().add(new FutureCallback() {
-
-						@Override
-						public void completed(Future future) throws Exception {
-
-							processor.taskQueue().tasks().offer(new Task() {
-
-								/**
-								 * 
-								 */
-								private static final long serialVersionUID = 1L;
-
-								@Override
-								public boolean update(float tpf) {
-
-									processor.networkMode(NetworkMode.Offline);
-									try {
-										processor.root(createGUI(processor));
-									} catch (Exception e) {
-										// TODO Auto-generated catch block
-										e.printStackTrace();
-									}
-
-									return true;
-								}
-							});
-						}
-					});
-
-					Label cont = new Label(new ImageDesc().width(256)
-							.height(64).transparency(Transparency.TRANSLUCENT),
-							font);
-
-					cont.text().text("Waiting...");
-
-					scene.detachAll();
-					scene.attach(cont);
-
-					cont.position().set(0.5f, 0.5f);
-
-				} catch (Exception e) {
-					e.printStackTrace();
-				}
-			}
-		};
+		
 
 		Button connectB = new Button(selectedA, deselectedA, desc2, font,
 				"Connect") {
@@ -314,6 +248,113 @@ public class Gui {
 		Label usernameL = new Label(desc2, font);
 		usernameL.background().imageResource(deselectedA);
 		usernameL.text().text("Username");
+		
+		/*
+		 * HOST
+		 */
+		
+		
+		final TextField usernameHostTf = new TextField(desc1, font);
+		usernameTf.background().imageResource(deselectedA);
+		usernameTf.text().alignment(Alignment.Center).textColor(Color.WHITE);
+		
+		final TextField playerSlotsTf = new TextField(desc1, font);
+		usernameTf.background().imageResource(deselectedA);
+		usernameTf.text().alignment(Alignment.Center).textColor(Color.WHITE);
+
+		Button backHostMPB = new MenuButton(selectedB, deselectedB, desc2,
+				font, "Back", false);
+
+		Button hostStartB = new Button(selectedA, deselectedA, desc2, tinyFont, "Start Server") {
+
+			@Override
+			protected void onButtonPressed() {
+				super.onButtonPressed();
+
+				
+				Thread t = new Thread(new ServerApp());
+				t.setDaemon(true);
+				t.start();
+
+				// Connect the scene
+				Session<SceneProcessor> session;
+				try {
+					processor.networkMode(NetworkMode.Client);
+					session = processor.openClient("localhost", 1337)
+							.linkClient(usernameTf.text().text());
+
+					// Get the invoker manager
+					InvokerManager man = InvokerManager.of(session);
+
+					man.closeFuture().add(new FutureCallback() {
+
+						@Override
+						public void completed(Future future) throws Exception {
+
+							processor.taskQueue().tasks().offer(new Task() {
+
+								/**
+								 * 
+								 */
+								private static final long serialVersionUID = 1L;
+
+								@Override
+								public boolean update(float tpf) {
+
+									processor.networkMode(NetworkMode.Offline);
+									try {
+										processor.root(createGUI(processor));
+									} catch (Exception e) {
+										// TODO Auto-generated catch block
+										e.printStackTrace();
+									}
+
+									return true;
+								}
+							});
+						}
+					});
+
+					Label cont = new Label(new ImageDesc().width(256)
+							.height(64).transparency(Transparency.TRANSLUCENT),
+							font);
+
+					cont.text().text("Waiting...");
+
+					scene.detachAll();
+					scene.attach(cont);
+
+					cont.position().set(0.5f, 0.5f);
+
+				} catch (Exception e) {
+					e.printStackTrace();
+				}
+			}
+		};
+
+		
+
+		Label nameL = new Label(desc2, font);
+		ipL.background().imageResource(deselectedA);
+		ipL.text().text("Username");
+
+		Label playerSlotL = new Label(desc2, tinyFont);
+		usernameL.background().imageResource(deselectedA);
+		usernameL.text().text("Player (2-4)");
+		
+		
+		/*
+		 * MULTIPLAYERSELECTION
+		 */
+		
+		Button hostMainB = new MenuButton(selectedA, deselectedA, desc2, font,
+				"Host", true);
+		
+		Button connectMainB = new MenuButton(selectedA, deselectedA, desc2, font,
+				"Join", true);
+		
+		Button backMainB = new MenuButton(selectedB, deselectedB, desc2, font,
+				"Back", false);
 
 		/*
 		 * OPTIONS
@@ -333,8 +374,7 @@ public class Gui {
 
 		mpB.scale().set(0.3f, 0.3f);
 		mpB.position().set(0.4f, 0.3f);
-		mpB.container().attach(usernameTf, ipTf, connectB, hostB, backMainMPB,
-				usernameL, ipL);
+		mpB.container().attach(connectMainB,hostMainB,backMainB);
 		mpB.guiContainerVisible(false);
 
 		optB.scale().set(0.3f, 0.3f);
@@ -370,32 +410,90 @@ public class Gui {
 		/*
 		 * MULTIPLAYER SETTINGS
 		 */
-		ipTf.position().set(0.1f, 0.2f);
+		float offsetX = 0.4f;
+		float offsetY = -0.3f;
+		ipTf.position().set(0.1f + offsetX, 0.2f + offsetY);
 		ipTf.scale().set(0.9f, 0.9f);
 
-		ipL.position().set(-0.8f, 0.2f);
+		ipL.position().set(-0.8f + offsetX, 0.2f + offsetY);
 		ipL.scale().set(0.9f, 0.9f);
 
-		connectB.position().set(-0.35f, 0.8f);
+		connectB.position().set(-0.35f + offsetX, 0.8f + offsetY);
 		connectB.scale().set(0.9f, 0.9f);
 
-		usernameTf.position().set(0.1f, -0.6f);
+		usernameTf.position().set(0.1f + offsetX, -0.6f + offsetY);
 		usernameTf.scale().set(0.9f, 0.9f);
 
-		usernameL.position().set(-0.8f, -0.6f);
+		usernameL.position().set(-0.8f + offsetX, -0.6f + offsetY);
 		usernameL.scale().set(0.9f, 0.9f);
 
-		hostB.position().set(1.2f, 1.0f);
-		hostB.scale().set(0.9f, 0.9f);
-		hostB.rotation(0.2f);
+		
 
-		backMainMPB.position().set(0.9f, 2.0f);
+		backMainMPB.position().set(0.9f + offsetX, 2.0f + offsetY);
 		backMainMPB.scale().set(0.9f, 0.9f);
 		backMainMPB.rotation(-0.2f);
+		
+		
+	
+	
+		/*
+		 * MULTIPLAYERSELECTION
+		 */
+		
+		hostMainB.position().set(1f,1f);
+		hostMainB.scale().set(0.9f, 0.9f);
+		hostMainB.container().attach(usernameHostTf,playerSlotsTf,hostStartB,backHostMPB,nameL,playerSlotL);
+		hostMainB.guiContainerVisible(false);
+
+		
+		backMainB.position().set(1.5f,2f);
+		backMainB.scale().set(0.9f, 0.9f);
+		backMainB.rotation(-0.2f);
+		
+		connectMainB.position().set(-0.4f,0.5f);
+		connectMainB.scale().set(0.9f, 0.9f);
+
+		
+		connectMainB.container().attach(usernameTf, ipTf, connectB, backMainMPB,
+				usernameL, ipL);
+		connectMainB.guiContainerVisible(false);
+		
+		/*
+		 * HOST SETTINGS
+		 */
+
+		
+
+		nameL.position().set(-2f  , -1f );
+		nameL.scale().set(0.9f, 0.9f);
+		
+		usernameHostTf.position().set(-1f , -1f);
+		usernameHostTf.scale().set(0.9f, 0.9f);
+		
+		playerSlotL.position().set(-0.8f , -0.6f );
+		playerSlotL.scale().set(0.9f, 0.9f);
+		
+		playerSlotsTf.position().set(0.1f , -0.6f );
+		playerSlotsTf.scale().set(0.9f, 0.9f);
+
+		hostStartB.position().set(-0.35f  , 0.8f );
+		hostStartB.scale().set(0.9f, 0.9f);
+
+		
+
+		
+
+		hostStartB.position().set(-1f , 0f );
+		hostStartB.scale().set(0.9f, 0.9f);
+		
+		backHostMPB.position().set(0f, 1.15f );
+		backHostMPB.scale().set(0.9f, 0.9f);
+		backHostMPB.rotation(-0.2f);
 
 		/*
 		 * OPTIONS SETTINGS
 		 */
+		
 		backMainOPTB.scale().set(0.9f, 0.9f);
 		backMainOPTB.position().set(0f, 0f);
 
