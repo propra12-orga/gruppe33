@@ -123,7 +123,7 @@ public final class GameRoutines implements GameConstants {
 
 			// Calc the dir range
 			int dirRange = (int) GameRoutines.lineOfSight(gridEntity,
-					entityFilter, origin, range, dir);
+					graphicsNode, null, entityFilter, range, dir);
 
 			if (dirRange >= 1) {
 				// Add points
@@ -145,39 +145,43 @@ public final class GameRoutines implements GameConstants {
 	 * 
 	 * @param gridEntity
 	 *            The grid entity.
+	 * @param node
+	 *            The node.
+	 * @param offset
+	 *            The offset.
 	 * @param entityFilter
 	 *            The entity filter.
-	 * @param position
-	 *            The position.
 	 * @param max
 	 *            The max distance.
 	 * @param direction
 	 *            The direction.
 	 * @return the valid line-of-sight as float.
 	 */
-	public static float lineOfSight(Entity gridEntity,
-			EntityFilter entityFilter, Vector2f position, float max,
+	public static float lineOfSight(Entity gridEntity, GraphicsEntity node,
+			Vector2f offset, EntityFilter entityFilter, float max,
 			Direction direction) {
 
 		if (gridEntity == null) {
 			throw new NullPointerException("gridEntity");
-		} else if (position == null) {
-			throw new NullPointerException("position");
+		} else if (node == null) {
+			throw new NullPointerException("node");
 		} else if (direction == null) {
 			throw new NullPointerException("direction");
+		} else if (offset == null) {
+			offset = Vector2f.zero();
 		}
 
-		// Convert to nearest vector
-		Vector2f nearest = position.round();
-
 		// Get the coords of the nearest vector
-		Point point = nearest.point();
+		Vector2f nearest = node.position().round();
+
+		// Get position of the child
+		Vector2f position = nearest.add(offset);
 
 		// Get the grid
 		Grid grid = gridEntity.typeProp(Grid.class);
 
 		// Position is outside the grid
-		if (!grid.inside(point)) {
+		if (!grid.inside(nearest)) {
 			throw new IllegalArgumentException("Position out of grid");
 		}
 
@@ -219,6 +223,9 @@ public final class GameRoutines implements GameConstants {
 			throw new IllegalArgumentException("Unknown enum type: "
 					+ direction);
 		}
+
+		// Get the nearest point
+		Point point = nearest.point();
 
 		/*
 		 * While the next point is inside the grid and the entity filter accepts

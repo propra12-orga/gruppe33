@@ -58,7 +58,7 @@ public final class GridMovement extends Entity {
 			Vector2f dest, float tpf) {
 
 		// Get center vector
-		Vector2f center = pos.round();
+		Vector2f center = node.position().round();
 
 		// Get point
 		Point nearest = center.point();
@@ -82,13 +82,11 @@ public final class GridMovement extends Entity {
 
 		// Calc the movement based on the grid
 		movement = dir
-				* GameRoutines.lineOfSight(gridEntity,
-						GameRoutines.VELOCITY_NODE_FILTER, pos, maxMovement,
-						vertical ? (negative ? Direction.North
+				* GameRoutines.lineOfSight(gridEntity, node, graphicsEntity
+						.position(), GameRoutines.VELOCITY_NODE_FILTER,
+						maxMovement, vertical ? (negative ? Direction.North
 								: Direction.South) : (negative ? Direction.West
 								: Direction.East));
-
-		// System.out.println(Math.abs(movement));
 
 		// If movement != 0 -> We can move!
 		boolean canMove = !MathExt.equals(movement, 0);
@@ -227,7 +225,7 @@ public final class GridMovement extends Entity {
 		 */
 
 		// The node position
-		Vector2f offset = node.position();
+		Vector2f offset = node.position().round();
 
 		// The position of the controlled parent
 		Vector2f position = controlledParent.position();
