@@ -192,6 +192,13 @@ public final class Game implements GameConstants, Serializable {
 			// Register!!!
 			im.closeFuture().add(new FutureCallback() {
 
+				/*
+				 * (non-Javadoc)
+				 * 
+				 * @see
+				 * com.indyforge.foxnet.rmi.util.FutureCallback#completed(com
+				 * .indyforge.foxnet.rmi.util.Future)
+				 */
 				@Override
 				public void completed(Future future) throws Exception {
 					SpawnDead sd = new SpawnDead();

@@ -69,6 +69,8 @@ public final class SyncItemCount extends Many<ItemSpawner> implements
 
 				// PLACE sound
 				entity.findScene().soundManager().playSound(name, true);
+			} else {
+				entity.findScene().soundManager().playSound(EAT_SOUND, true);
 			}
 		}
 	}

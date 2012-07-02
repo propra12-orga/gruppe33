@@ -6,7 +6,7 @@ import java.awt.Transparency;
 import java.awt.image.BufferedImage;
 import java.io.File;
 
-import propra2012.gruppe33.networktest.ServerApp;
+import propra2012.gruppe33.bomberman.ServerApp;
 
 import com.indyforge.foxnet.rmi.InvokerManager;
 import com.indyforge.foxnet.rmi.pattern.change.Session;
@@ -39,7 +39,7 @@ public class Gui {
 
 		scene.soundManager().putSound("back", "assets/sounds/menu2.wav");
 
-		// sm.playSound("back", true);
+		scene.soundManager().playSound("back", 0.3f, true);
 
 		scene.scale(scene.sizeAsVector());
 
@@ -66,8 +66,9 @@ public class Gui {
 		final Resource<Font> tinyFont = new TransientSystemFontResource(
 				"Sans Serif", Font.BOLD, 32);
 
-		final Resource<Font> extremTinyFont = new TransientSystemFontResource(
-				"Sans Serif", Font.BOLD, 30);
+		// final Resource<Font> extremTinyFont = new
+		// TransientSystemFontResource(
+		// "Sans Serif", Font.BOLD, 30);
 
 		/*
 		 * Used to initialize!
@@ -94,6 +95,11 @@ public class Gui {
 				"OPTIONS", true);
 
 		Button quitB = new Button(selectedA, deselectedA, desc2, font, "QUIT") {
+
+			/**
+			 * 
+			 */
+			private static final long serialVersionUID = 1L;
 
 			/*
 			 * (non-Javadoc)
@@ -134,6 +140,11 @@ public class Gui {
 				font, "Back", false);
 
 		Button startB = new Button(selectedA, deselectedA, desc2, font, "Start") {
+
+			/**
+			 * 
+			 */
+			private static final long serialVersionUID = 1L;
 
 			/*
 			 * (non-Javadoc)
@@ -263,6 +274,11 @@ public class Gui {
 
 		Button hostStartB = new Button(selectedA, deselectedA, desc2, font,
 				"Start") {
+
+			/**
+					 * 
+					 */
+			private static final long serialVersionUID = 1L;
 
 			@Override
 			protected void onButtonPressed() {
