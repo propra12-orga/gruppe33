@@ -8,6 +8,11 @@ import propra2012.gruppe33.bomberman.ai.AIProcessor;
 public class Bot implements AIProcessor {
 
 	/**
+	 * Is now serializable.
+	 */
+	private static final long serialVersionUID = 1L;
+
+	/**
 	 * the abstract data type Pathfinder is used to create a grid structure. As
 	 * a result the dijkstra algorithm can be easily implemented. map is the
 	 * base frame for the grid.

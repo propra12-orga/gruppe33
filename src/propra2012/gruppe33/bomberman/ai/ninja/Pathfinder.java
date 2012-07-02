@@ -86,10 +86,10 @@ public class Pathfinder extends Point {
 	 */
 	public Pathfinder lowestUncheckedConnection() {
 
-//		System.out.println(speedNorth);
-//		System.out.println(speedEast);
-//		System.out.println(speedSouth);
-//		System.out.println(speedWest);
+		// System.out.println(speedNorth);
+		// System.out.println(speedEast);
+		// System.out.println(speedSouth);
+		// System.out.println(speedWest);
 
 		if ((north != this) && (!north.isVisited())
 				&& (speedNorth <= speedEast) && (speedNorth <= speedSouth)
@@ -133,12 +133,26 @@ public class Pathfinder extends Point {
 		// find this by mistake.
 		visited = true;
 
+		// Checks all connections. Up to four times.
+		if (north != this) {
+			checkUp(north, speedNorth);
+		}
+		if (east != this) {
+			checkUp(east, speedEast);
+		}
+		if (south != this) {
+			checkUp(south, speedSouth);
+		}
+		if (west != this) {
+			checkUp(west, speedWest);
+		}
+
 		// The Pathfinder that will be the next for dijkstra.
 		Pathfinder next = this.lowestUncheckedConnection();
 
 		float speed = 0;
 
-		// Checks all connections. Up to four times.
+		// what speed will be used next?
 		while (next != this) {
 			switch (indicator) {
 			case 'n':
@@ -154,19 +168,28 @@ public class Pathfinder extends Point {
 				speed = wayTillHere + speedWest;
 				break;
 			}
-
-			if (next.getDistance() > speed) {
-				next.setDistance(speed);
-				next.setPredecessor(this);
-				next.setCount(count + 1);
-			}
-			next.dijkstra(speed);
+			dijkstra(speed);
 			next = this.lowestUncheckedConnection();
 		}
 	}
 
-	public int count(Pathfinder x) {
-		return 0;
+	/**
+	 * Part of the dijkstra algorithm. Needs to be checked in all directions to
+	 * get the shortest path.
+	 * 
+	 * @param target
+	 *            The connection in which direction is currently checked.
+	 * @param speed
+	 *            The speed of the current checked connection.
+	 */
+	private void checkUp(Pathfinder target, float speed) {
+		speed += this.distance;
+		if (target.getDistance() > speed) {
+			target.setDistance(speed);
+			target.setPredecessor(this);
+			target.setCount(count + 1);
+
+		}
 	}
 
 	/*
