@@ -16,6 +16,7 @@ import propra2012.gruppe33.bomberman.graphics.rendering.scenegraph.grid.items.sp
 import propra2012.gruppe33.bomberman.graphics.rendering.scenegraph.grid.items.spawners.SpawnShield;
 import propra2012.gruppe33.bomberman.graphics.rendering.scenegraph.grid.movement.GridMovement;
 
+import com.indyforge.foxnet.rmi.Invoker;
 import com.indyforge.foxnet.rmi.pattern.change.Session;
 import com.indyforge.twod.engine.graphics.rendering.scenegraph.Entity;
 import com.indyforge.twod.engine.graphics.rendering.scenegraph.GraphicsEntity;
@@ -125,7 +126,8 @@ public final class ItemSpawner extends GraphicsEntity implements GameConstants {
 
 			// If session exists...
 			if (session != null) {
-				session.client().applyChange(syncItemCount);
+				Invoker.of(session.client()).invoke("applyChange",
+						syncItemCount);
 			}
 		}
 		return this;
