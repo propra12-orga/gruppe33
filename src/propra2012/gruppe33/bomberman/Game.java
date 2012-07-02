@@ -63,7 +63,7 @@ public final class Game implements GameConstants, Serializable {
 	 * 
 	 */
 	private String assetBundle = "res/default.zip",
-			mapPropAssetPath = "assets/maps/smallmap.prop";
+			mapPropAssetPath = "assets/maps/map_1.prop";
 	private float broadcastUpdateTime = 0.030f;
 	private int players = 1;
 
