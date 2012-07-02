@@ -1,11 +1,14 @@
-package propra2012.gruppe33;
+package propra2012.gruppe33.bomberman.graphics;
 
 import java.awt.Color;
 import java.awt.Font;
 import java.awt.Transparency;
 import java.awt.image.BufferedImage;
 import java.io.File;
-import java.net.InetSocketAddress;
+
+import javax.swing.JOptionPane;
+
+import propra2012.gruppe33.networktest.ServerApp;
 
 import com.indyforge.foxnet.rmi.InvokerManager;
 import com.indyforge.foxnet.rmi.pattern.change.Session;
@@ -23,33 +26,22 @@ import com.indyforge.twod.engine.graphics.rendering.scenegraph.gui.Label;
 import com.indyforge.twod.engine.graphics.rendering.scenegraph.gui.MenuButton;
 import com.indyforge.twod.engine.graphics.rendering.scenegraph.gui.TextField;
 import com.indyforge.twod.engine.resources.Resource;
-import com.indyforge.twod.engine.resources.TransientDerivedFontResource;
 import com.indyforge.twod.engine.resources.TransientSystemFontResource;
 import com.indyforge.twod.engine.resources.assets.Asset;
 import com.indyforge.twod.engine.resources.assets.AssetManager;
-import com.indyforge.twod.engine.sound.SoundManager;
+import com.indyforge.twod.engine.util.task.Task;
 
 public class Gui {
 
-	/**
-	 * @param args
-	 */
-	public static void main(String[] args) throws Exception {
-		final SceneProcessor processor = new SceneProcessor("Gui Test", 800,
-				600);
+	public static Scene createGUI(final SceneProcessor processor)
+			throws Exception {
 
 		final Scene scene = new Scene(new AssetManager(new File(
-				"scenes/default.zip")), 1024, 1024);
-		
+				"res/default.zip")), 1024, 1024);
 
-		AssetManager am = new AssetManager(new File("scenes/default.zip"));
+		scene.soundManager().putSound("back", "assets/sounds/menu2.wav");
 
-		
-		SoundManager sm = new SoundManager(am);
-
-		sm.putSound("back", "assets/sounds/menu2.wav");
-		
-		sm.playSound("back", true);
+		// sm.playSound("back", true);
 
 		scene.scale(scene.sizeAsVector());
 
@@ -72,44 +64,37 @@ public class Gui {
 
 		final Resource<Font> font = new TransientSystemFontResource(
 				"Sans Serif", Font.BOLD, 48);
-		
+
 		final Resource<Font> tinyFont = new TransientSystemFontResource(
 				"Sans Serif", Font.BOLD, 32);
 
-		
 		final Resource<Font> extremTinyFont = new TransientSystemFontResource(
 				"Sans Serif", Font.BOLD, 30);
 
-
-		
-		
 		/*
 		 * Used to initialize!
 		 */
 		ImageDesc desc1 = new ImageDesc().width(400).height(96)
 				.transparency(Transparency.TRANSLUCENT);
-		
+
 		ImageDesc desc2 = new ImageDesc().width(256).height(96)
 				.transparency(Transparency.TRANSLUCENT);
-		
+
 		ImageDesc desc3 = new ImageDesc().width(96).height(96)
 				.transparency(Transparency.TRANSLUCENT);
 
-		
-		
 		/*
 		 * MAIN
 		 */
 		Button spB = new MenuButton(selectedA, deselectedA, desc2, tinyFont,
 				"SINGLEPLAYER", true);
-		
+
 		Button mpB = new MenuButton(selectedA, deselectedA, desc2, tinyFont,
 				"MULTIPLAYER", true);
-		
-		
+
 		Button optB = new MenuButton(selectedA, deselectedA, desc2, font,
 				"OPTIONS", true);
-		
+
 		Button quitB = new Button(selectedA, deselectedA, desc2, font, "QUIT") {
 
 			/*
@@ -123,37 +108,33 @@ public class Gui {
 			protected void onButtonPressed() {
 				super.onButtonPressed();
 				System.exit(0);
-				
 
 			}
 		};
-		
 
 		/*
 		 * SINGLEPLAYER
 		 */
-		
+
 		final TextField epTf = new TextField(desc3, tinyFont);
 		epTf.background().imageResource(deselectedA);
 		epTf.text().alignment(Alignment.Center).textColor(Color.WHITE);
-		
-		
+
 		final TextField botSTf = new TextField(desc3, tinyFont);
 		botSTf.background().imageResource(deselectedA);
 		botSTf.text().alignment(Alignment.Center).textColor(Color.WHITE);
-		
+
 		Label epL = new Label(desc2, tinyFont);
 		epL.background().imageResource(deselectedA);
 		epL.text().text("Enemys(1-3)");
-		
+
 		Label botSTL = new Label(desc2, tinyFont);
 		botSTL.background().imageResource(deselectedA);
 		botSTL.text().text("Difficulty(1-3)");
-		
-		Button backMainSPB = new MenuButton(selectedA, deselectedA, desc2, font,
-				"Back", false);
-		
-		
+
+		Button backMainSPB = new MenuButton(selectedA, deselectedA, desc2,
+				font, "Back", false);
+
 		Button startB = new Button(selectedA, deselectedA, desc2, font, "Start") {
 
 			/*
@@ -165,12 +146,10 @@ public class Gui {
 			 */
 			@Override
 			protected void onButtonPressed() {
-				
+
 			}
 		};
 
-		
-		
 		/*
 		 * MULTIPLAYER
 		 */
@@ -178,16 +157,88 @@ public class Gui {
 		ipTf.background().imageResource(deselectedA);
 		ipTf.text().alignment(Alignment.Center).textColor(Color.WHITE);
 
-		
-		final TextField portTf = new TextField(desc1, font);
-		portTf.background().imageResource(deselectedA);
-		portTf.text().alignment(Alignment.Center).textColor(Color.WHITE);
+		final TextField usernameTf = new TextField(desc1, font);
+		usernameTf.background().imageResource(deselectedA);
+		usernameTf.text().alignment(Alignment.Center).textColor(Color.WHITE);
 
-		
-		Button backMainMPB = new MenuButton(selectedA, deselectedA, desc2, font,
-				"Back", false);
-		
-		Button connectB = new Button(selectedA, deselectedA, desc2, font, "Connect") {
+		Button backMainMPB = new MenuButton(selectedB, deselectedB, desc2,
+				font, "Back", false);
+
+		Button hostB = new Button(selectedA, deselectedA, desc2, font, "Host") {
+
+			@Override
+			protected void onButtonPressed() {
+				super.onButtonPressed();
+
+				JOptionPane.showInputDialog("How many players ?");
+				
+				Thread t = new Thread(new ServerApp());
+				t.setDaemon(true);
+				t.start();
+
+				// Connect the scene
+				Session<SceneProcessor> session;
+				try {
+					processor.networkMode(NetworkMode.Client);
+					session = processor.openClient("localhost", 1337)
+							.linkClient(usernameTf.text().text());
+
+					// Get the invoker manager
+					InvokerManager man = InvokerManager.of(session);
+
+					man.closeFuture().add(new FutureCallback() {
+
+						@Override
+						public void completed(Future future) throws Exception {
+
+							processor.taskQueue().tasks().offer(new Task() {
+
+								/**
+								 * 
+								 */
+								private static final long serialVersionUID = 1L;
+
+								@Override
+								public boolean update(float tpf) {
+
+									processor.networkMode(NetworkMode.Offline);
+									try {
+										processor.root(createGUI(processor));
+									} catch (Exception e) {
+										// TODO Auto-generated catch block
+										e.printStackTrace();
+									}
+
+									return true;
+								}
+							});
+						}
+					});
+
+					Label cont = new Label(new ImageDesc().width(256)
+							.height(64).transparency(Transparency.TRANSLUCENT),
+							font);
+
+					cont.text().text("Waiting...");
+
+					scene.detachAll();
+					scene.attach(cont);
+
+					cont.position().set(0.5f, 0.5f);
+
+				} catch (Exception e) {
+					e.printStackTrace();
+				}
+			}
+		};
+
+		Button connectB = new Button(selectedA, deselectedA, desc2, font,
+				"Connect") {
+
+			/**
+			 * 
+			 */
+			private static final long serialVersionUID = 1L;
 
 			/*
 			 * (non-Javadoc)
@@ -199,16 +250,13 @@ public class Gui {
 			@Override
 			protected void onButtonPressed() {
 				super.onButtonPressed();
-				super.onButtonPressed();
-
-				InetSocketAddress addr = new InetSocketAddress(
-						ipTf.text().text(), Integer.parseInt(portTf.text().text()));
 
 				// Connect the scene
 				Session<SceneProcessor> session;
 				try {
 					processor.networkMode(NetworkMode.Client);
-					session = processor.openClient(addr).linkClient("Kr0e");
+					session = processor.openClient(ipTf.text().text(), 1337)
+							.linkClient(usernameTf.text().text());
 
 					// Get the invoker manager
 					InvokerManager man = InvokerManager.of(session);
@@ -218,7 +266,27 @@ public class Gui {
 						@Override
 						public void completed(Future future) throws Exception {
 
-							processor.shutdownRequest(true);
+							processor.taskQueue().tasks().offer(new Task() {
+
+								/**
+								 * 
+								 */
+								private static final long serialVersionUID = 1L;
+
+								@Override
+								public boolean update(float tpf) {
+
+									processor.networkMode(NetworkMode.Offline);
+									try {
+										processor.root(createGUI(processor));
+									} catch (Exception e) {
+										// TODO Auto-generated catch block
+										e.printStackTrace();
+									}
+
+									return true;
+								}
+							});
 						}
 					});
 
@@ -226,7 +294,7 @@ public class Gui {
 							.height(64).transparency(Transparency.TRANSLUCENT),
 							font);
 
-					cont.text().text("Connected!");
+					cont.text().text("Waiting...");
 
 					scene.detachAll();
 					scene.attach(cont);
@@ -236,47 +304,44 @@ public class Gui {
 				} catch (Exception e) {
 					e.printStackTrace();
 				}
-
-				
-
 			}
 		};
-		
+
 		Label ipL = new Label(desc2, font);
 		ipL.background().imageResource(deselectedA);
 		ipL.text().text("Host/IP");
 
-		Label portL = new Label(desc2, font);
-		portL.background().imageResource(deselectedA);
-		portL.text().text("Port");
-		
+		Label usernameL = new Label(desc2, font);
+		usernameL.background().imageResource(deselectedA);
+		usernameL.text().text("Username");
+
 		/*
 		 * OPTIONS
 		 */
-		Button backMainOPTB = new MenuButton(selectedA, deselectedA, desc2, font,
-				"Back", false);
-		
-		
+		Button backMainOPTB = new MenuButton(selectedA, deselectedA, desc2,
+				font, "Back", false);
+
 		/*
 		 * MAIN SETTINGS
 		 */
-				
+
 		spB.scale().set(0.3f, 0.3f);
 		spB.position().set(0.2f, 0.1f);
-		spB.container().attach(epTf,botSTf,epL,botSTL,startB,backMainSPB);
+		spB.container().attach(epTf, botSTf, epL, botSTL, startB, backMainSPB);
 		spB.guiContainerVisible(false);
-		spB.select();	
-		
+		spB.select();
+
 		mpB.scale().set(0.3f, 0.3f);
-		mpB.position().set(0.4f, 0.3f);		
-		mpB.container().attach(ipTf,portTf,portL,ipL,connectB,backMainMPB);
+		mpB.position().set(0.4f, 0.3f);
+		mpB.container().attach(usernameTf, ipTf, connectB, hostB, backMainMPB,
+				usernameL, ipL);
 		mpB.guiContainerVisible(false);
-		
+
 		optB.scale().set(0.3f, 0.3f);
 		optB.position().set(0.6f, 0.5f);
 		optB.container().attach(backMainOPTB);
 		optB.guiContainerVisible(false);
-		
+
 		quitB.scale().set(0.3f, 0.3f);
 		quitB.position().set(0.8f, 0.7f);
 
@@ -284,60 +349,86 @@ public class Gui {
 		 * SINGLEPLAYER SETTINGS
 		 */
 
-		epTf.position().set(1f,0.8f);
-		epTf.scale().set(0.9f,0.9f);
-		
-		botSTf.position().set(1f,1.4f);
-		botSTf.scale().set(0.9f,0.9f);
-		
+		epTf.position().set(1f, 0.8f);
+		epTf.scale().set(0.9f, 0.9f);
+
+		botSTf.position().set(1f, 1.4f);
+		botSTf.scale().set(0.9f, 0.9f);
+
 		epL.position().set(0f, 0.8f);
-		epL.scale().set(0.9f,0.9f);
-		
+		epL.scale().set(0.9f, 0.9f);
+
 		botSTL.position().set(0f, 1.4f);
-		botSTL.scale().set(0.9f,0.9f);
-		
+		botSTL.scale().set(0.9f, 0.9f);
+
 		startB.position().set(1f, 2f);
-		startB.scale().set(0.9f,0.9f);
-		
-		backMainSPB.position().set(0f,2f);
-		backMainSPB.scale().set(0.9f,0.9f);
-		
-		
+		startB.scale().set(0.9f, 0.9f);
+
+		backMainSPB.position().set(0f, 2f);
+		backMainSPB.scale().set(0.9f, 0.9f);
+
 		/*
 		 * MULTIPLAYER SETTINGS
 		 */
-		ipTf.position().set(0.5f,0.1f);	
-		ipTf.scale().set(0.9f,0.9f);
-		
-		portTf.position().set(0.5f,0.7f);
-		portTf.scale().set(0.9f,0.9f);
-		
-		ipL.position().set(-0.6f, 0.1f);
-		ipL.scale().set(0.9f,0.9f);
-		
-		portL.position().set(-0.6f, 0.7f);
-		portL.scale().set(0.9f,0.9f);
-		
-		connectB.position().set(0.5f, 1.3f);
-		connectB.scale().set(0.9f,0.9f);
-		
-		backMainMPB.position().set(-0.6f,1.3f);
-		backMainMPB.scale().set(0.9f,0.9f);
-		
+		ipTf.position().set(0.1f, 0.2f);
+		ipTf.scale().set(0.9f, 0.9f);
+
+		ipL.position().set(-0.8f, 0.2f);
+		ipL.scale().set(0.9f, 0.9f);
+
+		connectB.position().set(-0.35f, 0.8f);
+		connectB.scale().set(0.9f, 0.9f);
+
+		usernameTf.position().set(0.1f, -0.6f);
+		usernameTf.scale().set(0.9f, 0.9f);
+
+		usernameL.position().set(-0.8f, -0.6f);
+		usernameL.scale().set(0.9f, 0.9f);
+
+		hostB.position().set(1.2f, 1.0f);
+		hostB.scale().set(0.9f, 0.9f);
+		hostB.rotation(0.2f);
+
+		backMainMPB.position().set(0.9f, 2.0f);
+		backMainMPB.scale().set(0.9f, 0.9f);
+		backMainMPB.rotation(-0.2f);
+
 		/*
 		 * OPTIONS SETTINGS
 		 */
-		backMainOPTB.scale().set(0.9f,0.9f);
-		backMainOPTB.position().set(0f,0f);
+		backMainOPTB.scale().set(0.9f, 0.9f);
+		backMainOPTB.position().set(0f, 0f);
 
-		
-		
 		GraphicsEntity guiRoot = new GraphicsEntity();
-		guiRoot.attach(spB,mpB,optB,quitB);
-		
+		guiRoot.attach(spB, mpB, optB, quitB);
+
 		scene.attach(guiRoot);
-		processor.root(scene);
-		processor.start(60);
+
+		return scene;
+	}
+
+	/**
+	 * @param args
+	 */
+	public static void main(String[] args) throws Exception {
+		final SceneProcessor processor = new SceneProcessor("Gui Test", 800,
+				600);
+		processor.onlyRenderWithFocus(false);
+		processor.root(createGUI(processor));
+		while (!processor.isShutdownRequested()) {
+			try {
+
+				// Process the whole scene!
+				processor.process(50);
+			} catch (Exception e) {
+				e.printStackTrace();
+				processor.root(createGUI(processor));
+			}
+		}
+
+		// Dispose the scene processor
+		processor.dispose();
+		System.exit(0);
 	}
 
 }

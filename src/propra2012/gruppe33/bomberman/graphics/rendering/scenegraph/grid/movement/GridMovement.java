@@ -286,7 +286,7 @@ public final class GridMovement extends Entity {
 			case North:
 			case South:
 
-				if (lv > 1.25f) {
+				if (lv >= 1.25f) {
 
 					// Calc horizontal movement
 					processMovement(west, false, gridEntity, node,
@@ -304,7 +304,7 @@ public final class GridMovement extends Entity {
 			case West:
 			case East:
 
-				if (lh > 1.25f) {
+				if (lh >= 1.25f) {
 
 					// Calc vertical movement
 					processMovement(north, true, gridEntity, node,

@@ -1,7 +1,6 @@
 package propra2012.gruppe33.bomberman.ai;
 
 import java.awt.Point;
-import java.util.Arrays;
 
 import propra2012.gruppe33.bomberman.GameRoutines;
 
@@ -99,12 +98,15 @@ public class DefaultAIControl implements AIControl {
 			points[0] = activePosition();
 			System.arraycopy(tmp, 0, points, 1, tmp.length);
 
-
-
 			for (int i = 0; i < points.length - 1; i++) {
 
 				PositionPath pp = new PositionPath(player, new Vector2f(
 						points[i + 1]).sub(new Vector2f(points[i])), 3f) {
+					/**
+							 * 
+							 */
+					private static final long serialVersionUID = 1L;
+
 					@Override
 					protected boolean updateTask(float tpf) {
 						boolean res = super.updateTask(tpf);

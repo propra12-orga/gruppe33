@@ -47,6 +47,8 @@ public interface GameConstants {
 	String ITEM_INTERFACE = "item_interface";
 	// ************ ITEMS GUI END
 
+	String ACTIVE_FLARE_IMAGE = "active_flare_image";
+	
 	// ************ ITEMS START
 	String EXP_SPRITE = "exp_sprite";
 	String EXP_SPRITE_WIDTH = "exp_sprite_columns";

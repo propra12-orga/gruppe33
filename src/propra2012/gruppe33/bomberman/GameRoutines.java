@@ -5,7 +5,6 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
 
-import propra2012.gruppe33.bomberman.ai.AIControl;
 import propra2012.gruppe33.bomberman.graphics.rendering.scenegraph.grid.items.CollectableItem;
 import propra2012.gruppe33.bomberman.graphics.rendering.scenegraph.grid.items.ItemSpawner;
 import propra2012.gruppe33.bomberman.graphics.rendering.scenegraph.grid.movement.GridMovement;
@@ -966,41 +965,41 @@ public final class GameRoutines implements GameConstants {
 
 				if (findSceneProcessor().hasAdminSessionServer()) {
 
-					// Create nodes for each coords
-					for (int y = 0; y < gridHeight; y++) {
-						for (int x = 0; x < gridWidth; x++) {
-
-							// System.out.print(aiField[y][x].length + ", ");
-
-							if (aiField[y][x] == null) {
-								continue;
-							}
-
-							// Get the node
-							GraphicsEntity node = (GraphicsEntity) childAt(grid
-									.index(x, y));
-
-							// Create new array to hold the children array
-							aiField[y][x] = new int[node.children().size()];
-
-							// The index
-							int i = 0;
-
-							// Check all children!
-							for (Entity child : node) {
-								if (child.tagged(PLAYER_TAG)) {
-									aiField[y][x][i++] = AIControl.PLAYER;
-								} else if (child.tagged(BREAKABLE_TAG)) {
-									aiField[y][x][i++] = AIControl.BREAKABLE;
-								} else if (child.tagged(BOMB_TAG)) {
-									aiField[y][x][i++] = AIControl.BOMB;
-								} else {
-									aiField[y][x][i++] = AIControl.GOOD_ITEM;
-								}
-							}
-						}
-						// System.out.println();
-					}
+					// // Create nodes for each coords
+					// for (int y = 0; y < gridHeight; y++) {
+					// for (int x = 0; x < gridWidth; x++) {
+					//
+					// // System.out.print(aiField[y][x].length + ", ");
+					//
+					// if (aiField[y][x] == null) {
+					// continue;
+					// }
+					//
+					// // Get the node
+					// GraphicsEntity node = (GraphicsEntity) childAt(grid
+					// .index(x, y));
+					//
+					// // Create new array to hold the children array
+					// aiField[y][x] = new int[node.children().size()];
+					//
+					// // The index
+					// int i = 0;
+					//
+					// // Check all children!
+					// for (Entity child : node) {
+					// if (child.tagged(PLAYER_TAG)) {
+					// aiField[y][x][i++] = AIControl.PLAYER;
+					// } else if (child.tagged(BREAKABLE_TAG)) {
+					// aiField[y][x][i++] = AIControl.BREAKABLE;
+					// } else if (child.tagged(BOMB_TAG)) {
+					// aiField[y][x][i++] = AIControl.BOMB;
+					// } else {
+					// aiField[y][x][i++] = AIControl.GOOD_ITEM;
+					// }
+					// }
+					// }
+					// // System.out.println();
+					// }
 
 					// / System.out.println();
 					// System.out.println();

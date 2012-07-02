@@ -5,7 +5,16 @@ import propra2012.gruppe33.bomberman.Game;
 import com.indyforge.twod.engine.graphics.rendering.scenegraph.SceneProcessor;
 import com.indyforge.twod.engine.graphics.rendering.scenegraph.SceneProcessor.NetworkMode;
 
-public class ServerApp {
+public class ServerApp implements Runnable {
+
+	@Override
+	public void run() {
+		try {
+			main(null);
+		} catch (Exception e) {
+			e.printStackTrace();
+		}
+	}
 
 	/**
 	 * @param args
