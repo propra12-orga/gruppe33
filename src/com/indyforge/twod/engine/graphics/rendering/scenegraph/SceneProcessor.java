@@ -895,8 +895,9 @@ public final class SceneProcessor implements Changeable<SceneProcessor>,
 	 * 
 	 * @param shutdownRequested
 	 *            If true the shutdown will be initiated.
+	 * @return this for chaining.
 	 */
-	public void shutdownRequest(final boolean shutdownRequested) {
+	public SceneProcessor shutdownRequest(final boolean shutdownRequested) {
 		if (Thread.currentThread().equals(lastProcessorThread)) {
 			this.shutdownRequested = shutdownRequested;
 		} else {
@@ -919,6 +920,7 @@ public final class SceneProcessor implements Changeable<SceneProcessor>,
 				}
 			});
 		}
+		return this;
 	}
 
 	/**

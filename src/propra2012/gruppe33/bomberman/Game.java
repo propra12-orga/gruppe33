@@ -4,6 +4,7 @@ import java.awt.Color;
 import java.awt.Font;
 import java.awt.Point;
 import java.awt.Transparency;
+import java.awt.event.KeyEvent;
 import java.io.File;
 import java.io.Serializable;
 import java.util.HashMap;
@@ -12,14 +13,20 @@ import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Properties;
+import java.util.Random;
 import java.util.UUID;
 
 import propra2012.gruppe33.bomberman.graphics.rendering.scenegraph.grid.GridLoader;
 import propra2012.gruppe33.bomberman.graphics.rendering.scenegraph.grid.input.InputActivator;
 import propra2012.gruppe33.bomberman.graphics.rendering.scenegraph.grid.items.CollectableItem;
+import propra2012.gruppe33.bomberman.graphics.rendering.scenegraph.grid.items.spawners.SpawnDead;
 import propra2012.gruppe33.bomberman.graphics.rendering.scenegraph.grid.transform.DeltaPositionBroadcaster;
 
+import com.indyforge.foxnet.rmi.InvokerManager;
 import com.indyforge.foxnet.rmi.pattern.change.AdminSessionServer;
+import com.indyforge.foxnet.rmi.pattern.change.Session;
+import com.indyforge.foxnet.rmi.util.Future;
+import com.indyforge.foxnet.rmi.util.FutureCallback;
 import com.indyforge.twod.engine.graphics.ImageDesc;
 import com.indyforge.twod.engine.graphics.rendering.scenegraph.GraphicsEntity;
 import com.indyforge.twod.engine.graphics.rendering.scenegraph.RenderedImage;
@@ -58,6 +65,19 @@ public final class Game implements GameConstants, Serializable {
 	private String assetBundle = "res/default.zip",
 			mapPropAssetPath = "assets/maps/smallmap.prop";
 	private float broadcastUpdateTime = 0.030f;
+	private int players = 1;
+
+	public int players() {
+		return players;
+	}
+
+	public Game players(int players) {
+		if (players < 1) {
+			throw new IllegalArgumentException("players must be >= 1");
+		}
+		this.players = players;
+		return this;
+	}
 
 	public String assetBundle() {
 		return assetBundle;
@@ -100,12 +120,12 @@ public final class Game implements GameConstants, Serializable {
 			throw new NullPointerException("sceneProcessor");
 		}
 		return serverGame(sceneProcessor, assetBundle, mapPropAssetPath,
-				broadcastUpdateTime);
+				broadcastUpdateTime, players);
 	}
 
 	public SceneProcessor serverGame(SceneProcessor sceneProcessor,
 			String assetBundle, String mapPropAssetPath,
-			float broadcastUpdateTime) throws Exception {
+			float broadcastUpdateTime, int players) throws Exception {
 		if (sceneProcessor == null) {
 			throw new NullPointerException("sceneProcessor");
 		}
@@ -117,15 +137,28 @@ public final class Game implements GameConstants, Serializable {
 		}
 
 		// Get the server interface
-		AdminSessionServer<SceneProcessor> server = sceneProcessor
+		final AdminSessionServer<SceneProcessor> server = sceneProcessor
 				.adminSessionServer();
 
 		// Here we put the choosen chars
 		Map<Long, Char> charMap = new HashMap<Long, Char>();
 
+		// Char random
+		Random r = new Random();
+
+		// Session
+		Map<Long, Session<SceneProcessor>> sessions = server.sessionMap();
+
 		// Copy ids with chars
-		for (long id : server.sessionMap().keySet()) {
-			charMap.put(id, Char.Santa);
+		for (long id : sessions.keySet()) {
+			charMap.put(id, Char.values()[r.nextInt(Char.values().length)]);
+		}
+
+		/*
+		 * SHUTDOWN!!! ???
+		 */
+		if (players != charMap.size()) {
+			return sceneProcessor.shutdownRequest(true);
 		}
 
 		// The player refs will be stored here
@@ -148,10 +181,26 @@ public final class Game implements GameConstants, Serializable {
 			InputActivator inputAc = new InputActivator();
 
 			// Use linear reference
-			inputAc.entities().add(refs.get(ptr++));
+			inputAc.entities().add(refs.get(ptr));
 
 			// Activate the client
-			server.session(id).client().applyChange(inputAc);
+			InvokerManager im = InvokerManager.of(sessions.get(id).client());
+
+			// Get k!
+			final UUID k = refs.get(ptr++);
+
+			// Register!!!
+			im.closeFuture().add(new FutureCallback() {
+
+				@Override
+				public void completed(Future future) throws Exception {
+					SpawnDead sd = new SpawnDead();
+					sd.entities().add(k);
+					server.composite().applyChange(sd);
+				}
+			});
+
+			sessions.get(id).client().applyChange(inputAc);
 		}
 
 		// Reset the network time every where
@@ -163,7 +212,7 @@ public final class Game implements GameConstants, Serializable {
 	public Game copy() {
 		return new Game().assetBundle(assetBundle)
 				.mapPropAssetPath(mapPropAssetPath)
-				.boadcastUpdateTime(broadcastUpdateTime);
+				.boadcastUpdateTime(broadcastUpdateTime).players(players);
 	}
 
 	public Scene serverGameScene(List<UUID> refs, float broadcastUpdateTime,
@@ -191,7 +240,22 @@ public final class Game implements GameConstants, Serializable {
 		int height = Integer.parseInt(properties.getProperty(MAP_HEIGHT_PROP));
 
 		// Create new scene with the given assets
-		Scene scene = new Scene(assets, Math.round(width * 5 / 4f), height);
+		Scene scene = new Scene(assets, Math.round(width * 5 / 4f), height) {
+
+			/**
+			 * 
+			 */
+			private static final long serialVersionUID = 1L;
+
+			@Override
+			protected void onUpdate(float tpf) {
+				super.onUpdate(tpf);
+
+				if (isPressed(KeyEvent.VK_ESCAPE)) {
+					throw new RuntimeException("SHUTDOWN REQUEST");
+				}
+			}
+		};
 
 		// Load the char array
 		char[][] map = assets.loadAsset(properties.getProperty(MAP_NAME_KEY),
