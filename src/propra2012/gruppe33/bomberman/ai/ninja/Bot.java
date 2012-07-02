@@ -104,6 +104,7 @@ public class Bot implements AIProcessor {
 		if ((positionChanged(aiControl.activePosition()))
 				&& (aiControl.hasFieldChanged()) && aiControl.isResting()) {
 			reinitialize();
+			map[position.y][position.x].setDistance(0);
 			map[position.y][position.x].dijkstra(0);
 
 			// checks where is aen enemy player and moves the bot to this
@@ -170,8 +171,10 @@ public class Bot implements AIProcessor {
 		path = new Point[goal.getCount()];
 
 		while (!goal.getPredecessor().equals(position)) {
+					
 			path[path.length - i - 1] = goal;
 			goal = goal.getPredecessor();
+
 			i++;
 		}
 		path[0] = goal;

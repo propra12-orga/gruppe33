@@ -1,6 +1,7 @@
 package propra2012.gruppe33.bomberman.ai;
 
 import java.awt.Point;
+import java.util.Arrays;
 
 import propra2012.gruppe33.bomberman.GameRoutines;
 
@@ -87,7 +88,7 @@ public class DefaultAIControl implements AIControl {
 	@Override
 	public void setPath(Point... points) {
 
-		System.out.println("Set path!");
+		System.out.println("Set path! - " + Arrays.toString(points));
 
 		if (points == null || points.length == 0) {
 			pathAnimator.taskQueue().cancel();

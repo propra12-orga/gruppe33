@@ -135,16 +135,16 @@ public class Pathfinder extends Point {
 
 		// Checks all connections. Up to four times.
 		if (north != this) {
-			checkUp(north, speedNorth);
+			checkUp(north, wayTillHere + speedNorth);
 		}
 		if (east != this) {
-			checkUp(east, speedEast);
+			checkUp(east, wayTillHere + speedEast);
 		}
 		if (south != this) {
-			checkUp(south, speedSouth);
+			checkUp(south, wayTillHere + speedSouth);
 		}
 		if (west != this) {
-			checkUp(west, speedWest);
+			checkUp(west, wayTillHere + speedWest);
 		}
 
 		// The Pathfinder that will be the next for dijkstra.
@@ -168,7 +168,7 @@ public class Pathfinder extends Point {
 				speed = wayTillHere + speedWest;
 				break;
 			}
-			dijkstra(speed);
+			next.dijkstra(speed);
 			next = this.lowestUncheckedConnection();
 		}
 	}
@@ -183,7 +183,8 @@ public class Pathfinder extends Point {
 	 *            The speed of the current checked connection.
 	 */
 	private void checkUp(Pathfinder target, float speed) {
-		speed += this.distance;
+		// speed += this.distance;
+
 		if (target.getDistance() > speed) {
 			target.setDistance(speed);
 			target.setPredecessor(this);

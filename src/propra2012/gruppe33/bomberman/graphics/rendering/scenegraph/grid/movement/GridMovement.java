@@ -54,14 +54,17 @@ public final class GridMovement extends Entity {
 
 	private void processMovement(boolean negative, boolean vertical,
 			GraphicsEntity gridEntity, GraphicsEntity node,
-			GraphicsEntity graphicsEntity, Vector2f pos, float maxSpeed,
-			Vector2f dest, float tpf) {
+			GraphicsEntity graphicsEntity, float maxSpeed, Vector2f dest,
+			float tpf) {
 
 		// Get center vector
 		Vector2f center = node.position().round();
 
 		// Get point
 		Point nearest = center.point();
+
+		// Calc abs pos
+		Vector2f pos = center.add(graphicsEntity.position());
 
 		// Calc dominant site
 		boolean negativeDominant = (vertical ? center.x - pos.x : center.y
@@ -224,15 +227,6 @@ public final class GridMovement extends Entity {
 		 * PROCESS THE MOVEMENT!
 		 */
 
-		// The node position
-		Vector2f offset = node.position().round();
-
-		// The position of the controlled parent
-		Vector2f position = controlledParent.position();
-
-		// The absolute position
-		Vector2f absolutePosition = offset.add(position);
-
 		// Look up the speed on the given field
 		Float maxSpeedObj = node.typeProp(Float.class);
 
@@ -264,13 +258,11 @@ public final class GridMovement extends Entity {
 			if (vertical) {
 				// Calc vertical movement
 				processMovement(north, true, gridEntity, node,
-						controlledParent, absolutePosition, maxSpeed, movement,
-						tpf);
+						controlledParent, maxSpeed, movement, tpf);
 			} else {
 				// Calc horizontal movement
 				processMovement(west, false, gridEntity, node,
-						controlledParent, absolutePosition, maxSpeed, movement,
-						tpf);
+						controlledParent, maxSpeed, movement, tpf);
 			}
 		} else if (vertical) {
 
@@ -290,13 +282,11 @@ public final class GridMovement extends Entity {
 
 					// Calc horizontal movement
 					processMovement(west, false, gridEntity, node,
-							controlledParent, absolutePosition, maxSpeed,
-							movement, tpf);
+							controlledParent, maxSpeed, movement, tpf);
 				} else {
 					// Calc vertical movement
 					processMovement(north, true, gridEntity, node,
-							controlledParent, absolutePosition, maxSpeed,
-							movement, tpf);
+							controlledParent, maxSpeed, movement, tpf);
 				}
 
 				break;
@@ -308,14 +298,12 @@ public final class GridMovement extends Entity {
 
 					// Calc vertical movement
 					processMovement(north, true, gridEntity, node,
-							controlledParent, absolutePosition, maxSpeed,
-							movement, tpf);
+							controlledParent, maxSpeed, movement, tpf);
 
 				} else {
 					// Calc horizontal movement
 					processMovement(west, false, gridEntity, node,
-							controlledParent, absolutePosition, maxSpeed,
-							movement, tpf);
+							controlledParent, maxSpeed, movement, tpf);
 				}
 
 				break;
