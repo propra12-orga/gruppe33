@@ -39,7 +39,7 @@ public class Gui {
 
 		scene.soundManager().putSound("back", "assets/sounds/menu2.wav");
 
-		//scene.soundManager().playSound("back", 0.3f, true);
+		// scene.soundManager().playSound("back", 0.1f, true);
 
 		scene.scale(scene.sizeAsVector());
 
@@ -514,8 +514,8 @@ public class Gui {
 	 * @param args
 	 */
 	public static void main(String[] args) throws Exception {
-		final SceneProcessor processor = new SceneProcessor("Gui Test", 800,
-				600);
+		final SceneProcessor processor = new SceneProcessor(
+				"Left 2 Bomb - Inglorious Bomberman EDITION", 800, 600);
 		processor.onlyRenderWithFocus(false);
 		processor.root(createGUI(processor));
 		while (!processor.isShutdownRequested()) {
