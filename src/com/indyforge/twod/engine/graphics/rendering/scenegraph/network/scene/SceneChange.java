@@ -40,6 +40,14 @@ public final class SceneChange implements Change<SceneProcessor>, GameConstants 
 	 */
 	@Override
 	public void apply(SceneProcessor ctx) {
+
+		// Clear scene first
+		ctx.root(null);
+
+		// Do garbage collection!
+		System.gc();
+
+		// Set scene
 		ctx.root(scene);
 
 		/*
