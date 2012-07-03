@@ -184,7 +184,7 @@ public final class AnimationRoutines {
 						dieSpeed, 2, 2, 10)).loop(true).paused(true);
 		wizard.add(
 				wizardSprite.newAnimationFromRange(DIE_PREFIX + "west",
-						dieSpeed, 4, 4, 10)).loop(true).paused(true);
+						dieSpeed, 3, 3, 10)).loop(true).paused(true);
 		wizard.add(
 				wizardSprite.newAnimationFromRange(DIE_PREFIX + "east",
 						dieSpeed, 0, 0, 10)).loop(true).paused(true);

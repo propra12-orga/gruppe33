@@ -13,6 +13,7 @@ import propra2012.gruppe33.bomberman.GameConstants;
 import com.indyforge.twod.engine.graphics.rendering.scenegraph.Entity;
 import com.indyforge.twod.engine.graphics.rendering.scenegraph.GraphicsEntity;
 import com.indyforge.twod.engine.graphics.rendering.scenegraph.Scene;
+import com.indyforge.twod.engine.graphics.rendering.scenegraph.SceneProcessor;
 import com.indyforge.twod.engine.graphics.rendering.scenegraph.math.Vector2f;
 import com.indyforge.twod.engine.util.task.Pause;
 import com.indyforge.twod.engine.util.task.Task;
@@ -26,6 +27,49 @@ import com.indyforge.twod.engine.util.task.Task;
  */
 public final class DeltaPositionBroadcaster extends Entity implements
 		GameConstants {
+
+	private static final class RestartGame implements Task {
+
+		/**
+		 * 
+		 */
+		private static final long serialVersionUID = 1L;
+
+		private final SceneProcessor processor;
+		private final Game game;
+
+		public RestartGame(SceneProcessor processor, Game game) {
+			if (processor == null) {
+				throw new NullPointerException("processor");
+			} else if (game == null) {
+				throw new NullPointerException("game");
+			}
+
+			this.processor = processor;
+			this.game = game;
+		}
+
+		/*
+		 * (non-Javadoc)
+		 * 
+		 * @see com.indyforge.twod.engine.util.task.Task#update(float )
+		 */
+		@Override
+		public boolean update(float tpf) {
+
+			/*
+			 * Initiate new server game!
+			 */
+			try {
+				// Start game
+				game.serverGame(processor);
+			} catch (Exception e) {
+				e.printStackTrace();
+			}
+
+			return true;
+		}
+	}
 
 	/**
 	 * 
@@ -62,38 +106,13 @@ public final class DeltaPositionBroadcaster extends Entity implements
 				// Are there any entities left ??
 				if (entities.size() < minPlayers) {
 
+					// Pause + game restart
 					scene.processor().taskQueue().tasks().add(new Pause(3f));
-					scene.processor().taskQueue().tasks().add(new Task() {
-
-						/**
-						 * 
-						 */
-						private static final long serialVersionUID = 1L;
-
-						/*
-						 * (non-Javadoc)
-						 * 
-						 * @see
-						 * com.indyforge.twod.engine.util.task.Task#update(float
-						 * )
-						 */
-						@Override
-						public boolean update(float tpf) {
-
-							/*
-							 * Initiate new server game!
-							 */
-							try {
-								// Get the game
-								scene.prop(NEXT, Game.class).serverGame(
-										scene.processor());
-							} catch (Exception e) {
-								e.printStackTrace();
-							}
-
-							return true;
-						}
-					});
+					scene.processor()
+							.taskQueue()
+							.tasks()
+							.add(new RestartGame(scene.processor(), scene.prop(
+									NEXT, Game.class)));
 
 					// Detach this broadcaster!
 					detach();
