@@ -301,6 +301,8 @@ public final class Game implements GameConstants, Serializable {
 				properties.getProperty(PICKUP_SOUND));
 		scene.soundManager().putSound(PLACE_SOUND,
 				properties.getProperty(PLACE_SOUND));
+		scene.soundManager().putSound(MUSIC_SOUND,
+				properties.getProperty(MUSIC_SOUND));
 
 		// Preload the next game map
 		scene.addProp(NEXT,

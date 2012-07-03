@@ -4,8 +4,8 @@ import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.io.ObjectInputStream;
 import java.io.Serializable;
-import java.util.Collections;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.LinkedHashSet;
 import java.util.Map;
 import java.util.Set;
@@ -35,6 +35,54 @@ import com.indyforge.twod.engine.resources.assets.AssetManager;
  */
 public final class SoundManager implements Serializable {
 
+	/*
+	 * This set must be synchroniced because the clips usually are played and
+	 * stopped in different threads.
+	 */
+	private static final Set<Clip> currentSounds = new LinkedHashSet<Clip>();
+
+	/*
+	 * The mute function.
+	 */
+	private static boolean mute = false;
+
+	/**
+	 * Sets mute.
+	 * 
+	 * @param mute
+	 *            If true no further sounds will be played.
+	 */
+	public static void mute(boolean mute) {
+		if (SoundManager.mute = mute) {
+			closeCurrentSounds();
+		}
+	}
+
+	/**
+	 * @return the mute flag.
+	 */
+	public static boolean isMute() {
+		return mute;
+	}
+
+	/**
+	 * Closes all active sounds.
+	 */
+	public static void closeCurrentSounds() {
+		for (Clip clip : currentSounds()) {
+			clip.close();
+		}
+	}
+
+	/**
+	 * @return a set which contains all active clips.
+	 */
+	public static Set<Clip> currentSounds() {
+		synchronized (currentSounds) {
+			return new HashSet<Clip>(currentSounds);
+		}
+	}
+
 	/**
 	 * 
 	 */
@@ -51,12 +99,6 @@ public final class SoundManager implements Serializable {
 	 * new clips.
 	 */
 	private final Map<String, Asset<byte[]>> soundMap = new HashMap<String, Asset<byte[]>>();
-
-	/*
-	 * This set must be synchroniced because the clips usually are played and
-	 * stopped in different threads.
-	 */
-	private transient Set<Clip> currentSounds, readOnlyCurrentSounds;
 
 	/*
 	 * Used to create / start the clips.
@@ -88,8 +130,6 @@ public final class SoundManager implements Serializable {
 				return thread;
 			}
 		});
-		currentSounds = Collections.synchronizedSet(new LinkedHashSet<Clip>());
-		readOnlyCurrentSounds = Collections.unmodifiableSet(currentSounds);
 	}
 
 	private void readObject(ObjectInputStream in) throws IOException,
@@ -168,25 +208,19 @@ public final class SoundManager implements Serializable {
 	}
 
 	/**
-	 * @return an unmodifiable set which contains all active clips.
-	 */
-	public Set<Clip> currentSounds() {
-		return readOnlyCurrentSounds;
-	}
-
-	/**
 	 * Creates a new clip using the given sound data and the
 	 * {@link SoundManager#defaultVolume(float) default volume}.
 	 * 
 	 * @param name
 	 *            The name of the sound.
-	 * @param start
-	 *            If true the clip will be started directly.
+	 * @param oneshot
+	 *            If true the sound will be played a single time, otherwise it
+	 *            will be looped forever.
 	 * @return the future which will retrieve the new clip or null (If sound
 	 *         does not exist, or headless mode, or...)
 	 */
-	public Future<Clip> playSound(final String name, final boolean start) {
-		return playSound(name, defaultVolume, start);
+	public Future<Clip> playSound(final String name, final boolean oneshot) {
+		return playSound(name, defaultVolume, oneshot);
 	}
 
 	/**
@@ -194,18 +228,19 @@ public final class SoundManager implements Serializable {
 	 * 
 	 * @param name
 	 *            The name of the sound.
-	 * @param start
-	 *            If true the clip will be started directly.
+	 * @param oneshot
+	 *            If true the sound will be played a single time, otherwise it
+	 *            will be looped forever.
 	 * @param volume
 	 *            The volume between 0.0f and 1.0f.
 	 * @return the future which will retrieve the new clip or null (If sound
 	 *         does not exist, or headless mode, or...)
 	 */
 	public Future<Clip> playSound(final String name, final float volume,
-			final boolean start) {
+			final boolean oneshot) {
 
 		// No executor ?
-		if (soundExecutor == null) {
+		if (soundExecutor == null || mute) {
 			return null;
 		}
 
@@ -253,7 +288,9 @@ public final class SoundManager implements Serializable {
 							volume, 0, 1)) / Math.log(10.0) * 20.0));
 
 					// Add into set
-					currentSounds.add(clip);
+					synchronized (currentSounds) {
+						currentSounds.add(clip);
+					}
 
 					/*
 					 * Very important:
@@ -269,14 +306,18 @@ public final class SoundManager implements Serializable {
 								event.getLine().close();
 							} else if (event.getType() == Type.CLOSE) {
 								// If the line is closed -> remove it!
-								currentSounds.remove(clip);
+								synchronized (currentSounds) {
+									currentSounds.remove(clip);
+								}
 							}
 						}
 					});
 
-					// Start the clip ?
-					if (start) {
+					// Start !
+					if (oneshot) {
 						clip.start();
+					} else {
+						clip.loop(Clip.LOOP_CONTINUOUSLY);
 					}
 
 					return clip;

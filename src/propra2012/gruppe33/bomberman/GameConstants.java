@@ -41,6 +41,7 @@ public interface GameConstants {
 
 	String GLASS_SOUND = "glass_sound";
 
+	String MUSIC_SOUND = "music_sound";
 	// ************ SOUND END
 
 	// ************ ITEMS GUI START
@@ -48,7 +49,7 @@ public interface GameConstants {
 	// ************ ITEMS GUI END
 
 	String ACTIVE_FLARE_IMAGE = "active_flare_image";
-	
+
 	// ************ ITEMS START
 	String EXP_SPRITE = "exp_sprite";
 	String EXP_SPRITE_WIDTH = "exp_sprite_columns";

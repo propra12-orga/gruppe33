@@ -108,6 +108,10 @@ public class TextField extends Label {
 					text().append(".");
 				}
 
+				if (scene.isSinglePressed(KeyEvent.VK_MINUS)) {
+					text().append("-");
+				}
+
 				if (scene.isSinglePressed(KeyEvent.VK_BACK_SPACE)) {
 					text().backspace();
 				}

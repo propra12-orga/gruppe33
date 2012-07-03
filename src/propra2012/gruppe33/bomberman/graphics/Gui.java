@@ -27,6 +27,7 @@ import com.indyforge.twod.engine.resources.Resource;
 import com.indyforge.twod.engine.resources.TransientSystemFontResource;
 import com.indyforge.twod.engine.resources.assets.Asset;
 import com.indyforge.twod.engine.resources.assets.AssetManager;
+import com.indyforge.twod.engine.sound.SoundManager;
 import com.indyforge.twod.engine.util.task.Task;
 
 public class Gui {
@@ -34,12 +35,14 @@ public class Gui {
 	public static Scene createGUI(final SceneProcessor processor)
 			throws Exception {
 
+		SoundManager.closeCurrentSounds();
+
 		final Scene scene = new Scene(new AssetManager(new File(
 				"res/default.zip")), 1024, 1024);
 
 		scene.soundManager().putSound("back", "assets/sounds/menu2.wav");
 
-		// scene.soundManager().playSound("back", 0.1f, true);
+		scene.soundManager().playSound("back", 0.4f, false);
 
 		scene.scale(scene.sizeAsVector());
 
@@ -65,10 +68,6 @@ public class Gui {
 
 		final Resource<Font> tinyFont = new TransientSystemFontResource(
 				"Sans Serif", Font.BOLD, 32);
-
-		// final Resource<Font> extremTinyFont = new
-		// TransientSystemFontResource(
-		// "Sans Serif", Font.BOLD, 30);
 
 		/*
 		 * Used to initialize!
@@ -192,6 +191,8 @@ public class Gui {
 			protected void onButtonPressed() {
 				super.onButtonPressed();
 
+				SoundManager.closeCurrentSounds();
+
 				// Connect the scene
 				Session<SceneProcessor> session;
 				try {
@@ -284,9 +285,16 @@ public class Gui {
 			protected void onButtonPressed() {
 				super.onButtonPressed();
 
+				int count = Integer.parseInt(playerSlotsTf.text().text());
+
+				if (count < 1 || count > 4) {
+					return;
+				}
+
+				SoundManager.closeCurrentSounds();
+
 				// HERE SERVER START!!!
-				final ServerApp sa = new ServerApp(
-						Integer.parseInt(playerSlotsTf.text().text()));
+				final ServerApp sa = new ServerApp(count);
 				sa.start();
 
 				// Connect the scene
@@ -358,7 +366,7 @@ public class Gui {
 
 		Label playerSlotL = new Label(desc2, font);
 		playerSlotL.background().imageResource(deselectedA);
-		playerSlotL.text().text("Player (2-4)");
+		playerSlotL.text().text("Player (1-4)");
 
 		/*
 		 * MULTIPLAYERSELECTION
@@ -514,6 +522,11 @@ public class Gui {
 	 * @param args
 	 */
 	public static void main(String[] args) throws Exception {
+
+		if (args.length >= 1 && args[0].equals("-m")) {
+			SoundManager.mute(true);
+		}
+
 		final SceneProcessor processor = new SceneProcessor(
 				"Left 2 Bomb - Inglorious Bomberman EDITION", 800, 600);
 		processor.onlyRenderWithFocus(false);

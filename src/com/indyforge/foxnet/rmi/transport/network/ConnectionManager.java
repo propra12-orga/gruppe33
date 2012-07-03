@@ -55,8 +55,6 @@ import org.jboss.netty.channel.group.ChannelGroup;
 import org.jboss.netty.channel.group.DefaultChannelGroup;
 import org.jboss.netty.channel.socket.nio.NioClientSocketChannelFactory;
 import org.jboss.netty.channel.socket.nio.NioServerSocketChannelFactory;
-import org.jboss.netty.handler.codec.compression.ZlibDecoder;
-import org.jboss.netty.handler.codec.compression.ZlibEncoder;
 import org.jboss.netty.handler.codec.serialization.ClassResolvers;
 import org.jboss.netty.handler.codec.serialization.ObjectDecoder;
 import org.jboss.netty.handler.codec.serialization.ObjectEncoder;
@@ -289,8 +287,8 @@ public final class ConnectionManager implements ChannelPipelineFactory {
 		channelPipeline.addLast("id_handler", identificationHandler);
 
 		// Add good compression
-		channelPipeline.addLast("in_com", new ZlibDecoder());
-		channelPipeline.addLast("out_com", new ZlibEncoder(1));
+		// channelPipeline.addLast("in_com", new ZlibDecoder());
+		// channelPipeline.addLast("out_com", new ZlibEncoder(1));
 
 		// Add config manager
 		channelPipeline.addLast("cfg", SetupHandler.INSTANCE);
